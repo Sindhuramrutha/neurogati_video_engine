@@ -44,16 +44,16 @@ def render_scene(code: str, class_name: str, work_dir: Path) -> Path:
     try:
         result = subprocess.run(
             [
-                sys.executable, "-m", "manim", "render", "-ql", "--progress_bar", "none",
+                sys.executable, "-m", "manim", "render", "-qh", "--progress_bar", "none",
                 "--media_dir", str(media_dir), str(code_path), class_name,
             ],
             capture_output=True,
             text=True,
             cwd=work_dir,
-            timeout=180,
+            timeout=600,
         )
     except subprocess.TimeoutExpired as exc:
-        raise RenderError(f"Render timed out after 180s for {class_name}") from exc
+        raise RenderError(f"Render timed out after 600s for {class_name}") from exc
     if result.returncode != 0:
         raise RenderError(_clean_terminal_output(result.stderr)[-4000:])
 
