@@ -1,0 +1,8 @@
+Subtopic: Important Note
+Scene type: manim
+
+Narration:
+One important note: a high-pass filter removes low-frequency components, not simply noise. If useful physiological information exists below the selected cutoff frequency, that information will also be attenuated. Filter settings should therefore be chosen based on the characteristics of the biological signal, rather than using a fixed value for every application.
+
+Animation description:
+A simple but clear text-focused visual. The phrase 'Important Note' appears with a yellow highlight border. Below, a symbolic equation-like flow appears: 'Low-frequency components ≠ noise' with the not-equal sign drawn prominently, perhaps with a red underline. Below that, two columns appear: the left is labeled 'one fixed filter setting' and shows a grayed-out generic filter icon crossed out. The right is labeled 'setting chosen for this signal' and shows a filter icon with a turquoise color and a checkmark. The final sentence appears as a caption at the bottom.

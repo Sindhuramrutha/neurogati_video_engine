@@ -1,0 +1,35 @@
+1. 0.00-1.64: The previous scene's final image — the stacked EEG epochs with a clean averaged waveform and the vertical dashed line at 100 ms — fades out. A fresh, blank background fades in, with a single vertical line near the left-center labeled "Stimulus," drawn downward through the full height, establishing a new alignment reference for the scene.
+
+2. 1.64-3.62: The label "Induced Neural Activity" fades in above the vertical stimulus line, centered. The screen holds with just the stimulus line and the title, with no trial data yet shown.
+
+3. 3.62-7.24: The label "Induced Neural Activity" shifts slightly upward to make room below it. A subtle bracket is drawn around the term "event-related" in the narration track, but visually the title stays fixed; beneath the title a short horizontal time axis is drawn, starting at the stimulus line and extending right, with tick marks appearing at regular intervals, labeled "0", "100 ms", "200 ms", "300 ms", "400 ms".
+
+4. 7.24-11.00: The stimulus line brightens, and a marker arrow is drawn from the stimulus line to the time axis to emphasize the alignment point. The scene holds, highlighting that trials are still locked to the same onset, but no deflections appear yet.
+
+5. 11.00-13.80: A first EEG epoch fades in above the time axis, aligned to the stimulus line. The epoch is mostly flat for the first portion, then shows a smooth upward deflection beginning at the 250 ms tick, forming a single clear positive peak.
+
+6. 13.80-17.08: The first epoch holds. A second epoch fades in directly below the first, also aligned to the stimulus line. Its deflection begins at the 320 ms tick, with a slightly different peak amplitude. The two epochs' deflections do not align to each other.
+
+7. 17.08-21.40: A third epoch fades in below the second, aligned to the stimulus line. Its deflection begins at the 280 ms tick, with a slightly taller peak. The three epochs remain stacked, each showing a deflection at a clearly different time point along the time axis.
+
+8. 21.40-24.26: Small circular markers appear at the peak of each deflection: one over the 250 ms peak, one over the 320 ms peak, and one over the 280 ms peak. Labels fade in near each marker: "250 ms", "320 ms", and "280 ms" respectively, pointing to the deflections.
+
+9. 24.26-28.60: The 250 ms marker brightens as the narration names it. The 320 ms marker then brightens as the 320 ms response is mentioned, and the time axis ticks at those points are highlighted in the same colors as their corresponding markers.
+
+10. 28.60-32.32: The 280 ms marker brightens as the third response is named. The three epochs are now fully visible, with their deflections displaced from one another along the time axis, and their markers clearly showing the different latencies.
+
+11. 32.32-36.50: The three epochs remain stacked and unchanged. A subtle bracket is drawn spanning all three deflections, with a label beneath it: "same task, different timing". The deflections are visually connected by a faint band to show they belong to the same task condition.
+
+12. 36.50-39.24: The bracket and label hold. The three deflections are highlighted one after another, showing that no single vertical line can pass through all three peaks simultaneously, unlike the time-locked case. A dashed vertical line at the average latency is drawn briefly and then fades, showing it does not align with any of the three deflections cleanly.
+
+13. 39.24-42.30: A new panel fades in to the right of the three individual epochs, labeled "Average". The three epochs are pushed slightly left and reduced in size to make room for the averaging panel.
+
+14. 42.30-46.42: Inside the averaging panel, a single averaged waveform is drawn. It is mostly flat with a broad, smaller, and more smeared deflection spanning roughly from 250 ms to 320 ms, with a lower amplitude than any single epoch's deflection. The individual epochs remain visible on the left, and the averaged deflection is clearly smaller and broader than any of them.
+
+15. 46.42-49.40: The averaging panel is enlarged slightly, and the label "Averaging reduces induced activity" fades in beneath it. The averaged waveform's smeared, lower-amplitude deflection is highlighted, contrasting with the sharper, larger deflections in the individual epochs on the left.
+
+16. 49.40-52.84: A second new panel fades in below the averaging panel, labeled "Time-frequency analysis". Inside it, a spectrogram appears: a two-dimensional heatmap with frequency on the vertical axis and time on the horizontal axis, using a color gradient (dark blue to yellow) to show power. A clear band of increased power is visible across the 250-320 ms time window, spread over a range of frequencies.
+
+17. 52.84-57.20: The label "Time-frequency analysis" brightens, and the spectrogram's power band is highlighted with a visual outline or glow, emphasizing that induced activity is visible there despite the timing jitter. The narration mentions spectrograms and wavelet analysis, and the spectrogram panel remains bright as the preferred method.
+
+18. 57.20-58.02: The final scene holds: the three individual epochs with their displaced deflections and latency markers on the left, the averaging panel with the smeared, reduced deflection beneath the label "Averaging reduces induced activity" in the middle, and the time-frequency spectrogram showing a clear power band on the right, with its label "Time-frequency analysis" fully visible. The narration concludes as the visual remains steady.

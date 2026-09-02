@@ -1,0 +1,27 @@
+1. **0.00-2.72** — From the previous scene's hold (clean EEG trace, removed artifacts bin, definition text at bottom), the screen clears of the definition and artifacts bin. A transition begins: the clean EEG trace shrinks and moves to the left side of the screen, becoming a small, barely visible wavy line. As it settles, a label fades in beneath it: "Neural signal — microvolts." The trace is deliberately tiny, thin, and low-amplitude against the empty right side.
+
+2. **3.68-6.56** — On the right side of the screen, large noise waveforms fade in: several big, jagged, high-amplitude waveforms with irregular spikes and broad sweeps, clearly towering over the small trace on the left. A label appears above them: "Disturbances." The visual contrast is stark — the disturbances visibly dwarf the microvolt-scale neural signal. The small trace keeps its gentle oscillation, now looking even smaller in comparison.
+
+3. **7.14-10.02** — The comparison holds. The tiny neural signal on the left continues its nearly flat, small-amplitude wiggle. The large disturbances on the right continue their dramatic, irregular motion. The size difference is exaggerated on screen: the disturbances are several times taller than the neural signal, reinforcing that biological signals are extremely small.
+
+4. **10.78-13.88** — A visual emphasis begins: one of the disturbance waveforms briefly brightens and produces a visible voltage change spike, and the small neural signal emits a comparably sized pulse dimly beside it. The two pulses are drawn to the center of the screen briefly for a one-to-one comparison, showing they are similar in size. The label "comparable" is not required — the visual itself shows the disturbance spike and the neural signal pulse at roughly the same scale.
+
+5. **13.88-18.50** — The comparison visual pushes further: a disturbance waveform's amplitude swells larger and larger, overshooting the neural signal pulse entirely. The disturbance now visibly dwarfs the neural signal. The small trace's own pulse remains tiny by comparison. The two side-by-side waveform pulses hold this contrast for the viewer.
+
+6. **19.54-21.62** — The comparison visual fades. A clean title line appears at the top of the screen: "Common reasons for filtering." Below it, blank space begins to clear for a checklist. Five empty checkbox rows appear, still unchecked, each with a text label on the right. The labels read vertically, one per row, in order: "Remove baseline drift," "Reduce high-frequency noise," "Eliminate power-line interference," "Improve SNR," "Prepare signals for feature extraction."
+
+7. **21.62-24.04** — The first checkbox, next to "Remove baseline drift," animates a checkmark appearing — the box fills or a bold check draws itself. The label brightens as it becomes checked. The remaining four boxes stay unchecked.
+
+8. **24.52-26.62** — The second checkbox, "Reduce high-frequency noise," gets checked off in the same animated style — a checkmark draws in and the label brightens. Rows 1 and 2 are now checked; rows 3, 4, and 5 remain unchecked.
+
+9. **26.62-28.70** — The third checkbox, "Eliminate power-line interference," is checked. Its label brightens. Three boxes checked, two remaining.
+
+10. **29.36-31.18** — The fourth checkbox, "Improve SNR," is checked. Its label brightens. Four boxes checked, one remaining.
+
+11. **31.66-34.52** — The fifth checkbox, "Prepare signals for feature extraction," is checked. Its label brightens. All five boxes are now checked. The title "Common reasons for filtering" remains at the top.
+
+12. **35.64-38.38** — The checklist visually compresses upward or fades slightly to make room, while below it a pipeline diagram fades in horizontally: a box labeled "Raw signal" with an arrow pointing right to a box labeled "Filtering," with another arrow pointing right to a box labeled "Clean signal," with a final arrow pointing right to a box labeled "Analysis." The arrows connect the boxes in a left-to-right flow.
+
+13. **38.38-41.76** — The pipeline diagram highlights the "Filtering" box with a subtle glow, positioning it visually as the bridge between raw and clean. The arrow from "Raw signal" to "Filtering" brightens, then the arrow from "Filtering" to "Clean signal" brightens, and finally the arrow from "Clean signal" to "Analysis" brightens in sequence, showing the flow. The checklist remains visible above.
+
+14. **41.76-42.58** — Final hold: the pipeline diagram holds center screen, all four boxes connected left to right. The checklist with all five checked items remains visible above. The scene stays steady through the end of the narration.

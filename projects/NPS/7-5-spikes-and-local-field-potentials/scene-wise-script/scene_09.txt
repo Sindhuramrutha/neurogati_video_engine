@@ -1,0 +1,8 @@
+Subtopic: Circuit Analysis: Multiple Recording Sites
+Scene type: manim
+
+Narration:
+Neurons rarely operate in isolation. Brain functions emerge from interactions between many neurons and neural populations. This is where circuit analysis becomes important. With multiple recording contacts, researchers can record neural activity from different locations simultaneously. This allows them to compare spike activity, LFP activity, timing, oscillations, and relationships between different brain regions. Multiple recording locations allow researchers to study relationships between local populations and investigate network-level phenomena.
+
+Animation description:
+Show a schematic of brain tissue with several recording electrodes at different locations. Each electrode has its own spike and LFP traces displayed next to it. Animate connections or communication between the recording sites, perhaps with arrows or animated pathways. Show how the signals from different locations can be compared in timing and oscillation. Label the setup as 'multiple recording sites for circuit analysis'.

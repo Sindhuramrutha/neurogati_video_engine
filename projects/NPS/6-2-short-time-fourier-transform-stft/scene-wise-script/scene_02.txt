@@ -1,0 +1,8 @@
+Subtopic: 6.2.3 Why Do We Need STFT?
+Scene type: manim
+
+Narration:
+Let's begin by revisiting the problem. Suppose you record an EEG signal for thirty seconds. During the first ten seconds, alpha activity is dominant. During the next ten seconds, beta activity becomes stronger. Finally, during the last ten seconds, gamma activity appears briefly. If we apply a conventional Fourier Transform to the entire thirty-second recording, the result is a single frequency spectrum representing the entire signal. Although this spectrum tells us that alpha, beta, and gamma frequencies are present, it provides no information about when each frequency occurred. This is a significant limitation, because neural activity is dynamic. In neuroscience, timing is often just as important as frequency. To understand brain function, we need a method that tells us both: which frequencies are present, and at what time do they occur? This is precisely the problem that the Short-Time Fourier Transform was designed to solve.
+
+Animation description:
+A thirty-second timeline divides into three colored regions labeled 'alpha dominant', 'beta dominant', and 'gamma brief'. Above each region, an animated sinusoid at the corresponding frequency oscillates: first around 10 Hz, then around 20 Hz, then around 40 Hz. After these play in sequence, the screen transitions to a single frequency spectrum plot with three peaks labeled alpha, beta, and gamma. A clock icon appears overlaid on the spectrum, with the hands spinning backward and a question mark — symbolizing that the spectrum cannot recover timing. The three peaks remain, but no temporal ordering information is shown.

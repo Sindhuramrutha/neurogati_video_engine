@@ -1,0 +1,116 @@
+{
+  "index": 3,
+  "slide_width_emu": 14630400,
+  "slide_height_emu": 8229600,
+  "shapes": [
+    {
+      "shape_id": 2,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 0",
+      "manim_bbox": [
+        -7.111111,
+        -4.00312524123264,
+        -1.7777777500000003,
+        3.9999999375
+      ]
+    },
+    {
+      "shape_id": 3,
+      "kind": "text",
+      "text": "The Ancient Debate: Heart vs. Brain",
+      "alt_text": "Text 0",
+      "manim_bbox": [
+        -1.0131943071006946,
+        2.0339126735763893,
+        6.346527557100694,
+        3.399190186996528
+      ]
+    },
+    {
+      "shape_id": 4,
+      "kind": "text",
+      "text": "Before modern science, the location of intelligence was a subject of fierce philosophical debate.",
+      "alt_text": "Text 1",
+      "manim_bbox": [
+        -1.0131943071006946,
+        1.0071750596006943,
+        6.346527557100694,
+        1.7062496088020835
+      ]
+    },
+    {
+      "shape_id": 5,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 2",
+      "manim_bbox": [
+        -1.0131943071006946,
+        -1.2112267721701393,
+        6.346527557100694,
+        0.7614581391666668
+      ]
+    },
+    {
+      "shape_id": 6,
+      "kind": "text",
+      "text": "Hippocrates (460–379 B.C.)",
+      "alt_text": "Text 3",
+      "manim_bbox": [
+        -0.7873840646875001,
+        0.1942130814409726,
+        2.6995372378819456,
+        0.5356478967534724
+      ]
+    },
+    {
+      "shape_id": 7,
+      "kind": "text",
+      "text": "The father of Western medicine correctly identified the brain as the seat of sensation and intelligence. Plato supported this view, aligning the physical brain with his philosophical ideals.",
+      "alt_text": "Text 4",
+      "manim_bbox": [
+        -0.7873840646875001,
+        -0.9854165297569448,
+        6.120717314687501,
+        0.06319432194444419
+      ]
+    },
+    {
+      "shape_id": 8,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 5",
+      "manim_bbox": [
+        -1.0131943071006946,
+        -3.4023145186284722,
+        6.346527557100694,
+        -1.429629607291667
+      ]
+    },
+    {
+      "shape_id": 9,
+      "kind": "text",
+      "text": "Aristotle",
+      "alt_text": "Text 6",
+      "manim_bbox": [
+        -0.7873840646875001,
+        -1.9968746650173612,
+        1.943518974201388,
+        -1.6554398497048615
+      ]
+    },
+    {
+      "shape_id": 10,
+      "kind": "text",
+      "text": "Despite his brilliance, Aristotle erred significantly. He believed the heart was the seat of consciousness, likely misled by the observation that a body dies when the heart stops, but can survive brain injury.",
+      "alt_text": "Text 7",
+      "manim_bbox": [
+        -0.7873840646875001,
+        -3.1765042762152778,
+        6.120717314687501,
+        -2.127893424513889
+      ]
+    }
+  ],
+  "notes_text": null
+}

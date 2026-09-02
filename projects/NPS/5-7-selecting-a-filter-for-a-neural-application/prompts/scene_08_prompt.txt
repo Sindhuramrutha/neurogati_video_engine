@@ -1,0 +1,17 @@
+1. 0.00-0.60: A neural signal trace fades in across the upper half of the frame — a mostly smooth, continuous waveform with occasional large, extremely narrow upward spikes (impulsive noise) that shoot far above the surrounding signal. The horizontal axis is labeled "Time" and the vertical axis "Amplitude". No other elements on screen yet.
+
+2. 0.60-1.24: A translucent rectangular window (semitransparent rectangle, contrasting color, roughly one-twelfth the trace width) appears over the leftmost segment of the neural signal. The label "Median filter window" appears beside it. The window's vertical height spans enough to enclose the tall spikes.
+
+3. 1.24-2.72: The window begins sliding smoothly rightward along the signal, moving step by step. At each position, the values inside the window are briefly highlighted — including any large spikes that fall within the window. The highlight particularly draws attention when a spike enters the window.
+
+4. 2.72-5.26: As the window slides, a second, cleaned trace begins drawing in the lower half of the frame, directly beneath the original signal, sharing the same horizontal time axis. Each point on the cleaned trace is plotted at the center of the current window position and represents the median of the values inside the window. When the window encounters an isolated spike, the median value ignores it — the output point at that location sits at the level of the surrounding normal signal, not the spike. The cleaned trace thus shows the underlying waveform with the spikes completely absent, while genuine waveform features (bends, slopes, normal fluctuations) are preserved intact. The label "Median-filtered signal" appears below the cleaned trace.
+
+5. 5.26-6.06: The window completes its traversal across the full width of the signal and fades out. The scene holds: upper half shows the original spike-contaminated signal, lower half shows the cleaned trace with spikes removed. Both are overlaid with the same horizontal time alignment.
+
+6. 6.06-9.26: A labeled divider or small gap separates the existing example from a new brief comparison that appears in the lower third of the frame. A small callout zooms in on a single isolated spike in the original upper trace. Next to it, two small output panels appear side by side: one labeled "Median filter output" showing the spike cleanly removed (a smooth continuation of the surrounding waveform with no trace of the spike), and one labeled "Moving average output" showing the same spike replaced by a short, flattened bump — a low, smeared distortion where the spike's high amplitude leaks into the average over the window's span. The median output is briefly highlighted or outlined to emphasize its superiority.
+
+7. 9.26-11.72: The comparison panels remain visible while the median-filtered trace in the main lower half is highlighted, pulsing gently once or in a contrasting color. The viewer's attention is directed to how the genuine waveform features are preserved without any spike remnants.
+
+8. 11.72-14.40: The frame holds on the complete scene: original spike-contaminated signal above, median-filtered clean trace below, and the small median-vs-moving-average comparison panels still visible in the lower area. The labels remain in place.
+
+9. 14.40-15.32: The complete scene holds static for the remaining duration. No further changes.

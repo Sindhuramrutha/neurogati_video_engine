@@ -1,0 +1,8 @@
+Subtopic: What is Electrical Isolation?
+Scene type: manim
+
+Narration:
+One of the most effective ways to protect participants is electrical isolation. Electrical isolation separates the participant from potentially hazardous electrical circuits, while still allowing physiological signals to be recorded. The principle is actually straightforward. The biological signal is allowed to pass from the participant to the recording system, but direct electrical pathways that could carry hazardous currents are blocked. In other words, isolation acts as a protective barrier between the participant and the powered electronic equipment. Modern biomedical recording systems incorporate isolation as a standard safety feature, so neural signals can be recorded without compromising participant safety.
+
+Animation description:
+A block diagram appears from left to right with boxes labeled 'Participant', 'Electrodes', 'Isolation Circuit', 'Acquisition System', and 'Computer', connected by arrows. A green signal wave travels from Participant through each stage to the Computer, passing through the Isolation Circuit smoothly. At the same time, a red lightning bolt attempts to travel backward from the Acquisition System toward the Participant, but is stopped at the Isolation Circuit barrier, where it breaks apart and disappears. The Isolation Circuit box glows briefly to emphasize its protective role.

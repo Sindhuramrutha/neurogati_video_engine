@@ -1,0 +1,8 @@
+Subtopic: 7.1.3 Role of Signal Processing in Sleep Staging
+Scene type: manim
+
+Narration:
+Sleep staging is no longer performed solely by visual inspection. Modern sleep analysis relies heavily on neural signal processing. Several techniques introduced in earlier modules are commonly used. Filtering removes unwanted noise and artefacts from the EEG before further analysis. Spectral analysis calculates the power within different EEG frequency bands to identify characteristic changes associated with different sleep stages. Spectrograms provide a visual representation of how EEG frequency content changes throughout the night, allowing clinicians to observe transitions between different sleep stages. Feature extraction and classification use quantitative features extracted from the EEG and machine learning algorithms to automatically classify sleep stages.
+
+Animation description:
+A raw all-night EEG signal is shown, then passes through a series of processing blocks: Filtering (noise removal), Spectral Analysis (frequency power plot), Spectrogram (time-frequency heatmap), Feature Extraction (numerical features table), Classification (machine learning algorithm block producing stage labels: Wake, N1, N2, N3, REM).

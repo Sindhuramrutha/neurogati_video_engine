@@ -1,0 +1,13 @@
+1. 0.00–5.80: The five-block acquisition chain diagram is already on screen from the previous scene: five connected blocks in a row, labeled left to right “Electrode / Sensor”, “Amplifier”, “Filter”, “Digitizer”, and “Recording System”. All blocks are equally lit as the narration recalls that every neural recording system follows this same chain.
+
+2. 6.58–9.86: The first block, “Electrode / Sensor”, gains a bright glow and becomes visually dominant, while the other four blocks dim to about 30% brightness. A subtle outline or border highlight pulses once on the first block when the narration names “the electrode or sensor”.
+
+3. 11.50–15.04: Four small text labels fade in above the chain, one at a time as each is named: “EEG” at 11.50, “EMG” at 13.06, “ECoG” at 13.90, and “MEG” at 14.78. Each label appears with a thin arrow pointing down toward the “Electrode / Sensor” block. The block’s glow brightens slightly with each new label to reinforce that all four methods pass through this first component.
+
+4. 15.52–19.92: The four labels remain above the chain, and the “Electrode / Sensor” block stays glowing while the downstream blocks remain dimmed. A small animated pulse travels once along the arrow path from each label down to the first block, emphasizing that the recording process cannot begin until the physiological signal is detected there.
+
+5. 20.76–25.00: The downstream blocks fade back to full brightness briefly, then the “Electrode / Sensor” block flashes or brightens once more when the narration emphasizes that this is the device responsible for detecting the signal. The four method labels stay visible above the chain.
+
+6. 25.62–30.60: The view subtly widens or zooms out slightly to show the full chain plus the four labels above it, holding steadily while the narration announces that this section will look at different types of electrodes and sensors used in neuroscience. No new elements are added; the current diagram remains the central focus.
+
+7. 31.54–38.28: The “Electrode / Sensor” block brightens a final time and the four labels pulse faintly once, while the other blocks dim slightly again, signaling that the upcoming discussion will compare these sensing technologies. The full chain remains visible and stable through the end of the narration, holding until 39.25.

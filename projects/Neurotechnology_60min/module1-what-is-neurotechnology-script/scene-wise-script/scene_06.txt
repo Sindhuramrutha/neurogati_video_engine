@@ -1,0 +1,8 @@
+Subtopic: Reading vs. Influencing the Nervous System
+Scene type: manim
+
+Narration:
+We can also think about neurotechnology in terms of direction. When information moves from the nervous system toward a device, we can think of the system as reading from the nervous system. EEG, EMG, and many brain-computer interfaces follow this general direction. In contrast, when a device delivers stimulation intended to influence nervous-system activity, information or energy is moving toward the nervous system. Technologies such as transcranial magnetic stimulation and deep brain stimulation illustrate this direction. The distinction is useful because it gives us a simple mental model: Read, then understand, then act. Or, alternatively: Measure, then decide, then stimulate. Some advanced systems combine both. They measure the state of the nervous system, analyze it, and use the result to determine an intervention. This closed-loop concept connects recording technologies with neuromodulation, and it will become important when we discuss future neurotechnology.
+
+Animation description:
+A central diagram with a brain or neuron on the right and a device on the left. Top arrow points from nervous system to device, labeled 'Reading', with EEG and EMG icons appearing. A second arrow points from device to nervous system, labeled 'Influencing', with TMS and DBS icons. Two mental model formulas appear: 'Read → Understand → Act' and 'Measure → Decide → Stimulate'. Then a combined loop animation: nervous system signal flows to device, device processes it, device sends stimulation back to nervous system, forming a continuous feedback loop with arrows circling in both directions.

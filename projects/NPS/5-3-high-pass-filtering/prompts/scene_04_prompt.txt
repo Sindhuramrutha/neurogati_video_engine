@@ -1,0 +1,13 @@
+1. **0.00–1.84** — From the previous scene's two-panel layout, the panels fade out smoothly. A clean dark background remains. At the top center, a badge fades in labeled **“Key Definition”** with a subtle highlight border. No definition text yet, as the narration says “So to state it as a key definition.”
+
+2. **2.80–4.48** — Below the badge, the text **“High-Pass Filter:”** fades in on one line, in a neutral light color. The narration says “a high-pass filter is a filter.”
+
+3. **5.00–6.60** — On the next line, the phrase **“A filter that preserves high-frequency components”** fades in, with the words **“preserves high-frequency components”** colored green. The narration says “that preserves high-frequency components.”
+
+4. **6.60–7.38** — The green phrase holds steady on screen. The narration says “while.”
+
+5. **7.38–9.34** — On the following line, the phrase **“while attenuating low-frequency components”** fades in, with the words **“attenuating low-frequency components”** colored red. The narration says “attenuating low-frequency components.”
+
+6. **9.34–11.50** — On the final line, the phrase **“below a selected cutoff frequency.”** fades in, completing the definition. The words **“selected cutoff frequency”** are colored red to match the preceding red phrase, and a thin line fades in underlining exactly those three words. The narration says “below a selected cutoff frequency.”
+
+7. **11.50–12.28** — The full definition card holds: the **“Key Definition”** badge at top, the neutral label **“High-Pass Filter:”**, the green phrase **“A filter that preserves high-frequency components”**, the red phrase **“while attenuating low-frequency components”**, and the final red phrase **“below a selected cutoff frequency.”** with its thin underline. The highlight border on the badge pulses once gently. The scene holds through the end of the clip.

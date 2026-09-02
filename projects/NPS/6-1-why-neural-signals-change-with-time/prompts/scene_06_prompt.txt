@@ -1,0 +1,41 @@
+1. **0.00-0.36** — The heading "Cognitive Processes" is already visible at the top center of the screen, carried over cleanly from the previous scene's topic shift. Below it, a stylized brain outline fades in: a smooth, closed, roughly oval outline drawn in neutral strokes, centered in the upper two-thirds of the screen. Inside the brain outline, nothing yet — empty space held for the nodes.
+
+2. **0.36-1.00** — The brain outline holds. As the narration says "third factor," a subtle emphasis passes over the brain outline — a brief soft brightening or gentle pulse — then returns to normal. No other elements appear yet.
+
+3. **1.00-1.64** — Pause. The brain outline remains centered and steady. The heading "Cognitive Processes" holds at top.
+
+4. **1.64-2.22** — As the narration says "processes," multiple small circular nodes fade in inside the brain outline: roughly twenty to thirty evenly distributed small dots, connected by thin straight lines forming a loose, web-like network. The connectivity pattern is initially arbitrary but clearly visible as a network of nodes and edges.
+
+5. **2.22-3.18** — The node network holds. A brief pause before the labels appear. The brain outline and its internal network remain steady, gently suggesting readiness for change. Nothing new appears.
+
+6. **3.18-3.44** — As the narration says "Attention," the label "Attention" fades in outside the brain outline, positioned to the upper left of the brain. Simultaneously, the connectivity pattern of the nodes smoothly rearranges: some edges fade out while new edges fade in, forming a distinctly different network configuration. The rearrangement is fluid and continuous, not abrupt.
+
+7. **3.44-4.04** — The "Attention" label holds. The node network finishes its first rearrangement and settles briefly into a new stable pattern. The brain outline remains steady.
+
+8. **4.04-4.24** — As the narration says "memory," the label "Memory" fades in outside the brain outline, positioned to the upper right. The connectivity pattern smoothly rearranges again — different edges dissolve and re-form, producing a visibly distinct network configuration from the previous one.
+
+9. **4.24-4.76** — The "Memory" label holds alongside "Attention." The node network settles briefly into its new pattern. Both labels remain visible.
+
+10. **4.76-5.34** — As the narration says "decision-making," the label "Decision-making" fades in outside the brain outline, positioned to the lower left. The connectivity pattern smoothly rearranges a third time, with edges reconfiguring fluidly into another distinct pattern.
+
+11. **5.34-5.78** — The three labels "Attention," "Memory," "Decision-making" hold around the brain. The node network settles briefly. A brief pause.
+
+12. **5.78-6.04** — As the narration says "learning," the label "Learning" fades in outside the brain outline, positioned to the lower right. The connectivity pattern smoothly rearranges a fourth time, forming yet another distinct configuration.
+
+13. **6.04-7.00** — All four labels — "Attention," "Memory," "Decision-making," "Learning" — are now visible around the brain outline. The node network holds its current pattern. As the narration says "all involve," the four labels pulse softly in unison, a gentle brightness swell, then return to normal.
+
+14. **7.00-8.14** — As the narration says "dynamic patterns," the node network begins continuously rearranging — not in discrete jumps, but as a fluid, ongoing reconfiguration where edges dissolve and re-form in a rolling, wave-like manner across the network. The motion is smooth and organic, suggesting constant change. No single stable pattern is held; the network is visibly in motion.
+
+15. **8.14-9.16** — As the narration says "neural activity," a waveform fades in below the brain outline, centered in the lower portion of the screen. The waveform is a smooth, continuous line whose shape changes in real time, visibly synchronized with the node rearrangements above — when the network reconfigures more actively, the waveform oscillates with larger or more complex variation; when the network is calmer, the waveform is smoother and lower-amplitude. The waveform's changing shape directly reflects the evolving connectivity.
+
+16. **9.16-10.20** — The complete composition holds: heading "Cognitive Processes" at top, brain outline with continuously rearranging node network in the upper area, four labels around the brain, and the changing waveform below. A brief pause as the screen settles. No new elements appear.
+
+17. **10.20-11.40** — As the narration says "These cognitive processes evolve," the node network's continuous rearrangement becomes slightly more pronounced — edges reconfiguring a little more dynamically, suggesting active evolution. The waveform below continues to shift in real time, its shape changing in correspondence with the network activity. The four labels remain steady.
+
+18. **11.40-12.48** — As the narration says "continuously," the emphasis is on the unbroken, fluid nature of the node rearrangement. The network motion is smooth and uninterrupted — no halts, no jumps, just rolling reconfiguration. The waveform below continues its real-time shape changes, flowing without pause.
+
+19. **12.48-13.72** — As the narration says "and influence," a subtle visual connection is drawn: a soft, faint glow or highlight passes from the brain node network downward toward the waveform, visually linking the evolving connectivity above with the changing signal below. The glow is gentle and brief, implying causal influence.
+
+20. **13.72-14.74** — As the narration says "the recorded signal," the waveform below brightens slightly, becoming the focal point. The brain node network above continues its fluid rearrangement, but the waveform is now visually emphasized — perhaps a brighter stroke or soft glow — drawing the viewer's attention to the recorded signal it represents.
+
+21. **14.74-15.50** — The final frame holds until the scene ends at 15.50 seconds: heading "Cognitive Processes" at top center; the stylized brain outline with continuously rearranging node network in the upper area; the four labels "Attention," "Memory," "Decision-making," and "Learning" positioned around the brain; and below, the waveform whose shape continues to change in real time, synchronized with the evolving connectivity pattern above. The composition holds steady, the waveform still shifting gently, until the scene closes.

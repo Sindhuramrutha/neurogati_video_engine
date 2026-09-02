@@ -1,0 +1,8 @@
+Subtopic: What is an Event-Related Potential?
+Scene type: manim
+
+Narration:
+An Event-Related Potential is the electrical response of the brain that is time-locked to a specific sensory, cognitive, or motor event. Unlike continuous EEG analysis, ERP analysis focuses on neural activity occurring immediately before and after a particular event. The event could be the presentation of a visual image, an auditory tone, a tactile stimulus, a movement initiated by the participant, or a cognitive decision. The objective is to determine how the brain responds to that specific event. Instead of analysing the entire recording, researchers repeatedly examine short EEG segments surrounding each occurrence of the event. So the key definition is this: an Event-Related Potential is the averaged electrical response of the brain that is time-locked to a specific event.
+
+Animation description:
+A single EEG trace is shown. A vertical marker line appears representing the event onset. The trace is highlighted in a short window immediately before and after the marker. Small icons representing different event types (an image, a tone, a touch, a movement) appear above the marker, each briefly. The window around the event is then extracted and shown as a separate short segment, visually separated from the rest of the recording.

@@ -1,0 +1,8 @@
+Subtopic: Role of LFPs in Neural Coding
+Scene type: manim
+
+Narration:
+LFPs provide another perspective on neural coding. Rather than focusing on individual spikes, LFP analysis can reveal the collective activity and oscillatory dynamics of nearby neural populations. Thus, combining spike and LFP analysis can help researchers investigate neural coding at both the individual-neuron level and the population level.
+
+Animation description:
+Show a single spike train on top and a slow LFP trace below, both recorded from the same location. Animate the LFP being decomposed into oscillations at different frequencies, perhaps using a spectral or wavelet representation. Show how the population oscillation relates to when the individual neuron fires. Label the spike trace as 'individual-neuron level' and the LFP trace as 'population level'. Combine them into a unified representation labeled 'combined spike and LFP analysis'.

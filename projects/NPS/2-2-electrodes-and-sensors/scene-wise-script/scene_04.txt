@@ -1,0 +1,8 @@
+Subtopic: 2.2.4 Surface Electrodes – Advantages and Limitations
+Scene type: manim
+
+Narration:
+Although surface electrodes are convenient, they are positioned some distance away from the actual biological source. As a result, the recorded signal is usually weaker and has lower spatial resolution than recordings obtained using more invasive electrodes. Their advantages are that they are non-invasive, comfortable for the subject, easy to apply, and suitable for long-duration recordings. Their limitations are lower signal amplitude, more susceptibility to motion artifacts, and lower spatial resolution.
+
+Animation description:
+Two columns appear on screen. The left column, labeled 'Advantages', shows four cards fading in one by one with small green check marks: 'Non-invasive', 'Comfortable', 'Easy to apply', 'Long-duration recordings'. The right column, labeled 'Limitations', shows three cards fading in one by one with small red cross icons: 'Lower signal amplitude', 'Motion artifacts', 'Lower spatial resolution'. A subtle graphic at the top shows a small signal waveform compared to a larger one, representing the weaker amplitude.

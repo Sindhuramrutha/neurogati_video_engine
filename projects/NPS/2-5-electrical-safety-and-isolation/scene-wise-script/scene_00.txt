@@ -1,0 +1,8 @@
+Subtopic: Introduction
+Scene type: manim
+
+Narration:
+So far in this module, we've walked through the whole chain of neural signal acquisition — detecting signals, amplifying them, conditioning them, and converting them into digital data. But there's another consideration that can never be overlooked, and that's electrical safety. During a neural recording, electrodes and sensors are physically connected to a person — sometimes on the skin, sometimes to tissues inside the body, like during surgery. Because the participant is connected directly to electronic equipment, every recording system has to protect both the person and the equipment from electrical hazards. In this section, we'll look at why electrical safety matters and, in particular, the role of electrical isolation in biomedical recording systems.
+
+Animation description:
+A stylized human figure appears on the left side of the screen. A line representing a cable connects the figure's head to a simple amplifier box, then to a computer on the right. A subtle pulsing waveform travels along the cable from the human to the equipment. A yellow warning triangle with a lightning bolt symbol fades in above the connection point, then the triangle shrinks and moves to the side while the scene holds.

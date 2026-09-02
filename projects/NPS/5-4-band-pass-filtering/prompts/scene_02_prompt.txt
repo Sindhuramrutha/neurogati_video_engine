@@ -1,0 +1,17 @@
+1. **[0.00]** A horizontal frequency axis appears, spanning the width of the screen, with the label "Frequency" at the right end. No filter curves are visible yet.
+
+2. **[6.38]** A low‑pass filter magnitude‑response curve appears on the axis, colored blue. It is high (passing) at low frequencies, rolls off near a cutoff frequency f_L, and stays at zero for higher frequencies. A vertical arrow labeled "f_L" points from the axis to the cutoff point.
+
+3. **[11.04]** A high‑pass filter magnitude‑response curve appears on the same axis, colored red. It is zero at low frequencies, rolls up near a cutoff frequency f_H (where f_H > f_L), and stays high for higher frequencies. A vertical arrow labeled "f_H" points from the axis to the cutoff point. The low‑pass curve and its arrow remain visible.
+
+4. **[14.36]** The band‑pass curve appears as the overlapping region of the low‑pass and high‑pass curves. The low‑pass and high‑pass curves become semi‑transparent. A new green curve is drawn over the frequency range between f_L and f_H, matching the envelope of the two curves where they both pass. The green curve is the band‑pass output — zero outside [f_L, f_H] and equal to the passing amplitude inside. The arrows f_L and f_H remain visible.
+
+5. **[24.98]** A highlighted label "High‑pass component" appears near the red high‑pass curve, with a thin line or arrow connecting it to the curve. The high‑pass curve briefly brightens or glows softly.
+
+6. **[30.44]** A highlighted label "Low‑pass component" appears near the blue low‑pass curve, with a connecting line. The low‑pass curve briefly brightens.
+
+7. **[34.84]** A highlighted label "Band‑pass output" appears near the green band‑pass curve, with a connecting line. The band‑pass curve is emphasized.
+
+8. **[39.60]** A definition box slides in from the bottom of the screen. It contains the exact text: "Band‑Pass Filter: preserves frequencies within a specified range, attenuates frequencies outside that range." The box remains visible on screen.
+
+9. **[48.88]** All elements (axis, curves, arrows, labels, definition box) remain static and fully visible until the scene ends at 48.88 seconds.

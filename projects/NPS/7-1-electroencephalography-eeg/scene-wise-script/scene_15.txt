@@ -1,0 +1,8 @@
+Subtopic: 7.1.3 Clinical Applications and Advantages of EEG Sleep Staging
+Scene type: manim
+
+Narration:
+EEG-based sleep staging has numerous clinical and research applications. Sleep disorder diagnosis: EEG helps clinicians evaluate disorders such as insomnia, narcolepsy, and other abnormalities affecting normal sleep patterns. Sleep quality assessment: researchers analyse EEG recordings to evaluate sleep quality and investigate how sleep changes with age, disease, or medication. Neuroscience research: sleep staging provides valuable information about memory consolidation, learning, brain development, and cognitive function during sleep. Automated sleep monitoring: modern wearable and laboratory-based systems increasingly use signal-processing algorithms to perform automatic sleep-stage classification. EEG is particularly well suited for sleep analysis because it directly measures brain activity, provides excellent temporal resolution, clearly distinguishes different sleep stages, supports both manual and automated sleep scoring, and can be combined with other physiological signals such as EOG and EMG during polysomnography. Sleep staging is not based on a single EEG waveform. It is determined by analysing EEG activity over time together with characteristic frequency patterns and, in many clinical settings, additional physiological signals such as EOG and EMG.
+
+Animation description:
+Four clinical application panels appear: 'Sleep Disorder Diagnosis', 'Sleep Quality Assessment', 'Neuroscience Research', 'Automated Sleep Monitoring'. Each has an icon. A checklist of EEG advantages appears. A polysomnography diagram appears showing EEG electrodes, eye electrodes (EOG), and muscle electrodes (EMG) on a patient, connected to a recording system.

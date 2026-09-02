@@ -1,0 +1,8 @@
+Subtopic: 7.1.5 BCI Applications
+Scene type: manim
+
+Narration:
+EEG-based BCIs are being developed for a wide range of applications. Assistive communication: BCIs enable individuals with severe motor impairments to communicate using brain activity alone. Wheelchair control: users can control powered wheelchairs through EEG-based commands. Prosthetic device control: brain signals can be used to operate robotic arms or prosthetic limbs. Neurorehabilitation: BCIs support rehabilitation by providing feedback during motor recovery following neurological injury. Research and human-computer interaction: EEG-based BCIs are increasingly used to study human cognition and develop new forms of interaction between humans and computers.
+
+Animation description:
+Five application panels appear sequentially: 'Assistive Communication' (person with locked-in syndrome communicating via BCI), 'Wheelchair Control' (powered wheelchair moving), 'Prosthetic Device Control' (robotic arm), 'Neurorehabilitation' (patient with feedback loop), 'Research and HCI' (human-computer interaction icon). Each panel is highlighted as described.

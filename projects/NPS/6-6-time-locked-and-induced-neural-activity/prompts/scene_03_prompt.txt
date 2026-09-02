@@ -1,0 +1,13 @@
+1. 0.00-1.86: The previous scene's final image — the three epochs with displaced deflections on the left, the averaging panel with the smeared waveform in the middle, and the time-frequency spectrogram on the right — fades out. A blank background fades in, divided by a thin vertical center line into two equal panels.
+
+2. 1.86-3.46: In the left panel, a small horizontal time axis fades in near the bottom, with tick marks at regular intervals labeled "0", "100 ms", "200 ms", "300 ms", "400 ms". In the right panel, an identical time axis fades in, with the same tick marks and labels.
+
+3. 3.46-5.58: In the left panel, five EEG epochs fade in stacked vertically, all aligned to a shared start point at the 0 ms tick. Each epoch shows a deflection beginning at the same latency, with the deflections vertically aligned. In the right panel, five EEG epochs fade in stacked vertically, also aligned to the 0 ms tick, but their deflections begin at visibly different latencies across trials.
+
+4. 5.58-8.20: The left panel's deflections are already aligned, and a thin vertical dashed line fades in over the left panel at the shared deflection latency, passing through all five deflections simultaneously. No vertical line appears over the right panel; the right panel's deflections remain visually scattered along the time axis.
+
+5. 8.20-12.72: The left panel brightens slightly, and the vertical dashed line is highlighted, emphasizing the tight alignment. The label "Time-Locked: Consistent Timing" fades in above the left panel, centered. The right panel remains visible with its scattered deflections and no alignment line.
+
+6. 12.74-15.90: The label "Induced: Variable Timing" fades in above the right panel, centered. The right panel's deflections are highlighted one at a time as the narration refers to induced responses, showing that no single vertical line could pass through all of them. The left panel and its label dim slightly to shift focus to the right panel.
+
+7. 15.90-16.68: The final scene holds: the left panel with the aligned epochs, the vertical dashed line through their deflections, and the label "Time-Locked: Consistent Timing" on the left; the right panel with the variable-latency epochs and the label "Induced: Variable Timing" on the right. The screen remains steady as the narration concludes.

@@ -1,0 +1,8 @@
+Subtopic: 2.4.8 Summary and Transition to Section 2.5
+Scene type: manim
+
+Narration:
+Let's summarise what we've covered. We introduced the process of converting analogue neural signals into digital data. Neural signals are naturally analogue. Computers require digital data for processing. Sampling measures the analogue signal at regular time intervals. The sampling frequency specifies how many samples are collected each second. The analog-to-digital converter performs the conversion from analogue signals to digital numbers. And accurate sampling is essential, because every subsequent stage of digital signal processing depends on the quality of the digitised signal. That completes the major stages of the neural signal acquisition chain — from detecting the biological signal to converting it into digital data. But one final aspect remains equally important. Because neural recordings involve electronic equipment connected to the human body, ensuring electrical safety is essential for both the participant and the recording system. In the final section of this module, we'll discuss the principles of electrical safety and isolation in neural signal acquisition.
+
+Animation description:
+A recap list appears, each item with a small inline icon: an analogue waveform, a digital number sequence, uniformly spaced dots for sampling, a frequency label, an ADC chip, and a checkmark emphasising accuracy. The items fade in one by one. Then the screen transitions to a new simple graphic: a stylised person connected to electronic recording equipment, with a prominent electrical safety symbol flashing, leading to the text 'Next: Electrical Safety and Isolation'.

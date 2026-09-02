@@ -1,0 +1,8 @@
+Subtopic: 5.6.5 Moving‑Average vs Median Filter – Comparison
+Scene type: manim
+
+Narration:
+So both filters work in the time domain, but they’re designed for different kinds of noise. The moving‑average filter is best for reducing random, high‑frequency fluctuations. The median filter shines when you need to remove isolated spikes or impulsive artefacts. The choice depends entirely on your signal and the noise present.
+
+Animation description:
+Split screen: left side shows a waveform with random noise; a moving average window slides and produces a smooth trace. Right side shows a waveform with a single spike; a median window sorts and removes the spike. Beneath each, text: ‘Random fluctuations → Moving Average’ and ‘Impulsive noise → Median’.

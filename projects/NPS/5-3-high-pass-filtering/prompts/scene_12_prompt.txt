@@ -1,0 +1,15 @@
+1. **0.00–1.20** — The screen opens from the previous scene's caution layout, which fades away. In the upper center, the phrase **“Important Note”** fades in as large bold text, with a yellow rectangular highlight border drawing itself around the phrase. The narration says “One important note…”
+
+2. **1.70–4.40** — Below the important-note header, an equation-like statement fades in piece by piece: the text **“Low-frequency components”** appears first, followed by the not-equal sign **“≠”** drawn in heavy stroke with bold weighting, then the word **“noise”**. The narration says “a high-pass filter removes low-frequency components…”
+
+3. **5.00–5.84** — A prominent red underline draws itself beneath the **“≠”** symbol to emphasize the distinction. The full statement **“Low-frequency components ≠ noise”** holds steady on screen. The narration says “not simply noise.”
+
+4. **6.72–10.96** — The equation-style statement remains visible but shrinks slightly upward to make room. Below it, two columns begin to appear side by side. The left column is labeled **“one fixed filter setting”** and shows a grayed-out, generic filter icon crossed out with a red X. The narration says “If useful physiological information exists below the selected cutoff frequency…”
+
+5. **11.60–13.82** — An arrow or connecting line appears from the crossed-out left filter icon to the statement above, and both the left icon and the crossed-out mark flash or pulse lightly to indicate the problem with a fixed setting. The right column, labeled **“setting chosen for this signal”**, begins to fade in with a filter icon in turquoise and a green checkmark. The narration says “that information will also be attenuated.”
+
+6. **14.58–19.46** — The stale left filter icon remains dimmed. The right filter icon in turquoise with the checkmark grows slightly brighter, and a small arrow appears pointing from the right icon toward the signal-specific label. A short connecting line links the right filter icon to the original “Low-frequency components ≠ noise” statement as if it accounts for actual signal content. The narration says “Filter settings should therefore be chosen based on the characteristics of the biological signal…”
+
+7. **19.84–22.76** — The crossed-out left filter icon, the turquoise right filter icon, and the “Low-frequency components ≠ noise” statement hold steady. A final caption fades in at the bottom: **“Choose settings for each signal, not one fixed value for everything.”** The narration says “rather than using a fixed value for every application.”
+
+8. **22.76–23.57** — The complete layout holds: important-note header with yellow highlight, the not-equal statement with red underline, the two-column comparison with the crossed-out fixed-setting filter and the turquoise checked filter, and the final caption at the bottom. The scene fades out gently over the final half-second.

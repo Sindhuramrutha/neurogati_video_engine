@@ -1,0 +1,8 @@
+Subtopic: 7.1.5 BCI Advantages and Challenges
+Scene type: manim
+
+Narration:
+EEG offers several advantages for Brain-Computer Interfaces: non-invasive recording; excellent temporal resolution; portable and relatively inexpensive systems; suitable for real-time signal processing; and supports continuous monitoring of brain activity. Although EEG-based BCIs have made significant progress, several challenges remain. EEG signals are weak and easily affected by noise. Brain activity varies between individuals. Long recording sessions may cause user fatigue. Accurate classification requires robust signal-processing and machine-learning algorithms. These challenges continue to drive research into more reliable and efficient BCI systems. A Brain-Computer Interface does not read thoughts. Instead, it identifies specific, measurable patterns of brain activity and converts those patterns into predefined control commands. The performance of a BCI depends on the quality of signal acquisition, signal processing, feature extraction, and classification.
+
+Animation description:
+A checklist of advantages appears on one side. A list of challenges appears on the other side with icons: weak signal (small waveform), individual variability (multiple brain icons), user fatigue (tired face), requirement for robust algorithms (machine learning icon). A caution note appears: 'A BCI does not read thoughts' with a cross over a thought bubble and a checkmark over a pattern-detection icon.

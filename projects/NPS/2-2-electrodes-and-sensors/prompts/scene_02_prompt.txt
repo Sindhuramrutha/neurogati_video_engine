@@ -1,0 +1,31 @@
+1. 0.00–2.04: A stylized human body outline stands centered-left on screen, colored a soft neutral tone on a dark background. To its right, slightly above waist height, a simple thermometer icon fades in — a vertical glass tube with a bulb at the bottom and tick marks along the side. No motion beyond the fade-in.
+
+2. 2.04–4.50: The thermometer slides closer to the body outline until its bulb hovers just above the body's right shoulder. Three wavy, semi-transparent orange heat arrows rise out of the body at the shoulder and flow upward into the thermometer bulb in a continuous loop, with the arrowheads pointing INTO the thermometer. The thermometer's fill level rises slightly and tick marks near the top of the rising fill brighten.
+
+3. 4.50–8.44: The thermometer and body outline group shifts left slightly, making room on the right side of the screen. On the right, a small rectangular electrode pad — a rounded gray conductive patch with a small wire attached at its center — fades in and moves to make contact with the body outline's chest. From the contact point, tiny bright pulses of light travel from the body into the electrode pad, then along the wire, which is already drawn running rightward from the pad.
+
+4. 8.44–9.20: The pulses continue traveling along the wire. At the right end of the wire, a rectangular black box fades in, labeled in small white text “Recording System”. The pulses enter the box and a small indicator light on its front blinks in time with each arriving pulse.
+
+5. 9.20–11.46: A bold red X fades in over the body-thermometer side of the screen (the left side), and the existing heat arrows momentarily stop and turn gray. The electrode pad and its pulses stay active. A short label appears under the red X reading “does NOT generate signals”. The label stays in place for the remainder of this beat.
+
+6. 13.14–16.20: The red X and its label fade out. The body outline, electrode pad, wire, and recording box brighten slightly and stay in place. A dashed outline circle appears around the contact point where the electrode pad touches the body, visually emphasizing the interface. The pulses continue moving from the body into the electrode and along the wire to the recording box.
+
+7. 20.78–24.38: The left side of the screen clears except for the body outline. The thermometer reappears next to the body outline, bulb near the shoulder. Three wavy orange arrows rise from the body into the thermometer bulb again, with arrowheads pointing INTO the thermometer. Nothing on the right changes during this beat.
+
+8. 24.38–27.80: A bold red X fades in over the thermometer. The orange heat arrows freeze and turn gray. A small label appears below the thermometer reading “does NOT produce heat”. The thermometer does not generate any new heat; the existing fill level remains static.
+
+9. 28.18–29.18: The red X and label fade out. The orange heat arrows resume flowing from the body into the thermometer, with the same fill level continuing to rise in proportion to the heat already present in the body.
+
+10. 30.28–32.30: The thermometer and its arrows fade out, leaving only the body outline. The electrode side of the screen brightens. A brief visual echo appears on the electrode pad: a pulsing rhythm matching the thermometer's heat-arrow cadence for two cycles, then the electrode pulses return to their previous steady pattern, reinforcing the analogy between the two instruments.
+
+11. 32.94–38.18: The electrode pulses slow slightly and brighten, making them the main focus. The source of the pulses becomes more explicit: at three regions inside the body outline — the head, a mid-body region representing muscle, and the upper body — small bright points flash in sequence, each flash sending a pulse along the wire to the recording box. Text labels fade in beside the body pointing to each region: “neurons” at the head, “muscles” at the mid-body, “other tissues” at the upper body. The electrode pad receives each type of pulse equally.
+
+12. 38.18–42.42: The three labeled source points continue flashing and sending pulses through the electrode pad and along the wire. Below the recording box, a small label fades in: “acquisition system”. The recording box's indicator light keeps blinking in sync with the arriving pulses.
+
+13. 46.42–50.36: The labels “neurons”, “muscles”, and “other tissues” fade out, and the source points stop flashing. The electrode pad is highlighted with a glowing outline, focusing attention on the contact point between the pad and the body. A smooth, clean pulse pattern travels from the body into the pad and along the wire to the recording box, with no noise or distortion.
+
+14. 51.55–55.74: The glowing outline around the electrode pad fades to a dim, flickering gray. The pad visibly pulls slightly away from the body outline, leaving a small gap. The pulses become jagged, irregular, and lower in brightness. Random speckles of static noise appear along the wire between the pad and the recording box. The recording box's indicator light blinks erratically. A label fades in near the pad reading “poor contact”.
+
+15. 55.74–58.48: The static noise along the wire intensifies, and the signal display near the recording box — a small built-in screen on the box — shows a waveform that degrades from clean periodic pulses into a noisy, distorted trace. Text fades in below the box reading “reduced signal quality / unreliable analysis”.
+
+16. 58.48–59.17: The entire electrode setup — body outline, pad, wire, and recording box — holds in this degraded-contact state. A panel slides in from the right edge of the screen, covering the right third of the frame. On the panel, in clean white text on a dark card, the key definition appears: “Electrode: A conductive interface that detects biological electrical activity and transfers it to the recording system.” The definition text is surrounded by a soft yellow highlight. Everything remains static until the scene ends at 59.17.

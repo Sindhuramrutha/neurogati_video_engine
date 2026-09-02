@@ -1,0 +1,8 @@
+Subtopic: Module 5 Recap
+Scene type: manim
+
+Narration:
+Let's quickly recap the whole module. We introduced the fundamentals of signal filtering and the filters most used in neural signal processing. Neural recordings often contain unwanted noise and interference. Low-pass filters preserve low-frequency components and reduce high-frequency ones. High-pass filters do the opposite, preserving high frequencies and cutting low frequencies. Band-pass filters preserve only a selected frequency range. Notch filters remove narrow-band interference, like power-line noise. Moving-average filters smooth signals by averaging neighbouring samples. Median filters remove impulsive noise while keeping sharp waveform features intact. The best filter depends on the recording modality, the type of interference, and the goals of your analysis. Understanding these filtering techniques lays the groundwork for the next module, where we'll study non-stationary neural signals – using the Short-Time Fourier Transform, spectrograms, wavelet analysis, and event-related potentials – to see how neural signals change over time.
+
+Animation description:
+A grid of six small animated windows appears. Each window shows a raw noisy signal on top and a filtered version below, with a label for the filter type. The windows illuminate sequentially: low-pass (smoothing high noise), high-pass (removing drift), band-pass (extracting a band), notch (removing 50 Hz hum), moving-average (smoothing random noise), median (removing impulse). After all are shown, the grid shrinks to the top and a teaser appears: a timeline with a sliding window performing a Fourier transform, generating a spectrogram; a wavelet scale; and an ERP plot. Text 'Next: Non-stationary signals' fades in.

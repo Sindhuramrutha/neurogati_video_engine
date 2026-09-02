@@ -1,0 +1,41 @@
+1. **0.00–1.46**  
+   Open visually continuous with the previous scene: the pipeline diagram remains on screen but dims and recedes slightly to the right as the narration begins a new stage. A simplified side-view head outline begins to fade in on the left side of the screen, still faint and unlit.
+
+2. **1.96–2.76**  
+   The head outline becomes fully visible and brightens. The **“Raw Signal”** box in the pipeline lights up while the other three pipeline boxes dim, tying the narration to stage one of the pipeline.
+
+3. **3.50–5.22**  
+   Small circular electrodes appear one by one on the scalp of the head diagram — six electrodes placed at the top, frontal, and side positions. Each electrode is a small dark-filled circle with a thin lead line.
+
+4. **5.22–7.38**  
+   Thin wires extend downward from each electrode, converging into a single cable that runs to a small recording device — a compact rectangular box with a small indicator light and the label **“Recording System”** — that fades in at the bottom left of the head diagram.
+
+5. **7.38–9.80**  
+   Below the head and recording device, a plot area fades in: several horizontal voltage traces, one for each electrode channel, running from left to right across the bottom portion of the screen. The traces are continuous, noisy, and irregular — six wavy lines stacked vertically, each corresponding to one scalp electrode.
+
+6. **10.64–13.56**  
+   The label **“Raw Signal”** appears above the plot of traces in clean text. At **13.28**, a small text chip labeled **“EEG”** pops in beside the head diagram, near the electrodes, and glows briefly. Additional modality chips **“ECoG”**, **“EMG”**, **“EOG”**, **“Spike Recordings”**, **“LFP”**, and **“MEG”** pop in one by one in a small cluster near the head at roughly 1-second intervals through **18.92**, each appearing as a small outlined chip that briefly glows on entry.
+
+7. **19.34–24.66**  
+   The EEG chip glows while the other modality chips dim. The six scalp electrodes pulse gently in sequence, and the traces below show a brief coordinated flicker of activity, visualizing continuous voltage recording from multiple scalp electrodes.
+
+8. **24.66–28.16**  
+   The narration pivots: the traces remain visible, and the recording device indicator light stays lit. The plot's vertical axis label **“Voltage”** and horizontal axis label **“Time”** fade in, reinforcing that these are recorded voltage signals.
+
+9. **28.16–30.42**  
+   Segments of the traces that show clear oscillatory structure — brief stretches of a visible rhythmic waveform — become tinted blue, marking the useful neural activity within the otherwise noisy traces.
+
+10. **30.42–33.10**  
+    A red arrow appears, pointing to a section of one trace where the signal is randomly jagged and erratic. The label **“Noise”** appears at the end of the arrow in red text and pulses twice.
+
+11. **33.10–34.80**  
+    A second red arrow appears, pointing to a different trace where a large, slow, high-amplitude drift or spike-like deflection distorts the signal. The label **“Physiological Artifacts”** appears at the end of this arrow in red text and pulses twice. The blue-highlighted neural activity segments remain visible but dim slightly, keeping both categories on screen simultaneously.
+
+12. **35.62–37.60**  
+    The recording device's indicator light turns from green to amber. A triangular warning symbol — a triangle with an exclamation mark — fades in next to the recording device label.
+
+13. **37.60–39.74**  
+    The warning symbol pulses steadily. The red “Noise” and “Physiological Artifacts” labels pulse once together. The blue neural activity segments dim further, and a text caption fades in below the plot: **“Not ready for direct interpretation.”**
+
+14. **39.74–40.60**  
+    The full scene holds on screen: head with electrodes, wires to the recording device, the noisy multi-channel traces with red noise/artifact labels, blue neural activity highlights, the amber warning light, and the caption. The entire composition gently dims to settle at a steady, readable brightness just before the clip ends.

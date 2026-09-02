@@ -1,0 +1,8 @@
+Subtopic: 5.6.4 Median Filter – Numerical Example
+Scene type: manim
+
+Narration:
+Imagine five neighbouring samples with values: 5, 6, 7, 35, and 8. That 35 is an unwanted spike. A moving average would be pulled up by that large value. But the median filter sorts the numbers: 5, 6, 7, 8, 35 – the middle value is 7. So the output is 7, and the spike is effectively removed, while the surrounding waveform is preserved. As figure 5.6B shows, the median filter can clean impulsive noise from a signal.
+
+Animation description:
+Show five numeric labels in a row: 5, 6, 7, 35, 8, with ‘35’ flashing as the spike. Beneath, illustrate a sorting animation reordering them to 5, 6, 7, 8, 35. Highlight the middle value ‘7’ and output it as the filtered result. Then display a signal with a matching spike; apply the median filter and show the clean trace without the spike, preserving the rest of the waveform.

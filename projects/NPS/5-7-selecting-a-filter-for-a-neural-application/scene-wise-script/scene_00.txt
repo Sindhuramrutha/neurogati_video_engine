@@ -1,0 +1,8 @@
+Subtopic: 5.7.1 Introduction
+Scene type: manim
+
+Narration:
+Throughout this module, we've studied several filter types: low-pass, high-pass, band-pass, notch, moving-average, and median filters. Each one was built to tackle a different problem. That raises a key question: when we have multiple filters in our toolbox, how do we pick the right one for a given neural recording? The answer rests on a simple principle: the choice must be driven by the characteristics of the recorded signal and the goal of the analysis. There is no universal filter that fits every application. Selecting the correct filter means understanding both the physiological signal we care about and the unwanted components that contaminate the recording.
+
+Animation description:
+Start with a central graphic of a noisy neural signal trace. Around it, six stylized filter icons (low-pass, high-pass, band-pass, notch, moving-average, median) orbit slowly. As each filter is named, its icon briefly brightens and enlarges. Then the icons fade and a large question mark appears. The question mark dissolves into the text 'Choose filter based on signal & analysis objective', which slides to the top. Below it, a split view: a clean brain/signal icon on the left, and noisy interference icons on the right, connected by arrows to a filter selection node.

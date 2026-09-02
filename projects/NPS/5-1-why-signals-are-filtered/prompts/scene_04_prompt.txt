@@ -1,0 +1,23 @@
+1. **0.00-3.68** — From the previous scene (pipeline diagram with "Raw signal," "Filtering," "Clean signal," "Analysis" boxes and the checked five-item list above), the screen fades to a clean, neutral layout: a vertical divider draws down the center, splitting the screen into two equal columns. Both columns are empty, pale gray placeholders awaiting content. The pipelines and checklist are gone.
+
+2. **3.68-7.68** — The left column's header fades in at top: the word "Signal" in green. Simultaneously, the entire left column takes on a subtle green tint. The column holds, empty, as the definition phrase lands.
+
+3. **8.76-10.60** — Inside the left column, the first item appears: a small waveform icon with a brain-shaped outline above it, gently oscillating. A label reads "Brain activity — EEG." It fades in as the narration names it.
+
+4. **11.36-12.84** — Second item in the left column: a burst-like waveform icon with a small labeled tag "EMG," showing a signal visible during a muscle contraction. The label reads "Muscle activity — EMG."
+
+5. **13.32-15.12** — Third and fourth items appear in the left column: a smooth low-frequency wave icon labeled "Local field potentials," and a spiky vertical line train (multiple thin vertical tick marks, a neural spike train) labeled "Neural spikes." All four items now sit stacked in the left column under the green "Signal" header.
+
+6. **16.18-20.36** — The right column's header fades in at top: the word "Noise" in red. Simultaneously, the entire right column takes on a subtle red tint. The left column's four items hold steady. The right column sits empty, awaiting its examples.
+
+7. **21.32-22.94** — First item in the right column: jagged, high-frequency electrical interference lines (dense, zigzag noise pattern), labeled "Electrical interference."
+
+8. **23.66-26.28** — Second and third items appear in the right column: a slow wavy drift pattern labeled "Motion artifacts," and a large, irregular burst waveform labeled "Muscle artifacts in EEG."
+
+9. **27.24-28.94** — Fourth and fifth items appear in the right column: a gradually sloping, wandering baseline trace labeled "Baseline drift," and a regular, sinusoidal ripple waveform at 50–60 Hz appearance labeled "Power-line interference." Now both columns are full: green left column with four signal items, red right column with five noise items.
+
+10. **29.78-34.92** — The two-column layout holds. Both headers ("Signal" green, "Noise" red) remain bright. The items in each column are static, clearly separated. The visual stands as the conceptual contrast between the two categories.
+
+11. **35.60-42.50** — At the bottom of the screen, spanning both columns, a concluding note fades in: "Goal: improve visibility of signal, preserve its characteristics." The full two-column layout remains visible above it, both columns and their items untouched.
+
+12. **42.50-43.50** — Final hold: the two-column comparison (green "Signal" on left, red "Noise" on right, all items visible) remains on screen with the bottom goal note. The scene stays steady through the end of the narration.

@@ -1,0 +1,8 @@
+Subtopic: 5.7.7 Summary
+Scene type: manim
+
+Narration:
+In this section, we discussed how to select an appropriate filter for neural signal processing. Filter selection hinges on the physiological signal you're recording, the type of unwanted interference, the frequency range containing useful information, and your analysis objectives. Effective neural signal processing means picking the filter that best matches your recording, not sticking to one technique for everything.
+
+Animation description:
+Four animated icons appear, each representing a selection factor: a brain/signal icon, a noise waveform icon, a frequency spectrum icon, and a target/dartboard icon. They orbit and then align horizontally. As each is mentioned, it enlarges and a label appears beneath ('Signal', 'Interference', 'Frequency range', 'Analysis objective'). Finally, a central image of a filter selecting one of several available filters reinforces the message.

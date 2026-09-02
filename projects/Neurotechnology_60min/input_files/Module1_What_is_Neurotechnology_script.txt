@@ -1,0 +1,207 @@
+Module 1 — What is Neurotechnology?
+
+Video Content Script | Target Duration: ~8 minutes
+
+1. Introduction
+
+Neurotechnology is a broad interdisciplinary field at the intersection of neuroscience, engineering, medicine, and computing. At its core, neurotechnology involves technologies that interact with the nervous system. They may be used to record neural or physiological activity, process and interpret that activity, influence nervous-system function, or help restore functions that have been lost or impaired.
+
+It is important to understand that neurotechnology is not one particular machine or one particular technique. It is a collection of technologies that operate at different levels of the nervous system and serve very different purposes.
+
+For example, electroencephalography, or EEG, records electrical activity from the scalp. Magnetic resonance imaging, or MRI, can provide structural information about the brain, while functional MRI can reveal changes associated with brain activity. Electromyography, or EMG, records electrical activity associated with muscles. Brain–computer interfaces can use recorded signals to generate commands for an external device. Other technologies, such as deep brain stimulation, work in the opposite direction by delivering stimulation to neural tissue.
+
+Throughout this course, we will connect these technologies rather than studying them as isolated topics.
+
+2. Learning Objectives
+
+Define neurotechnology and explain the different ways technology can interact with the nervous system.
+
+Understand the nervous system from electrical, chemical, and computational perspectives.
+
+Describe the basic pathway from neural activity to a technological output.
+
+Distinguish between recording, decoding, and modulation.
+
+Understand the difference between reading from the nervous system and influencing or writing to it.
+
+Recognize how these ideas connect the different technologies covered in the rest of the course.
+
+3. What is Neurotechnology?
+
+A useful working definition is that neurotechnology comprises technologies designed to interact with the nervous system to measure, interpret, influence, or restore neural function.
+
+There are several important words in this definition.
+
+First is measure. A technology may measure electrical activity, magnetic fields, physiological activity, or changes in brain structure or function.
+
+Second is interpret. Recording a signal is only the beginning. We often need signal processing and computational methods to extract information that is meaningful.
+
+Third is influence. Some technologies do not simply observe the nervous system. They deliberately change neural activity through electrical, magnetic, or other forms of stimulation.
+
+Finally, neurotechnology can help restore function. Neuroprosthetic and assistive systems can use information from the nervous system to compensate for impaired communication or movement.
+
+So when we think about neurotechnology, we should always ask three questions: what part of the nervous system are we interacting with, what information or effect are we trying to obtain, and what happens after that interaction?
+
+4. The Nervous System as Three Things at Once
+
+To understand why neurotechnology works, it helps to consider the nervous system from three complementary perspectives.
+
+First, the nervous system is an electrical system. Neurons communicate through changes in membrane potential and electrical currents. These electrical signals can sometimes be measured outside the neurons using sensors or electrodes. EEG and neural electrode recordings are examples of technologies that take advantage of this electrical activity.
+
+Second, the nervous system is also a chemical system. Neurons communicate through neurotransmitters and other biochemical processes. Although many technologies measure electrical activity, the biological processes producing those signals are strongly connected to chemical communication.
+
+Third, the nervous system is a computational system. Networks of neurons continuously transform information. Sensory systems process incoming information, neural circuits integrate it, and motor systems generate commands that ultimately influence behaviour.
+
+These perspectives are not separate. Electrical and chemical processes support computation in neural circuits, and neurotechnology attempts to access measurable aspects of this complex system.
+
+This is why neurotechnology requires knowledge from several fields. Neuroscience helps us understand the biological source of the signal. Engineering provides sensors and acquisition systems. Signal processing extracts useful information. Computing and machine learning can help interpret or decode it.
+
+5. The Basic Neurotechnology Pipeline
+
+One of the most useful ideas for understanding this entire course is a simple pipeline:
+
+Brain or nerve → Signal → Sensor → Acquisition → Processing → Interpretation → Action.
+
+Let us go through this step by step.
+
+The process begins with activity in the brain, spinal cord, peripheral nerves, or muscles. That biological activity produces something that can be measured, such as an electrical potential or magnetic field.
+
+A sensor then captures the measurable signal. For EEG, electrodes detect voltage differences at the scalp. For MEG, sensors detect magnetic fields associated with neural activity. For EMG, electrodes detect electrical activity related to muscle activation.
+
+The acquisition system records and digitizes the signal so that it can be stored and processed by a computer.
+
+The next stage is processing. Real biological recordings are rarely clean. They can contain noise, artifacts, interference, and other unwanted components. Processing methods can therefore be used to improve signal quality and prepare the data for analysis.
+
+After processing, we extract or interpret information from the signal. Finally, that information may lead to an action — for example, a clinical decision, a movement command for a prosthetic device, or feedback to the user.
+
+This pipeline is the backbone of the course. Later modules will focus on different parts of it in greater detail.
+
+6. Three Broad Classes: Recording, Decoding, and Modulation
+
+A second useful way to organize neurotechnology is into three broad activities: recording, decoding, and modulation.
+
+Recording means measuring activity from the nervous system or related physiological systems. EEG, EMG, MEG, and implanted neural recordings are examples.
+
+Decoding begins after recording. Here, computational methods are used to extract information from the measured signal. For example, a brain–computer interface might analyse neural activity and estimate which movement or command a person intends to make.
+
+Modulation is different. Instead of simply observing neural activity, the technology attempts to influence it. Transcranial magnetic stimulation, deep brain stimulation, and other stimulation approaches are examples.
+
+These categories can also be combined. A system may record activity, process it, make a decision, and then deliver stimulation. This is called a closed-loop approach.
+
+This idea becomes especially important later in the course, because modern neurotechnology increasingly combines sensing, computation, and intervention within the same system.
+
+7. Reading versus Influencing the Nervous System
+
+We can also think about neurotechnology in terms of direction.
+
+When information moves from the nervous system toward a device, we can think of the system as reading from the nervous system. EEG, EMG, and many brain–computer interfaces follow this general direction.
+
+In contrast, when a device delivers stimulation intended to influence nervous-system activity, information or energy is moving toward the nervous system. Technologies such as transcranial magnetic stimulation and deep brain stimulation illustrate this direction.
+
+The distinction is useful because it gives us a simple mental model:
+
+Read → understand → act
+
+or
+
+Measure → decide → stimulate.
+
+Some advanced systems combine both. They measure the state of the nervous system, analyse it, and use the result to determine an intervention. This closed-loop concept connects recording technologies with neuromodulation and will become important when we discuss future neurotechnology.
+
+8. Clinical and Consumer Neurotechnology
+
+Neurotechnology can also be distinguished by its intended application.
+
+Clinical neurotechnology is used for purposes such as diagnosis, monitoring, treatment, rehabilitation, and restoration of function. Clinical EEG, neuroprosthetic systems, and implanted stimulation technologies are examples.
+
+Consumer neurotechnology is generally aimed at applications such as wellness, personal monitoring, interaction, gaming, or other non-clinical uses. Wearable neural or physiological sensors may be used in these settings.
+
+It is important not to assume that a consumer device and a clinical system provide equivalent information simply because they use similar terminology. Clinical applications require appropriate evidence for reliability, safety, and effectiveness.
+
+This distinction also highlights a central challenge in neurotechnology: a signal may be measurable, but converting that measurement into a reliable and useful application requires careful validation.
+
+9. Connecting the Technologies in This Course
+
+At this point, we can place the major technologies in the course into the framework we have developed.
+
+EEG gives us a way to record electrical activity from the scalp. ECoG and implanted electrodes allow measurements closer to neural tissue. EMG provides information about muscle activity, while nerve-conduction methods examine signals travelling through peripheral nerves.
+
+Imaging technologies such as MRI and fMRI provide another way of studying the brain, giving us structural or functional information rather than simply recording the electrical signal at the scalp.
+
+Once signals are recorded or images are acquired, processing and computational methods allow us to extract useful information. That information can then support applications such as diagnosis, brain–computer interfaces, neuroprosthetics, and rehabilitation.
+
+Finally, stimulation technologies allow us to influence nervous-system activity.
+
+So the course follows a logical progression:
+
+First, we ask what neurotechnology is.
+
+Then we learn how to record and image the nervous system.
+
+Next, we learn how to turn those measurements into information.
+
+Then we examine how that information can control devices.
+
+Finally, we look at how technology can directly modify nervous-system activity and where the field is going next.
+
+10. Summary
+
+Neurotechnology is an interdisciplinary field involving technologies that measure, interpret, influence, or restore nervous-system function.
+
+The nervous system can be understood as an electrical, chemical, and computational system. Neurotechnology provides ways to interact with these properties using sensors, imaging systems, signal processing, computational models, and stimulation technologies.
+
+The central framework introduced in this module is:
+
+Brain or nerve → Signal → Sensor → Acquisition → Processing → Interpretation → Action.
+
+We can also organize neurotechnology into recording, decoding, and modulation. Recording tells us what the nervous system is doing. Decoding attempts to extract meaningful information from that activity. Modulation attempts to influence the nervous system.
+
+These concepts will provide the foundation for everything that follows.
+
+In the next module, we will move from the general idea of neurotechnology to the first practical question: how do we actually record signals from the nervous system?
+
+11. Suggested Visuals / Figure Cues
+
+12. Timing Guide for an ~8-Minute Video
+
+
+
+Suggested Visuals / Figure Cues:
+
+- Neurotechnology overview diagram (show during: Introduction): Show neuroscience + engineering + medicine + computing and examples of technologies.
+
+- Electrical / Chemical / Computational nervous system (show during: Section 4): Show the three complementary views of neural function.
+
+- Basic neurotechnology pipeline (show during: Section 5): Introduce the main Brain/Nerve → Signal → Sensor → Acquisition → Processing → Interpretation → Action framework.
+
+- Recording → Decoding → Modulation (show during: Section 6): Visually separate the three broad activities.
+
+- Reading vs influencing diagram (show during: Section 7): Show the direction of information/interaction.
+
+- Clinical vs consumer examples (show during: Section 8): Clarify differences in intended use.
+
+- Course roadmap (show during: Section 9): Show Modules 1–7 as one connected progression.
+
+
+
+Timing Guide for the ~8-Minute Video:
+
+- Introduction: 0:00–0:50
+
+- Learning objectives: 0:50–1:10
+
+- What is neurotechnology?: 1:10–2:00
+
+- Nervous system: electrical, chemical, computational: 2:00–3:00
+
+- Basic neurotechnology pipeline: 3:00–4:20
+
+- Recording, decoding, and modulation: 4:20–5:15
+
+- Reading vs influencing: 5:15–5:55
+
+- Clinical vs consumer: 5:55–6:30
+
+- Connecting the technologies / course roadmap: 6:30–7:25
+
+- Summary + transition: 7:25–8:00

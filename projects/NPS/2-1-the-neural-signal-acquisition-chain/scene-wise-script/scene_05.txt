@@ -1,0 +1,8 @@
+Subtopic: 2.1.4 Components of the Acquisition Chain - Amplifier
+Scene type: manim
+
+Narration:
+Now the amplifier. The biological signal detected by the electrode is extremely small — often only a few microvolts. That's too weak for any electronic system to process reliably. So we pass the signal through an amplifier. The amplifier increases the signal's amplitude, making it larger, while preserving the information contained within the waveform. The shape of the waveform stays the same; it just becomes bigger.
+
+Animation description:
+Show a tiny waveform on the left, barely visible above a flat baseline, labeled 'a few microvolts'. Draw it flowing into a triangular electronic symbol representing an amplifier. On the right side, show the same waveform shape but much larger in vertical amplitude, clearly visible, labeled 'amplified signal'. Annotate that the shape is preserved: draw a small comparison showing the two waveforms superimposed with matching turning points.

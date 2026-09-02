@@ -1,0 +1,128 @@
+{
+  "index": 21,
+  "slide_width_emu": 14630400,
+  "slide_height_emu": 8229600,
+  "shapes": [
+    {
+      "shape_id": 2,
+      "kind": "text",
+      "text": "Summary: The Brain as a Network",
+      "alt_text": "Text 0",
+      "manim_bbox": [
+        -6.339467189756944,
+        2.395254166909722,
+        2.3401623042534725,
+        3.084258725017361
+      ]
+    },
+    {
+      "shape_id": 3,
+      "kind": "text",
+      "text": "Modern neuroscience synthesizes these historical discoveries into two fundamental truths about the nature of the brain.",
+      "alt_text": "Text 1",
+      "manim_bbox": [
+        -6.339467189756944,
+        1.6015038147743055,
+        6.339468161857639,
+        1.9542820730902775
+      ]
+    },
+    {
+      "shape_id": 4,
+      "kind": "text",
+      "text": "Parallel Processing",
+      "alt_text": "Text 2",
+      "manim_bbox": [
+        -5.415972502135417,
+        -0.26585690262152806,
+        -2.6598385897222228,
+        0.07858753644097227
+      ]
+    },
+    {
+      "shape_id": 5,
+      "kind": "text",
+      "text": "The brain is a network of modules. Specific clusters perform specific tasks, but complex actions require coordinated, distributed processing.",
+      "alt_text": "Text 3",
+      "manim_bbox": [
+        -6.339467189756944,
+        -1.8092592309895839,
+        -2.6598376176215277,
+        -0.39814814192708337
+      ]
+    },
+    {
+      "shape_id": 6,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 0",
+      "manim_bbox": [
+        -2.2188655238020836,
+        -3.0841430450347227,
+        2.2187498438194444,
+        1.3534723225868057
+      ]
+    },
+    {
+      "shape_id": 7,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 1",
+      "manim_bbox": [
+        -1.7181714517187503,
+        -1.030092333472222,
+        -1.3883104672743052,
+        -0.7002313490277778
+      ]
+    },
+    {
+      "shape_id": 8,
+      "kind": "text",
+      "text": "Flexibility",
+      "alt_text": "Text 4",
+      "manim_bbox": [
+        2.6597219376388894,
+        -0.26585690262152806,
+        5.4158558500520835,
+        0.07858753644097227
+      ]
+    },
+    {
+      "shape_id": 9,
+      "kind": "text",
+      "text": "The network is variable. Structural and chemical modifications of connections (synapses) allow for immense adaptability and learning.",
+      "alt_text": "Text 5",
+      "manim_bbox": [
+        2.6597219376388894,
+        -1.8092592309895839,
+        6.339467189756944,
+        -0.39814814192708337
+      ]
+    },
+    {
+      "shape_id": 10,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 2",
+      "manim_bbox": [
+        -2.2188655238020836,
+        -3.0841430450347227,
+        2.2187498438194444,
+        1.3534723225868057
+      ]
+    },
+    {
+      "shape_id": 11,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 3",
+      "manim_bbox": [
+        1.3880791073090277,
+        -1.030092333472222,
+        1.7179400917534737,
+        -0.7002313490277778
+      ]
+    }
+  ],
+  "notes_text": null
+}

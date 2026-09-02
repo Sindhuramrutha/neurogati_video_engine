@@ -1,0 +1,8 @@
+Subtopic: 5.2.7 Advantages
+Scene type: manim
+
+Narration:
+Low-pass filtering offers several important advantages. It reduces unwanted high-frequency noise. It produces smoother waveforms. It improves signal readability. And it serves as an important preprocessing step before feature extraction.
+
+Animation description:
+A simple list appears with four checkmarks and labels: 'Reduces high-frequency noise', 'Produces smoother waveforms', 'Improves signal readability', and 'Preprocessing before feature extraction'. Each item appears in order with a green checkmark and a clean slide-in animation.

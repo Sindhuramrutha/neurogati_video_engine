@@ -1,0 +1,8 @@
+Subtopic: 2.1.3 The Neural Signal Acquisition Chain
+Scene type: manim
+
+Narration:
+So what exactly is the acquisition chain? It's the complete sequence of hardware and electronic components that convert biological activity into digital data. Now, different recording techniques use different sensors, but the overall workflow stays the same. Here's the chain: Biological Source, then Electrode or Sensor, then Amplifier, then Filter, then Analog-to-Digital Converter, and finally the Computer. Each component performs a specific function, and the quality of the final recording depends on every single stage working successfully. If one stage fails, the whole recording suffers.
+
+Animation description:
+A horizontal chain of six labeled rectangular boxes appears from left to right, with arrows between them: 'Biological Source', 'Electrode/Sensor', 'Amplifier', 'Filter', 'Analog-to-Digital Converter', 'Computer'. As each box is named in the narration, it highlights and enlarges slightly, then settles back. At the end, all six boxes pulse once together, and a caption fades in below: 'Quality depends on every stage.'

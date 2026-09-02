@@ -1,0 +1,13 @@
+1. [0.0] A stylized recording setup fades in: a microelectrode tip positioned near a neuron, with a raw noisy voltage trace scrolling horizontally across the lower portion of the screen. The trace contains a mix of a slow neural waveform and high-frequency noise.
+
+2. [12.84] The text "What signal?" appears above the trace. Simultaneously, the underlying neural waveform component within the trace briefly glows with a bright cyan outline for about 2 seconds, then fades back to normal; the question text remains.
+
+3. [14.68] The text "What noise?" appears above the trace. The high-frequency noise component of the trace is tinted with a semi-transparent red overlay.
+
+4. [17.16] The text "Which frequencies are useful?" appears above the trace. A frequency spectrum plot (magnitude vs. frequency) fades in beside the trace. A frequency band from 0.5 Hz to 100 Hz is highlighted with a shaded region and labeled "physiological information".
+
+5. [21.02] The text "Which frequencies to remove?" appears above the trace. The frequency band above 100 Hz in the spectrum is struck through with a red diagonal line.
+
+6. [29.80] The four question texts, trace, and spectrum fade out. The phrase "Choose the filter based on the signal, not on the software" fades in, enlarges, and moves to the center of the screen. A green checkmark icon appears next to it. This remains until the end of the scene.
+
+7. [33.75] End of scene.

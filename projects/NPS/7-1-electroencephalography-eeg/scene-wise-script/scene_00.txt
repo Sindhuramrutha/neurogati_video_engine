@@ -1,0 +1,8 @@
+Subtopic: 7.1.1 Introduction to EEG Applications
+Scene type: manim
+
+Narration:
+Throughout this course, EEG has been one of our central examples for understanding neural signal processing. We've seen how EEG signals are generated, how they're recorded using scalp electrodes, how they're filtered to remove unwanted noise, and how they can be analysed in both the time and frequency domains. Now it's time to ask a practical question: how is EEG actually used in neuroscience and clinical practice? Because EEG measures the electrical activity of large populations of cortical neurons with excellent temporal resolution, it gives us valuable information about the dynamic activity of the brain. Today, EEG is one of the most widely used non-invasive techniques in neuroscience. It supports both scientific research and clinical diagnosis, with applications ranging from monitoring normal brain function to assisting individuals with severe motor impairments. In this section, we'll explore four major application areas: studying brain states, sleep staging, epilepsy diagnosis and monitoring, and brain-computer interfaces. Although these applications differ in their objectives, they all rely on the same principles of neural signal acquisition and signal processing that we've studied throughout this course.
+
+Animation description:
+A title screen showing a stylized EEG waveform scrolling across the screen. Brain icon drawn with a simple outline, with electrode dots on the scalp. The words 'Applications of EEG' appear. Four labeled cards fade in around the title: 'Brain States', 'Sleep Staging', 'Epilepsy', and 'Brain-Computer Interfaces'. The cards are connected by a central EEG waveform motif.

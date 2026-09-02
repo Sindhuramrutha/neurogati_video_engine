@@ -1,0 +1,8 @@
+Subtopic: Transition to Section 2.4
+Scene type: manim
+
+Narration:
+At this stage, the neural signal has been detected, amplified, and conditioned. However, it is still an analogue signal. Since computers can process only digital information, the next step is to convert this continuous electrical signal into a sequence of numerical values. In the next section, we will discuss sampling and analog-to-digital conversion, or ADC, and understand how analogue neural signals become digital data ready for computer analysis.
+
+Animation description:
+Show the acquisition chain from previous scenes with the first three blocks (electrode, amplifier, signal conditioning) completed and highlighted. The clean continuous waveform exits signal conditioning, labeled 'analogue signal'. An arrow then extends from this waveform toward the next block, the ADC, which is dimmed or outlined. Animate a smooth continuous waveform morphing into a series of discrete points or bars, each representing numerical values. The points then transform into a stream of digits (0s and 1s). Close with text appearing: 'Next: Section 2.4 — Sampling and Analog-to-Digital Conversion'.

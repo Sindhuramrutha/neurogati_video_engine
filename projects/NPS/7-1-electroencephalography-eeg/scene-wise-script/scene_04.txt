@@ -1,0 +1,8 @@
+Subtopic: 7.1.2 EEG for Studying Brain States - Introduction
+Scene type: manim
+
+Narration:
+The human brain is never truly at rest. Even in the absence of external stimulation, billions of neurons continue to communicate, producing continuous electrical activity. However, this activity is not constant. It changes depending on a person's behavioural and cognitive state. For example, the electrical activity recorded while a person is awake and solving a mathematical problem is different from the activity recorded while the same person is relaxed with their eyes closed or sleeping. These different patterns of neural activity are referred to as brain states. One of the major applications of EEG is the identification and study of these brain states.
+
+Animation description:
+A stylized brain with tiny neurons firing continuously, even with a blank background indicating no external stimulus. Three small inset panels appear: one showing a person solving a problem with an EEG waveform, one with eyes closed and relaxed, and one asleep. Each inset has characteristic waveform patterns.

@@ -1,0 +1,35 @@
+1. **0.00–3.54**  
+   From the previous scene's full composition — top four-box general pipeline, four stacked specific pipelines, and the bottom caption — everything fades out and clears. A clean blank background remains. On this empty screen, nothing else appears yet; the narrator introduces the task.
+
+2. **4.16–5.26**  
+   At the top center of the screen, four application cards fade in side by side in a single horizontal row: **“Sleep staging”**, **“Epilepsy detection”**, **“Movement analysis”**, and **“Brain-computer interface”**. Each card is a white rounded rectangle with the label centered, and each has a distinct accent color border: blue-gray for **Sleep staging**, teal for **Epilepsy detection**, green for **Movement analysis**, orange for **Brain-computer interface**. The row spans most of the width with equal spacing.
+
+3. **6.04–11.00**  
+   Each card pulses in turn as its name is spoken: first **“Sleep staging”** at 6.04, then **“Epilepsy detection”** at 7.08, then **“Movement analysis”** at 8.50, then **“Brain-computer interface”** at 9.80. Each pulse is a brief brightening of that card's border with a subtle outward glow, one card at a time. All four cards remain visible after each pulse.
+
+4. **11.72–13.70**  
+   The four cards hold at the top. A subtle downward arrow appears at the bottom of the **“Sleep staging”** card, pointing toward the empty space below, hinting an expansion is about to happen.
+
+5. **14.88–16.20**  
+   The **“Sleep staging”** card brightens and expands downward. The other three cards dim partially and shrink slightly, moving to a compact cluster in the top-right corner to stay visible but out of focus. From the bottom of the **Sleep staging** card, a vertical pipeline diagram begins to appear below it: a downward-flowing chain of stacked boxes connected by vertical arrows. This pipeline occupies the center of the screen.
+
+6. **16.90–17.80**  
+   At the very top of the vertical pipeline, directly beneath the **Sleep staging** card, a raw EEG trace appears: a jagged oscillating waveform in blue-gray drawn on a thin baseline, labeled **“Raw EEG”** beneath it. The trace has sharp, irregular peaks and dips, looking like real neural signal. It is the pipeline's first visual block.
+
+7. **18.54–21.54**  
+   Below the raw EEG trace, a teal box labeled **“Preprocessing”** fades in, connected to the raw EEG trace by a downward vertical arrow. Within the box, two bullet-point sub-items appear one after another as they are named: first **“Remove artifacts”** at 19.42, then **“Apply appropriate filtering”** at 20.54. Each sub-item fades in as a smaller line of text, indented beneath the box's main label.
+
+8. **22.22–25.06**  
+   Below the **Preprocessing** box, a green box labeled **“Feature Extraction”** fades in, connected by a downward arrow. Inside it, one sub-item fades in: **“Calculate frequency-band power”** at 23.56. The sub-item is a smaller line of text indented beneath the box's main label.
+
+9. **25.46–28.46**  
+   Below the **Feature Extraction** box, an orange box labeled **“Classification”** fades in, connected by a downward arrow. Inside it, one sub-item fades in: **“Classify into sleep stage”** at 26.68. The sub-item is a smaller line of text indented beneath the box's main label.
+
+10. **28.94–31.94**  
+    Below the **Classification** box, the final output box fades in, connected by a downward arrow. It is a single rounded box labeled **“Output”** at the top with three colored labels inside appearing one at a time: **“Wake”** in amber at 29.38, **“NREM”** in blue-purple at 30.92, and **“REM”** in rose at 31.76. The three labels sit side by side inside the output box.
+
+11. **32.72–36.54**  
+    The entire vertical pipeline — raw EEG trace, **Preprocessing** box with sub-items, **Feature Extraction** box with sub-item, **Classification** box with sub-item, and **Output** box with **Wake / NREM / REM** — pulses gently once as a whole. The pulse is subtle: all pipeline elements brighten together briefly and return to full steady brightness. The pipeline holds.
+
+12. **37.40–42.24**  
+    At the bottom of the screen, below the pipeline, a text overlay fades in: **“Goal: understand why each stage is necessary and how the stages connect together”** in semi-bold type. It appears as one line or two centered lines, softly lit. The complete composition — compact top-right cards, the expanded **Sleep staging** vertical pipeline in the center, and the goal text at the bottom — holds steady through the end of the scene, reaching **43.02**.

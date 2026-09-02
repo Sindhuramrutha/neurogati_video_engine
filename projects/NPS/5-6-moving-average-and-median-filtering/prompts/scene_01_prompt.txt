@@ -1,0 +1,11 @@
+1. 0.00s — Fade in from black to a clean dark background. The screen is otherwise empty, preparing for a bulleted list.
+
+2. 1.76s — The first bullet point fades in near the vertical center: a small circular bullet marker followed by the text "Explain moving-average filter". At 4.02s, this first bullet briefly brightens as the narration says "moving average". At 5.16s, a second bullet appears directly below it: "Explain median filter", and it briefly brightens as the narration says "median". Once visible, each bullet remains on screen.
+
+3. 6.64s — A third bullet fades in below the first two: "Compare both filters". It briefly brightens while the narration says "compare their strengths".
+
+4. 8.22s — A fourth bullet fades in below the other three: "Identify appropriate applications". It briefly brightens while the narration says "identify which filter to use".
+
+5. 12.00s — Below the four bullets, a final line of text fades in without a bullet marker: "You'll also understand their advantages and limitations." It is slightly smaller and dimmer than the main bullet points.
+
+6. 14.40s — The entire list and the background begin a slow fade-out. The fade completes at 15.53s, leaving the screen fully dark.

@@ -1,0 +1,8 @@
+Subtopic: 6.2.7 Applications in Neural Signal Processing
+Scene type: image_only
+
+Narration:
+The Short-Time Fourier Transform is widely used because many neural signals change continuously over time. Some common applications include: EEG, for tracking how neural oscillations change during cognitive tasks, sleep, or sensory stimulation. EMG, for observing changes in muscle activity during movement and fatigue. Event-related neural activity, for examining frequency changes before, during, and after stimulus presentation. And brain–computer interfaces, for monitoring time-varying neural rhythms used for feature extraction and classification.
+
+Animation description:
+A sequence of four icon cards appears and fades in one at a time: an EEG brain icon with a small oscillation trace; an EMG muscle icon with a muscle signal trace; a stimulus marker icon with pre/during/post time bars; and a brain-computer interface icon with a small screen and cursor. Each icon is accompanied by its label and one line of descriptive text. As each card appears, the description text highlights briefly in sync with the narration.

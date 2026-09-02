@@ -1,0 +1,19 @@
+1. (0.00–3.00) Left side: stylized brain in cross-section, small glowing electrical pulses travel along neurons inside it; pulses stay contained within the brain's boundary. Right side: computer monitor displays a clean, steady waveform. Between brain and monitor: a dashed question-mark line pulses gently. Narration recaps neurons generating electrical signals.
+
+2. (3.00–7.58) The glowing pulses inside the brain continue traveling, but remain visibly trapped inside. Brief pulses occasionally cluster. Narration mentions signals recorded at different spatial scales.
+
+3. (7.58–11.10) The question mark between brain and monitor enlarges slightly and pulses more noticeably. The brain pulses continue; the monitor's waveform remains clean and unchanged. Narration introduces the problem: neural activity happens inside the body.
+
+4. (11.10–16.26) The dashed line to the brain briefly appears to try to extend toward the monitor, but the question mark blocks it. The pulses stay trapped inside the brain. Narration says you can't just plug a brain into a computer and watch the waveform appear.
+
+5. (16.26–22.14) Close-up on the brain's trapped pulses: one small pulse highlights, gently brightening as narration says "tiny biological signal generated inside the brain."
+
+6. (22.14–25.32) The camera frames the trapped brain pulses and the monitor's clean waveform side by side; the question mark pulses. Narration asks how that tiny signal becomes the waveform on a computer screen.
+
+7. (25.32–32.90) The question mark fades out. A horizontal chain of six connected boxes fades in between the brain and the monitor, in order: Brain icon, Electrode icon, Amplifier icon, Filter icon, ADC icon, Computer icon. Label beneath the chain: "Neural Signal Acquisition Chain." Narration describes the sequence of recording and processing steps called the neural signal acquisition chain.
+
+8. (32.90–35.14) The chain settles; each box is clearly visible. The label stays. Narration sets up the key point.
+
+9. (35.14–44.10) The chain remains on screen; above the chain, the words "EEG", "EMG", "ECoG", "microelectrode" appear one at a time as each is named, arranged in a small row. As each appears, the same chain pulses once beneath it. Narration lists recording types and states every system follows the same fundamental pathway.
+
+10. (44.10–49.60) The extra labels fade out; the full six-box chain pulses once as a unit and remains visible. Narration emphasizes that understanding this chain gives the foundation for the module.

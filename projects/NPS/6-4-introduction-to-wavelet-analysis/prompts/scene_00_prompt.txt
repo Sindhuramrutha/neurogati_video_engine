@@ -1,0 +1,23 @@
+1. **0.00-1.80**: Empty screen. At 1.78, a brief, subtle fade-in begins of two blank side-by-side panels.
+
+2. **1.80-5.70**: The left panel shows a neural signal waveform fading in: a continuous trace with a slow, large-amplitude oscillation early on and a sharp, narrow spike later. Label under the left panel fades in: 'STFT: Fixed Window'. At 4.94, the left waveform is already fully visible.
+
+3. **5.70-9.30**: The right panel fades in with the identical neural signal waveform. Label under the right panel fades in: 'Wavelet Analysis: Adaptive Windows'. Light emphasis arrow or subtle highlight sweeps once across the left signal to indicate “time and frequency content” are the focus.
+
+4. **9.30-16.20**: A small spectrogram thumbnail fades in above the left panel, showing time on the horizontal axis and frequency on the vertical axis with warm color intensity smeared along the slow wave's low-frequency band. The spectrogram stays dimmed in the corner as the illustration of the STFT result.
+
+5. **17.00-22.90**: On the left panel, a single rectangular window of fixed width appears, outlined in orange, initially positioned over the early slow oscillation. Text below the left label briefly swaps to: 'Fixed Analysis Window'. The entire left panel brightens slightly to mark it as the STFT example.
+
+6. **22.92-24.40**: The fixed window on the left squeezes once or glows red briefly to signal limitation. The waveform behind it is unchanged.
+
+7. **24.40-28.70**: The fixed window glides along the entire left waveform from start to end, never changing width. The orange outline stays exactly the same size as it slides across the slow oscillation and over the fast spike.
+
+8. **28.70-35.90**: The right panel comes to full prominence: two windows appear on the identical right-side signal. A wide window, outlined in green, sits over the slow, large-amplitude oscillation. A narrow window, also outlined in green, sits over the sharp spike. The two windows pulse faintly to emphasize their size difference as the narration contrasts “several seconds” with “a few milliseconds.” Meanwhile, the left fixed window stays frozen over the fast spike, looking poorly matched to it.
+
+9. **36.92-42.60**: On both panels, the slow oscillation is outlined or tinted lightly in blue, and the fast transient event is outlined or tinted lightly in red. A hand-drawn bracket or annotation labels the left slow wave as 'slow oscillation' and the right spike as 'fast transient'.
+
+10. **43.42-46.60**: The left fixed window is shown again overlaying the spike, but a red “X” appears above it, and it dims. The right wide window over the slow wave and narrow window over the fast spike light up prominently.
+
+11. **47.12-52.00**: The right panel label enlarges and glows: 'Wavelet Analysis: Adaptive Windows'. The left fixed window fades back. The right wide and narrow windows smoothly breathe in place, reinforcing their correct match to the slow wave and fast spike.
+
+12. **52.00-53.08**: Final layout holds: both labeled panels visible, left with its single fixed-size window dimmed and marked inadequate, right with two correctly sized adaptive windows glowing. Text beneath the whole scene fades in: 'Wavelet Analysis'.

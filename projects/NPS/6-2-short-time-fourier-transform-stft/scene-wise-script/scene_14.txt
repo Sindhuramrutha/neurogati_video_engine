@@ -1,0 +1,8 @@
+Subtopic: 6.2.10 Transition to Section 6.3
+Scene type: manim
+
+Narration:
+The output of the Short-Time Fourier Transform consists of a sequence of frequency spectra, one for each time window. While this information is valuable, examining hundreds of separate spectra is neither practical nor intuitive. Instead, we need a way to visualise how frequency changes over time in a single image. This visual representation is known as a spectrogram, and it will be the focus of the next section.
+
+Animation description:
+A row of many small spectrum plots appears, dense enough to suggest hundreds of them, with labels like 'Window 1', 'Window 2', and so on. The camera zooms out. The spectra compress along one axis and become color-coded cells stacked into a single 2D image: a spectrogram grid with time on the horizontal axis, frequency on the vertical axis, and color intensity representing magnitude. The word 'Spectrogram' appears and holds as the scene ends.

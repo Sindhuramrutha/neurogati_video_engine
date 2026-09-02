@@ -1,0 +1,27 @@
+1. **0.00-2.78** — From the previous scene's completed checklist, the list fades or slides away smoothly to the left. In its place, a single EEG trace appears centered: a horizontal wavy line with large-amplitude irregular background oscillations spanning the full width. A small vertical tick mark near the left edge of the trace indicates the stimulus onset time. The trace is labeled "Single EEG recording" in small text below it.
+
+2. **2.78-4.64** — The large background waveform continues oscillating. A small, subtle deflection in the trace appears shortly after the stimulus tick mark — a brief, low-amplitude bump. A soft highlight (thin colored outline or subtle glow) draws around this small deflection. Text appears below the trace: "Event-related response" with a small arrow pointing to the highlighted bump.
+
+3. **4.64-6.74** — The trace zooms vertically (or the scale expands) to emphasize the size difference. The large background oscillations now appear very tall, and the highlighted response bump is visibly tiny by comparison. A small double-headed vertical arrow appears beside the trace, with labels "Background EEG activity" (tall arrow) and "ERP" (very short arrow). The contrast in arrow lengths makes the size disparity obvious.
+
+4. **6.74-11.80** — Hold the zoomed view. The trace continues with large oscillations and the tiny highlighted response. A label at the bottom emphasizes: "Response is much smaller than ongoing EEG activity." The viewer clearly sees the small bump dwarfed by the surrounding waves.
+
+5. **11.80-13.34** — The single-trace view transitions to a split-screen layout. The trace moves to the left and shrinks. The right side remains empty for a moment. The small highlighted response stays visible in the shrunken trace.
+
+6. **13.34-18.18** — On the right side, multiple stacked EEG traces appear one by one (e.g., 6–8 horizontal traces stacked vertically), all aligned so the stimulus onset tick marks line up vertically. Each trace shows large background oscillations with a small response bump at the same latency after the tick mark. Below the stack, the process of averaging is hinted at: a vertical dashed line passes through the aligned response bumps, emphasizing their consistent latency.
+
+7. **18.18-21.46** — An averaged waveform appears below the stacked traces (or as a new trace at the bottom of the stack). It has much smoother background (reduced oscillation) and a clear, visible peak exactly where the individual responses aligned. The averaged peak is highlighted. Text: "Averaged waveform — clear ERP peak."
+
+8. **21.46-27.32** — The right panel (always-aligned case) shifts slightly left to make room for a second panel on the far right. This second panel shows another stack of EEG traces. Again the stimulus tick marks are aligned, but now the small response bumps occur at noticeably different latencies in each trace — some earlier, some later. The vertical dashed line attempted through the responses is blurred or broken, showing the misalignment. Text below: "Response latency varies across trials."
+
+9. **27.32-31.48** — In the rightmost panel, an averaged waveform for the variable-latency case appears below the stack. This averaged trace shows a smeared, broader, and much lower-amplitude bump compared to the always-aligned case. The peak is visibly smaller and wider. A label: "Smeared averaged response."
+
+10. **31.48-34.56** — Side-by-side comparison holds: left panel shows the aligned-latency stack with its sharp averaged peak, right panel shows the variable-latency stack with its smeared averaged peak. The two averaged waveforms are placed adjacent at the bottom for direct comparison, with the left one labeled "Clear peak" and the right one labeled "Reduced peak." An arrow or highlight draws attention to the contrast in peak sharpness and amplitude.
+
+11. **34.56-39.80** — The comparison view fades out. A fresh single EEG trace appears centered, similar to the very first trace with large background oscillations and a small response bump. A bold red "×" or "not" symbol appears over it. Text overlaid: "An ERP is NOT obtained from a single EEG recording." The single trace is crossed out.
+
+12. **39.80-46.06** — The crossed-out single trace fades. In its place, a stack of many EEG epochs appears (e.g., 10–12 traces), all aligned to the same stimulus onset tick mark. Each trace has a small response bump at the same latency. An arrow flows from the stack down to a single clean averaged waveform with a clear peak. Labels appear: "Many aligned EEG epochs" above the stack and "Averaged ERP waveform" below the result.
+
+13. **46.06-52.36** — The averaging process is highlighted: the stack of traces and the resulting averaged waveform remain on screen. The vertical alignment line through the response bumps is shown, and the clean peak in the average is gently highlighted. A text overlay fades in: "ERP = average of many aligned EEG epochs." The equation sits prominently, perhaps at the bottom or top center.
+
+14. **52.36-55.30** — Final hold: the full visual — stack of aligned EEG traces on top, averaged waveform with clear peak below, and the text "ERP = average of many aligned EEG epochs" — remains on screen. A subtle pulse or glow on the averaged peak reinforces the key message. The scene ends with this complete and stable composition.

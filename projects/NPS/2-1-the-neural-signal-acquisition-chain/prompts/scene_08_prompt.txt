@@ -1,0 +1,25 @@
+1. (0.00–3.66) Continuing from the previous scene's end state — the analog waveform with sampling dots on the left, the ADC block in the middle, and the staircase digital representation on the right — the scene holds. The staircase digital representation stays visible on the right. A new box fades in at the far right end of the chain, connected from the staircase output by an arrow. The box is labeled "Computer" and lights up with a soft glow. Inside the box, a monitor screen is visible, currently blank or dim. Narration: "Finally, once the signal is digitized, it's transferred to the computer."
+
+2. (4.42–6.28) The monitor inside the Computer box now displays a clean digital waveform — a crisp staircase or step plot matching the sampled values from the previous scene (0.2, 0.5, 0.8, 0.6, 0.9, 0.4) rendered as sharp horizontal and vertical segments, cleanly drawn with no analog curve. A small icon appears beside the monitor labeled "Display" and pulses briefly. Narration: "Specialized software displays,"
+
+3. (6.40–7.30) A second icon appears beside the "Display" icon, labeled "Store" — it pulses once, settling into a row of icons around the monitor. Narration: "stores,"
+
+4. (7.00–8.36) A third icon appears labeled "Process" and pulses. The three icons "Display", "Store", "Process" now sit in a row next to or below the monitor. Narration: "processes,"
+
+5. (7.84–9.30) A fourth icon appears labeled "Analyze" and pulses. All four icons — "Display", "Store", "Process", "Analyze" — are now arranged visibly around the monitor, each connected to it by a thin line. A caption "recorded data" appears beneath the monitor. Narration: "and analyzes the recorded data."
+
+6. (10.16–11.22) The four icons and the Computer box hold on screen. The label "Computer" pulses or brightens slightly to draw the eye. Narration: "And here's an important point."
+
+7. (11.84–13.50) To the right of and below the Computer box, new space opens. Four downstream boxes fade in one at a time, each connected to the acquisition chain by a thin arrow or line running back toward the ADC/Computer: the first box appears, labeled "Filtering". Narration: "Everything that comes after this stage, filtering,"
+
+8. (14.68–15.32) The second downstream box appears, labeled "Feature Extraction", connected by an arrow to the chain. Narration: "feature extraction,"
+
+9. (15.86–16.48) The third downstream box appears, labeled "Spectral Analysis", also connected to the chain by an arrow. Narration: "spectral analysis,"
+
+10. (17.60–18.28) The fourth downstream box appears, labeled "Classification". All four downstream boxes — "Filtering", "Feature Extraction", "Spectral Analysis", "Classification" — are now visible, each with an arrow running back to the acquisition chain (pointing from the chain to each box, or from each box back to the chain), visually tying them to the upstream signal. Narration: "classification,"
+
+11. (18.36–20.68) The view expands or zooms slightly to show the whole chain: the acquisition stage (analog waveform, ADC, digital representation, Computer) on the left, the downstream boxes on the right. The arrows or connections between the chain and the downstream boxes brighten and pulse together. A highlight or bracket sweeps over the acquisition stages (waveform, ADC, computer), emphasizing the label "acquired signal quality" appearing beneath the acquisition chain. Narration: "all of it depends on the quality of the signal that has been acquired up to this point."
+
+12. (22.12–24.78) All downstream boxes dim slightly. The Computer box and its monitor brighten. A caption appears near the Computer box: "The computer can only work with what it's been given." The monitor's digital waveform remains fixed and crisp, emphasizing that it contains only the digitized samples it received. A subtle glow traces back from the Computer box along the chain toward the ADC and the original analog signal. Narration: "The computer can only work with what it's been given."
+
+13. (24.78–25.77) Final hold: the full scene remains on screen — analog waveform and ADC on the left, Computer box with the monitor displaying the digital waveform and icons on the right, the four downstream boxes dimmed with dashed or dimmed arrows indicating their dependence on the acquired signal. The caption beneath the Computer box remains. Narration: (silence)

@@ -1,0 +1,26 @@
+[
+  {
+    "timestamp": 0.0,
+    "shape_id": 2,
+    "highlight": "box",
+    "reason": "Narration begins by introducing Lewis Carroll and continues discussing his quote, which is visually associated with his portrait."
+  },
+  {
+    "timestamp": 6.66,
+    "shape_id": 3,
+    "highlight": "box",
+    "reason": "Narration starts focusing on the quote from Sylvie and Bruno, the cited work listed in the title."
+  },
+  {
+    "timestamp": 8.88,
+    "shape_id": 4,
+    "highlight": "box",
+    "reason": "Narration begins paraphrasing the quote about nerve-force and chemical forces, directly matching the quotation text."
+  },
+  {
+    "timestamp": 20.84,
+    "shape_id": 7,
+    "highlight": "box",
+    "reason": "Narration shifts to explaining the theme of the lecture, which corresponds to the main historical description text."
+  }
+]

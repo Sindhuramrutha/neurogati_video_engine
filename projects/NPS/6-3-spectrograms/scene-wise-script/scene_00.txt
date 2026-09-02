@@ -1,0 +1,8 @@
+Subtopic: Introduction
+Scene type: manim
+
+Narration:
+In the previous section, we introduced the Short-Time Fourier Transform, or STFT, and we saw how it analyses a signal using a sequence of short, overlapping time windows. Unlike the conventional Fourier Transform, which only tells us what frequencies are present overall, the STFT gives us information about both time and frequency. That means we can study signals whose characteristics actually change over time. But there's a practical problem. Performing an STFT produces a large number of individual frequency spectra, one for each analysis window. If you have hundreds or even thousands of windows, you end up with hundreds or thousands of separate spectra. Interpreting all of those one by one is neither practical nor intuitive. To solve this problem, we take the results of the STFT and display them as a single visual representation called a spectrogram.
+
+Animation description:
+A stylised signal waveform is shown at the top of the screen. Below it, multiple small frequency spectrum plots appear one after another, each coloured slightly differently, stacking up side by side until they become crowded and visually overwhelming. A question mark or 'how do we read this?' cue appears. Then a highlight box draws around all the individual spectra, and with a smooth transition they merge into a single two-dimensional image with a vertical frequency axis and a horizontal time axis, labelled 'Spectrogram'.

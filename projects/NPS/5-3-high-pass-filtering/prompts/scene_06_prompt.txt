@@ -1,0 +1,39 @@
+1. **0.00–1.36** — From the previous scene's frequency response plot, the plot fades out smoothly. In its place, a new two-panel layout fades in with a dark background. The left panel is empty except for a faint set of horizontal grid lines and a label at the top reading **"Before high-pass filtering"**. The right panel is a mirror layout but initially empty, with its label **"After high-pass filtering"** dimmed. The narration says “Now think about an EEG.”
+
+2. **1.36–2.30** — Inside the left panel, a realistic EEG-like waveform begins to draw from left to right: a slow, large upward-and-downward drifting baseline with rapid small oscillations superimposed on it. The overall shape wanders visibly from near the top of the panel to near the bottom, not staying flat. The narration says “recording with.”
+
+3. **2.30–3.48** — A thick yellow translucent curve traces the slow baseline drift component of the waveform, smoothly following the large wandering shape while ignoring the rapid small oscillations. A subtle horizontal dashed line appears at the vertical center of the left panel, labeled **"ideal baseline"**. The narration says “slow baseline drift.”
+
+4. **3.48–5.12** — The yellow translucent drift curve glows gently, emphasizing its slow gradual changes. The baseline wander is clearly not flat: the yellow curve rises above and falls below the dashed ideal baseline line. The narration says “caused by gradual changes.”
+
+5. **5.12–6.26** — A small annotation appears near the left panel: an icon of an electrode with a subtle pulsing contact point, accompanied by the text **"electrode contact"** with a small arrow pointing to the yellow drift curve. The narration says “in electrode contact.”
+
+6. **7.08–8.38** — The rapid small oscillations on the raw waveform in the left panel are briefly highlighted with a subtle white glow, drawing attention to the fast neural activity riding on the slow drift. The narration says “The neural activity itself.”
+
+7. **8.38–9.06** — The white glow on the rapid oscillations fades, and the yellow drift curve glows once as the baseline continues to wander. The narration says “might be there.”
+
+8. **9.56–12.86** — The whole left panel is framed with a subtle red border that pulses once, and a caption appears below the panel: **"Hard to interpret"**. The yellow drift curve remains prominent, showing the baseline wandering from top to bottom, making the rapid oscillations visually noisy. The narration says “but the drifting baseline makes the whole waveform hard to interpret.”
+
+9. **13.56–15.18** — Between the left and right panels, a filter icon appears: a small rounded rectangle labeled **"High-pass filter"** with an arrow pointing right toward the right panel. The right panel's label **"After high-pass filtering"** brightens to full opacity. The narration says “When a high-pass filter is applied.”
+
+10. **15.82–16.66** — The filter icon pulses once, then the arrow glows. The scene holds for a brief moment, signaling that multiple effects are about to be shown in sequence. The narration says “several things happen.”
+
+11. **17.28–18.40** — The yellow translucent drift curve in the left panel fades out partially. In the right panel, the waveform begins to draw: the same rapid oscillations now appear without the large slow drift, gradually flattening and centering on the horizontal dashed center line. The narration says “the slow baseline drift is reduced.”
+
+12. **19.62–21.12** — In the right panel, the waveform's baseline becomes visibly flatter and more stable: the rapid oscillations now oscillate tightly around the horizontal center line, with no large wandering. The dashed line labeled **"ideal baseline"** in the right panel brightens and aligns with the now-flat baseline. The narration says “the baseline becomes more stable.”
+
+13. **21.70–24.68** — The rapid small oscillations in the right panel are highlighted with a bright white glow, making them stand out clearly against the flat baseline. A small caption appears near the right panel: **"Easier to observe"**. The narration says “and the faster neural activity becomes easier to observe.”
+
+14. **25.55–28.94** — The yellow drift curve in the left panel fades completely away, leaving only the raw drifting waveform. In the right panel, the flat, centered waveform with the bright white glowing oscillations remains. A text overlay appears above both panels: **"Improved visibility"**. The narration says “So the filter improves the visibility of the physiological signal.”
+
+15. **28.94–31.96** — The yellow drift curve in the left panel is now gone entirely, replaced by a subtle red overlay along the low-frequency drift path, labeled **"removed"**. The right panel's flat signal remains bright. The narration says “by reducing unwanted low-frequency components.”
+
+16. **32.84–34.30** — The scene shifts focus: the right panel dims slightly, and the left panel's raw drifting waveform becomes prominent again. A red heading appears at the bottom of the scene: **"Be careful"**. The narration says “But here is the crucial caveat.”
+
+17. **35.08–39.44** — The filter icon between the two panels glows red, and a red dashed circle appears around a hypothetical slow physiological oscillation superimposed on the left panel's waveform: a small, slow, low-amplitude wave that is drifting gradually, distinct from the fast neural activity. The narration says “The filter cannot distinguish between useful and unwanted low-frequency information.”
+
+18. **40.42–46.24** — The hypothetical slow physiological oscillation inside the red dashed circle begins to fade out progressively. Simultaneously, in the right panel, the same slow oscillation is absent — only the faster oscillations remain. A red caption appears at the bottom: **"Physiological activity below the cutoff is also removed."** The narration says “Any physiological activity occurring below the selected cutoff frequency will also be attenuated.”
+
+19. **46.92–50.26** — The red dashed circle and the fading slow oscillation hold briefly, then a text overlay appears: **"Cutoff frequency must always be selected carefully."** The words **"selected carefully"** are emphasized with a red glow. The narration says “That is why the cutoff frequency must always be selected carefully.”
+
+20. **50.26–51.17** — The full scene holds: left panel with drifting raw waveform and yellow drift curve gone, right panel with flat centered oscillations, filter icon in the center, red caution caption at the bottom, and the red dashed circle showing the removed slow oscillation. The whole scene gently fades out over the final second. The narration has ended.

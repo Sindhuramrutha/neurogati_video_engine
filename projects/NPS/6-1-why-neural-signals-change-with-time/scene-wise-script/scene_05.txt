@@ -1,0 +1,8 @@
+Subtopic: 6.1.5 Why Are Neural Signals Nonstationary? — Sensory Stimulation
+Scene type: manim
+
+Narration:
+A second factor is sensory stimulation. Visual, auditory, or tactile stimuli produce transient neural responses. These responses occur only for short periods of time, and therefore introduce time-varying changes into the recording.
+
+Animation description:
+Three small icons are drawn in succession along the top: an eye labelled 'Visual', an ear labelled 'Auditory', and a hand labelled 'Tactile'. Below each icon, a baseline neural trace is shown. As each stimulus icon is highlighted, a brief transient deflection appears in the corresponding waveform — a short sharp bump that appears and then quickly fades back to baseline. The heading 'Sensory Stimulation' remains at the top. A small highlighted note appears near the bottom reading 'transient responses — short periods of time' as the scene ends.

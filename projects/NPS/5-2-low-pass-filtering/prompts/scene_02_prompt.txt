@@ -1,0 +1,23 @@
+1. **0.00–1.46** — Scene opens in continuity with the previous scene's learning-objectives list still faintly visible, then it dissolves out as the narration asks "what is a low-pass filter?" A large question mark fades in centered, with the text "Low-Pass Filter" beneath it in moderate type.
+
+2. **2.14–3.36** — The question mark and title fade out. A simple horizontal road appears spanning the screen left-to-right, and a tollbooth-style gate stands at the center of the road with its arm in the raised (open) position. The gate is a literal barrier arm on a pivot post.
+
+3. **3.36–5.60** — Three slow-moving car icons, each labeled "Low Frequency" beneath it and each with a small forward arrow, approach the gate from the left and pass through smoothly one after another. The gate arm remains raised. The cars continue off the right side of the screen.
+
+4. **6.10–10.34** — Two or three fast-moving car icons, each labeled "High Frequency" beneath it and each with a small forward arrow, approach from the left at visibly higher speed. As the first fast car reaches the gate, the gate arm drops down and blocks it. The fast cars come to a stop before the lowered arm. Text fades in above the scene: "attenuating high-frequency components."
+
+5. **10.98–13.14** — The road-and-gate scene holds. The words "low-pass" are highlighted or briefly enlarged within the on-screen label as the narration says "the name itself explains how it works."
+
+6. **13.86–17.44** — The fast cars remain stopped, and the slow cars are shown continuing through the gate. A small caption near the gate reads "low frequencies allowed to pass" while the narration reiterates the term's meaning.
+
+7. **17.86–20.06** — The fast-car icons are progressively reduced — they shrink, fade, or are shown with decreasing visual opacity as they remain blocked — while the slow cars continue moving smoothly forward. The caption updates to "higher frequencies progressively reduced."
+
+8. **20.98–27.56** — The gate-and-cars scene stays fully visible. The camera slightly zooms in on the gate as the narration says "imagine a gate that lets only slow-moving vehicles through, while fast-moving vehicles are stopped." The gate arm raises to allow a slow car, then drops to stop a fast car, in one clear demonstration cycle.
+
+9. **27.56–33.36** — The road-and-cars scene cross-fades into a signal representation using the same gate: the tollbooth gate remains in place, but now smooth sine waves approach it from the left as traveling waveforms along the same horizontal axis. A smooth low-frequency wave, labeled "Low Frequency," passes through the gate and emerges on the right side unchanged in amplitude.
+
+10. **33.94–36.18** — A second, more rapid high-frequency wave, labeled "High Frequency," approaches the gate. As it passes through, it emerges on the right side with visibly reduced amplitude. The caption "separates signal components by frequency" appears.
+
+11. **36.92–40.58** — The low-frequency wave continues through the gate with no amplitude change, emphasized with a brief bright outline. Text below reads "little or no change."
+
+12. **41.12–44.08** — The high-frequency wave passes through the gate and is shown attenuated on the far side, its amplitude clearly smaller. The label "attenuated" appears near the reduced wave. Both waveforms and the gate remain visible through the end, holding the final frame through 44.08 seconds.

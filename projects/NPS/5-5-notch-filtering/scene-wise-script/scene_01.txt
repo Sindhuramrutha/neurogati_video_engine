@@ -1,0 +1,8 @@
+Subtopic: 5.5.3 What is a Notch Filter? — Definition and analogy
+Scene type: manim
+
+Narration:
+A notch filter, formally, is a filter that attenuates a very narrow range of frequencies while letting frequencies above and below that range pass with minimal loss. Think of it like listening to a song, but there's this single annoying hum constantly in the background. You wouldn't want to turn down the whole song. You'd much rather surgically remove just that irritating tone while keeping all the music intact. A notch filter works exactly like that. It targets a narrow band around some known interference frequency and leaves almost all other signal components untouched. That's why it's so useful when you know exactly what frequency the problem sits at.
+
+Animation description:
+A stylized audio waveform plays across the screen as the narration opens. A pure sine wave drawn in a harsh red color overlays on top of the composite signal, pulsing at a constant rate. A filter icon descends over the composite. The red sine wave component shrinks and disappears while the original complex waveform remains, unchanged and clean. Text fades in: 'Notch Filter — attenuates a narrow band centered on one specific frequency.'

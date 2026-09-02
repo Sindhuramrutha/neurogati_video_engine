@@ -1,0 +1,8 @@
+Subtopic: 7.1.2 What Are Brain States?
+Scene type: manim
+
+Narration:
+A brain state refers to the overall pattern of neural activity associated with a particular behavioural, cognitive, or physiological condition. The activity of the brain changes continuously throughout the day. When we are relaxed, attentive, solving problems, or sleeping, different groups of neurons become active. These changes produce different electrical patterns that can be recorded using EEG. Because EEG measures the synchronized activity of large populations of cortical neurons with millisecond temporal resolution, it is particularly well suited for monitoring these dynamic changes in brain activity. Rather than focusing on the activity of individual neurons, EEG provides a global view of the functional state of the brain.
+
+Animation description:
+A definition box appears: 'Brain state = overall pattern of neural activity associated with a particular behavioural, cognitive, or physiological condition.' A series of activity snapshots appears: relaxed, attentive, problem-solving, sleeping, each with a characteristic waveform. A large population of neurons is shown with synchronized firing patterns, versus a single neuron, illustrating the global view.

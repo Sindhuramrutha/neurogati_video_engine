@@ -1,0 +1,8 @@
+Subtopic: 5.1.7 Summary and Transition to Section 5.2
+Scene type: manim
+
+Narration:
+In this section, we introduced the concept of signal filtering. We learned that neural recordings usually contain both useful physiological information and unwanted electrical components. Filtering improves signal quality by selectively reducing unwanted components while preserving the information relevant for analysis. Understanding why filtering is necessary provides the foundation for studying the different types of filters introduced in the following sections. Now that we understand why neural signals are filtered, the next question is: how does a filter decide which parts of the signal to keep and which parts to remove? To answer that, we begin with one of the simplest and most widely used filters in signal processing — the low-pass filter.
+
+Animation description:
+A clean summary slide appears: a raw noisy signal on the left, an arrow labeled 'Filtering', and a clean signal on the right, with the checklist points fading in below. The slide shrinks away, then a question mark appears with the text 'How does a filter decide what to keep?' The question mark transforms into an arrow pointing forward, and a new label appears: 'Next: The Low-pass Filter'.

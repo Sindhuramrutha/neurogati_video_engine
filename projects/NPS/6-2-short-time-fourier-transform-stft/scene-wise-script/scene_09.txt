@@ -1,0 +1,8 @@
+Subtopic: 6.2.6 Important Concept — Fixed window trade-off
+Scene type: manim
+
+Narration:
+This creates a fundamental trade-off. A small window tells us when something happened more accurately. A large window tells us which frequency is present more accurately. Unfortunately, a single fixed window cannot optimise both simultaneously. STFT uses a fixed window size. This means that the same window is used throughout the entire signal, regardless of whether the signal changes rapidly or slowly. As we will see later, this fixed-window approach is one of the major limitations of STFT.
+
+Animation description:
+A single balance-scale illustration appears. On one side is a small window icon, on the other a large window icon. Beneath the small window is the label 'better time resolution'; beneath the large window is 'better frequency resolution'. The scale animates: when the narration discusses the small window, that side tips down; then the large window side tips down. The text 'one fixed window cannot optimise both' appears prominently. A close-up of the window over the signal shows the same size window being used at the start and later, with a dashed fixed-size indicator.

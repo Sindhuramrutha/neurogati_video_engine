@@ -1,0 +1,17 @@
+1. [0.00–1.36] The screen fades in to a vertically split view: two identical waveform plots side by side, separated by a thin vertical line. Each plot shows a light-blue jagged signal with a single sharp, tall narrow spike near the center and small random high‑frequency fluctuations elsewhere. Axes are unlabeled. No smoothed traces or labels yet.
+
+2. [1.36–5.20] On the left plot, a translucent vertical band with a width of 5 sample points appears near the left edge and sweeps smoothly left to right across the entire signal. As it moves, an orange smoothed trace is constructed point by point: each new point appears at the band’s center as the average of the 5 enclosed samples. Simultaneously, the exact text “Window size = 5” fades in above the left plot. The right plot remains the original light-blue trace only, unchanged. By 5.20, the orange trace spans the full left plot width.
+
+3. [5.20–8.20] The left plot holds: the original light-blue trace is thin and faint, the orange smoothed trace is bright and thicker. The sharp spike is now slightly rounded but still prominently tall. The right plot continues to show only the noisy light-blue original trace with its sharp narrow spike. The “Window size = 5” label stays visible.
+
+4. [8.20–9.20] A thin white glow outline briefly appears around the left plot’s rounded spike, drawing attention to the smoothing effect on the peak, then fades. The right plot remains the original un‑smoothed light-blue trace.
+
+5. [9.20–11.78] On the right plot, a larger translucent band (width of 25 sample points) appears at the left end and sweeps left to right. A thick dark‑red smoothed trace is generated, each new point the average of 25 consecutive samples. As the band passes the center spike, the resulting trace’s spike becomes heavily flattened. The exact text “Window size = 25” fades in above the right plot as the sweep begins. The band completes its sweep by 11.78.
+
+6. [11.78–13.26] The right plot now shows the faint light-blue original with its sharp spike overlaid by the dark‑red smoothed trace, where the spike is barely a small bump. Both window‑size labels remain visible. The left plot continues with its moderate smoothing and “Window size = 5” label.
+
+7. [13.26–17.80] Both plots simultaneously undergo a subtle push‑in (digital zoom) that brings the central spike region into closer view. On the left, the orange smoothed spike is tall and clearly present. On the right, the dark‑red trace is almost flat through the same region. A small dim white circle appears around the original spike location on each panel to mark the reference position.
+
+8. [17.80–20.00] At 17.80, the flattened region of the right panel’s dark‑red trace glows red briefly, highlighting the heavy distortion. The zoom holds until 19.08, then returns to the full split‑screen width, while the circles and glow fade.
+
+9. [20.00–22.90] The exact text “Window size matters” fades in centered below both plots, in large clear letters. All elements remain visible: the split screen, the original and smoothed traces on both sides, and the two window‑size labels. The frame holds until 22.90.

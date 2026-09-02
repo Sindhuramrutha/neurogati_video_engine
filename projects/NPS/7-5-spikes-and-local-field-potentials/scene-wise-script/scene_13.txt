@@ -1,0 +1,8 @@
+Subtopic: Signal-Processing Perspective
+Scene type: manim
+
+Narration:
+Spikes and LFPs also demonstrate why signal processing is essential in neuroscience. A raw extracellular recording contains a mixture of different components. We can conceptually separate it into: raw extracellular signal, then filtering, then a high-frequency spike component and a lower-frequency LFP component, then feature extraction, and finally neural interpretation or decoding. For spikes, processing may involve high-pass filtering, spike detection, and spike sorting. For LFPs, analysis can involve low-frequency filtering, spectral analysis, and time-frequency analysis. The important point is that the recording itself is not yet the final information. Signal processing helps us transform the raw electrical measurement into meaningful neural features.
+
+Animation description:
+Show a raw extracellular signal trace at the top, visually noisy and mixed. Animate a downward pipeline with boxes and arrows: 'Raw extracellular signal', then 'Filtering', branching into two streams: 'High-frequency spike component' and 'Lower-frequency LFP component'. For the spike branch, show boxes for high-pass filtering, spike detection, and spike sorting. For the LFP branch, show boxes for low-frequency filtering, spectral analysis, and time-frequency analysis. Both branches converge into 'Feature extraction' and then 'Neural interpretation / decoding'. Label the final stage as meaningful neural features.

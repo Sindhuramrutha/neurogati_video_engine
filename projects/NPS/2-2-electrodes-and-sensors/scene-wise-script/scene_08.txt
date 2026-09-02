@@ -1,0 +1,8 @@
+Subtopic: 2.2.6 EEG Electrodes
+Scene type: manim
+
+Narration:
+EEG records electrical activity from the scalp using surface electrodes. These electrodes are positioned according to standardized placement systems, most commonly the International 10–20 System. Since EEG signals must travel through the meninges, skull, and scalp before reaching the electrodes, they are relatively small in amplitude. For this reason, maintaining low electrode impedance and good contact with the scalp is essential for obtaining high-quality EEG recordings. A detailed discussion of the 10–20 system will be covered later when EEG is discussed in the applications module.
+
+Animation description:
+A stylized head outline is shown with multiple electrode discs distributed across the scalp in a grid-like pattern, representing the International 10–20 System. A cross-sectional view appears alongside showing the brain, meninges, skull, and scalp as layered regions. An electrical signal is shown emanating from the brain and traveling through each layer, attenuating as it passes through, finally reaching an electrode on the scalp as a small, weak waveform. The layers are highlighted sequentially as the narration mentions them: meninges, skull, scalp.

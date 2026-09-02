@@ -1,0 +1,8 @@
+Subtopic: 2.4.2 Learning Objectives
+Scene type: manim
+
+Narration:
+By the end of this section, you should be able to: differentiate between analogue and digital signals; explain the concept of sampling; define sampling frequency; describe the role of an analog-to-digital converter; and understand why proper sampling is important for accurate neural signal recording.
+
+Animation description:
+A clean list of five short bullet points appears one by one, each with a small icon: a waveform icon for differentiating analogue/digital, a dot-grid icon for sampling, a frequency icon for sampling frequency, a chip icon for ADC, and a checkmark icon for importance of proper sampling. Minimal motion — each bullet fades in sequentially.

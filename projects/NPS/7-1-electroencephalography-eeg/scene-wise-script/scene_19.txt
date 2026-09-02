@@ -1,0 +1,8 @@
+Subtopic: 7.1.4 EEG Findings in Epilepsy
+Scene type: manim
+
+Narration:
+One of the major strengths of EEG is its ability to record abnormal electrical discharges associated with epilepsy. Some characteristic EEG findings include: epileptic spikes, sharp waves, spike-and-wave complexes, and rhythmic seizure activity. These patterns provide important evidence that helps clinicians evaluate and classify epileptic disorders.
+
+Animation description:
+Four EEG waveform panels appear sequentially. The first shows an isolated epileptic spike with sharp, high-amplitude deflection. The second shows a sharp wave. The third shows a spike-and-wave complex: a sharp spike followed by a slow wave. The fourth shows rhythmic seizure activity: continuous, rhythmic high-frequency spikes. Each pattern is labeled.

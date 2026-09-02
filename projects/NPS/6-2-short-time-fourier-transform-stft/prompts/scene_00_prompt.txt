@@ -1,0 +1,31 @@
+1. 0.00–1.06: Screen opens on a simple, clean title-style text: "Nonstationary Signals" fades in at center, subtly animated (soft pulse or fade), matching the recap tone of "In the previous section..."
+
+2. 1.68–2.78: "Nonstationary Signals" fades away and a simple abstract signal trace draws across the screen from left to right. The trace's oscillation visibly changes speed and shape as it moves — faster wiggles in some regions, slower waves in others — showing that its frequency content is not constant.
+
+3. 2.78–4.60: A small label appears above the signal trace: "Frequency changes over time". The trace's changing wiggle pattern becomes more exaggerated — rapid oscillations in one stretch, slow rolling waves in another — as the narration stresses non-stationarity.
+
+4. 5.16–7.50: The trace continues to draw, now with an animated shaded region along the x-axis labeled "Time". The oscillation pattern keeps shifting as the trace moves through time, reinforcing the idea of continuous change.
+
+5. 7.50–10.22: A brief pause in the trace drawing. A small arrow or highlight traces along the x-axis of the signal while a soft "time" tick marks the current position, as the narration emphasizes "over time."
+
+6. 10.96–14.80: The scene transitions to a clean, simple block of text at center-left: "Fourier Transform" with a subtitle below it: "Which frequencies?" The text is stable and unanimated, as the narration introduces the tool's limitation.
+
+7. 15.64–20.82: A split visual appears. On the left, a short signal segment with oscillatory content. On the right, a frequency spectrum (a few vertical bars or a smooth curve). The spectrum lights up, showing frequencies are present. Then a "?" symbol appears over the spectrum, and a small clock icon fades in next to it, crossed out or fading to gray, as the narration states the transform cannot tell when those frequencies occur.
+
+8. 21.52–26.48: The words "When?" appear below the spectrum in red or orange, pulsing once. The signal segment on the left now has a highlighted region of interest, but the boundary of that region is blurred or question-marked, emphasizing that timing information is missing. A small label at bottom: "Timing is essential" fades in.
+
+9. 27.28–31.26: The screen fades to a clean, EEG-style recording view. A horizontal timeline stretches across the screen, labeled at the bottom with tick marks. Above the timeline, a simple brain icon appears, gently pulsing. Signal traces cover portions of the timeline, consistent with EEG traces showing mixed frequencies.
+
+10. 32.00–36.18: Early on the timeline, two labeled regions appear: first a bracket labeled "Eyes open" over an early segment, then later a bracket labeled "Eyes closed" over a later segment. The EEG trace in the "eyes closed" region begins to show a rhythmic oscillation in the alpha band (approximately 10 Hz), appearing only after the eyes-closed label begins.
+
+11. 36.98–41.34: At the top of the scene, a caption appears: "Which frequencies?" The alpha-band oscillation in the eyes-closed region softly highlights — maybe a glow or a colored overlay — drawing attention to the presence of the frequency in that segment. The rest of the timeline remains unchanged.
+
+12. 41.98–45.02: The caption changes to "But when?" A ring highlight pulses at the exact onset of the alpha oscillation — the boundary where the eyes-closed region begins. The pulse calls out that precise moment as the answer the Fourier transform fails to provide.
+
+13. 45.82–51.00: Below the timeline, a new line of text fades in: "Method needed: time and frequency simultaneously." The alpha wave highlights continue, and the onset pulse repeats once more. The visual emphasizes the gap the current transform leaves.
+
+14. 52.04–55.84: The timeline fades slightly into the background. At the center, large text fades in: "Short-Time Fourier Transform". The text is clear, readable, and centered, with a subtle underline or box around it.
+
+15. 55.84–57.36: The text "Short-Time Fourier Transform" remains on screen while a smaller label below it begins to appear, anticipating the abbreviation.
+
+16. 58.06–60.83: The full abbreviation "STFT" appears in large, bold letters, either below or replacing the full name. It settles prominently at the center as the narration concludes. The "STFT" text pulses gently once, then holds steady until the end of the scene.

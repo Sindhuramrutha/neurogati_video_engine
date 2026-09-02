@@ -1,0 +1,8 @@
+Subtopic: 5.4.6 Applications in Neural Signal Processing
+Scene type: manim
+
+Narration:
+Band‑pass filtering is one of the most widely used preprocessing techniques in neuroscience. In EEG, recordings are commonly band‑pass filtered to retain the frequency range relevant to the analysis while suppressing slow drift and high‑frequency interference. For EMG, signals occupy a characteristic frequency range, and band‑pass filtering helps suppress low‑frequency motion artefacts and high‑frequency electrical noise, preserving muscle activity. Local field potentials are often band‑pass filtered to isolate specific oscillatory frequency bands. And in brain–computer interfaces, band‑pass filtering is an essential preprocessing step before feature extraction and classification.
+
+Animation description:
+Show four panels arranged in a grid: one for EEG, one for EMG, one for LFP, and one for BCI. Each panel contains a stylised icon (brain with electrodes for EEG, a muscle for EMG, a local field recording trace for LFP, and a brain‑computer interface schematic). As each application is mentioned, the corresponding panel highlights and a band‑pass filter icon appears over it, with a brief signal preview showing the raw and filtered signal.

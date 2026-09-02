@@ -1,0 +1,8 @@
+Subtopic: 5.7.4 Choosing the Appropriate Filter – Moving-Average
+Scene type: manim
+
+Narration:
+Use a moving-average filter when you want to reduce random fluctuations and get a smoother waveform. Common uses include signal smoothing, EMG envelope estimation, and general preprocessing.
+
+Animation description:
+A noisy signal trace is drawn. A sliding window (a translucent boxcar) moves across the signal, and at each position, the average of the values inside the window is computed and plotted beneath, producing a much smoother version. The original noisy signal and the smoothed signal are shown together. A second mini-example: an EMG signal is rectified, then a moving-average filter produces the envelope, shown as a smooth overlaid curve.

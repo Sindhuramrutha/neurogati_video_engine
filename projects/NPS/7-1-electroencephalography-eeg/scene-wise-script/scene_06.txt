@@ -1,0 +1,8 @@
+Subtopic: 7.1.2 EEG Rhythms and Brain States
+Scene type: manim
+
+Narration:
+One of the most common ways to study brain states is by analysing the frequency content of the EEG signal. Different behavioural states are often associated with changes in the relative strength of specific EEG frequency bands. For example: Delta activity is commonly observed during deep sleep. Theta activity is often associated with drowsiness and certain memory-related processes. Alpha activity becomes prominent when a person is awake, relaxed, and has their eyes closed. Beta activity is generally stronger during active thinking and focused attention. Gamma activity has been associated with higher cognitive processing and information integration. Rather than appearing independently, these rhythms continuously change as brain activity evolves.
+
+Animation description:
+A frequency-axis diagram shows five EEG frequency bands as colored horizontal bars: delta (0.5-4 Hz), theta (4-8 Hz), alpha (8-13 Hz), beta (13-30 Hz), gamma (30+ Hz). A brain waveform appears, and each band lights up in sequence with a representative waveform sample shown next to it. For alpha, an icon of eyes closing appears. The waveform transitions smoothly from one band to the next to show continuity.

@@ -1,0 +1,8 @@
+Subtopic: The Concept of Cutoff Frequency
+Scene type: matplotlib
+
+Narration:
+Just like the low-pass filter, a high-pass filter is defined by a cutoff frequency. The cutoff frequency is the frequency below which signal components begin to be attenuated by the filter. To make this concrete, suppose a high-pass filter has a cutoff frequency of one hertz. Signal components above one hertz are largely preserved. Components below one hertz are progressively attenuated. And, as with the low-pass filter, this transition is gradual, not abrupt. Frequencies close to the cutoff are only partially attenuated, while frequencies much lower than the cutoff experience much greater attenuation.
+
+Animation description:
+A professional frequency response plot appears. The horizontal axis is labeled 'Frequency (Hz)' with a linear scale. The vertical axis is labeled 'Attenuation' or 'Amplitude response' from 0 to 1. A smooth S-shaped curve rises from near zero on the left to near one on the right. A vertical dashed line intersects the horizontal axis at 1 Hz, labeled 'cutoff frequency (1 Hz)'. The region to the left of the cutoff, where the curve is low, is shaded pale red and labeled 'stopband'. The region to the right, where the curve is high, is shaded pale green and labeled 'passband'. A small marker highlights a point just below the cutoff, indicating partial attenuation, with a caption 'close to cutoff: partially attenuated'. Another marker at a much lower frequency indicates near-total attenuation, with caption 'well below cutoff: strongly attenuated'. The curve gently glows to emphasize the gradual, not abrupt, transition.

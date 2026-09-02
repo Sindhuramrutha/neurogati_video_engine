@@ -1,0 +1,13 @@
+1. 0.00: Screen fades in to a horizontal time axis with a scrolling waveform trace. The trace is a composite signal: a blue complex waveform (desired signal, resembling a real audio signal with multiple frequency components) is drawn, and a harsh red pure sine wave (interference hum) is overlaid on top. The two are summed, so the visible trace is a mixture; the red sine wave pulsates at a fixed frequency (e.g., 50 Hz). A label “Composite Signal” appears above the trace.
+
+2. 2.68: A small icon representing a notch filter appears at the top center. The icon is a stylized frequency response curve: a flat line that dips sharply to a narrow V-shaped notch at its center, with the word “Notch” beneath. The icon smoothly descends and arrives just above the waveform trace by 4.84, then hovers.
+
+3. 9.96: A small text label “Interference hum” appears near the red sine wave, highlighting its role as the annoying hum.
+
+4. 18.42: The notch filter icon emits a brief glow. The red sine wave component begins to shrink in amplitude and fade away while the blue complex waveform remains completely unchanged. The red sine wave’s amplitude diminishes smoothly, and by 22.38 it has completely vanished, leaving only the clean blue waveform scrolling across the screen. The filter icon remains above the trace.
+
+5. 25.70: The V-shaped notch in the filter icon’s frequency response curve brightens briefly, emphasizing the targeted narrow band. The blue clean waveform continues scrolling, with no red interference visible.
+
+6. 34.46: The text “Notch Filter — attenuates a narrow band centered on one specific frequency.” fades in centered below the waveform trace. The text remains on screen until the scene ends.
+
+7. 39.30: The entire scene fades out (all visuals disappear). End of scene.

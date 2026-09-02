@@ -1,0 +1,8 @@
+Subtopic: 5.6.7 Summary
+Scene type: manim
+
+Narration:
+In summary, we’ve seen two important time‑domain filtering techniques. The moving‑average filter reduces random fluctuations by averaging neighbouring samples, producing a smoother signal. The median filter uses the median of neighbouring values to remove impulsive noise while preserving sharp features. Both improve signal quality, but they target different noise types. Choose based on your recording’s characteristics.
+
+Animation description:
+A quick recap visual: on the left, a moving‑average window performing averaging and outputting a smooth curve; on the right, a median filter sorting samples and eliminating a spike. Text annotations reinforce the key strengths. Fade to final frame.

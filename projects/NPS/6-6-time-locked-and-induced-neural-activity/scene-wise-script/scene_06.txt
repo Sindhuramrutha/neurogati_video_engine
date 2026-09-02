@@ -1,0 +1,8 @@
+Subtopic: Module Recap
+Scene type: manim
+
+Narration:
+In this module, we explored the analysis of nonstationary neural signals and learned why conventional frequency analysis is often insufficient for studying neural recordings. The key concepts covered in this module are: neural signals are generally nonstationary because their characteristics change over time; the Short-Time Fourier Transform extends Fourier analysis by providing both time and frequency information; a spectrogram visualizes the output of the STFT, showing how frequency content changes throughout a recording; wavelet analysis overcomes the fixed-window limitation of the STFT by using multiple analysis scales; Event-Related Potentials measure neural responses that are time-locked to specific events through averaging across repeated trials; and neural responses can be classified as time-locked or induced, each requiring different analysis approaches. Together, these concepts provide a strong foundation for analysing dynamic neural activity and prepare us for more advanced topics in neural signal processing and neuroscience applications.
+
+Animation description:
+A scrolling recap list is displayed, with each key concept appearing as a separate bullet point in sequence: 'Nonstationary neural signals', 'STFT: time and frequency information', 'Spectrogram: visualizes STFT output', 'Wavelet analysis: multiple scales', 'ERPs: time-locked averaging', 'Time-locked vs induced responses'. Each bullet briefly highlights as it is spoken. At the end, all bullets remain on screen centered, and a forward-looking arrow fades in below them.

@@ -1,0 +1,8 @@
+Subtopic: Understanding a Spectrogram: Three Components
+Scene type: manim
+
+Narration:
+A spectrogram has three main components. The first is the time axis. The horizontal axis represents time, and as we move from left to right, we observe how the signal evolves throughout the recording. The second component is the frequency axis. The vertical axis represents frequency, usually measured in Hertz. Lower frequencies appear near the bottom of the spectrogram, while higher frequencies appear near the top. And the third component is colour intensity. The colour represents the strength or energy of each frequency component at a particular time. Brighter or warmer colours generally indicate stronger activity, while darker or cooler colours indicate weaker activity.
+
+Animation description:
+A spectrogram is displayed with annotated axes. First, the horizontal axis is highlighted with an arrow moving from left to right, labelled 'Time'. Next, the vertical axis is highlighted, with 'Low frequency' marked at the bottom and 'High frequency' marked at the top, labelled 'Frequency (Hz)'. Finally, a colour bar appears on the right side, transitioning from dark blue at the bottom through green and yellow to bright red at the top, with labels 'Weak' at the dark end and 'Strong' at the bright end. Regions of the spectrogram light up in warm colours when discussing stronger activity and dim to cool colours when discussing weaker activity.

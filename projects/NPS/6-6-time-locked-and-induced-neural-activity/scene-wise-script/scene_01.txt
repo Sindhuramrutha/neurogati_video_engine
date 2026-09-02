@@ -1,0 +1,8 @@
+Subtopic: Time-Locked Neural Activity
+Scene type: manim
+
+Narration:
+Let's define time-locked neural activity first. Time-locked neural activity refers to brain responses that occur at approximately the same time relative to each presentation of a stimulus. Suppose a participant hears the same tone repeatedly. Each time the tone is presented, the brain generates a response approximately 100 milliseconds after the stimulus. Although the exact amplitude of the response may vary slightly, its timing remains relatively consistent across trials. Because these responses occur at nearly the same latency, they become stronger when multiple trials are averaged together. This is precisely the type of neural activity that produces Event-Related Potentials. For example, imagine presenting a visual flash 100 times. If a neural response consistently appears about 100 milliseconds after each flash, averaging the EEG recordings will reinforce that response. As more trials are averaged, the response becomes clearer because its timing remains consistent across repetitions.
+
+Animation description:
+A series of individual EEG epochs are drawn one below another, each aligned to a vertical line marking stimulus onset. In each epoch, a small deflection appears at the same point along the time axis, around 100 ms after onset, though with slightly different amplitudes. As the narration progresses, the epochs stack up. Then a new panel appears showing the average: a clean deflection at 100 ms with reduced noise. The animation emphasizes alignment by drawing a vertical dashed line through the peak latency in all trials and the averaged result.

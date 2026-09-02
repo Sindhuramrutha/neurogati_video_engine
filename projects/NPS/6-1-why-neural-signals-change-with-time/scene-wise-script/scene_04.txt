@@ -1,0 +1,8 @@
+Subtopic: 6.1.5 Why Are Neural Signals Nonstationary? — Behaviour
+Scene type: manim
+
+Narration:
+So why are neural signals nonstationary? Neural signals reflect ongoing physiological activity within the nervous system. Since brain activity continuously changes in response to both internal and external events, neural recordings are naturally nonstationary. Several factors contribute to these temporal changes. The first is changes in behaviour. Neural activity differs depending on whether a person is resting, walking, speaking, or performing a task. As behaviour changes, the recorded signal also changes.
+
+Animation description:
+At the top, a simple stylised brain outline is drawn with a subtle pulsing glow, labelled 'ongoing physiological activity'. Below it, a row of four simple stick-figure icons is drawn, one at a time, with labels: 'Resting' (seated figure), 'Walking' (figure mid-stride), 'Speaking' (figure with speech lines), and 'Performing a task' (figure at a desk or holding an object). Next to each icon, a small representative waveform segment appears, each visibly different in frequency and amplitude. A heading at the top reads 'Changes in Behaviour'. The brain pulses continuously throughout, and an arrow links the changing behaviours to the changing waveforms.

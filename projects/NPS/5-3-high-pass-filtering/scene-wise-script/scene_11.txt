@@ -1,0 +1,8 @@
+Subtopic: Limitations
+Scene type: manim
+
+Narration:
+Although high-pass filtering is useful, it should be applied with care. If the cutoff frequency is chosen too high, slow physiological components that matter for your analysis may also be removed. For example, excessively high cutoff frequencies can distort slow EEG activity, or alter the shape of event-related potentials. So the cutoff frequency should always be selected according to the characteristics of the recorded signal and the objectives of the analysis.
+
+Animation description:
+A warning-styled visual. At the top, a triangular warning outline appears with the label 'Apply with care'. Below it, a dual plot appears. On the left, a normal EEG waveform is intact. On the right, the same waveform is shown after an overly aggressive high-pass filter: the slow components are unnaturally flattened and the waveform shape is visibly distorted. A vertical slider labeled 'cutoff frequency' is shown, with a red highlighted region near the top labeled 'too high'. An arrow points to the distorted waveform. A callout caption appears: 'Slow physiological components may be removed'. The scene holds on this caution for the last sentence before fading out.

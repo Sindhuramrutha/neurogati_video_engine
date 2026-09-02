@@ -1,0 +1,29 @@
+1. **0.00–1.78** — Fade in from the previous scene's amplifier symbol and callout box, which fade out smoothly. Centered on screen, a tall, amplified waveform appears — clearly visible with jagged noise spikes superimposed along its trace, and the whole waveform sitting on a baseline that drifts slowly upward. To its left, a faded triangle amplifier symbol remains briefly as a ghosted reference, then fades away as the waveform establishes itself.
+
+2. **1.78–4.84** — At "the recorded signal still cannot be sent directly to the computer," the tall, noisy waveform pulses once. A dashed arrow appears from the right end of the waveform pointing rightward, then stops at a small red "✕" mark. A label fades in below: "cannot be sent directly to computer." The dashed arrow and red ✕ emphasize the blocked path.
+
+3. **5.68–9.66** — At "The signal may contain unwanted electrical interference, baseline drift," the view zooms slightly into the tall waveform. The jagged noise spikes along the trace brighten and pulse, with a small label "electrical interference" appearing near them. Then a downward-sloping dashed line fades in beneath the waveform, representing the drifting baseline; a curved arrow points to this line with the label "baseline drift." The baseline line slowly wanders upward, visibly not flat.
+
+4. **10.30–12.68** — At "or other components that reduce recording quality," a few faint, small additional artifacts flicker briefly across the waveform (generic marks, not labeled), then fade. The overall waveform dims slightly and a thin red tint overlays it to indicate degraded recording quality. A small label "reduced recording quality" appears below.
+
+5. **13.52–18.64** — At "Before digitization, the signal is therefore prepared through a process known as signal conditioning," the view zooms out to show the waveform on the left. To the right of the waveform, a rectangular block fades in, labeled "Signal Conditioning" with a clean outline. An arrow forms from the noisy waveform into the left edge of the block. The label "Signal Conditioning" appears beneath the block and is briefly highlighted.
+
+6. **19.64–26.48** — At "Signal conditioning refers to the collection of operations that prepare the biological signal for accurate digital conversion," the noisy waveform animates into the left edge of the Signal Conditioning block. Inside the block, the waveform passes through and emerges from the right edge as a clean, tall waveform: the jagged noise is stripped away, and the baseline flattens to a straight horizontal zero line. The clean waveform exits to the right, identical in shape to the original but without noise and with a flat baseline. A label "accurate digital conversion" appears beside the clean output waveform.
+
+7. **27.42–31.00** — At "Depending on the recording system, signal conditioning may include," a panel fades in below the Signal Conditioning block — a rounded rectangle with a light background. The panel is empty, with space for a list. The Signal Conditioning block remains visible above it.
+
+8. **31.00–32.60** — At "initial filtering," the first bulleted item fades into the panel: "Initial filtering" appears with a small bullet point marker. The text is highlighted briefly as it appears.
+
+9. **32.84–33.56** — At "noise reduction," the second bullet fades in below the first: "Noise reduction." The previously shown noisy waveform flickers briefly beside the panel, then the clean output waveform pulses once to reinforce the connection.
+
+10. **34.14–34.98** — At "baseline stabilization," the third bullet fades in: "Baseline stabilisation." The drifting baseline line from earlier reappears briefly and flattens to zero as the bullet appears.
+
+11. **35.88–36.58** — At "impedance matching," the fourth bullet fades in: "Impedance matching." A small generic connector symbol (two interlocking shapes) appears briefly beside the bullet, then fades, keeping the visual simple and unlabeled.
+
+12. **37.20–37.78** — At "and signal isolation," the fifth and final bullet fades in: "Signal isolation." The full list is now visible in the panel: "Initial filtering," "Noise reduction," "Baseline stabilisation," "Impedance matching," "Signal isolation." The panel's border pulses once to indicate the complete set.
+
+13. **39.06–44.60** — At "The exact conditioning process depends on the recording modality and the design of the acquisition system," the panel with the five bullets dims slightly. Two small, generic labeled blocks fade in to the side of the panel — one labeled "Recording modality" and one labeled "Acquisition system design" — each connected to the panel by a thin dashed arrow, indicating dependence. The arrow connections pulse gently. The blocks are deliberately simple rectangles with only those labels, no additional invented content.
+
+14. **45.38–46.48** — At "And here's the key definition," the view zooms out slightly and the bulleted panel fades away. The clean output waveform and Signal Conditioning block remain visible but dim. A blank rounded rectangle fades in prominently at the center of the screen, ready to receive text.
+
+15. **47.58–55.48** — At "Signal conditioning refers to all operations performed on a biological signal to prepare it for accurate digitisation and analysis," the definition text types or fades into the definition box line by line, matched to the words as they are spoken: "Signal conditioning = all operations performed on a biological signal to prepare it for accurate digitisation and analysis." The full equation-style definition appears with "Signal conditioning" on the left, then the equals sign, then the definition phrase. The definition box is prominent, with the Signal Conditioning block and clean waveform still faintly visible behind it. At the end, the definition box holds steady with all text visible, and the scene fades out in the final second.

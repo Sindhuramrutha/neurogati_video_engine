@@ -1,0 +1,8 @@
+Subtopic: 2.2.10 Summary and Transition
+Scene type: manim
+
+Narration:
+In this section, we examined the different types of electrodes and sensors used in neural signal acquisition. Although these devices differ in their design and recording location, they all perform the same fundamental function — detecting physiological activity and transferring it to the acquisition system. Selecting an appropriate sensor always involves balancing signal quality, spatial resolution, patient safety, and invasiveness. Now that we know how biological signals are detected, another challenge immediately becomes apparent. The detected signals are extremely small — often only a few microvolts. Such weak signals cannot be processed directly. In the next section, we will explore how these signals are strengthened and prepared for further processing through amplification and signal conditioning.
+
+Animation description:
+A recap visual appears showing icons for all the electrode and sensor types discussed: surface electrode, needle electrode, microelectrode, EEG cap, ECoG grid, and MEG sensor array. They are briefly highlighted as a group. The screen then transitions: the icons shrink and move to the left side of the acquisition chain while the first block is outlined. A very small waveform, only a few microvolts tall, is shown coming from the sensor, looking tiny against a scale bar. The next block in the chain, 'Amplifier', flashes and grows as the narration mentions amplification and signal conditioning.

@@ -1,0 +1,8 @@
+Subtopic: 2.4.6 The Analog-to-Digital Converter (ADC)
+Scene type: manim
+
+Narration:
+Now, the component that actually does this conversion. An analog-to-digital converter — an ADC — is an electronic component that converts an analogue electrical signal into a sequence of digital numbers. The ADC serves as the bridge between the analogue world and the digital world. After the biological signal has been amplified and conditioned, it enters the ADC. The ADC performs two essential tasks. First, it samples the analogue signal at regular time intervals. Second, it converts each sample into a numerical value that can be processed by a computer. The resulting sequence of numbers forms the digital representation of the original neural signal. Without an ADC, modern digital storage, visualisation, and signal processing simply would not be possible.
+
+Animation description:
+A flow diagram matching Figure 2.4: a smooth analogue waveform on the left, an arrow pointing to a box labelled 'Sampling', then an arrow to a chip-shaped box labelled 'ADC', then an arrow to a sequence of discrete bar values or dots on the right, labelled 'Digital Data'. As the narration describes each ADC task, the relevant parts of the diagram highlight in turn: sampling at regular intervals (dashed vertical lines flash), then conversion to numbers (each sample dot gets a numeric label).

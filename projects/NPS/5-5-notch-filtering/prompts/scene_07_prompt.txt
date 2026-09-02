@@ -1,0 +1,17 @@
+1. 0.00–2.62: A split screen fades in. Left pane shows a messy recording setup: a loose electrode dangling mid-air, a disconnected ground wire hanging, a red flashing warning icon near the electrode, and an awkwardly large notch filter symbol (bold red circle with “NF” and slashed sine‑wave) pasted directly onto a noisy raw signal trace on a monitor. Right pane shows a well‑prepared setup: an electrode firmly attached to skin, a grounded shield cable properly connected, a clean signal trace with a tiny residual ripple on a monitor, and a small, faint notch filter icon (barely visible) beside the trace. Both panes are fully visible; no X on the left yet.
+
+2. 2.62 (coincides with “not” in “not a replacement”): A large red X stamp appears diagonally across the left pane, semi‑transparent so the bad setup is still visible but marked as wrong. Right pane unchanged.
+
+3. 10.60 (coincides with “good electrode contact”): On the right pane, the electrode contact area gets a subtle zoom/highlight pulse, and a green checkmark labeled “Good Contact” appears next to the electrode. The X on the left remains.
+
+4. 12.34 (coincides with “proper grounding”): On the right pane, the grounded shield cable connection is highlighted, and a green checkmark labeled “Proper Grounding” appears near the cable. Previous checkmark stays.
+
+5. 13.58 (coincides with “appropriate shielding”): On the right pane, a shield icon (or the shielded section of cable) is highlighted, and a green checkmark labeled “Appropriate Shielding” appears.
+
+6. 14.98 (coincides with “correct equipment setup”): On the right pane, the entire setup (electrode, cable, amplifier box if present) gets a soft border glow, and a green checkmark labeled “Correct Setup” appears. All four green checkmarks now visible.
+
+7. 16.98 (coincides with “Filtering”): On the right pane, the previously faint notch filter icon becomes prominent: it pulses/brightens, and its label changes to “Residual Filtering”. Simultaneously, the large notch filter symbol on the left pane pulses red once to emphasize its misuse. The left pane still shows the red X.
+
+8. 19.10 (coincides with end of “residual interference”): At the bottom center, spanning both panes, the text “Filter residual interference, not poor practices.” fades in (clean white font with dark outline). The text remains static.
+
+9. 23.00–23.88: The visual configuration from beat 8 (split screen with red X on left, green checkmarks and highlighted residual filtering notch icon on right, and text) holds until the scene ends at 23.88.

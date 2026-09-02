@@ -1,0 +1,23 @@
+1. **[0.00]** Display a horizontal frequency axis centered on screen, labeled "Frequency" beneath it, with markings for "Low" on the left end and "High" on the right end.
+
+2. **[1.56]** A low-pass filter curve fades in on the left half of the axis. The curve is near flat and high (labeled "Gain") at low frequencies, then drops off sharply as frequency increases toward the high end. The text label "Low-pass" appears above the curve.
+
+3. **[4.62]** A high-pass filter curve fades in on the right half of the same axis. This curve drops off sharply at low frequencies and rises to a flat, high value at high frequencies. The text label "High-pass" appears above this curve. Both curves now sit on the same axis for comparison.
+
+4. **[5.88]** Briefly highlight the low-pass curve (e.g., brighten or pulse it) as the narration names it, emphasizing that it removes high frequencies. The right side of its curve (the attenuated region) is clearly visible.
+
+5. **[8.48]** Briefly highlight the high-pass curve in the same way, emphasizing that it removes low frequencies. The left side of its curve (the attenuated region) is clearly visible.
+
+6. **[11.50]** Both the low-pass and high-pass labels and curves begin to fade, while a third curve — a band-pass filter curve — fades in over the same axis. This new curve is flat and high in a central passband region, and drops off on both the low-frequency end and the high-frequency end. The text label "Band-pass" fades in above the new curve, replacing the previous two labels.
+
+7. **[15.80]** As the narration says "neither filter alone is enough," the low-pass and high-pass curves have completely disappeared, leaving only the band-pass curve clearly visible. The central passband region of the band-pass curve is subtly highlighted to emphasize the "selected range of frequencies."
+
+8. **[18.74]** The highlight on the passband intensifies briefly while the narration says "preserves only a selected range of frequencies," then the attenuated regions on both the low and high ends pulse to indicate "removing both lower and higher frequencies outside that range."
+
+9. **[26.86]** The band-pass label becomes fully opaque and prominent as the narration names the "band-pass filter" directly.
+
+10. **[28.88]** A stylised brain signal icon fades in to the right of the band-pass filter curve. The icon is a simplified brain outline with a small oscillating waveform trace inside or adjacent to it. The icon pulses gently to emphasize the connection to neural signal processing.
+
+11. **[33.16]** The words "Neural Signal Processing" fade in as a subtitle beneath the brain icon and the band-pass filter. The entire composition — axis, band-pass curve, label, brain icon, and subtitle — remains on screen through the end of the narration.
+
+12. **[38.72]** All elements remain static on screen, holding the final visual through to the end of the scene at 39.77 seconds.

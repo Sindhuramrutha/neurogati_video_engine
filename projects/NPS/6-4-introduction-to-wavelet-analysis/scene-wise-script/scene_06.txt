@@ -1,0 +1,8 @@
+Subtopic: Advantages and Limitations
+Scene type: manim
+
+Narration:
+Wavelet analysis offers several important advantages. It adapts to signals that change over time. It provides good time resolution for rapid events. It provides good frequency resolution for slower oscillations. And it is well suited for analysing nonstationary neural signals. However, wavelet analysis is not without limitations. The results depend on the choice of the mother wavelet, and different wavelets may be better suited for different applications. In addition, wavelet analysis is generally more computationally demanding than the Short-Time Fourier Transform. Therefore, selecting an appropriate wavelet requires an understanding of both the signal and the objectives of the analysis.
+
+Animation description:
+A split screen appears. On the left, under 'Advantages', four icons appear one by one: a flexible arrow bending to match a changing signal, a narrow wavelet over a fast transient, a wide wavelet over a slow oscillation, and a nonstationary waveform. On the right, under 'Limitations', two icons appear: a question mark over a wavelet with text 'mother wavelet choice depends on application', and a small CPU icon with moving gears and text 'more computationally demanding'. The screen ends with both columns visible.

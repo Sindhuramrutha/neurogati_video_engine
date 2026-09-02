@@ -1,0 +1,17 @@
+1. **0.00-1.26** — The previous scene's balanced scale visual fades out. A clean, empty summary slide background fades in — a soft white or light neutral canvas filling the screen.
+
+2. **1.26-3.44** — On the left side of the slide, a raw noisy signal waveform draws itself: a jagged, irregular oscillating line with visible high-frequency roughness and spiky interference overlaying a smoother underlying wave. It is labeled "Raw signal" beneath it.
+
+3. **4.24-11.14** — In the center of the slide, a bold horizontal arrow draws in, labeled "Filtering" above it. On the right side of the slide, a clean signal waveform appears: a smooth, regular oscillating sine-like line with no jagged noise, labeled "Clean signal" beneath it. The three elements — raw signal, arrow, clean signal — form a clear left-to-right flow diagram.
+
+4. **11.98-19.28** — Below the flow diagram, the first checklist point fades in with a small checkbox: "Reduces unwanted components." The raw signal briefly highlights its jagged interference spikes as this text appears, then the highlight fades.
+
+5. **20.36-27.50** — A second checklist point fades in beneath the first: "Preserves relevant information." The clean signal on the right briefly glows or highlights to draw attention, then the highlight fades. The full slide holds steady.
+
+6. **28.32-31.24** — The entire summary slide — raw signal, arrow, clean signal, and both checklist points — smoothly shrinks and fades away toward the center of the screen, as if receding into the background.
+
+7. **31.92-37.30** — A large question mark appears at the center of the screen, drawn in a bold, attention-grabbing color. Directly beneath it, the text fades in: "How does a filter decide what to keep?" The question mark and text hold steady.
+
+8. **38.10-43.80** — The question mark smoothly morphs into a forward-pointing arrow, as if rotating and extending to the right. The question text fades out. A new label fades in alongside the arrow: "Next: The Low-pass Filter."
+
+9. **44.44-46.25** — Final hold: the forward-pointing arrow and the label "Next: The Low-pass Filter" remain on screen, static and clear, through the end of the narration.

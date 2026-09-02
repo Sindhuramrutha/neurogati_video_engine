@@ -1,0 +1,35 @@
+1. **0.00–0.94** — Opening from the previous scene's closing composition (brain left-center with firing neurons, three inset panels on the right, "Brain States" title above them). All previous elements fade out over the first second. The screen clears to a blank, featureless background.
+
+2. **0.94–2.06** — Centered on screen, an empty rounded rectangle definition box fades in with a soft border and no content yet. The box is large enough to hold roughly two lines of text.
+
+3. **2.06–8.34** — Inside the definition box, the text appears phrase by phrase as it is spoken: "Brain state =" appears first (bold label, left-aligned), then "overall pattern of neural activity" (≈2.06–3.52), then "associated with a particular" (≈3.52–5.24), then "behavioural," (≈5.24), "cognitive," (≈6.30), "or physiological condition." (≈7.22–8.34). By 8.34 the full definition reads: "Brain state = overall pattern of neural activity associated with a particular behavioural, cognitive, or physiological condition." The definition box holds steady through 8.34.
+
+4. **8.34–9.20** — The definition box remains center-screen. Brief pause in narration. Nothing changes visually.
+
+5. **9.20–12.26** — As the narration says "The activity of the brain changes continuously throughout the day," a horizontal timeline appears across the lower third of the screen, below the definition box. The timeline is a simple line left-to-right, unlabeled. Along it, a single continuous waveform trace draws itself from left to right over these seconds. The waveform does not hold one pattern: its amplitude and frequency shift visibly several times as it sweeps across, representing activity changing over the course of a day. The definition box shrinks slightly and moves to the top third of the screen to make room, but remains readable.
+
+6. **12.26–12.96** — The timeline and waveform hold steady. The definition box remains at top. Brief pause.
+
+7. **12.96–16.72** — Four activity snapshot panels appear along the lower portion of the screen, replacing the single waveform timeline (which fades out). They are arranged in a row, left to right, each a small rounded rectangle. As the narration names each state, that panel fills in: "relaxed" (≈13.28–13.64) the first panel appears with a slow, smooth, low-frequency waveform; "attentive" (≈14.46) the second panel appears with a fast, low-amplitude, irregular waveform; "solving problems" (≈15.04–15.72) the third panel appears with a medium-frequency, medium-amplitude waveform with irregular bursts; "sleeping" (≈16.42–16.72) the fourth panel appears with a very slow, high-amplitude, widely spaced waveform. Each panel is labeled beneath with its state name: "Relaxed," "Attentive," "Problem-solving," "Sleeping."
+
+8. **16.72–19.14** — The four waveform panels remain in a row. As the narration says "different groups of neurons become active," each panel's waveform brightens in sequence: relaxed, attentive, problem-solving, sleeping — each panel pulsing once as its waveform is highlighted, and behind each waveform, small dots (neuron markers) faintly appear clustered in different arrangements per panel, reinforcing that different neuron groups underlie each state. The definition box remains at top.
+
+9. **19.14–20.00** — The four panels hold. Brief pause in narration.
+
+10. **20.00–24.34** — As the narration says "These changes produce different electrical patterns that can be recorded using EEG," the four panels' waveforms animate: each waveform inside its panel begins redrawing itself as if being recorded in real time, traced left-to-right by a small moving dot at the leading edge, each tracing at a speed consistent with its state's frequency. The definition box stays at top. No new text.
+
+11. **24.34–25.82** — The four waveform panels remain with their animated traces. Brief pause.
+
+12. **25.82–30.82** — The four panels fade out smoothly. In their place, filling the lower two-thirds of the screen, a large population of neurons appears: hundreds of small dots arranged in a loose circular or cortical-sheet-like cluster. The dots begin firing — initially only a few, scattered and unsynchronized. As the narration says "synchronized activity of large populations of cortical neurons," the firing grows increasingly coordinated: larger and larger groups of dots flash together in rhythmic waves, pulses sweeping across the population in visible synchronized bursts, with areas of the cluster lighting up in phase. The definition box remains at top.
+
+13. **30.82–33.20** — The synchronized firing pattern of the neuron population continues, with waves of simultaneous flashing propagating across the cluster. As the narration says "millisecond temporal resolution," a fine time-scale marker appears along the bottom of the neuron population area: thin vertical tick marks spaced close together, with tiny millisecond labels on a few representative ticks (e.g., "0 ms," "20 ms," "40 ms"), and one synchronized firing wave travels across the population in a time span visibly spanning just a few of these ticks. The definition box remains at top.
+
+14. **33.20–38.64** — As the narration says "particularly well-suited for monitoring these dynamic changes in brain activity," the large synchronized neuron population holds but its firing pattern shifts continuously: different subsets of the population synchronize in different rhythms, the pattern never settling. The time-scale ticks remain visible at the bottom. The definition box at top dims slightly to shift attention to the neuron population.
+
+15. **38.64–39.64** — The neuron population keeps its dynamic firing. Brief pause.
+
+16. **39.64–42.36** — As the narration says "Rather than focusing on the activity of individual neurons," the synchronized population above splits visually: a small sub-region at one side of the cluster is isolated and magnified — a single neuron dot is pulled out and enlarged in a zoomed inset circle, shown firing alone, its individual action-potential-like spikes visible as small sharp pulses on a tiny trace beneath it. The single neuron's activity is erratic and disconnected from the larger pattern. The inset appears beside the main population.
+
+17. **42.36–46.60** — The inset circle with the single neuron fades out. As the narration says "EEG provides a global view of the functional state of the brain," the camera zooms back out smoothly to show the full synchronized neuron population once more, now with the definition box still at top. A translucent overlay highlight sweeps across the entire neuron population as a whole, emphasizing the population-level view rather than any single neuron. The synchronized waves of firing continue, showing the brain's activity as one integrated, global pattern.
+
+18. **46.60–47.35** — Final hold: the full neuron population with synchronized firing waves remains on screen, with the definition box at top reading "Brain state = overall pattern of neural activity associated with a particular behavioural, cognitive, or physiological condition." The scene holds steady to the end.

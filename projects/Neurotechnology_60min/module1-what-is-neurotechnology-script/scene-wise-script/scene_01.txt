@@ -1,0 +1,8 @@
+Subtopic: Learning Objectives
+Scene type: manim
+
+Narration:
+Here's what we'll be able to do by the end of this module. We'll define neurotechnology and explain the different ways technology can interact with the nervous system. We'll understand the nervous system from electrical, chemical, and computational perspectives. We'll describe the basic pathway from neural activity to a technological output. We'll distinguish between recording, decoding, and modulation. We'll understand the difference between reading from the nervous system and influencing or writing to it. And we'll recognize how these ideas connect the different technologies covered in the rest of the course.
+
+Animation description:
+A clean checklist appears, each objective as a separate line item. As each objective is spoken, a checkmark animates next to it with a subtle emphasis. The final item 'Recognize how these ideas connect' is highlighted with a slightly different color to signal it's the overarching goal.

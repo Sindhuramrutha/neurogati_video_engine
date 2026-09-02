@@ -1,0 +1,8 @@
+Subtopic: 7.7.8 Summary
+Scene type: manim
+
+Narration:
+Let's summarize. A neural signal-processing pipeline provides a systematic way to transform a raw neural recording into meaningful information. The basic pipeline is: raw signal, preprocessing, feature extraction, then interpretation or classification. We learned that the raw signal contains the recorded neural activity along with unwanted components. Preprocessing prepares the signal for analysis. Feature extraction converts the signal into meaningful quantitative measurements. Interpretation helps us understand neural activity, while classification assigns neural activity to predefined categories or commands. The same general framework can be adapted to different neuroscience applications.
+
+Animation description:
+The main pipeline diagram appears center screen with the four boxes: 'Raw Signal', 'Preprocessing', 'Feature Extraction', 'Interpretation or Classification'. Each box lights up in sequence as the narration describes it. Next to each box, brief explanatory text appears: next to 'Raw Signal' is 'neural activity + unwanted components'; next to 'Preprocessing' is 'prepares signal for analysis'; next to 'Feature Extraction' is 'meaningful quantitative measurements'; next to 'Interpretation or Classification' is 'understand activity or assign category'. Different application icons (a brain, a muscle, an eye, a computer) appear around the pipeline, connected by dotted lines to show adaptability.

@@ -1,0 +1,8 @@
+Subtopic: 7.7.1 Introduction to Neural Signal Processing
+Scene type: manim
+
+Narration:
+Throughout this course, we've studied individual stages of neural signal processing. We learned how neural signals are generated and recorded, how noise and artifacts affect recordings, how filtering can improve signal quality, and how time- and frequency-domain methods can reveal useful information from neural signals. We've also seen that different recording modalities — like EEG, ECoG, EMG, EOG, spikes, LFPs, and MEG — are used for different neuroscience applications. But in a real neuroscience experiment, these methods are not used independently. They're combined into a signal-processing pipeline that takes us from a raw recording to a meaningful scientific or clinical result. The basic idea is: raw signal, then preprocessing, then feature extraction, then interpretation or classification. In this final section, we'll bring together the major concepts from the course and see how they fit into one complete workflow.
+
+Animation description:
+A simple flow diagram appears on the left side of the screen with four connected boxes arranged vertically: 'Raw Signal', 'Preprocessing', 'Feature Extraction', 'Interpretation or Classification'. Around the flow diagram, small icons appear one by one as each topic is mentioned: a sine wave for signal generation, a noisy signal with an electrode for recording, a filter symbol for filtering, and a spectrogram for time-frequency methods. Then small labels 'EEG', 'ECoG', 'EMG', 'EOG', 'Spikes', 'LFP', 'MEG' pop up around the flow diagram as they are named. The four boxes in the pipeline light up in sequence with color emphasis as the narration describes the basic idea. The entire flow diagram pulses softly at the end.

@@ -1,0 +1,8 @@
+Subtopic: 2.2.5 The Fundamental Trade-off
+Scene type: manim
+
+Narration:
+Here's an important note. As the recording electrode moves closer to the biological source, signal quality generally improves. However, increasing proximity usually increases invasiveness. This is one of the fundamental trade-offs in neural recording.
+
+Animation description:
+A single horizontal axis is drawn, with 'Distance from source' labeled on the left side and 'Electrode position' indicated along the axis. Three electrode icons are placed along the axis: surface electrode at the far left, needle electrode in the middle, microelectrode at the far right. A second curve appears superimposed on the same axis showing signal quality rising and invasiveness rising together as the electrode moves closer to the source. The two curves are color-coded and move in parallel to illustrate the trade-off.

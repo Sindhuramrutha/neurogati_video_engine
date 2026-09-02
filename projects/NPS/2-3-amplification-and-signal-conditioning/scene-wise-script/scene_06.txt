@@ -1,0 +1,8 @@
+Subtopic: 2.3.7 Practical Considerations
+Scene type: manim
+
+Narration:
+When designing a neural recording system, amplification and signal conditioning must be performed carefully. Too little amplification may produce a signal that is difficult to analyse. Excessive amplification, however, may also amplify unwanted noise or even saturate the recording system. Similarly, poor signal conditioning may remove useful physiological information or allow unwanted interference to remain in the recording. For this reason, amplification and signal conditioning are considered critical stages in neural signal acquisition.
+
+Animation description:
+Show three side-by-side examples of amplified waveforms. On the left, a tiny waveform labeled 'too little amplification: difficult to analyse'. In the middle, a clean, appropriately sized waveform labeled 'correct amplification: processable'. On the right, an extremely tall waveform that hits the ceiling of the display, with visible clipping at the top and bottom, labeled 'excessive amplification: noise amplified, saturation'. Also show abundant jagged noise riding on the excessive-amplification waveform. Then transition to two variants of conditioned signals: one over-filtered where part of the useful waveform shape gets deformed or shrunken, labeled 'poor conditioning: useful information removed'; and one under-filtered where the waveform is visible but still has jagged interference overlaid, labeled 'poor conditioning: unwanted interference remains'. End with all the examples fading and a bold statement appearing: 'Amplification and signal conditioning are critical stages.'

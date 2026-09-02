@@ -1,0 +1,8 @@
+Subtopic: Introduction to Wavelet Analysis
+Scene type: manim
+
+Narration:
+In the previous sections, we learned that the Short-Time Fourier Transform allows us to analyse both the time and frequency content of a neural signal. We also learned that the resulting spectrogram provides a visual representation of how frequency components change over time. Although the Short-Time Fourier Transform is a significant improvement over the conventional Fourier Transform, it has one important limitation: it uses a fixed analysis window throughout the entire signal. The same window is used whether the signal changes slowly over several seconds, or rapidly within a few milliseconds. Unfortunately, neural signals often contain both slow oscillations and fast transient events. A single fixed window cannot analyse both equally well. To overcome this limitation, a more flexible approach called wavelet analysis was developed.
+
+Animation description:
+A side-by-side comparison appears. On the left, a neural signal waveform is shown with a single rectangular window of fixed width highlighted over it, sliding along the signal. The window stays the same size as it moves. On the right, the same signal is shown but the windows change size as they move: a wide window over the slow oscillation and a narrow window over the fast transient. Text at the bottom says 'STFT: Fixed Window' on the left and 'Wavelet Analysis: Adaptive Windows' on the right. The wide window highlights a slow, large-amplitude wave; the narrow window highlights a sharp spike in the signal.

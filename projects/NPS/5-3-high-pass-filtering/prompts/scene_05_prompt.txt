@@ -1,0 +1,51 @@
+1. **0.00–0.44** — From the previous scene's definition card, the card fades out smoothly, leaving a dark background. In its place, a large, clean, professional frequency response plot begins to fade in as a single panel occupying most of the frame. The horizontal axis is labeled **"Frequency (Hz)"** with a linear scale, and the vertical axis is labeled **"Amplitude Response"** ranging from 0 at the bottom to 1 at the top. The plot initially appears as a plain skeleton of axes and grid lines, with no curve yet. The narration says “Just.”
+
+2. **0.64–1.10** — The horizontal axis label **"Frequency (Hz)"** pulses once subtly to draw the eye. The narration says “like the low-pass.”
+
+3. **1.10–1.40** — The vertical axis label **"Amplitude Response"** pulses once subtly, reinforcing that this is the amplitude response of the filter. The narration says “filter.”
+
+4. **1.88–2.36** — The word **"high-pass filter"** appears briefly as text above the plot and then fades out, signaling the subject of the plot. The narration says “a high-pass filter.”
+
+5. **2.62–3.54** — The word **"cutoff frequency"** appears as text above the plot, then fades into the graphical element: a **vertical dashed line** intersecting the horizontal axis at the 1 Hz tick mark appears, labeled **"cutoff frequency (1 Hz)"** directly below the axis at that point. The narration says “is defined by a cutoff frequency.”
+
+6. **3.62–4.20** — The dashed cutoff line holds steady and subtly pulses once, while the label **"cutoff frequency (1 Hz)"** glows gently. The narration says “cutoff frequency.”
+
+7. **5.12–6.30** — The horizontal axis from the 0 mark to the 1 Hz cutoff line is highlighted with a pale red overlay, while the region to the right of the cutoff is highlighted with a pale green overlay. The labels **"stopband"** (pale red region, left of cutoff) and **"passband"** (pale green region, right of cutoff) appear inside their respective shaded regions. The narration says “The cutoff frequency is the frequency.”
+
+8. **6.72–8.38** — A smooth **S-shaped curve** rises from near 0 at the far left of the plot to near 1 at the far right, with its inflection point near the vertical dashed cutoff line. The curve is drawn from left to right over the duration of this beat. The narration says “below which signal components.”
+
+9. **8.76–9.66** — The portion of the curve to the **left** of the cutoff line is highlighted with a deeper red glow, emphasizing that signal components in this region are attenuated (have low amplitude response). The narration says “begin to be attenuated.”
+
+10. **9.86–10.22** — The full plot holds, with the shaded stopband and passband regions, the dashed cutoff line, and the S-shaped curve all visible. The narration says “by the filter.”
+
+11. **10.88–11.66** — The plot zooms in slightly on the region around the vertical dashed cutoff line at 1 Hz, so the transition area of the S-curve is centered and more prominent. The narration says “To make this concrete.”
+
+12. **12.14–13.14** — A large, clean text overlay appears near the top of the plot: **"High-Pass Filter"**. It fades in and holds briefly. The narration says “suppose a high-pass.”
+
+13. **13.46–15.30** — Below the **"High-Pass Filter"** label, a second line of text appears: **"Cutoff Frequency: 1 Hz"**. Simultaneously, the existing dashed vertical line at the 1 Hz position pulses once and its label **"cutoff frequency (1 Hz)"** glows. The narration says “filter has a cutoff frequency of 1 Hz.”
+
+14. **16.12–17.06** — The text overlay **"High-Pass Filter — Cutoff Frequency: 1 Hz"** fades out. The green-shaded **passband** region to the right of the cutoff line pulses gently. The narration says “Signal components above 1 Hz.”
+
+15. **17.36–18.62** — The portion of the S-curve **to the right** of the cutoff line glows green, and the vertical axis shows the curve approaching a height near 1 (amplitude response ~1), indicating preservation. A small label **"largely preserved"** appears near the upper-right region of the curve. The narration says “are largely preserved.”
+
+16. **19.72–20.58** — The green glow fades, and the red-shaded **stopband** region to the left of the cutoff line pulses gently. The narration says “Components below 1 Hz.”
+
+17. **20.80–22.30** — The portion of the S-curve **to the left** of the cutoff line glows pale red, showing the curve dropping from mid-height down toward near 0 as frequency decreases along the horizontal axis. A small label **"progressively attenuated"** appears near the lower-left region of the curve. The narration says “are progressively attenuated.”
+
+18. **23.04–24.48** — A brief text overlay appears at the top of the plot: **"As with the low-pass filter"**, then fades out. The curve remains steady on screen with both stopband and passband regions visible. The narration says “And, as with the low-pass filter.”
+
+19. **24.86–26.08** — The entire S-shaped curve is traced with a soft, flowing glow that follows the curve from left to right, emphasizing the smooth continuous transition. The transition region around the dashed cutoff line is highlighted with a gentle white glow. The narration says “this transition is gradual.”
+
+20. **26.70–27.12** — The glow effect intensifies briefly and then settles, while a small caption appears near the bottom: **"not abrupt"**. The narration says “not abrupt.”
+
+21. **27.96–28.96** — The plot zooms in on the region **just below and to the left** of the cutoff line, showing the curve in the transition zone where it is at a mid-height on the vertical axis. A **small circular marker** appears on the curve at a point just below the cutoff, indicating a frequency slightly less than 1 Hz. The narration says “Frequencies close to the cutoff.”
+
+22. **30.04–31.64** — A caption appears near the marker: **"close to cutoff: partially attenuated"**, with an arrow pointing at the marked point on the curve. The curve at that point is at an intermediate amplitude (around 0.5). The narration says “are only partially attenuated.”
+
+23. **32.18–32.72** — The view pans along the curve to the **far left** of the plot, following the curve downward as it approaches the horizontal axis. The narration says “while frequencies much lower.”
+
+24. **33.34–34.30** — A second **small circular marker** appears on the curve at a point far to the left of the cutoff line, where the curve is very close to the horizontal axis (near amplitude response ~0). The narration says “than the cutoff experience.”
+
+25. **34.84–35.88** — A caption appears near this second marker: **"well below cutoff: strongly attenuated"**, with an arrow pointing at the marked point on the curve. The curve at that point has a very low amplitude (near 0). The narration says “much greater.”
+
+26. **35.88–37.48** — The full frequency response plot zooms back out to its original framing, showing the entire S-shaped curve, the shaded stopband and passband regions, the dashed cutoff line, and both markers with their captions. The curve gently glows to emphasize the gradual transition. The scene holds on this full view through the end of the clip. The narration says “attenuation.”

@@ -1,0 +1,8 @@
+Subtopic: 2.4.5 Sampling Frequency
+Scene type: manim
+
+Narration:
+The sampling frequency — also called the sampling rate — is the number of samples collected every second. It's measured in Hertz. Sampling frequency determines how frequently the analogue signal is measured. A sampling frequency of 250 Hz means 250 samples per second. 500 Hz means 500 samples per second. 1000 Hz means 1000 samples per second. Higher sampling frequencies provide more detailed information about the signal, because more measurements are taken over the same period of time. However, higher sampling rates also increase data storage requirements and computational cost. So selecting an appropriate sampling frequency means balancing recording accuracy with efficient data processing. The key point: the sampling frequency must be sufficiently high to capture the important characteristics of the biological signal without losing information.
+
+Animation description:
+A single smooth waveform is displayed three times in a row, or in three panels. Left: dots placed sparsely along the curve, labelled '250 Hz'. Middle: dots more densely packed, labelled '500 Hz'. Right: dots very densely packed, labelled '1000 Hz'. The right panel best traces the original curve. A simple bar or gauge appears alongside labelled 'Storage & Computational Cost', growing taller as sampling frequency increases, while a separate gauge labelled 'Accuracy' also grows. Text note appears: 'Sampling frequency must be sufficiently high to capture important signal characteristics.'

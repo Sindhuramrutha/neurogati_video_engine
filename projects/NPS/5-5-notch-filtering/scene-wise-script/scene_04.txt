@@ -1,0 +1,8 @@
+Subtopic: 5.5.6 Applications in Neural Signal Processing — EEG
+Scene type: manim
+
+Narration:
+In neural signal processing, notch filters get used whenever electrical interference sneaks in. For EEG, notch filters are routinely applied to reduce that 50 or 60 hertz power line hum that contaminates scalp recordings. Since EEG measures very small voltages through the scalp, it's especially vulnerable to picking up electromagnetic noise from the room.
+
+Animation description:
+A head outline with multiple EEG electrodes on the scalp. Faint wavy interference lines enter from a nearby power socket icon. A small notch filter symbol appears near each electrode trace, and the wavy lines fade, leaving a cleaner EEG trace on a small monitor beside the head.

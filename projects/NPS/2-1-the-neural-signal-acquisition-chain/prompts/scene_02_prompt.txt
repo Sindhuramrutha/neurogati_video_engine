@@ -1,0 +1,29 @@
+1. (0.00–3.78) The screen opens empty except for a soft horizontal guide line running left to right across the middle. Narration introduces the question — "So what exactly is the acquisition chain?" — as six faint, unlabeled rectangular placeholder slots fade in along the guide line, arranged left to right with small arrows already visible between adjacent slots, all slots dim and unlabeled, waiting to be filled in.
+
+2. (2.82–5.56) The six placeholder slots remain dim. A title caption fades in above the slots reading "The Acquisition Chain" — nothing else changes. Narration defines it as the complete sequence of hardware and electronic components. The six slots pulse once lightly in sequence, left to right, as the word "sequence" is spoken.
+
+3. (5.56–8.54) A short label strip beneath the guide line fades in reading "biological activity → digital data," with a small arrow icon between the two phrases, directly under the chain of placeholders. The caption and slots remain static. Narration states that the chain converts biological activity into digital data.
+
+4. (9.18–14.54) The "biological activity → digital data" label and title caption fade out or dim. Above the slots, a small note appears: "Different sensors, same workflow." The six slots remain unlabeled but continue to hold their positions, reinforcing the chain structure. Narration notes that different techniques may use different sensors but the workflow stays the same.
+
+5. (15.34–16.42) The small note above the slots clears away. The first slot, leftmost, begins to brighten and enlarge slightly as narration says "Here's the chain." At the point where narration says "biological," the first box fills with the label "Biological Source" in clear text, and the box settles back to normal size while staying brighter than the unfilled slots.
+
+6. (16.42–17.74) The first box labeled "Biological Source" remains filled and highlighted. As narration says "source," the box pulses gently once, confirming its position as the first stage. No other boxes change.
+
+7. (17.74–18.80) The second slot brightens and enlarges slightly as narration says "then electrode or sensor." The slot fills with the label "Electrode/Sensor" and settles back to normal size, matching the brightness of the first box. The first box remains labeled but dims slightly to a resting state.
+
+8. (19.42–20.06) The third slot brightens and enlarges slightly as narration says "then amplifier." The slot fills with the label "Amplifier" and settles back to normal size. The first two boxes remain visible and labeled in their resting states.
+
+9. (20.50–21.30) The fourth slot brightens and enlarges slightly as narration says "then filter." The slot fills with the label "Filter" and settles back to normal size. The first three boxes remain visible and labeled.
+
+10. (21.50–23.20) The fifth slot brightens and enlarges slightly as narration runs through "then analog to digital converter." The slot fills with the label "Analog-to-Digital Converter" and settles back to normal size. The first four boxes remain visible and labeled.
+
+11. (23.40–24.50) The sixth slot, rightmost, brightens and enlarges slightly as narration says "and finally the computer." The slot fills with the label "Computer" and settles back to normal size. All six boxes are now filled with their labels and arrows between them.
+
+12. (24.48–27.92) The full chain of six labeled boxes stands complete and evenly spaced with arrows between them. As narration says "Each component," the boxes highlight one at a time in rapid left-to-right succession, each highlighting and returning to normal in turn. Then a caption fades in beneath the chain: "Specific function per stage." Narration states each component performs a specific function.
+
+13. (27.92–32.74) The caption "Specific function per stage" stays beneath the chain. The six boxes pulse together once as a unit, all glowing briefly at the same time. The caption changes or extends to read "Quality depends on every stage." Narration explains that recording quality depends on every single stage working successfully.
+
+14. (33.88–36.50) All six boxes remain labeled and visible. One box — the Filter box — dims to a red-tinted or darkened state while the other five remain normally lit. A warning symbol or small red "×" appears over the failing box. The caption below shifts to "If one stage fails, the whole recording suffers." Narration delivers the closing point about failure.
+
+15. (36.50–37.35) The chain remains visible with the failing box highlighted in a darkened red state and the other five boxes normally lit. The caption "If one stage fails, the whole recording suffers." remains beneath. The scene holds on this final state through the end of the narration.

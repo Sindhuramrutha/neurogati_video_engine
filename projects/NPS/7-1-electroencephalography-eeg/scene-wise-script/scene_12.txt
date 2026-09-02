@@ -1,0 +1,8 @@
+Subtopic: 7.1.3 Sleep Stages and EEG - Wakefulness and Light Sleep
+Scene type: manim
+
+Narration:
+Sleep is broadly divided into two major categories: Non-Rapid Eye Movement sleep, or NREM sleep, and Rapid Eye Movement, or REM, sleep. NREM sleep is further divided into several stages that represent progressively deeper levels of sleep. Each stage is associated with characteristic EEG activity. During wakefulness, EEG typically contains relatively faster activity. When a person is relaxed with their eyes closed, alpha rhythms are often prominent. As the individual enters light sleep, alpha activity gradually decreases and slower rhythms begin to appear.
+
+Animation description:
+A branching diagram appears: Sleep splits into NREM and REM. NREM further splits into stages. A waveform for wakefulness is shown, fast with clear alpha oscillations (around 10 Hz). A second waveform for light sleep appears, with slower rhythm and decreasing alpha activity. Alpha wave amplitude shrinks visually.

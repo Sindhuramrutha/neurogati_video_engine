@@ -1,0 +1,8 @@
+Subtopic: 6.2.4 What is the Short-Time Fourier Transform? — Definition
+Scene type: manim
+
+Narration:
+So what exactly is the STFT? The Short-Time Fourier Transform is a time–frequency analysis technique that divides a signal into short time segments, and performs a Fourier Transform on each segment separately. Rather than analysing the entire signal at once, STFT analyses only a small portion of the signal at a time. Imagine placing a small window over the beginning of the signal. Only the data inside this window are analysed. The window is then moved slightly forward, and the analysis is repeated. This process continues until the entire signal has been examined.
+
+Animation description:
+A continuous signal waveform spans the screen horizontally. A rectangular window outline, highlighted in a bright color, encloses the first small segment of the waveform. Inside the window, the signal is emphasized with a brighter stroke. After a brief pause, the window smoothly slides rightward along the signal and encloses the next segment, with the newly selected region highlighted in the same way.

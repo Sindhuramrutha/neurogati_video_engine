@@ -1,0 +1,152 @@
+{
+  "index": 6,
+  "slide_width_emu": 14630400,
+  "slide_height_emu": 8229600,
+  "shapes": [
+    {
+      "shape_id": 2,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 0",
+      "manim_bbox": [
+        1.7777777499999994,
+        -3.9999999375,
+        7.111111,
+        3.9999999375
+      ]
+    },
+    {
+      "shape_id": 3,
+      "kind": "text",
+      "text": "Phrenology: A History of Errors",
+      "alt_text": "Text 0",
+      "manim_bbox": [
+        -6.392823852673612,
+        2.6290511886284724,
+        1.0432876282986117,
+        3.2703703192708335
+      ]
+    },
+    {
+      "shape_id": 4,
+      "kind": "text",
+      "text": "In 1796, Franz Joseph Gall proposed that specific brain regions controlled specific human qualities. While his idea of \"localization\" was a step forward, his method was pseudoscience.",
+      "alt_text": "Text 1",
+      "manim_bbox": [
+        -6.392823852673612,
+        1.3364576441319445,
+        1.0594906026736117,
+        2.321180093993056
+      ]
+    },
+    {
+      "shape_id": 5,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 1",
+      "manim_bbox": [
+        -6.392823852673612,
+        -1.3079857868923606,
+        -2.7693282351388886,
+        1.10555553828125
+      ]
+    },
+    {
+      "shape_id": 6,
+      "kind": "text",
+      "text": "The Theory",
+      "alt_text": "Text 2",
+      "manim_bbox": [
+        -6.187615340277778,
+        0.5796296205729163,
+        -3.6219908056597223,
+        0.9003470258854169
+      ]
+    },
+    {
+      "shape_id": 7,
+      "kind": "text",
+      "text": "Gall believed the size of a brain region corresponded to the strength of a trait (e.g., generosity).",
+      "alt_text": "Text 3",
+      "manim_bbox": [
+        -6.187615340277778,
+        -0.5282414615625006,
+        -2.9745367475347226,
+        0.4564809882986114
+      ]
+    },
+    {
+      "shape_id": 8,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 2",
+      "manim_bbox": [
+        -2.5641206948437496,
+        -1.3079857868923606,
+        1.0594906026736117,
+        1.10555553828125
+      ]
+    },
+    {
+      "shape_id": 9,
+      "kind": "text",
+      "text": "The Method",
+      "alt_text": "Text 4",
+      "manim_bbox": [
+        -2.3589121824479173,
+        0.5796296205729163,
+        0.20671235217013884,
+        0.9003470258854169
+      ]
+    },
+    {
+      "shape_id": 10,
+      "kind": "text",
+      "text": "He claimed these enlarged areas pushed against the skull, creating bumps that could be \"read\" to determine personality.",
+      "alt_text": "Text 5",
+      "manim_bbox": [
+        -2.3589121824479173,
+        -0.8564819541493058,
+        0.8542820902777777,
+        0.4564809882986114
+      ]
+    },
+    {
+      "shape_id": 11,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 3",
+      "manim_bbox": [
+        -6.392823852673612,
+        -3.2702546392881944,
+        1.0594906026736117,
+        -1.5131942992881946
+      ]
+    },
+    {
+      "shape_id": 12,
+      "kind": "text",
+      "text": "The Legacy",
+      "alt_text": "Text 6",
+      "manim_bbox": [
+        -6.187615340277778,
+        -2.039120216996528,
+        -3.6219908056597223,
+        -1.7184028116840278
+      ]
+    },
+    {
+      "shape_id": 13,
+      "kind": "text",
+      "text": "Though \"bumpology\" was flawed, it introduced the crucial concept that different brain areas support different mental lives.",
+      "alt_text": "Text 7",
+      "manim_bbox": [
+        -6.187615340277778,
+        -2.8187508065451397,
+        0.8542830623784718,
+        -2.162268849270834
+      ]
+    }
+  ],
+  "notes_text": null
+}

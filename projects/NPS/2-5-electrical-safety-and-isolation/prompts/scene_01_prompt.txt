@@ -1,0 +1,27 @@
+1. **0.00–2.64** — Continue visually from the previous scene's final frame: human figure left, equipment right, warning triangle, "Electrical Safety" and "Electrical Isolation" labels visible, isolation gap in the cable pulsing gently. As narration defines the term, the "Electrical Safety" label brightens and a small shield icon pulses once over the human figure and once over the equipment, then both shields fade.
+
+2. **2.82–6.48** — Three small labeled icons fade in beneath the scene in a horizontal row: a simple head silhouette labeled "participant," a standing person silhouette labeled "operator," and the amplifier/computer box labeled "equipment." Each icon gets a subtle protective ring drawn around it in succession as the corresponding word is spoken. At 5.68–6.48, a small yellow lightning-bolt hazard symbol appears above the three icons and is crossed out by a diagonal red line, then fades.
+
+3. **6.48–8.54** — The three protective icons fade out. The main scene dims slightly. A faint oscilloscope-like waveform (small, irregular sine) drifts across the cable between the human and amplifier, labeled "biomedical signal." The label "biomedical signal recording" settles above the scene.
+
+4. **9.60–13.30** — The equipment box dims and is pushed to the right edge. On the left side, a plain bench-top meter illustration fades in (a small box with a dial and two probe wires) labeled "ordinary measurement." The probe wires end in mid-air, not touching anything. A check mark fades in next to it, then the whole ordinary-meter illustration fades out.
+
+5. **14.16–19.58** — The human figure brightens. A thick cable line is redrawn from the human's head and arm directly to the equipment box, ending in a visible contact point on the skin. The label "direct contact" appears next to the contact point. The earlier isolation gap in the cable closes, showing a direct wired connection from body to powered device. The warning triangle pulses once in the corner.
+
+6. **20.32–22.06** — The screen cross-fades to a new close-up diagram: a head outline (profile, simple stroke) with small disc electrodes drawn as flat circles on the scalp. The label "EEG" fades in bold above the head. A cable extends from one scalp electrode to the right, toward a powered equipment box with a visible power-plug icon on top.
+
+7. **22.88–26.32** — The screen cross-fades to a second diagram: a human forearm outline, shown in cross-section. Needle electrodes (thin pointed lines) are drawn on the skin surface and one inserted into the muscle tissue inside the arm. The label "EMG" fades in bold above the arm. The cable again runs from the electrode site to the powered equipment box with plug icon. The inserted needle pulses once as "inserted into muscles" is spoken.
+
+8. **27.20–31.54** — The screen cross-fades to a third diagram: a brain outline (side-view, simple stroke) with a grid of small electrode dots placed directly on the brain's outer surface. The label "ECoG" fades in bold above the brain. A surgical retractor or open skull hint (simple curved cutaway) is shown. A cable runs from the grid to the same powered equipment box with plug icon. As "during surgery" is spoken, a small "surgery" tag fades in beside the brain.
+
+9. **32.38–35.50** — A two-panel comparison: on top, the EEG, EMG, and ECoG diagrams shrink into small thumbnails in a row, each with a tiny but visible waveform showing a faint, low-amplitude oscillation; label below reads "extremely small biological signals." On the bottom, the powered equipment box with plug icon glows slightly, label "powered devices" beneath it.
+
+10. **35.98–38.56** — A thin yellow line traces from the equipment box's power plug icon along the cable back toward the EEG/EMG/ECoG thumbnails, ending in an arrowhead pointing at the body contact points. The line brightens to red as it reaches the body. A red warning flash pulses once over the contact point. Label "connected to powered electronic devices" appears briefly near the line.
+
+11. **39.52–44.20** — The red arrow reverses direction: a red current arrow (jagged, pointed left) travels from the powered equipment box back along the cable toward the human figure's contact point. As it approaches the body, the warning triangle from earlier flashes bright red, the screen edge glows red briefly, and the arrow fades out before reaching the contact point. Label "unintended current → serious safety risk" fades in and holds.
+
+12. **44.74–48.50** — The red warning elements fade. The scene settles back to the earlier full frame: human figure, equipment box, cable, warning triangle. A simple laboratory clipboard or checklist silhouette with blank lines (explicitly generic, unlabeled) appears briefly and is marked with a single check mark, labeled "good laboratory practice." The clipboard fades out.
+
+13. **49.32–53.04** — The "Electrical Safety" title and "Electrical Isolation" label fade back in and pulse once. The isolation gap in the cable reappears between the human and the equipment, now glowing softly. Three small key icons appear at the top: EEG head, EMG arm, ECoG brain, each with a shield symbol, and the text "fundamental requirement of every biomedical recording system" fades in beneath them.
+
+14. **53.04–53.77** — Full held frame: human figure left, powered equipment right, isolation gap in cable, three small shield-protected electrode diagrams, warning triangle upper side, title and label visible. The isolation gap pulses once more and holds to the end of the clip.

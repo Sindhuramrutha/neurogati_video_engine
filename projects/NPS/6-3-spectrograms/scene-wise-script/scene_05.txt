@@ -1,0 +1,8 @@
+Subtopic: Applications in Neural Signal Processing
+Scene type: manim
+
+Narration:
+Spectrograms are widely used in neural signal processing because many neural signals vary continuously over time. Some common applications include EEG analysis, where spectrograms help visualise changes in neural oscillations during cognitive tasks, sleep, or sensory stimulation. They are also used in EMG analysis, where they help observe how muscle activation changes during movement or fatigue. In brain–computer interfaces, spectrograms are used to monitor time-varying neural rhythms that are needed for feature extraction and classification. And in event-related studies, spectrograms help examine changes in neural activity before, during, and after a stimulus is presented.
+
+Animation description:
+A two-by-two grid of simplified spectrogram examples appears, each labelled with its application. Top left: 'EEG Analysis' with slow rhythmic bands appearing during sleep stages. Top right: 'EMG Analysis' with broad high-frequency energy increasing during a muscle contraction. Bottom left: 'Brain–Computer Interfaces' with a specific frequency band highlighted and extracted as features. Bottom right: 'Event-Related Studies' with a stimulus marker and a brief response burst after the marker. Labels fade in clearly as each is discussed.

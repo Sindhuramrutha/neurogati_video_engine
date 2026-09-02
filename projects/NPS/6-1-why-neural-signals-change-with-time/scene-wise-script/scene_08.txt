@@ -1,0 +1,8 @@
+Subtopic: 6.1.6 An Example Using EEG
+Scene type: manim
+
+Narration:
+Let's make this concrete with a thirty-second EEG recording. During the first ten seconds, the participant sits quietly with their eyes closed, and alpha activity is prominent. At ten seconds, the participant opens their eyes, and the alpha rhythm decreases. At twenty seconds, a visual stimulus is presented, and a brief event-related response appears. Although all three periods belong to the same recording, their frequency content is clearly different. This demonstrates that neural activity evolves continuously, rather than remaining constant throughout the recording.
+
+Animation description:
+A simulated EEG waveform is drawn across the full width of the screen, representing a thirty-second recording. Vertical dashed lines divide the waveform into three clearly labelled segments: 'Eyes closed (0–10 s)', 'Eyes open (10–20 s)', and 'Stimulus (20–30 s)'. In the first segment, the waveform is dominated by a slow, large-amplitude alpha rhythm with prominent regular oscillations. At the ten-second boundary, the waveform visibly reduces in amplitude and becomes less regularly oscillatory. At the twenty-second boundary, a sharp transient deflection appears — a brief event-related response — followed by a return to smaller irregular activity. Small labels 'Alpha prominent', 'Alpha decreases', and 'Event-related response' appear above the corresponding segments in synchrony with the narration. The three segment regions are subtly highlighted in sequence, emphasising that all three belong to a single continuous recording yet differ clearly in frequency content.

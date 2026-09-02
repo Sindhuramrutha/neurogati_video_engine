@@ -1,0 +1,8 @@
+Subtopic: 2.2.2 Learning Objectives
+Scene type: manim
+
+Narration:
+After completing this section, you should be able to: explain the purpose of an electrode or sensor; distinguish between surface electrodes, needle electrodes, and microelectrodes; describe the electrodes used in EEG and ECoG recordings; explain why MEG uses magnetic sensors instead of electrodes; and compare the advantages and limitations of different recording sensors.
+
+Animation description:
+A bulleted list appears on screen. Five objective lines fade in one at a time, each with a small check-box icon to its left. The list remains static on screen as all five objectives are narrated.

@@ -1,0 +1,8 @@
+Subtopic: 2.4.4 What is Sampling?
+Scene type: manim
+
+Narration:
+So what exactly is sampling? Sampling is the process of measuring the amplitude of an analogue signal at regular intervals of time. Each measurement is called a sample. Think of it like taking photographs of a moving object every second. Instead of recording every instant continuously, you capture a series of individual images. Sampling works in a similar way. Rather than recording every continuous change in voltage, the acquisition system measures the signal at equally spaced time intervals. Each measurement represents the signal at that particular instant. And when thousands of samples are collected every second, they provide an accurate digital representation of the original analogue waveform. For example, suppose an EEG recording system samples the signal one thousand times every second. That means every second, the system records one thousand individual voltage measurements. Collectively, those measurements represent the original EEG waveform in digital form.
+
+Animation description:
+Two visual analogies. Top: a moving object — say, a bouncing ball — is photographed at regular intervals. A series of snapshot frames appears at equally spaced moments, each a frozen image of the ball. Bottom: a smooth analogue waveform is overlaid with a series of vertical dashed lines at equally spaced time points, each line intersecting the waveform. A dot is placed where each dashed line meets the waveform — those dots are the 'samples'. Then a separate panel shows just the dots, which together reconstruct the shape of the original waveform. For the EEG example, a small label appears: '1000 samples per second' with a counter ticking upward.

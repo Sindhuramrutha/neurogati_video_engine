@@ -1,0 +1,8 @@
+Subtopic: Common Safety Measures
+Scene type: manim
+
+Narration:
+A safe neural recording system doesn't rely on just one thing — it incorporates several protective measures throughout the entire acquisition chain. The most important practices are: using electrically isolated recording equipment, inspecting electrodes and connecting cables before every use, ensuring proper grounding of the recording system where appropriate, using equipment designed specifically for biomedical applications, and following established laboratory or clinical safety procedures. Together, these measures reduce the likelihood of electrical hazards and also contribute to reliable signal acquisition. And one important note: high-quality recordings should never come at the expense of participant safety. Protecting the participant is always the first priority in any biomedical recording procedure.
+
+Animation description:
+Screen shows a vertical checklist appearing one item at a time, each with a simple icon: a shield for isolated equipment, a magnifying glass over a cable for inspection, a ground symbol for grounding, a medical cross for biomedical-grade equipment, and a clipboard for safety procedures. A green checkmark appears next to each as it arrives. At the end, a banner slides up reading 'Participant safety is the first priority' with a shield icon that pulses once.

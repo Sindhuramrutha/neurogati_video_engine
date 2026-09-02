@@ -1,0 +1,19 @@
+1. (0.00–0.98) The scene opens on a dark background. A flat horizontal baseline appears, with a small waveform drawn along it — an oscillation of very small vertical amplitude, barely rising above the baseline. A label beneath reads "a few microvolts." Narration: "Now the amplifier."
+
+2. (1.92–5.60) The tiny waveform remains centered on the left side of the frame. A small arrow or flow line points from the waveform toward the right. A triangular electronic amplifier symbol — a triangle outline with its point facing right — sits empty and unpowered in the center of the frame, waiting. Narration: "The biological signal detected by the electrode is extremely small."
+
+3. (5.90–7.76) The label "a few microvolts" brightens or pulses once beneath the small waveform, emphasizing the tiny amplitude. The waveform itself stays small, barely visible above the baseline. Narration: "often only a few microvolts."
+
+4. (8.14–11.26) A caption appears above or beside the small waveform: "too weak to process reliably." The small waveform looks fragile — the baseline and waveform are drawn faintly, and the flow into the amplifier symbol is shown as too weak to reach it, stopping short or fading out before entering the triangle. Narration: "That's too weak for any electronic system to process reliably."
+
+5. (12.18–13.98) The small waveform's flow line extends fully into the left side of the amplifier triangle. The triangle symbol lights up. Narration: "So we pass the signal through an amplifier."
+
+6. (14.94–17.14) On the right side of the amplifier triangle, an output flow line emerges, carrying a waveform of identical shape but dramatically larger vertical amplitude — clearly visible and tall. A label beneath it reads "amplified signal." The output waveform rises well above the baseline, many times taller than the input waveform. Narration: "The amplifier increases the signal's amplitude, making it larger."
+
+7. (17.88–21.52) The left small waveform and the right large waveform remain on screen. The flow passes through the amplifier symbol continuously. A subtle animated pulse traces along the waveform shape on the right, from start to finish, drawing attention to the fact that the same waveform shape is present, not just its size. Narration: "while preserving the information contained within the waveform."
+
+8. (22.18–24.22) A small comparison inset appears below or between the two waveforms: the small input waveform and the large output waveform are superimposed on the same axes, drawn in two different colors on the same scale. Their turning points — peaks, troughs, and zero crossings — visibly align at the same horizontal positions, confirming identical shape. Narration: "The shape of the waveform stays the same."
+
+9. (24.60–25.60) The superimposed comparison holds. The large output waveform pulses once, emphasizing its size relative to the input waveform, while the shapes remain aligned. A final short caption appears: "same shape, bigger." Narration: "it just becomes bigger."
+
+10. (25.60–26.35) The amplifier triangle, input waveform, output waveform, labels, and comparison inset all hold static through the end of the scene. Narration: (silence)

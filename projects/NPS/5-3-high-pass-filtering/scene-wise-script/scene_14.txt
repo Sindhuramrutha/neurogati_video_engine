@@ -1,0 +1,8 @@
+Subtopic: Transition to Section 5.4
+Scene type: manim
+
+Narration:
+So far, we have studied two fundamental filters. A low-pass filter preserves low frequencies, while a high-pass filter preserves high frequencies. But many neural signals occupy only a specific range of frequencies. In those situations, we might want to remove both very low and very high frequencies, while preserving only the frequencies of interest. To do that, we use a band-pass filter — and that will be the focus of the next section.
+
+Animation description:
+A visual transition showing two modest boxes labeled 'Low-pass filter' and 'High-pass filter' at the top, each with a small upward or downward arrow icon respectively. Then a central frequency spectrum appears where the entire band is visible. Two translucent gray regions invade from the left and from the right, leaving only a central band highlighted in color. The central band becomes bold and pulses. Below, a new box appears labeled 'Band-pass filter' with a double-arrow icon, larger than the previous two boxes. The old two boxes fade back slightly. The whole screen then dims except the 'Band-pass filter' box, then a forward arrow animation indicates the transition to the next section. The text 'Next: Section 5.4' appears briefly.

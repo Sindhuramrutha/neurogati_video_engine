@@ -1,0 +1,8 @@
+Subtopic: Learning Objectives
+Scene type: manim
+
+Narration:
+After completing this section, you should be able to: define a high-pass filter. Explain how a high-pass filter operates. Describe the role of cutoff frequency. Identify applications of high-pass filtering in neuroscience. And understand the advantages and limitations of high-pass filtering.
+
+Animation description:
+A simple vertical list of five items appears one at a time, each item sliding in from the left with a small rectangular bullet point. First item: 'Define a high-pass filter.' Second: 'Explain how a high-pass filter operates.' Third: 'Describe the role of cutoff frequency.' Fourth: 'Identify applications of high-pass filtering in neuroscience.' Fifth: 'Understand the advantages and limitations of high-pass filtering.' As each item appears, the previous items remain but are slightly dimmed so the currently appearing item is highlighted. At the end, all items are fully visible, laid out as a tidy checklist.

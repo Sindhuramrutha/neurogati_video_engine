@@ -1,0 +1,29 @@
+1. [0.00-3.24] A neuron appears centered in the frame, matching the previous scene's style: a cell body with several branching dendrites extending upward, an axon extending downward with a slight rightward curve, drawn in neutral outline. No labels yet.
+
+2. [3.24-4.66] A list of factor labels fades in on the right side of the frame as a vertical bulleted list: "type of neuron", "location of recording electrode", "distance between neuron and electrode", "geometry of the neuron", "properties of the electrode". Only the first item highlights as it appears.
+
+3. [4.66-12.52] The remaining list items highlight in sequence as the narration names them: the second item highlights around 5.18, the third around 7.32, the fourth around 9.78, and the fifth around 11.46. Each item dims back to neutral after it's named so only the currently named item is highlighted.
+
+4. [13.38-17.56] The list fades out. An electrode descends from the top of the frame and comes to rest just outside the neuron's soma (cell body), about one cell-body width away. A small waveform trace panel appears to the right of the neuron, labeled "soma recording". The trace shows a single spike waveform with a dominant negative peak: a sharp downward deflection from baseline, much larger than the small positive shoulders on either side. The negative peak dominates the waveform's appearance.
+
+5. [18.08-21.68] The electrode lifts and moves to a position just outside one of the dendrites, about one dendrite-width away from the upper branch. The trace panel's label changes to "dendrite recording", and a new waveform draws in the same trace. The dendrite waveform has a visibly different shape from the soma waveform: a smaller negative deflection with more prominent positive components on either side, giving it a more biphasic or triphasic appearance. The two waveforms are clearly distinct shapes, not just different scales.
+
+6. [21.68-27.90] The two waveform shapes from beats 4 and 5 fade in side by side for comparison: the soma waveform (dominant negative peak) on the left, the dendrite waveform (different shape) on the right. The electrode fades out. A brief soft highlight pulses over each waveform as the narration mentions the information the waveform carries about underlying neuronal activity. The neuron remains in the frame behind the traces.
+
+7. [29.00-31.30] The comparison panel fades out, leaving the neuron and the electrode near the dendrite. The scale of the scene feels tighter; the waveform trace panel now sits at the bottom of the frame. As the narration states that extracellular spikes are very small signals, the waveform in the trace shrinks visibly and the trace's vertical scale label appears with a small value.
+
+8. [32.00-35.74] A second trace panel appears above or beside the first, labeled "intracellular recording". A large action potential waveform draws with the same shape as the previous scene's intracellular trace: rising from a flat baseline at −70 mV to a tall peak at about +30 mV. A vertical scale bar appears next to the intracellular trace labeled "100 mV". The extracellular trace sits beside it, visibly tiny by comparison.
+
+9. [36.16-41.06] The extracellular trace's scale bar appears next to it, labeled "100 μV". A bracket or double-headed arrow appears between the intracellular trace and the extracellular trace, marking the amplitude difference between the two. The labels "millivolts" and "microvolts" appear under the respective traces, emphasizing the unit difference.
+
+10. [41.94-46.78] The intracellular trace fades out, leaving the neuron and the electrode near the dendrite in the center of frame, with the extracellular trace panel at the bottom. The electrode begins to move slowly away from the dendrite, moving outward in a straight line. As it moves, the waveform amplitude in the trace shrinks dramatically and smoothly. By the time the electrode is roughly twice the original distance away, the waveform is barely a fraction of its original height. A distance indicator (a small line or ruler mark between electrode and dendrite) appears and lengthens as the electrode moves.
+
+11. [47.76-49.14] The moving electrode and the neuron fade out. The scene zooms into the extracellular trace panel, which now fills the frame. A single extracted spike waveform appears centered on a horizontal time axis. The spike waveform is the soma-shaped waveform from beat 4, drawn clearly with its dominant negative peak.
+
+12. [49.90-53.86] The time axis becomes prominent, with tick marks and labels appearing. A bracket or shaded region under the waveform spans from spike onset to spike offset, labeled "2–3 ms". The zoom level increases so the waveform occupies most of the frame width, visibly showing how short the spike is on the time axis. The waveform itself remains static in shape while the zoom occurs.
+
+13. [53.86-57.08] Below or beside the time-axis view, a frequency-axis panel fades in, labeled "frequency content". A spectrum plot begins to draw showing the spike's frequency distribution: low amplitude at low frequencies, then a broad concentration of energy rising in the several hundred Hz range and extending up to several kHz. The spike waveform remains visible above.
+
+14. [57.96-63.70] The spectrum plot's frequency axis becomes highlighted. A shaded band appears spanning from 300 Hz on the left to several kHz on the right, labeled "300 Hz – several kHz". The band pulses gently as the narration specifies this frequency range. The spike waveform and time axis remain in the frame above.
+
+15. [64.60-69.72] The visual holds: the spike waveform on its time axis above, the frequency spectrum below with the shaded 300 Hz to several kHz band. No new elements appear. A subtle overlay or framing pulse emphasizes the whole composition as the narration concludes that signal processing is essential for working with spikes. Everything remains static until the scene ends at 69.72 seconds.

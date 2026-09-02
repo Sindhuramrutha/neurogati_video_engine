@@ -1,0 +1,8 @@
+Subtopic: 2.2.7 ECoG Grids
+Scene type: manim
+
+Narration:
+Unlike EEG, Electrocorticography records electrical activity directly from the surface of the cerebral cortex. Instead of individual scalp electrodes, ECoG uses flexible electrode grids or strips that are surgically placed on the exposed cortex. Because the electrodes are much closer to the neural source, ECoG recordings provide higher signal amplitude, better spatial resolution, and an improved signal-to-noise ratio compared with EEG. However, these advantages come at the cost of requiring neurosurgery, making ECoG an invasive recording technique.
+
+Animation description:
+A cross-section of the head is shown. The skull is partially open to reveal the cerebral cortex. A flexible grid containing multiple small circular electrode contacts is placed directly onto the surface of the cortex. A side-by-side comparison panel shows a weak, noisy EEG waveform on the scalp versus a stronger, cleaner ECoG waveform at the cortex. A 'requires neurosurgery' warning label appears with a caution icon near the ECoG grid.

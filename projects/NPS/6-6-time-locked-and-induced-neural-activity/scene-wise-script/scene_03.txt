@@ -1,0 +1,8 @@
+Subtopic: Comparing Time-Locked and Induced Activity
+Scene type: manim
+
+Narration:
+Although both types of neural activity are associated with an event, they differ in an important way. The key difference is timing consistency. Time-locked responses remain aligned across repeated trials, whereas induced responses vary in their timing.
+
+Animation description:
+A split-screen comparison is shown. On the left, a group of epochs with deflections all at the same latency, and a vertical line overlay showing tight alignment, labeled 'Time-Locked: Consistent Timing'. On the right, epochs with deflections at varied latencies, with no single alignment line, labeled 'Induced: Variable Timing'. A brief highlight pulses each label as it is spoken.

@@ -1,0 +1,27 @@
+1. 0.00 — A 2×3 grid of six small rectangular windows fades in, evenly spaced on screen. Each window shows an animated raw noisy signal trace (random fluctuations with mixed frequencies and a visible slow drift component) in its upper half, and an empty lower half (a flat, dim reference line). Beneath each window, a label is faintly visible in dark gray: top row left to right — “Low-pass”, “High-pass”, “Band-pass”; bottom row left to right — “Notch”, “Moving-average”, “Median”.
+
+2. 8.62 — All six raw signal traces simultaneously surge with extra high-frequency jitter and a brief, large interference burst across the signals, then return to their normal noise, highlighting unwanted noise and interference.
+
+3. 12.94 — The Low-pass window illuminates: its lower trace animates into a smoothed version of the raw signal above (high-frequency noise removed, slow drift still present). The label “Low-pass” brightens to white, and the window gains a glowing green outline. All other windows remain unlit.
+
+4. 18.06 — The High-pass window illuminates: its lower trace shows a high-pass filtered version of its raw signal (the slow drift is removed, leaving only the faster fluctuations and sharp edges). The label “High-pass” brightens to white, and the window gains a glowing blue outline. The Low-pass window stays lit.
+
+5. 23.66 — The Band-pass window illuminates: its lower trace displays a narrow-band oscillatory component extracted from its noisy raw signal (a rhythmic wave at a specific frequency). The label “Band-pass” brightens to white, and the window gains a glowing purple outline. All previously lit windows remain lit.
+
+6. 27.72 — The Notch window illuminates: its raw signal now visibly contains a 50 Hz sinusoidal hum overlaid on the neural waveform; the lower trace shows the hum removed while the underlying waveform shape is preserved. The label “Notch” brightens to white, and the window gains a glowing orange outline.
+
+7. 32.20 — The Moving-average window illuminates: its lower trace displays a moving-average smoothed version of its noisy raw signal (random noise reduced, waveform edges slightly softened). The label “Moving-average” brightens to white, and the window gains a glowing yellow outline.
+
+8. 36.62 — The Median window illuminates: its raw signal has occasional sharp spike artifacts; the lower trace shows the spikes removed while the sharp waveform edges and transient features are preserved intact. The label “Median” brightens to white, and the window gains a glowing red outline. All six windows are now lit and each shows a distinct raw/filtered pair.
+
+9. 48.96 — The entire grid of six illuminated windows smoothly shrinks and moves upward, settling in the top quarter of the screen. Traces and labels remain visible but smaller. In the now-empty lower three-quarters, a thin horizontal timeline with a small rectangular sliding-window graphic at its left end appears dimly.
+
+10. 53.30 — The timeline brightens, and the sliding window begins moving steadily from left to right. As it advances, a spectrogram (a rectangular color-coded frequency‑versus‑time grid) constructs itself directly beneath the timeline, column by column, showing the signal’s evolving spectral content.
+
+11. 60.30 — To the right of the spectrogram, a wavelet‑scale graphic fades in: a vertical arrangement of scaled wavelet shapes (dilated and compressed versions of a mother wavelet), each labeled with its scale.
+
+12. 61.58 — Next to the wavelet scale, an ERP plot fades in: a waveform with several labeled peaks (N1, P2, N2) plotted against a horizontal time axis, representing an event-related potential.
+
+13. 62.98 — At the bottom center of the screen, the text “Next: Non-stationary signals” fades in, in a clean white sans-serif font with a subtle drop shadow. The shrunken grid, sliding window, spectrogram, wavelet scale, and ERP plot all remain on screen.
+
+14. 66.40 — All elements hold. The sliding window continues its steady rightward motion, and the spectrogram continues to fill until the scene ends. No new elements appear.

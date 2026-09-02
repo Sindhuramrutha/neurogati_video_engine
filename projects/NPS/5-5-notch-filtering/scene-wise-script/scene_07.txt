@@ -1,0 +1,8 @@
+Subtopic: 5.5.8 Limitations — part 2, Important Note
+Scene type: manim
+
+Narration:
+One crucial point — a notch filter is not a replacement for doing the recording right in the first place. Whenever possible, power line interference should be minimized by making sure you have good electrode contact, proper grounding, appropriate shielding, and correct equipment setup. Filtering should be your tool for reducing residual interference, not a crutch to compensate for poor recording conditions.
+
+Animation description:
+A split screen. On the left, a messy setup: loose electrode dangling, ground wire disconnected, red flashing warning icons, with a large notch filter symbol awkwardly pasted over the bad signal. This image gets a large red X. On the right, a well-prepared setup: firm electrode contact, grounded shield in place, green checkmarks, and a small, subtle notch filter icon applied only to the tiny remaining ripple. Text: 'Filter residual interference, not poor practices.'

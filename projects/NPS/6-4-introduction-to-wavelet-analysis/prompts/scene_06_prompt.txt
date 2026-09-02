@@ -1,0 +1,19 @@
+1. **0.00–2.92**: A split screen fades in from the previous scene's grid. On the left, the heading 'Advantages' appears at the top; on the right, the heading 'Limitations' appears at the top. The left column is empty, awaiting icons. The narration introduces "Wavelet analysis offers several important advantages," and the word 'Advantages' brightens in a highlight color as the narration reaches it.
+
+2. **3.82–5.86**: Under 'Advantages', the first icon fades in: a flexible arrow that visibly bends and morphs to match a changing signal waveform beside it. The arrow flexes smoothly as the waveform's frequency and amplitude shift, illustrating adaptation. The icon holds as the narration says "It adapts to signals that change over time."
+
+3. **6.48–8.90**: A second icon fades in beneath the first, this one showing a narrow wavelet shape directly over a fast transient in a signal. The transient is a sharp, brief spike, and the narrow wavelet aligns tightly over it, emphasizing temporal precision. The icon holds as the narration says "It provides good time resolution for rapid events."
+
+4. **9.56–12.84**: A third icon fades in beneath the second, showing a wide wavelet shape stretched over a slow, gentle oscillation in a signal. The wide wavelet spans many cycles of the slow wave, emphasizing frequency precision. The icon holds as the narration says "It provides good frequency resolution for slower oscillations."
+
+5. **13.24–16.74**: A fourth icon fades in beneath the third, showing a nonstationary waveform with visibly shifting frequency and amplitude over time. A small checkmark or highlight appears beside it. The icon holds as the narration says "And it is well suited for analyzing non-stationary neural signals."
+
+6. **17.62–20.52**: The 'Advantages' column dims slightly, and the 'Limitations' heading brightens. The narration transitions: "However, wavelet analysis is not without limitations." The right column remains empty, awaiting icons.
+
+7. **21.56–23.94**: Under 'Limitations', the first icon fades in: a wavelet shape with a large question mark above it. Text appears beneath the icon: 'mother wavelet choice depends on application'. The question mark and text hold as the narration says "The results depend on the choice of the mother wavelet."
+
+8. **24.20–26.92**: The first limitation icon remains, and a row of two or three different wavelet shapes fades in beside it, each visually distinct (different widths, different shapes). The shapes pulse as the narration says "different wavelets may be better suited for different applications."
+
+9. **27.92–34.66**: A second limitation icon fades in beneath the first: a small CPU icon with moving gears. Text appears beneath it: 'more computationally demanding'. Beside the CPU icon, the text 'Short-Time Fourier Transform' appears with a smaller CPU icon that is static or less active, for contrast. The comparison holds as the narration says "In addition, wavelet analysis is generally more computationally demanding than the Short-Time Fourier Transform."
+
+10. **35.64–43.60**: The split screen hold with both columns fully visible: the 'Advantages' column showing the four icons, the 'Limitations' column showing the two icons and their text labels. As the narration says "Therefore, selecting an appropriate wavelet requires an understanding of both the signal and the objectives of the analysis," the two columns merge visually in the center with a small wavelet shape between them, and the text 'understand both signal and objectives' appears beneath the split screen, holding until the scene ends at 43.60.

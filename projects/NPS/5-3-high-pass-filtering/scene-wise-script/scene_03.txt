@@ -1,0 +1,8 @@
+Subtopic: What is a High-Pass Filter? - Intuition
+Scene type: manim
+
+Narration:
+As the name suggests, a high-pass filter does the opposite of a low-pass filter. Instead of preserving slow signal variations, it removes them and allows faster signal variations to remain. Imagine a gate that lets only fast-moving vehicles through while stopping the slower ones. In just the same way, a high-pass filter allows high-frequency signal components to continue through the system while reducing lower-frequency components. That makes this filter especially useful when the unwanted information lives primarily at low frequencies.
+
+Animation description:
+Two side-by-side panels. The left panel shows a stylized road leading to a tollbooth gate. A series of abstract vehicles — represented as simple rounded rectangles with small wheels — move toward the gate at different speeds. Fast-moving ones pass through the raised gate, and a small green checkmark appears above each. Slow-moving ones approach and the gate arm drops, blocking them. A red X appears above these slower vehicles. A subtle label at the top of the left panel reads 'slow variations removed'. The right panel shows the same idea in signal form: a noisy signal composed of a slow sinusoidal baseline plus rapid oscillations. A dashed translucent rectangle, acting as a filter window, sweeps over the signal from left to right. The slow baseline is colored red and gradually fades, while the fast oscillations, colored green, remain bright and continue moving. Text at the top of the right panel reads 'faster variations remain'.

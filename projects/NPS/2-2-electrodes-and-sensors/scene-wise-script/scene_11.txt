@@ -1,0 +1,8 @@
+Subtopic: 2.2.9 Comparison of Common Recording Sensors
+Scene type: manim
+
+Narration:
+Now let's bring this together. All of these sensors — EEG electrodes, ECoG grids, and MEG sensors — perform the same fundamental job: detecting physiological activity and transferring it to the acquisition system. But they do so at different locations, with different levels of invasiveness, and with different resulting signal quality. As we've seen, selecting an appropriate sensor always involves balancing signal quality, spatial resolution, patient safety, and invasiveness.
+
+Animation description:
+A comparison table fades in with rows for EEG electrodes, ECoG grids, and MEG sensors, and columns for 'Detection principle', 'Location', 'Invasiveness', and 'Signal quality'. Each cell is populated one at a time as the narration proceeds. The table highlights the trade-offs: EEG electrodes measure voltage at the scalp, non-invasively, with lower signal quality; ECoG grids measure voltage at the cortex, invasively, with higher signal quality; MEG sensors measure magnetic fields just outside the head, non-invasively. A balance-beam graphic at the bottom shows weights labeled 'signal quality', 'spatial resolution', 'patient safety', and 'invasiveness' tipping left and right.

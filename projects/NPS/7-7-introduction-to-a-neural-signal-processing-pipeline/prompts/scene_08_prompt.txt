@@ -1,0 +1,50 @@
+1. **0.00–0.56**  
+   From the previous scene's composition — the horizontal pipeline, application icons, and dotted connectors — everything fades out and clears. A clean blank background remains. No visual content yet.
+
+2. **0.56–2.60**  
+   Center screen, a title text fades in: **“Neural Signal Processing: A Complete Workflow”**. The text sits at the top center of the screen, in a clean, bold font with a soft neutral fill and a dark border. It holds steady.
+
+3. **2.60–4.60**  
+   The title text stays at the top. Below it, a single horizontal pipeline diagram fades in at the center of the screen: four rounded boxes connected left to right by horizontal arrows, labeled in order **“Raw Signal”**, **“Preprocessing”**, **“Feature Extraction”**, and **“Interpretation / Classification”**. The boxes are evenly spaced, each with a soft neutral fill and a dark border. The pipeline holds.
+
+4. **4.60–8.00**  
+   The pipeline diagram pulses with unity — the four boxes and connecting arrows brighten together in a soft glow, then return to steady brightness, repeating once. This pulse emphasizes the complete workflow as a single structure. At the same time, the text **“not a collection of isolated techniques”** fades in directly below the pipeline diagram. The text sits centered beneath the pipeline box row.
+
+5. **8.00–9.00**  
+   The pipeline diagram and the caption hold steady. Nothing new appears yet.
+
+6. **9.00–10.88**  
+   On the left side of the screen, a first module icon fades in: a **filter symbol** — a horizontal line with a small triangular notch cut into it, drawn in a blue-gray accent color. Below the icon, a label appears: **“Filtering (Module 5)”**. The icon and label sit vertically aligned in a column on the left side, with the pipeline diagram to the right. The icon is connected to the pipeline diagram by a soft dotted arrow pointing from the icon toward the **Raw Signal** box.
+
+7. **10.88–13.54**  
+   The first module icon stays visible. A second module icon fades in just below it: a **spectrogram icon** — a small rectangular grid pattern with color-shaded cells, drawn in teal. Below the icon, a label appears: **“Time-Frequency (Module 6)”**. A dotted arrow extends from this icon toward the **Preprocessing** box of the pipeline. Both icons and their dotted arrows now hold.
+
+8. **13.54–17.46**  
+   The first two module icons stay visible. A third module icon fades in below them: a **set of recording modality icons** — three small distinct symbols arranged in a row (a small brain outline, a small waveform trace, and a small electrode tip), drawn in green. Below the icon group, a label appears: **“Recording Modalities (Module 7)”**. A dotted arrow extends from this icon set toward the **Raw Signal** box. All three module icons, their labels, and their dotted arrows now hold on the left side.
+
+9. **17.46–20.16**  
+   The three module icons on the left pulse once in sequence — each brightens briefly with a soft accent-color glow, then returns to steady brightness. The dotted arrows from all three icons into the pipeline remain steady. The right-side pipeline diagram holds. The visual emphasizes that the filtering, time-frequency, and recording modality methods all connect into the single pipeline.
+
+10. **20.16–22.84**  
+    The three module icons and their dotted arrows hold steady on the left. The pipeline diagram on the right holds steady. Nothing new appears yet, but the composition remains fully visible.
+
+11. **22.84–25.46**  
+    The pipeline diagram's **Preprocessing** and **Feature Extraction** boxes brighten softly, each with a subtle glow — teal for **Preprocessing** and green for **Feature Extraction**. The other boxes in the pipeline dim slightly. This highlights the two stages named as part of the transformation. The hold continues.
+
+12. **25.46–29.36**  
+    Under the pipeline diagram, a new animation area fades in: a horizontal processing strip aligned beneath the **Raw Signal** box on the left and the **Interpretation / Classification** box on the right. On the left of the strip, a complex noisy waveform enters — a jagged, irregular blue-gray trace moving from the left edge toward the pipeline entry point. The waveform is clearly noisy, with many sharp, unpredictable spikes. The pipeline boxes remain visible above.
+
+13. **29.36–30.70**  
+    The noisy waveform continues moving through the pipeline strip from left to right. As it moves through the **Preprocessing** and **Feature Extraction** stages, the waveform gradually smooths — the sharp spikes begin to flatten, and the trace becomes cleaner and more organized. The animation shows the signal passing through each box's influence, with the boxes above gently brightening in sequence as the wave passes beneath each one.
+
+14. **30.70–31.46**  
+    The now-cleaned waveform reaches the right end of the pipeline strip, beneath the **Interpretation / Classification** box. The cleaned waveform pulses once and then transforms into a small set of output symbols at the right edge. First output symbol: a **label** — a small rectangular tag with the text **“Interpreted”** written inside it. The label fades in above the right end of the strip, connected to the cleaned waveform by a short upward arrow.
+
+15. **31.46–32.66**  
+    A second output symbol fades in beside the label: a **command icon** — a small square with a left-pointing arrow and a small arrowhead motif inside it, indicating a command being issued. This command icon sits to the right of the **“Interpreted”** label, also connected to the cleaned waveform by a short upward arrow. At 32.42, the text **“or used to control a system”** fades in below the pipeline strip, beneath the command icon.
+
+16. **32.66–33.60**  
+    A third output symbol fades in beside the command icon: an **understanding symbol** — a small stylized brain outline with a subtle glow inside it. This understanding symbol sits to the right of the command icon, also connected to the cleaned waveform by a short upward arrow. All three output symbols — label, command icon, understanding symbol — now sit in a horizontal row at the right end of the pipeline strip, each connected to the cleaned waveform by short upward arrows.
+
+17. **33.60–34.58**  
+    The entire composition holds fully visible: the title at top, the three module icons on the left with their dotted arrows, the central pipeline diagram, the pipeline strip below showing the cleaned waveform and the three output symbols, and the caption below. A final caption fades in at the bottom center of the screen, beneath the pipeline strip and output symbols: **“A complete workflow, not isolated techniques”**. The caption pulses once with a soft brightening, then returns to steady brightness. The full composition holds through the end of the scene, reaching **34.58**.

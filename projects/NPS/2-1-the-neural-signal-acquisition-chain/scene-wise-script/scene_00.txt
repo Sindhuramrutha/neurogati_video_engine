@@ -1,0 +1,8 @@
+Subtopic: 2.1.1 Introduction
+Scene type: manim
+
+Narration:
+In the previous module, we saw how neurons generate electrical signals, and how those signals can be recorded at different spatial scales. But here's the problem: neural activity is happening inside the body. You can't just plug a brain into a computer and watch the waveform appear. So the question is: how does a tiny biological signal generated inside the brain actually become the waveform we see on a computer screen? The answer is a sequence of recording and processing steps, and together those steps are called the neural signal acquisition chain. And here's the key point: whether you're recording EEG, EMG, ECoG, or microelectrode signals, every recording system follows this same fundamental pathway. Understanding this chain gives us the foundation for everything else in this module.
+
+Animation description:
+Start with a stylized brain shown in cross-section on the left side of the screen, with small glowing electrical pulses traveling along neurons inside it. Those pulses stay inside the brain, visually trapped. On the right side, show a computer monitor displaying a clean waveform. Between them, draw a dashed question-mark line, pulsing gently. As the narration asks 'how does a tiny biological signal...', the question mark enlarges slightly, then fades out as a horizontal chain of six boxes fades in: Brain icon, Electrode icon, Amplifier icon, Filter icon, ADC icon, Computer icon. Label the chain 'Neural Signal Acquisition Chain'. At the end, the chain pulses once to emphasize it.

@@ -1,0 +1,31 @@
+1. **0.00–2.74** — A title screen fades in from black: a stylized EEG waveform scrolls continuously across the center of the screen from left to right. Behind the waveform, a simple outlined brain icon appears, drawn in clean thin linework, with small electrode dots positioned across its scalp.
+
+2. **2.74–5.62** — The waveform and brain icon settle into place. The brain icon remains visible as the central element; the EEG waveform continues scrolling smoothly behind it, and the scrolling slows slightly to a steady, readable pace.
+
+3. **5.62–8.62** — The words "Applications of EEG" fade in prominently beneath the brain icon, centered on the screen. The waveform continues scrolling behind the title text.
+
+4. **8.62–13.82** — The title text briefly fades slightly upward to make room as four labeled card outlines begin to appear, one at a time: first "Brain States" at the top left.
+
+5. **13.82–17.56** — The remaining cards fade in: "Sleep Staging" top right, "Epilepsy" bottom left, and "Brain-Computer Interfaces" bottom right. They remain as simple outlined rectangles, each with its label centered inside.
+
+6. **17.56–21.32** — The four cards settle into a grid or diamond-like arrangement around the central brain icon. The central EEG waveform motif stretches between the cards and the brain icon, connecting them with thin, stylized waveform lines.
+
+7. **21.32–26.24** — The central brain icon pulses once with a soft glow as the narration asks how EEG is used. The waveform lines subtly brighten in sequence around the four cards.
+
+8. **26.24–32.76** — A short zoom-in on a section of the EEG waveform, showing its rapid oscillations. Next to it, a small inset of the brain icon appears with a highlighted cortical region, emphasizing electrical activity and temporal resolution.
+
+9. **32.76–36.86** — The inset returns to the main title composition; the highlighted cortical region fades back into the full brain icon. The waveform continues scrolling, now with slightly larger amplitude to suggest dynamic brain activity.
+
+10. **36.86–42.40** — "Brain States" card pulses once, then its connection line to the central brain icon brightens. The other three cards remain dimmed.
+
+11. **42.40–46.92** — The screen splits briefly into two visual lanes: on the left, a small scientific chart icon (generic, unlabeled axes with a sine-like line) appears above the "Brain States" card; on the right, a small clinical clip icon (generic, unlabeled waveform panel) appears above the "Epilepsy" card. Both are simple, minimal, and unlabeled.
+
+12. **46.92–54.16** — The two lanes merge back into the four-card layout. A simple figure icon appears next to the "Brain-Computer Interfaces" card, showing a person outline with a small cursor arrow near their head, to suggest motor assistance.
+
+13. **54.16–58.74** — The four cards lift slightly and brighten in unison; the central EEG waveform motif pulses brighter, and the label "four major application areas" appears briefly in small text near the bottom, then fades out.
+
+14. **58.74–65.18** — The camera panned slightly to each card as the narration names it: "studying brain states" (top left brightens), "sleep staging" (top right brightens), "epilepsy diagnosis and monitoring" (bottom left brightens), "brain-computer interfaces" (bottom right brightens). Only the named card is bright at each moment.
+
+15. **65.18–69.08** — All four cards return to equal brightness. The connecting waveform lines straighten slightly and pulse in a common rhythm, suggesting shared methodology despite different goals.
+
+16. **69.08–76.70** — The central EEG waveform motif loops once more across all four cards, and the brain icon glows faintly again as the scene comes to a close. The title "Applications of EEG" fades back into view at the bottom, and the full composition holds until the end of the narration.

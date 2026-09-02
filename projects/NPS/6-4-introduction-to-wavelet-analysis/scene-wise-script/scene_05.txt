@@ -1,0 +1,8 @@
+Subtopic: Applications in Neural Signal Processing
+Scene type: manim
+
+Narration:
+Wavelet analysis has become an important tool in modern neuroscience because many neural signals are highly nonstationary. Some common applications include: EEG analysis, for detecting transient oscillatory activity and analysing brain rhythms that change rapidly over time. Event-related brain activity, for studying neural responses immediately before and after sensory or cognitive events. Epilepsy research, for identifying short-duration epileptic discharges that may be difficult to detect using conventional frequency analysis. And brain–computer interfaces, for extracting time-varying features from EEG signals for classification and control applications.
+
+Animation description:
+Four separate illustrations appear in sequence on a clean background, each representing an application. First: an EEG waveform with a transient oscillation highlighted. Second: a timeline marker representing a sensory event, with a shaded window before and after, and a neural response waveform. Third: a portion of an EEG trace with a brief, sharp epileptic discharge highlighted in a different colour. Fourth: a stylised brain–computer interface, showing an EEG signal feeding into a small computer icon with a classification output. Each illustration appears with a short label: 'EEG analysis', 'Event-related brain activity', 'Epilepsy research', 'Brain–computer interfaces'.

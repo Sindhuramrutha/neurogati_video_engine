@@ -1,0 +1,8 @@
+Subtopic: 2.1.4 Components of the Acquisition Chain - Filter
+Scene type: manim
+
+Narration:
+Even after amplification, the recorded signal still contains unwanted electrical interference. So the next stage is the filter. Filters remove unwanted frequency components while preserving the signal of interest. Different recording applications use different types of filters. We'll dive into the principles of filtering in detail later in this course, so for now, just remember: the filter's job is to clean up the signal by removing interference.
+
+Animation description:
+Take an amplified waveform and add visible high-frequency noise on top of it, shown as jagged random spikes riding on the wave. Pass this noisy waveform through a box labeled 'Filter'. On the output side, show a clean smooth waveform with the same underlying shape but without the jagged noise. Draw frequency bars below: before filtering show low-frequency signal bars plus unwanted high-frequency bars; after filtering show only the low-frequency signal bars, with the high-frequency bars struck through or faded.

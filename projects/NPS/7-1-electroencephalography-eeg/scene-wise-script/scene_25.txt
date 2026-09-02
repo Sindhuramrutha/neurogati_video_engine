@@ -1,0 +1,8 @@
+Subtopic: 7.1.5 How Does an EEG-Based BCI Work?
+Scene type: manim
+
+Narration:
+An EEG-based BCI consists of several processing stages. Step 1: Signal Acquisition. EEG electrodes record the electrical activity of the brain. Step 2: Preprocessing. Filtering and artefact removal reduce unwanted noise and improve signal quality. Step 3: Feature Extraction. Relevant characteristics of the EEG signal are extracted. Examples include frequency-band power, event-related potentials such as the P300, time-frequency features, and spatial features. Step 4: Classification. Machine learning algorithms analyse the extracted features and identify the user's intended action. Step 5: Device Control. The classified output is converted into commands that control an external device.
+
+Animation description:
+A pipeline diagram appears with five blocks connected by arrows: 'Signal Acquisition' (EEG electrodes on head), 'Preprocessing' (filter and artefact removal icons), 'Feature Extraction' (frequency-band power, P300, time-frequency, spatial features icons), 'Classification' (machine learning icon), 'Device Control' (external device icon). Each block lights up as it is described.

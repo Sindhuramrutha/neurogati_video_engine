@@ -1,0 +1,212 @@
+{
+  "index": 10,
+  "slide_width_emu": 14630400,
+  "slide_height_emu": 8229600,
+  "shapes": [
+    {
+      "shape_id": 2,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 0",
+      "manim_bbox": [
+        1.7777777499999994,
+        -3.9999999375,
+        7.111111,
+        3.9999999375
+      ]
+    },
+    {
+      "shape_id": 3,
+      "kind": "text",
+      "text": "Physics Meets Biology",
+      "alt_text": "Text 0",
+      "manim_bbox": [
+        -6.339467189756944,
+        2.457523048993056,
+        -0.7374997454513892,
+        3.1465276071006945
+      ]
+    },
+    {
+      "shape_id": 4,
+      "kind": "text",
+      "text": "In the 19th century, physicists and physiologists combined forces to understand the brain as an electrical engine.",
+      "alt_text": "Text 1",
+      "manim_bbox": [
+        -6.339467189756944,
+        1.4212967601388886,
+        1.0061349118576386,
+        2.126852304670139
+      ]
+    },
+    {
+      "shape_id": 5,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 2",
+      "manim_bbox": [
+        -6.339467189756944,
+        -3.1464119271180557,
+        1.0061349118576386,
+        1.1732642958506947
+      ]
+    },
+    {
+      "shape_id": 6,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 3",
+      "manim_bbox": [
+        -6.332059782465278,
+        -1.5157402310069452,
+        -2.6666666250000004,
+        1.165856888559028
+      ]
+    },
+    {
+      "shape_id": 7,
+      "kind": "text",
+      "text": "Johannes Muller",
+      "alt_text": "Text 4",
+      "manim_bbox": [
+        -6.111573735555556,
+        0.6009254304861114,
+        -3.3554398231423614,
+        0.9453698695486108
+      ]
+    },
+    {
+      "shape_id": 8,
+      "kind": "text",
+      "text": "Formulated the \"law of specific energies,\" stating that sensation depends on which nerve is stimulated, not how it is stimulated.",
+      "alt_text": "Text 5",
+      "manim_bbox": [
+        -6.111573735555556,
+        -1.2952551561979169,
+        -3.217823416232639,
+        0.4686341911805556
+      ]
+    },
+    {
+      "shape_id": 9,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 6",
+      "manim_bbox": [
+        -2.6666666250000004,
+        -1.5157402310069452,
+        0.9987265324652776,
+        1.165856888559028
+      ]
+    },
+    {
+      "shape_id": 10,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 7",
+      "manim_bbox": [
+        -2.6666666250000004,
+        -1.5157402310069452,
+        -2.6370369958333333,
+        1.165856888559028
+      ]
+    },
+    {
+      "shape_id": 11,
+      "kind": "text",
+      "text": "Du Bois-Reymond",
+      "alt_text": "Text 8",
+      "manim_bbox": [
+        -2.115508861666667,
+        0.6009254304861114,
+        0.6406250507465279,
+        0.9453698695486108
+      ]
+    },
+    {
+      "shape_id": 12,
+      "kind": "text",
+      "text": "Discovered the action potential, the characteristic voltage wave that propagates along nerve fibers.",
+      "alt_text": "Text 9",
+      "manim_bbox": [
+        -2.115508861666667,
+        -0.9424768978819449,
+        0.7782414576562502,
+        0.4686341911805556
+      ]
+    },
+    {
+      "shape_id": 13,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 10",
+      "manim_bbox": [
+        -2.9422455066666666,
+        -0.4504636849999999,
+        -2.3910877433333333,
+        0.10069407833333344
+      ]
+    },
+    {
+      "shape_id": 14,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 1",
+      "manim_bbox": [
+        -2.804513419774306,
+        -0.3126159181250001,
+        -2.528934538107639,
+        -0.037037036458333894
+      ]
+    },
+    {
+      "shape_id": 15,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 11",
+      "manim_bbox": [
+        -6.332059782465278,
+        -3.139004519826389,
+        0.9987275045659727,
+        -1.5157402310069452
+      ]
+    },
+    {
+      "shape_id": 16,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 12",
+      "manim_bbox": [
+        -6.332059782465278,
+        -1.5453698601736114,
+        0.9987275045659727,
+        -1.5157402310069452
+      ]
+    },
+    {
+      "shape_id": 17,
+      "kind": "text",
+      "text": "Hermann von Helmholtz",
+      "alt_text": "Text 13",
+      "manim_bbox": [
+        -6.111573735555556,
+        -2.0806716890798613,
+        -3.0192125512500008,
+        -1.736227250017361
+      ]
+    },
+    {
+      "shape_id": 18,
+      "kind": "text",
+      "text": "Applied physics to biology, using electromagnetic wave theory to understand how signals propagate along nerves.",
+      "alt_text": "Text 14",
+      "manim_bbox": [
+        -6.111573735555556,
+        -2.9185184729166664,
+        0.4475697412326394,
+        -2.2129629283854166
+      ]
+    }
+  ],
+  "notes_text": null
+}

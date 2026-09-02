@@ -1,0 +1,8 @@
+Subtopic: 5.6.3 Moving‑Average Filter – Example
+Scene type: manim
+
+Narration:
+For example, suppose we average every five consecutive samples. If one sample has a small random spike, averaging it with its neighbours reduces its influence. When you do this throughout a recording, the result is a much smoother waveform, as shown in the typical figure 5.6A. The original noisy signal becomes visibly less jagged.
+
+Animation description:
+Show an original noisy waveform (random high‑frequency noise). Apply a moving average with window size 5 over the entire signal. Overlay the original noisy trace and the newly smoothed trace, and visually highlight the reduction in fluctuation. Optionally display a label ‘Window size = 5’.

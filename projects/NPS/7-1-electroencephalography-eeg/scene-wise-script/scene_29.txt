@@ -1,0 +1,8 @@
+Subtopic: 7.1.5 BCI Summary and Section Recap
+Scene type: manim
+
+Narration:
+In this section, we explored one of the fastest-growing applications of EEG: Brain-Computer Interfaces. We learned that EEG-based BCIs establish a direct communication pathway between the brain and external devices by combining neural signal acquisition with signal processing, feature extraction, and machine learning. These systems have important applications in assistive communication, rehabilitation, prosthetic control, and neuroscience research. Let's recap this entire section. We examined four major applications of EEG in neuroscience and clinical practice. EEG is used to study brain states by analysing changes in neural rhythms; to perform sleep staging by identifying characteristic EEG patterns during different stages of sleep; to detect and monitor epilepsy by identifying abnormal electrical activity associated with seizures; and to develop Brain-Computer Interfaces that translate brain activity into commands for external devices. Although these applications address different problems, they all rely on the same neural signal-processing principles introduced throughout this course, including filtering, spectral analysis, time-frequency analysis, feature extraction, and classification.
+
+Animation description:
+A summary of BCI fades into a recap grid with four panels: 'Brain States', 'Sleep Staging', 'Epilepsy', 'BCI'. Each panel has a representative icon and a small EEG waveform. A band of shared signal processing techniques appears along the bottom: Filtering, Spectral Analysis, Time-Frequency Analysis, Feature Extraction, Classification. Arrows connect the techniques to all four panels, emphasizing the shared principles.

@@ -1,0 +1,13 @@
+1. **0.00–1.72** — On a dark background, the title text **“High-Pass Filter”** fades in at the top-center in bold. A thin, empty rounded-rectangle text box sits below the title, waiting with no text inside, as the narration asks “So what exactly is a high-pass filter?”
+
+2. **2.86–4.54** — Inside the text box, the first line fades in word by word as the narration delivers it: **“A filter that allows high-frequency components of a signal to pass”**. The words “high-frequency components” appear brighter than the rest upon arrival. No arrow yet.
+
+3. **4.54–6.52** — As “high-frequency components” is emphasized in the narration, a small green upward-pointing arrow fades in beside the phrase “high-frequency components” within the text box, and it pulses subtly two times.
+
+4. **6.52–8.54** — The green arrow remains beside “high-frequency components,” now steady without pulsing. The line stays visible as the narration finishes “to pass through.”
+
+5. **9.10–11.24** — A second line appears below the first, typing out word by word: **“while attenuating or removing low-frequency components”**. The words “low-frequency components” are highlighted as they appear. A small red downward-pointing arrow fades in beside the phrase and pulses subtly two times.
+
+6. **11.24–13.84** — The red arrow beside “low-frequency components” settles to steady. A third line types out below the second: **“below a selected cutoff frequency.”** This line appears in normal weight, no arrow.
+
+7. **13.84–15.18** — All three lines of the definition are now fully visible inside the box, with the green up-arrow beside “high-frequency components” and the red down-arrow beside “low-frequency components.” The thin border around the text box fades in last, completing the composition. The scene holds on the finished definition screen until 15.18 seconds.

@@ -1,0 +1,8 @@
+Subtopic: 7.1.1 Summary and Transition to Brain States
+Scene type: manim
+
+Narration:
+EEG is far more than a method for recording electrical activity from the scalp. It is a versatile tool that enables researchers and clinicians to study brain function, diagnose neurological disorders, monitor physiological states, and develop assistive technologies. In the following sections, we will examine four important applications of EEG and understand how neural signal processing enables each of these applications. One of the most fundamental applications of EEG is the study of brain states. The electrical activity of the brain changes continuously depending on whether a person is awake, relaxed, concentrating, or asleep. By analysing these changes, researchers can gain valuable insights into normal brain function and behaviour. In the next section, we will examine how EEG is used to study different brain states.
+
+Animation description:
+A summary grid of four application icons sits on one side. The waveform motif flows from left to right, transitioning into a new scene with a large waveform that changes frequency from fast (awake) to slow (relaxed) to very slow (asleep). The title 'Brain States' appears.

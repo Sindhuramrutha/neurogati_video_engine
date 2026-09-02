@@ -1,0 +1,8 @@
+Subtopic: Why is Electrical Safety Important?
+Scene type: manim
+
+Narration:
+Electrical safety means taking measures to protect participants, operators, and equipment from electrical hazards during biomedical signal recording. Here's the key difference between these systems and ordinary electronic measurements: neural signal acquisition involves direct contact between electronic equipment and the human body. EEG electrodes sit on the scalp. EMG electrodes go on the skin or are inserted into muscles. ECoG electrodes are placed directly on the surface of the brain during surgery. These systems work with extremely small biological signals, but they're still connected to powered electronic devices. So any unintended current reaching the participant could pose a serious safety risk. This is why electrical safety isn't just good laboratory practice — it's a fundamental requirement of every biomedical recording system.
+
+Animation description:
+Screen shows three labeled diagrams in sequence: first a head outline with small disc electrodes on the scalp labeled 'EEG', then an arm with needle electrodes labeled 'EMG', then a brain outline with a grid of electrodes on its surface labeled 'ECoG'. As each appears, a cable extends from it toward a powered equipment box with a power plug icon. A red current arrow appears briefly attempting to travel back toward the body, but then fades with a red warning flash to emphasize the risk.

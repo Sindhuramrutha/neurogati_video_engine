@@ -1,0 +1,8 @@
+Subtopic: 5.6.2 Learning Objectives
+Scene type: manim
+
+Narration:
+By the end of this section, you’ll be able to explain the principle of both the moving‑average and median filters, compare their strengths, and identify which filter to use in a given situation. You’ll also understand their advantages and limitations.
+
+Animation description:
+Display bullet points: ‘Explain moving‑average filter’, ‘Explain median filter’, ‘Compare both filters’, ‘Identify appropriate applications’, fade out.

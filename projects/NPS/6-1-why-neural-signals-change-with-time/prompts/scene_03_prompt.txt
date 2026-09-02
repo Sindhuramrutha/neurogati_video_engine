@@ -1,0 +1,51 @@
+1. **0.00-1.68** — The definition box from the previous scene fades out. The heading "Nonstationary Signal" fades in centered at the top in bold, replacing "Stationary Signal". The screen is otherwise clean.
+
+2. **1.68-2.40** — Brief pause. The heading "Nonstationary Signal" remains the sole element, holding as the narration transitions to the definition.
+
+3. **2.40-7.26** — A highlighted definition box fades in at the bottom of the screen containing the text: "Nonstationary: statistical or spectral characteristics change over time". The box pulses subtly once as the narration states the definition. The heading remains at top.
+
+4. **7.26-7.80** — The definition box steadies. A brief pause before the EEG example begins.
+
+5. **7.80-11.76** — A horizontal EEG waveform begins drawing from left to right across the center of the screen, above the definition box. It starts as a smooth, slow, large-amplitude oscillation — an alpha-like rhythm around 8-12 Hz with visibly large peaks and troughs. The definition box remains visible at the bottom.
+
+6. **11.76-12.38** — The waveform continues scrolling at a steady rate. The first EEG segment (slow, large-amplitude rhythm) remains on screen. No new elements yet.
+
+7. **12.38-16.00** — A small label "Eyes closed" fades in above the first segment of the EEG waveform, positioned over the slow, large-amplitude alpha-like rhythm. The label highlights briefly as it appears. The waveform continues scrolling.
+
+8. **16.00-16.84** — The "Eyes closed" segment shifts smoothly into a visibly different waveform character: the amplitude drops significantly and the oscillation frequency increases, producing smaller, faster waves. The waveform continues drawing and scrolling.
+
+9. **16.84-18.66** — A small label "Eyes open" fades in above the middle segment of the waveform, positioned over the smaller-amplitude, higher-frequency portion. The label highlights briefly. The waveform continues scrolling with its changed character.
+
+10. **18.66-19.34** — The waveform continues in its smaller-amplitude, higher-frequency state. The "Eyes open" label remains visible above the middle segment.
+
+11. **19.34-21.62** — A brief, sharp transient bump appears in the waveform — a single narrow, high-amplitude event-related deflection superimposed on the ongoing smaller oscillation. A small label "Visual stimulus" fades in above the waveform at the position of this transient. The label highlights briefly.
+
+12. **21.62-22.76** — The waveform transitions into a new segment: the character changes again, with a distinct pattern of mixed frequencies and a moderate, irregular amplitude. The "Visual stimulus" label remains above the transient position.
+
+13. **22.76-24.48** — A small label "Memory task" fades in above the final segment of the waveform, positioned over the region with the changed, irregular oscillation pattern. The label highlights briefly. The waveform continues scrolling.
+
+14. **24.48-25.20** — All four labels ("Eyes closed", "Eyes open", "Visual stimulus", "Memory task") remain visible above their respective segments. The full EEG waveform spans the screen, showing its clearly varying character across all segments.
+
+15. **25.20-28.12** — The waveform continues scrolling, emphasizing the continuous change in amplitude and frequency from segment to segment. The labels stay in place. The definition box at bottom remains unhighlighted.
+
+16. **28.12-28.96** — The waveform continues its scroll. A brief pause before the frequency comparison appears.
+
+17. **28.96-32.50** — Two small frequency-domain inset plots fade in side by side below the EEG waveform, above the definition box. The left plot is labelled "Beginning" and shows a frequency spectrum with a single dominant peak in the low-frequency range (around 10 Hz), matching the slow alpha-like rhythm. The right plot is labelled "Later" and shows a frequency spectrum with peaks in different positions — one weaker peak at the original low frequency and additional peaks at higher frequencies. A horizontal arrow between the two plots points from "Beginning" to "Later", emphasizing the change. The bars in the "Beginning" plot rise as the narration says "Some oscillations become stronger"; the original low-frequency bar shrinks in the "Later" plot as the narration says "others become weaker".
+
+18. **32.50-33.30** — The two inset frequency plots remain visible. The arrow between them holds steady.
+
+19. **33.30-36.76** — In the "Later" inset plot, a new frequency bar fades in at a higher frequency position that wasn't present in the "Beginning" plot, as the narration says "New frequency components may appear". Simultaneously, one existing low-frequency bar in the "Beginning" plot is visibly absent or faded in the "Later" plot, as the narration says "existing ones disappear". The arrow between plots remains, emphasizing the frequency-content difference.
+
+20. **36.76-37.64** — The two inset plots and arrow remain on screen. The EEG waveform continues scrolling. Brief pause.
+
+21. **37.64-41.66** — The "Beginning" and "Later" inset plots highlight alternately as the narration contrasts the signal recorded at the beginning with the signal recorded later. The arrow between them pulses once to emphasize the difference.
+
+22. **41.66-42.36** — The inset plots dim slightly. The definition box at the bottom begins to highlight.
+
+23. **42.36-47.30** — The definition box "Nonstationary: statistical or spectral characteristics change over time" pulses and glows with emphasis. The heading "Nonstationary Signal" remains at top. The EEG waveform continues scrolling. The two inset frequency plots remain visible but slightly dimmed.
+
+24. **47.30-48.08** — The definition box returns to a steady highlighted state. The EEG waveform continues scrolling. The inset plots remain dimmed. Brief pause.
+
+25. **48.08-56.04** — The EEG waveform and the two inset frequency plots fade out smoothly. The heading "Nonstationary Signal" remains at top. The definition box "Nonstationary: statistical or spectral characteristics change over time" remains highlighted at the bottom. As the narration mentions "a single frequency spectrum for the entire recording", a faint generic line-drawing of a spectrum plot — unlabeled, just a single arbitrary curve on axes — briefly fades in behind the definition box and then fades out, suggesting the inadequacy of one static spectrum.
+
+26. **56.04-56.90** — The final frame holds steady: the heading "Nonstationary Signal" at the top, the definition box "Nonstationary: statistical or spectral characteristics change over time" highlighted at the bottom. The screen holds this final composition until the scene ends at 56.90 seconds.

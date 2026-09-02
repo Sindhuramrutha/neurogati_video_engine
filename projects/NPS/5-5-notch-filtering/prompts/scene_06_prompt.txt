@@ -1,0 +1,3 @@
+1. 0.00–1.98: A large balance scale fades in centered on screen: a vertical central pivot supports a horizontal beam, with two pans hanging from the beam ends by chains. The left pan is labeled “Advantages”; the right pan is labeled “Limitations.” The beam starts level.
+
+2. 2.78–5.14: On the left pan, a small spectral icon appears: a frequency-axis plot with a single narrow spike at a point labeled f₀. At 4.20, a shaded vertical notch band centered at f₀ drops down over the spike

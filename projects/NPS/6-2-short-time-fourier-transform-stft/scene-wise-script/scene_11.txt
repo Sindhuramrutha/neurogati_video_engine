@@ -1,0 +1,8 @@
+Subtopic: 6.2.8 Advantages
+Scene type: image_only
+
+Narration:
+The Short-Time Fourier Transform provides several important advantages. It describes both time and frequency. It is suitable for analysing nonstationary signals. It is relatively simple to implement. And it forms the basis for spectrogram generation.
+
+Animation description:
+A vertical stack of four benefit cards slides in one by one, each with a green checkmark and a short phrase. A subtle rising tone accompanies each checkmark as it appears.

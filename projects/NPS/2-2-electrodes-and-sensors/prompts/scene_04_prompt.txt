@@ -1,0 +1,23 @@
+1. 0.00–2.06: A small flat disc electrode, carried over from the previous scene, sits centered near the top of the screen on a dark background. Below it, a simple horizontal line represents the skin surface. A subtle dashed line or faint distance marker appears between the electrode and a small glowing point deeper below the skin line, labeled “biological source” in small text. The visual is still as the narration opens.
+
+2. 2.80–6.26: The glowing source point pulses gently beneath the skin surface. The distance between the electrode and the source is emphasized by a vertical bracket or double-headed arrow with a small label reading “distance”. The electrode remains fixed at the surface while the source continues pulsing below. The screen holds this spatial relationship through the phrase “some distance away from the actual biological source”.
+
+3. 7.06–9.60: A small waveform appears near the electrode, drawn as a compact, low-amplitude trace with low vertical peaks and shallow valleys. Its amplitude is visibly small. A second, larger reference waveform fades in beside it, clearly taller and stronger, but slightly dimmed or ghosted to show it is a comparison. A label appears under the smaller waveform reading “weaker signal”. The two waveforms stay side by side.
+
+4. 9.60–14.96: The smaller waveform remains near the surface electrode. A row of small spatial blocks or grid cells appears beneath it, each cell large and coarse, representing low resolution, with a label reading “lower spatial resolution”. The ghosted larger waveform remains as a faint comparison. A small label “more invasive electrodes” appears near the larger comparison waveform, referencing the source of the stronger baseline, then both the comparison waveform and its label dim further as the narration moves on.
+
+5. 15.98–18.06: The distance waveform and grid clear from the screen as the view shifts to a clean two-column layout. The left column appears with a header reading “Advantages” at the top. A first card fades in beneath the header with a green check mark and the text “Non-invasive”. The card rises smoothly into place and holds.
+
+6. 18.86–19.76: A second card fades in beneath the first in the left column, with a green check mark and the text “Comfortable”. The first card remains fixed above it. The right column remains present but empty for now, its header “Limitations” faintly visible.
+
+7. 20.42–21.16: A third card fades in beneath the second in the left column, with a green check mark and the text “Easy to apply”. The first two cards remain in place.
+
+8. 21.66–23.74: A fourth card fades in at the bottom of the left column, with a green check mark and the text “Long-duration recordings”. The left column now shows all four cards stacked evenly, each with its green check mark. The right column header “Limitations” remains faint and empty.
+
+9. 23.74–27.04: The right column becomes fully visible, with its header “Limitations” now at full brightness. A first card fades in beneath the header with a red cross icon and the text “Lower signal amplitude”. The card lands and holds. The four advantage cards remain in place on the left.
+
+10. 27.82–29.58: A second card fades in beneath the first in the right column, with a red cross icon and the text “Motion artifacts”. The first limitation card remains above it. The two columns are now visibly balanced, with all four green-checked cards on the left and two red-crossed cards on the right.
+
+11. 30.18–31.64: A third and final card fades in at the bottom of the right column, with a red cross icon and the text “Lower spatial resolution”. The right column now shows all three limitation cards stacked evenly. Both columns are complete and hold in place.
+
+12. 31.64–32.45: The full two-column layout holds steady: the left column with its four green-checked advantages and the right column with its three red-crossed limitations. A faint small waveform at the top re-fades in briefly, smaller in amplitude than a faint ghosted larger comparison, reinforcing the weaker signal point. The screen remains calm and static until the scene ends at 32.45.

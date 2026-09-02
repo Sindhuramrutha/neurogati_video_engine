@@ -1,0 +1,19 @@
+1. (0.00–1.00) Continuing from the previous scene, the filter box and spectrum panels fade away. A single smooth continuous analog waveform fades in on the left side of the frame — a gentle oscillating curve drawn as a continuous, unbroken line, labeled "analog signal." Narration: "Up to this stage,"
+
+2. (1.32–3.20) The waveform holds on screen, its smooth, continuous nature emphasized — the curve glows softly or is traced with a slow moving highlight along its length, drawing the eye to the unbroken continuity of the line. A caption beneath reads "continuous voltage." Narration: "everything we have is still an analog signal,"
+
+3. (3.74–6.46) The smooth waveform remains. A subtitle "varies smoothly in time" appears, and the waveform is highlighted with a gentle pulse along its continuous extent. Narration: "a continuous voltage that varies smoothly in time."
+
+4. (7.10–9.44) The analog waveform shifts slightly left or the frame widens. On the right side, a small computer icon appears (rectangular box with a screen outline), with a short animated "×" or slash mark across it, labeled "digital information." The analog waveform dims slightly. Narration: "but computers can only process digital information."
+
+5. (10.34–12.84) An "ADC" block fades in between the analog waveform and the screen's right area — a rectangle labeled "Analog-to-Digital Converter" with the abbreviation "ADC" prominent on its face. Narration: "That's where the Analog-to-Digital Converter comes in."
+
+6. (13.56–16.28) On the analog waveform, a series of vertical gridlines appears at evenly spaced intervals across the horizontal time axis, rising from the time axis up through the waveform. The uniform spacing between gridlines is highlighted — equal gaps pulse or brighten together, visually emphasizing "regular intervals." Narration: "The ADC samples the analog signal at regular intervals,"
+
+7. (16.76–19.50) At each intersection of a gridline with the waveform, a dot appears on the curve. Each dot then receives a numerical label next to it, reading from left to right: 0.2, 0.5, 0.8, 0.6, 0.9, 0.4, etc. — the exact values corresponding to the height of the waveform at each sample point. Narration: "and it converts each sample into a numerical value."
+
+8. (20.08–24.06) On the right side of the frame, a staircase plot appears: horizontal and vertical line segments connecting the sampled points, holding each sampled value flat until the next sample. The staircase is labeled "digital representation." The original smooth analog waveform moves or remains on the left, now with the sampling dots. Narration: "The result is a digital representation of the original biological signal,"
+
+9. (24.54–27.28) The two representations are shown side by side: the smooth analog waveform on the left with sampling dots, and the staircase plot on the right. A brief highlight sweeps across the staircase values, and a caption "a sequence of numbers" appears beneath each dot — the values 0.2, 0.5, 0.8, 0.6, 0.9, 0.4 arranged in a row. The bridge from the analog waveform to the staircase plot is visually disconnected, highlighting the transition from continuous to discrete. Narration: "a sequence of numbers, not a continuous waveform."
+
+10. (27.28–27.95) The full scene holds: analog waveform on the left with sampling gridlines and dots, the ADC block in the middle, and the staircase digital representation on the right with the sequence of numbers beneath. All elements remain static. Narration: (silence)

@@ -1,0 +1,104 @@
+{
+  "index": 5,
+  "slide_width_emu": 14630400,
+  "slide_height_emu": 8229600,
+  "shapes": [
+    {
+      "shape_id": 2,
+      "kind": "text",
+      "text": "The Renaissance and Dualism",
+      "alt_text": "Text 0",
+      "manim_bbox": [
+        -6.383217553611111,
+        2.7782404543055557,
+        0.7748838218576388,
+        3.428124764166667
+      ]
+    },
+    {
+      "shape_id": 3,
+      "kind": "text",
+      "text": "The dichotomy between understanding structure and understanding function persisted for nearly 1,500 years.",
+      "alt_text": "Text 1",
+      "manim_bbox": [
+        -6.383217553611111,
+        2.0296295979166668,
+        6.383217553611112,
+        2.362384526128472
+      ]
+    },
+    {
+      "shape_id": 4,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 0",
+      "manim_bbox": [
+        -6.383217553611111,
+        -2.9270836521354164,
+        -3.4054398223611106,
+        1.5618051666145831
+      ]
+    },
+    {
+      "shape_id": 5,
+      "kind": "text",
+      "text": "Fig 1.2: Leonardo da Vinci",
+      "alt_text": "Text 2",
+      "manim_bbox": [
+        -6.383217553611111,
+        -3.4937503099479175,
+        -0.2537036997395834,
+        -3.160995381736111
+      ]
+    },
+    {
+      "shape_id": 6,
+      "kind": "text",
+      "text": "Leonardo da Vinci",
+      "alt_text": "Text 3",
+      "manim_bbox": [
+        0.2611111070312493,
+        1.2629629432291667,
+        2.8608797064409712,
+        1.5878467721180556
+      ]
+    },
+    {
+      "shape_id": 7,
+      "kind": "text",
+      "text": "The artist-scientist likened dissecting the brain to peeling an onion. While his anatomical drawings were superb, he still attributed cognitive functions to the ventricles, following ancient tradition.",
+      "alt_text": "Text 4",
+      "manim_bbox": [
+        0.2611111070312493,
+        0.05682900659722234,
+        6.390624960902778,
+        1.0550928191319442
+      ]
+    },
+    {
+      "shape_id": 8,
+      "kind": "text",
+      "text": "Rene Descartes",
+      "alt_text": "Text 5",
+      "manim_bbox": [
+        0.2611111070312493,
+        -0.4759259184895841,
+        2.8608797064409712,
+        -0.15104208960069432
+      ]
+    },
+    {
+      "shape_id": 9,
+      "kind": "text",
+      "text": "Descartes proposed a radical solution to the mind-body problem: Dualism. He argued the body is a machine following physical laws, while the mind is a non-material entity. This allowed scientists to ignore the \"soul\" and study the brain as a biological machine.",
+      "alt_text": "Text 6",
+      "manim_bbox": [
+        0.2611111070312493,
+        -2.347568739444444,
+        6.390624960902778,
+        -0.6837960425868062
+      ]
+    }
+  ],
+  "notes_text": null
+}

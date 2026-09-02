@@ -1,0 +1,8 @@
+Subtopic: 2.2.1 Introduction
+Scene type: manim
+
+Narration:
+In the previous section, we learned that every neural recording system follows the same acquisition chain. The first hardware component in that chain is the electrode or sensor. Whether we're recording EEG, EMG, ECoG, or MEG, the recording process cannot begin unless the physiological signal is first detected. The device responsible for detecting that signal is the electrode or sensor. In this section, we'll look at the different types of electrodes and sensors used in neuroscience, understand how they differ from one another, and discuss why different recording techniques require different sensing technologies.
+
+Animation description:
+A simple acquisition chain diagram appears: five blocks in a row. The first block, labeled 'Electrode / Sensor', is highlighted with a glow while the others remain dimmed, labeled 'Amplifier', 'Filter', 'Digitizer', and 'Recording System'. As each recording method is named in the narration, small text labels — 'EEG', 'EMG', 'ECoG', 'MEG' — fade in above the chain, all pointing down toward the first block with arrows.

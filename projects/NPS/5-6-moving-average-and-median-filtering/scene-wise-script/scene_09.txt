@@ -1,0 +1,8 @@
+Subtopic: 5.6.5 Important Note – Complementary Filters
+Scene type: manim
+
+Narration:
+It’s important to remember that these are complementary, not competing filters. In many neural signal processing applications, you might even use both, one after the other, depending on what kind of noise you’re dealing with. Selecting the appropriate filter always comes down to understanding your recording.
+
+Animation description:
+Show a single waveform that has both random noise and an occasional spike. First, apply a moving‑average filter; the random noise diminishes but the spike remains. Then apply a median filter; the spike is removed. The final clean signal is highlighted. Text: ‘Complementary, not competing’.

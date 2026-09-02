@@ -1,0 +1,8 @@
+Subtopic: 7.1.2 Summary and Transition to Sleep Staging
+Scene type: manim
+
+Narration:
+In this section, we learned that EEG provides a powerful method for studying changes in brain states. Different behavioural and cognitive conditions produce characteristic patterns of neural activity, which can be analysed using frequency-domain and time-frequency signal processing techniques. Because EEG combines excellent temporal resolution with non-invasive recording, it has become one of the most important tools for investigating dynamic brain function. One of the most important examples of brain-state analysis is the study of sleep. As a person progresses through different stages of sleep, characteristic changes occur in the EEG signal. These changes allow researchers and clinicians to identify sleep stages, evaluate sleep quality, and diagnose sleep disorders. In the next section, we will explore how EEG is used for sleep staging.
+
+Animation description:
+A summary of brain state analysis fades into a night scene. A person's head silhouette with a night sky background, stars, and a moon appears. The EEG waveform gradually slows and increases in amplitude. The title 'Sleep Staging' emerges from the waveform.

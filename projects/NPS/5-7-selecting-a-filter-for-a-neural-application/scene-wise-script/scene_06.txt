@@ -1,0 +1,8 @@
+Subtopic: 5.7.4 Choosing the Appropriate Filter – Notch
+Scene type: manim
+
+Narration:
+Use a notch filter when your recording suffers from power-line interference or another narrow-band frequency. Typical applications are removing 50 Hz or 60 Hz interference from the mains supply.
+
+Animation description:
+A frequency spectrum of a signal is shown with a tall narrow peak at 50 Hz. A notch filter transfer function is overlaid: a deep narrow dip at exactly 50 Hz. The spectrum updates to show the peak removed. In the time domain, a signal with a visible 50 Hz hum is seen, then after filtering the hum disappears and the neural signal emerges cleanly. Text '50 Hz interference removed' flashes.

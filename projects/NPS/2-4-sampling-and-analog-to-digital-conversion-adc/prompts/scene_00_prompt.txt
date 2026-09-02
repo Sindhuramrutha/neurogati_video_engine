@@ -1,0 +1,47 @@
+1. 0.00–1.20: Open on a mostly empty canvas. Fade in gently at the right side a compact emblem of the previous topic: a tiny rounded badge containing the text "Amplification & Conditioning" with a small checkmark beside it, then fade that badge out by 1.20s.
+
+2. 1.68–3.10: Draw a smooth, continuously varying waveform from left to right across the centre of the screen, as if a pen is tracing it in real time. Place a clean text label directly beneath it reading: **Analogue Signal**.
+
+3. 3.10–4.76: Keep the analogue waveform on screen. Briefly pulse two small glowing markers on the waveform: one near a high peak and one near a low trough, then fade those markers away. This visually echoes the "amplified and conditioned" idea without changing the waveform.
+
+4. 4.76–5.62: Hold the smooth waveform steady. Dim it very slightly, then restore full brightness — a single subtle emphasis pulse signalling "before further processing."
+
+5. 5.62–7.20: Keep the waveform visible. No new visual elements appear.
+
+6. 7.64–8.72: Label the waveform more explicitly. A small callout line extends from the curve to the word **analogue**, which appears beside the existing "Analogue Signal" label.
+
+7. 8.72–11.24: Animate the waveform itself to emphasise continuity: slowly shimmer or redraw a highlight along a segment of the curve, moving from left to right, showing that the signal varies smoothly over time.
+
+8. 12.04–13.38: Introduce a stylised computer icon on the right side of the screen: a simple rounded rectangle with a small screen, a tiny stand, and a blank dark display. It appears clean and neutral.
+
+9. 13.38–16.42: Draw a bold red **X** directly between the analogue waveform and the computer icon. The waveform remains on the left, the computer on the right, and the red X sits centred between them. Fade the computer icon to a slightly greyed-out, inactive look.
+
+10. 16.42–17.44: Hold the red X and inactive computer icon on screen. Keep the analogue waveform visible.
+
+11. 17.44–19.76: Underneath the computer icon, show three small blank placeholder slots — unlabelled rectangular fields, each containing nothing. They brighten one after another as the narration says "digital numbers," but remain empty and generic.
+
+12. 19.76–20.58: Keep the empty placeholder slots visible. The red X remains between waveform and computer.
+
+13. 20.58–24.50: Morph the smooth analogue waveform into a staircase-like digital representation. The curve visibly snaps into discrete horizontal steps, with small vertical jumps between them. As the morph completes, add numeric labels along the horizontal axis at each step: **0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3**, running left to right.
+
+14. 24.50–27.42: Replace the red X with a green **✓** between the now-digital staircase signal and the computer icon. The computer icon lights up green, with its previously dark display now showing a small green pulse trace: **̅|‾|̅|‾|̅|‾** as a tiny digital waveform.
+
+15. 27.42–30.80: Arrange four text labels around the digital staircase signal in a loose orbit: **Store** appears above-left, **Display** above-right, **Process** below-left, **Analyse** below-right. The words fade in one by one.
+
+16. 30.80–31.62: Highlight the word **Store** with a brief glow, then let it settle back to normal brightness.
+
+17. 31.62–32.22: Highlight the word **Display** with a brief glow, then let it settle back to normal brightness.
+
+18. 32.22–32.56: Highlight the word **Process** with a brief glow, then let it settle back to normal brightness.
+
+19. 32.56–33.56: Highlight the word **Analyse** with a brief glow, then let it settle back to normal brightness.
+
+20. 33.56–35.98: Around the digital staircase signal, add a faint bounding outline with the title **Digital Signal Processing** appearing beneath the four capability words. The digital waveform, green computer, labels, and title all remain on screen together.
+
+21. 36.94–40.56: Fade the computer icon and the four capability labels slightly into the background. Bring the digital staircase signal forward, with the text **Analogue → Digital** appearing directly beneath it. Keep the arrow visually pointing from a small ghosted smooth curve on the left to the staircase on the right.
+
+22. 40.56–42.86: Introduce a vertical dashed line that repeatedly samples the original smooth waveform. Show it as a faint ghost of the original analogue curve behind the digital staircase. Each time the dashed line intersects the smooth curve, a small filled dot appears on the staircase step at that point.
+
+23. 42.86–44.48: Add two compact labels beneath the conversion area: **Sampling** and **ADC**. The word **Sampling** sits under the dashed-line sampling action, and **ADC** appears at the transition from the sampled dots to the digital output, with a small arrow pointing to the staircase signal.
+
+24. 44.48–45.42: Hold the full final composition steady: the digital staircase signal labelled **Analogue Signal**, the faint original smooth curve behind it, the green computer icon with green pulse, the four words **Store**, **Display**, **Process**, **Analyse**, and the labels **Analogue → Digital**, **Sampling**, and **ADC**. Everything stays visible through the end of the narration.

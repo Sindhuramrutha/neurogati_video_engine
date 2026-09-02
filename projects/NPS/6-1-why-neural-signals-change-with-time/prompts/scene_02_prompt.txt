@@ -1,0 +1,27 @@
+1. **0.00-1.50** — Blank background fades in. The text "Stationary Signal" appears centered at the top in bold, as a section heading. Below it, the definition text "Stationary: statistical and spectral characteristics essentially constant over time" fades in inside a softly outlined rectangular box. The box is highlighted with a subtle background tint. This definition box holds steady at the bottom portion of the screen.
+
+2. **1.50-2.48** — The heading and definition box remain visible. A brief pause; no new elements appear as the narration transitions from "definition" to the elaboration of the definition.
+
+3. **2.48-9.34** — As the narration says "A stationary signal is a signal whose statistical and spectral characteristics remain essentially constant over time," the definition box gently pulses or glows once to draw attention to it. The key phrases within the box — "statistical," "spectral," and "essentially constant" — highlight briefly in sequence as each word is spoken. The definition box remains the sole visual focus.
+
+4. **9.34-10.06** — The definition box returns to a steady, unhighlighted state. The heading remains visible. A short pause before the generator example begins.
+
+5. **10.06-15.20** — A simple diagram of an electrical generator fades in at the center-left of the screen, above the definition box. The generator consists of a rounded cylindrical body with a small turbine-like circle (a fan or rotor) on its right side. The entire generator applies a subtle, constant vibration animation — a small, rapid, continuous oscillation that conveys steady operation. The definition box remains visible at the bottom but is not highlighted during this beat.
+
+6. **15.20-17.28** — Below the generator, a steady sinusoidal waveform fades in, plotted along a horizontal axis. The waveform continuously scrolls from left to right at a constant rate. Its amplitude and frequency remain fixed — no variation over time. The generator sits above the waveform, visually connected as the signal source by a faint vertical light line or subtle glow from the generator down to the waveform's left edge.
+
+7. **17.28-20.54** — Three small time-window markers labeled "1 s," "5 s," and "1 min" appear above the waveform at three separate horizontal positions, each aligned above a different segment of the scrolling sine wave. The markers are evenly spaced. The waveform continues scrolling beneath them.
+
+8. **20.54-23.80** — The "1 s" time-window marker above the left segment of the waveform highlights — it brightens and enlarges slightly. Simultaneously, an inset box appears in the upper-right corner showing exactly the same sine wave shape as the segment under the "1 s" marker. The inset waveform is identical in amplitude and frequency to the main waveform. The "1 s" marker on the main waveform stays highlighted while the inset is visible.
+
+9. **23.80-27.00** — The "5 s" time-window marker above the center segment of the waveform highlights. The inset box remains open, now showing the same waveform shape for the "5 s" window — identical in amplitude, frequency, and appearance to the "1 s" inset. The "1 s" marker returns to its normal, unhighlighted state.
+
+10. **27.00-29.44** — The "1 min" time-window marker above the right segment of the waveform highlights. The inset box updates to show the "1 min" window, displaying the same, unchanged sine wave. The "5 s" marker dims back to normal. The main waveform continues scrolling with constant amplitude and frequency, emphasizing that all three windows show the same signal characteristics.
+
+11. **29.44-32.88** — All three time-window markers ("1 s," "5 s," "1 min") dim to their neutral state. The inset box shrinks or fades away. The main waveform continues scrolling steadily, and the generator keeps its constant vibration. The definition box at the bottom briefly highlights again, reinforcing that statistical properties and frequency content remain constant.
+
+12. **32.88-39.40** — The generator, waveform, and definition box remain on screen. The waveform continues its steady left-to-right scroll unchanged. The definition box pulses once more with emphasis on the word "stationary" as the narration connects the example back to the definition: "This type of signal is called stationary, because its behaviour does not change significantly with time." The generator's vibration animation remains constant throughout.
+
+13. **39.40-44.62** — The definition box remains visible and highlighted at the bottom. The generator and waveform fade out smoothly, leaving the heading "Stationary Signal" and the definition box as the final on-screen elements. The narration shifts to "Many classical signal processing techniques were originally developed under this assumption." During this beat, a faint, generic backdrop of small waveform glyphs or signal-processing symbols may appear faintly behind the definition box — but no specific technique names or labels are shown.
+
+14. **44.62-45.48** — The final frame holds steady: the heading "Stationary Signal" at the top, the definition box "Stationary: statistical and spectral characteristics essentially constant over time" highlighted at the bottom. The screen holds this final composition until the scene ends at 45.48 seconds, then fades out.

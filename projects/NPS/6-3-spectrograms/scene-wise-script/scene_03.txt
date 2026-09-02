@@ -1,0 +1,8 @@
+Subtopic: How is a Spectrogram Generated?
+Scene type: manim
+
+Narration:
+A spectrogram is generated directly from the STFT, and the process consists of four steps. Step one: divide the signal into short windows. The signal is divided into a series of overlapping time segments. Step two: compute the STFT. A Fourier Transform is performed for each window, and each window produces one frequency spectrum. Step three: arrange the spectra in time order. The spectra are placed side by side according to the position of each analysis window. And step four: display the signal as an image. The frequency spectra are represented using colour intensity, producing a two-dimensional image that simultaneously displays time, frequency, and signal strength.
+
+Animation description:
+A four-step visual sequence. Step 1: a long continuous signal waveform is shown, then vertical lines appear dividing it into overlapping segments, with the overlapping regions shaded. Step 2: each window is highlighted one at a time, and next to each window appears its frequency spectrum plot. Step 3: the spectra are arranged side by side in chronological order along a horizontal axis. Step 4: the magnitude of each spectrum is mapped to a colour intensity, and the collection of spectra is converted into a smooth colour-coded two-dimensional image with time on the horizontal axis and frequency on the vertical axis. Each step is labelled with its number and a short title.

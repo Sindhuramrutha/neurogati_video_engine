@@ -1,0 +1,27 @@
+1. **0.00–1.64** — From the previous scene's final composition (EEG trace with annotations left, static structural brain image right), the structural brain image and its caption fade out completely. The EEG trace remains but shrinks and moves slightly upward, dimming into the background as a faint reference. A heading appears center-top reading exactly "Abnormal EEG Findings in Epilepsy." The screen is otherwise cleared for the upcoming content.
+
+2. **1.64–4.06** — As narration says "is its ability to record abnormal," the heading holds at top. The background EEG trace fades further. Four empty panel outlines fade in simultaneously, arranged horizontally across the screen, each with a subtle border and a blank label space beneath it. The panels are evenly spaced and wait, empty.
+
+3. **4.06–6.00** — As narration says "electrical discharges associated with," the leftmost panel begins to fill: an isolated epileptic spike appears with a sharp, high-amplitude downward-upward deflection, drawn crisply. Beneath it, the label fades in reading exactly "Epileptic Spike." The other three panels remain empty.
+
+4. **6.00–6.80** — As narration says "with epilepsy," the first panel holds with its spike clearly visible. A slight pause in the animation lets the viewer register the single spike pattern. The other three panels remain empty.
+
+5. **8.12–9.76** — As narration says "Some characteristic EEG findings," the second panel from the left begins to fill: a sharp wave appears, a single sharp deflection similar to the spike but slightly broader and less pointed. Beneath it, the label fades in reading exactly "Sharp Wave." The first panel remains visible.
+
+6. **9.76–11.68** — As narration says "include: epileptic spikes," the first panel pulses once gently to re-emphasize the epileptic spike, its waveform brightening briefly. The label "Epileptic Spike" brightens too. The second panel holds steady.
+
+7. **11.68–12.86** — Pause following "spikes," and as narration says "sharp waves," the second panel pulses once gently, its sharp wave brightening briefly. The label "Sharp Wave" brightens too. The first panel returns to normal brightness.
+
+8. **13.46–14.58** — As narration says "spike-and-wave complexes," the third panel from the left fills in: a spike-and-wave complex appears, drawn as a sharp upward spike immediately followed by a slower, broader wave of opposite direction. Beneath it, the label fades in reading exactly "Spike-and-Wave Complex." The first two panels hold steady.
+
+9. **15.30–16.50** — As narration says "and rhythmic seizure activity," the fourth and rightmost panel fills in: rhythmic seizure activity appears as continuous, rhythmic high-frequency spikes, repeating in rapid succession across the panel. Beneath it, the label fades in reading exactly "Rhythmic Seizure Activity." All four panels are now visible and labeled.
+
+10. **16.50–17.54** — Brief pause. All four panels hold fully visible, arranged left to right: Epileptic Spike, Sharp Wave, Spike-and-Wave Complex, and Rhythmic Seizure Activity. The heading remains at top. This beat gives the viewer time to see the complete set of four patterns.
+
+11. **17.54–19.28** — As narration says "These patterns provide important evidence," all four panels subtly lift in emphasis: their borders glow softly, and each waveform brightens slightly. A small caption fades in below the row of panels reading exactly "Important evidence." The four labels remain.
+
+12. **19.28–20.44** — As narration says "that helps clinicians evaluate," the four panels remain in place. A clinician's eye icon or subtle gaze indicator is not needed — instead, each panel pulses individually in sequence, one after another, as if being assessed one by one. The caption updates to "Helps clinicians evaluate."
+
+13. **20.44–22.80** — As narration says "and classify epileptic disorders," the panels continue to be highlighted sequentially, and a thin classification line appears beneath the row, branching into categories pointing to each pattern. The caption updates to "Evaluate and classify epileptic disorders." All four panels remain clearly visible.
+
+14. **22.80–24.02** — Final hold. The heading "Abnormal EEG Findings in Epilepsy" remains at top. All four panels are fully visible with their waveforms and labels: "Epileptic Spike," "Sharp Wave," "Spike-and-Wave Complex," and "Rhythmic Seizure Activity." The caption "Evaluate and classify epileptic disorders" remains below the row. The screen holds this complete composition steadily until the full 24.02-second duration elapses.

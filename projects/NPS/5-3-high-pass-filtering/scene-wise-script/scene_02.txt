@@ -1,0 +1,8 @@
+Subtopic: What is a High-Pass Filter? - Definition
+Scene type: manim
+
+Narration:
+So what exactly is a high-pass filter? Formally, a high-pass filter is a filter that allows high-frequency components of a signal to pass through, while attenuating or removing low-frequency components that fall below a selected cutoff frequency.
+
+Animation description:
+A clean animated definition screen. The phrase 'High-Pass Filter' appears at the top in bold. Below it, the full definition types itself out line by line in a styled text box: 'A filter that allows high-frequency components of a signal to pass' then 'while attenuating or removing low-frequency components' then 'below a selected cutoff frequency.' As the words 'high-frequency components' appear, a small green upward arrow appears and subtly pulses. As 'low-frequency components' appears, a small red downward arrow does the same. The text box is outlined with a thin border that fades in last.

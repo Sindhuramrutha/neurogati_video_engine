@@ -1,0 +1,8 @@
+Subtopic: Summary and Transition
+Scene type: manim
+
+Narration:
+Let's summarize what we've covered. Neurotechnology is an interdisciplinary field involving technologies that measure, interpret, influence, or restore nervous-system function. The nervous system can be understood as an electrical, chemical, and computational system. Neurotechnology provides ways to interact with these properties using sensors, imaging systems, signal processing, computational models, and stimulation technologies. The central framework introduced in this module is the pipeline: Brain or nerve, Signal, Sensor, Acquisition, Processing, Interpretation, Action. We can also organize neurotechnology into recording, decoding, and modulation. Recording tells us what the nervous system is doing. Decoding attempts to extract meaningful information from that activity. Modulation attempts to influence the nervous system. These concepts will provide the foundation for everything that follows. In the next module, we'll move from the general idea of neurotechnology to the first practical question: how do we actually record signals from the nervous system?
+
+Animation description:
+A concise summary screen appears with three visual blocks: the pipeline diagram (Brain or nerve → Signal → Sensor → Acquisition → Processing → Interpretation → Action), the three perspectives (Electrical, Chemical, Computational), and the three activities (Recording, Decoding, Modulation). Each block highlights as its content is summarized. At the end, a forward arrow appears with text 'Next: Recording signals from the nervous system', and the screen transitions toward a new module title.

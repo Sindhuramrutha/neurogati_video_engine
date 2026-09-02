@@ -1,0 +1,21 @@
+1. **0.00** – In the center of the screen, a noisy neural signal trace appears: a continuous, irregular waveform with random fluctuations, resembling a raw neurophysiological recording. Orbiting slowly around this trace in a circular path are six stylized filter icons: a circle labeled “Low-pass”, a square labeled “High-pass”, a diamond labeled “Band-pass”, a triangle labeled “Notch”, a pentagon labeled “Moving-Average”, and a hexagon labeled “Median”. All icons are dimly lit (low opacity) and at normal (1×) scale.
+
+2. **3.44** – The low-pass icon briefly brightens to full opacity and enlarges to 1.3× scale for 0.5 seconds, then returns to its dim, normal state.
+
+3. **4.28** – The high-pass icon briefly brightens to full opacity and enlarges to 1.3× scale for 0.5 seconds, then returns to its dim, normal state.
+
+4. **4.90** – The band-pass icon briefly brightens to full opacity and enlarges to 1.3× scale for 0.5 seconds, then returns to its dim, normal state.
+
+5. **5.64** – The notch icon briefly brightens to full opacity and enlarges to 1.3× scale for 0.5 seconds, then returns to its dim, normal state.
+
+6. **6.02** – The moving-average icon briefly brightens to full opacity and enlarges to 1.3× scale for 0.5 seconds, then returns to its dim, normal state.
+
+7. **6.92** – The median icon briefly brightens to full opacity and enlarges to 1.3× scale for 0.5 seconds, then returns to its dim, normal state.
+
+8. **11.02** – The six filter icons fade out over 0.5 seconds. Simultaneously, a large, bold “?” symbol appears in the center of the screen, overlaying the noisy neural trace, which remains visible underneath.
+
+9. **18.34** – The large “?” dissolves and morphs into the text “Choose filter based on signal & analysis objective” (centered, clean sans-serif font). Over the next 1 second, this text slides upward to become a header at the top of the screen. Concurrently, the noisy neural signal trace fades out completely over the same 1-second interval, leaving the area below the header empty.
+
+10. **31.12** – Below the header, a split view fades in. On the left: a clean signal icon, consisting of a smooth, stylized brain silhouette (side profile) with an overlaid green sinusoidal waveform, and a label “Physiological Signal”. On the right: a noisy interference icon, showing several jagged red spike trains and static patterns, labeled “Noise / Interference”. Arrows animate out from both the left icon and the right icon, converging toward a central node labeled “Filter Selection” (a rectangle with a funnel icon inside). All parts of the split view appear simultaneously; the arrows draw themselves in over 1 second.
+
+11. **39.64** – All elements (header text, split view with brain/signal and interference icons, arrows, and filter selection node) remain static on screen until the scene ends at 40.42.

@@ -1,0 +1,59 @@
+1. **0.00-1.22** — A blank screen holds. The heading "EEG Recording" is not yet visible. Nothing appears.
+
+2. **1.22-1.60** — As the narration says "concrete," a faint horizontal baseline fades in, spanning most of the screen width, centered vertically. The line is thin and light gray. No waveform or labels yet.
+
+3. **1.60-2.20** — As the narration says "thirty-second," a text label "30 s" fades in centered beneath the baseline. The baseline remains steady.
+
+4. **2.20-3.24** — As the narration says "EEG recording," the label beneath the baseline changes to read "30-second EEG recording" — the full phrase replaces "30 s" as a single centered caption. Simultaneously, a simulated EEG waveform begins drawing across the baseline from left to right: a slow, large-amplitude, regular oscillatory trace, prominent smooth peaks and troughs at a consistent rhythm, representing alpha activity.
+
+5. **3.24-4.32** — The full waveform for the first 10 seconds of the recording is now drawn across the left third of the baseline. The trace shows prominent regular alpha oscillations — large, smooth, evenly spaced waves. A vertical dashed line fades in at the 10-second boundary, extending from slightly above the waveform to slightly below it. A label beneath this first segment appears: "Eyes closed (0–10 s)".
+
+6. **4.32-4.84** — As the narration says "first 10 seconds," the first segment's label "Eyes closed (0–10 s)" brightens subtly. The waveform in that segment continues its display: large-amplitude, regular alpha oscillations. A soft translucent highlight — a rounded rectangle or gentle glow — fades in over the first segment region, covering the left third of the waveform display.
+
+7. **4.84-5.54** — The highlight remains over the "Eyes closed" segment. The waveform continues showing prominent slow alpha waves. The vertical dashed line at 10 seconds remains visible. No new elements appear.
+
+8. **5.54-7.42** — As the narration says "participant sits quietly with their eyes closed," a small textual caption appears above the first segment, centered within it: "Eyes closed." The waveform continues its steady alpha oscillation — regular, large-amplitude peaks and troughs. The highlight on the first segment holds.
+
+9. **7.42-8.38** — Pause. The highlight on the first segment holds. The alpha waveform continues. The caption "Eyes closed," the segment label "Eyes closed (0–10 s)," the vertical dashed boundary line, and the baseline all remain steady.
+
+10. **8.38-9.82** — As the narration says "alpha activity is prominent," a label "Alpha prominent" fades in above the first segment, positioned just above the waveform trace, centered within the highlighted region. The label sits alongside the existing "Eyes closed" caption. The waveform's large, regular oscillations are visually emphasized — the trace thickens slightly or brightens, drawing attention to the alpha rhythm. The first segment highlight remains active.
+
+11. **9.82-10.70** — The first segment remains fully displayed: highlight, "Alpha prominent" label, "Eyes closed" caption, and large regular alpha waveform. A brief pause. No new elements appear.
+
+12. **10.70-11.70** — As the narration says "at 10 seconds," the vertical dashed line at the 10-second boundary pulses once — a brief brightening — to mark the transition point. The first segment's highlight begins to dim slightly. The waveform beyond the boundary has not yet changed; the right two-thirds of the baseline remain as they were drawn initially — continuing the alpha pattern.
+
+13. **11.70-13.32** — As the narration says "the participant opens their eyes," the waveform to the right of the 10-second boundary visibly changes: the oscillations reduce in amplitude — the peaks and troughs become noticeably smaller — and the rhythm becomes less regular, with slight variations in peak spacing. The trace no longer shows clean periodic alpha waves but a lower-amplitude, more variable pattern. A second vertical dashed line fades in at the 20-second boundary. A label beneath the middle segment appears: "Eyes open (10–20 s)". The highlight slides smoothly from the first segment to the middle segment, settling over the "Eyes open" region.
+
+14. **13.32-13.70** — The middle segment's highlight is now active. The waveform in the middle segment shows reduced, less regular oscillations. No new labels yet. The first segment's "Alpha prominent" label remains visible above the left portion.
+
+15. **13.70-14.88** — As the narration says "the alpha rhythm decreases," a label "Alpha decreases" fades in above the middle segment, centered above the waveform trace, within the highlighted region. The middle segment's trace is visually de-emphasized compared to the first — smaller amplitude, more irregular spacing — making the decrease clear. The label pulses softly once as it appears.
+
+16. **14.88-15.92** — The middle segment holds: highlight on "Eyes open (10–20 s)," "Alpha decreases" label above the trace, reduced-amplitude irregular waveform. A brief pause. No new elements appear.
+
+17. **15.92-16.90** — As the narration says "at 20 seconds," the vertical dashed line at the 20-second boundary pulses once — a brief brightening — to mark the next transition point. The middle segment's highlight begins to dim. A third and final vertical dashed line fades in at the 30-second boundary, marking the end of the recording.
+
+18. **16.90-18.90** — As the narration says "a visual stimulus is presented," a label beneath the third segment appears: "Stimulus (20–30 s)". The highlight slides smoothly from the middle segment to the third segment, settling over the "Stimulus" region. The waveform in the third segment continues the reduced, irregular pattern of the middle segment for now — no transient response yet.
+
+19. **18.90-20.92** — As the narration says "a brief event-related response appears," a sharp transient deflection appears in the waveform at approximately 20 seconds, just after the third segment's left boundary: a single brief, prominent deflection — a rapid upward spike followed by a return — superimposed on the smaller irregular activity. The deflection stands out clearly against the surrounding lower-amplitude trace. Simultaneously, a label "Event-related response" fades in above the third segment, positioned slightly to the right of the 20-second boundary, centered over the deflection's location. The label sits alongside the continuing smaller irregular trace.
+
+20. **20.92-21.76** — The transient deflection and "Event-related response" label hold. The third segment's highlight remains active. After the deflection, the waveform returns to smaller, irregular activity — continuing the pattern from the middle segment but slightly reduced. The first two segments with their labels and highlights remain visible but dimmed. No new elements appear.
+
+21. **21.76-23.72** — Pause. The full display holds: all three segments, all three vertical dashed boundaries, all three segment labels, the three sub-labels ("Alpha prominent," "Alpha decreases," "Event-related response"), and the continuous waveform with its three distinct regions. The third segment's highlight remains active.
+
+22. **23.72-24.82** — As the narration says "same recording," the three vertical dashed boundaries fade slightly — becoming less visually distinct — while the baseline beneath the waveform remains unbroken, emphasizing that the entire trace is one continuous signal. The three segment highlights remain visible but all three now hold at a low, equal intensity, no single one emphasized over the others. The waveform remains continuous across all boundaries.
+
+23. **24.82-26.98** — As the narration says "frequency content is clearly different," the three sub-labels — "Alpha prominent," "Alpha decreases," and "Event-related response" — brighten simultaneously. The three waveform regions are visually juxtaposed: the left third shows large regular oscillations, the middle third shows smaller more irregular oscillations, and the right third shows smaller irregular activity with one sharp transient deflection. A soft outline or glow traces the edge of each of the three regions, distinguishing them clearly from one another.
+
+24. **26.98-28.08** — As the narration says "This," the three-region outline glows gently. The waveform holds steady across all three segments. No new elements appear.
+
+25. **28.08-28.96** — As the narration says "demonstrates," the baseline and waveform brighten slightly as a whole, drawing attention to the entire continuous recording. The three segment highlights fade out entirely, leaving only the labels, boundaries, waveform, and baseline, emphasizing the unity of the recording.
+
+26. **28.96-30.40** — As the narration says "neural activity evolves continuously," a subtle animated arrow or a slowly sweeping highlight travels from left to right along the waveform, following the trace from the alpha-dominated segment, through the reduced-alpha segment, into the event-related response segment. The arrow or sweep moves smoothly and continuously, reinforcing the idea of continuous evolution. The waveform remains static beneath this motion.
+
+27. **30.40-31.86** — The sweeping highlight or arrow completes its rightward traversal and fades out. The full waveform now shows all three segments clearly: large regular alpha waves, reduced irregular activity, and the small irregular activity with one sharp deflection. The labels "Eyes closed (0–10 s)", "Eyes open (10–20 s)", and "Stimulus (20–30 s)" remain beneath their respective segments. A brief pause.
+
+28. **31.86-33.40** — As the narration says "rather than remaining constant," the three waveform regions each pulse softly in sequence, left to right — first the alpha segment, then the reduced-alpha segment, then the event-related segment — each brightening briefly in turn. This sequential pulse emphasizes that the signal differs across the recording, not staying constant. The labels and boundaries remain steady.
+
+29. **33.40-34.52** — As the narration says "throughout the recording," the full display holds: the complete waveform spanning the baseline, the three vertical dashed boundaries, the three segment labels beneath, the three sub-labels above ("Alpha prominent," "Alpha decreases," "Event-related response"), and the continuous trace with its three distinct regions. The waveform remains fully visible, no element fading out.
+
+30. **34.52-35.23** — The final frame holds until the scene ends at 35.23 seconds: complete 30-second EEG waveform on the baseline, three vertical dashed boundaries at 10 s, 20 s, and 30 s, segment labels "Eyes closed (0–10 s)", "Eyes open (10–20 s)", and "Stimulus (20–30 s)" beneath their respective segments, sub-labels "Alpha prominent," "Alpha decreases," and "Event-related response" above their respective regions, all shown together as one continuous recording with clearly distinct frequency content across the three periods. No further changes.

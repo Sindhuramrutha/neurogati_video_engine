@@ -1,0 +1,8 @@
+Subtopic: 5.6.4 Median Filter – Definition and Principle
+Scene type: manim
+
+Narration:
+The median filter is another time‑domain filter, but instead of averaging, it replaces each sample with the median value of its neighbours. It takes a small group of samples, sorts them in numerical order, and picks the middle one. This approach is particularly effective against isolated spikes or impulsive noise, because extreme values have very little influence on the median.
+
+Animation description:
+Show a waveform with an obvious isolated spike. A window appears around the spike and shows the sample values as numbers. Animate the sorting of those numbers ascending, then highlight the middle value. Replace the center sample with that median value, causing the spike to vanish in the output waveform.

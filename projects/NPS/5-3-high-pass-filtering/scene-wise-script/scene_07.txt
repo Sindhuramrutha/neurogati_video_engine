@@ -1,0 +1,8 @@
+Subtopic: Applications in Neural Signal Processing: EEG
+Scene type: manim
+
+Narration:
+High-pass filters are used widely in biomedical signal processing to remove slow variations that interfere with signal interpretation. In EEG, high-pass filters help reduce slow baseline drift caused by electrode movement or changes in electrode impedance, making the recordings more stable for analysis.
+
+Animation description:
+A stylized EEG recording setup appears: a simple silhouette of a head in profile with small circular electrodes on the scalp connected via wires to a monitor. A jagged waveform appears on the monitor with a slow wandering baseline drift. A high-pass filter box appears between the head and the monitor, highlighted. As the narration mentions drift reduction, the waveform on the monitor gradually loses its slow wander and becomes centered around a stable baseline while retaining its sharp rhythmic features. The label 'EEG' is prominent at the top. Small text captions appear beside the electrodes: 'electrode movement' and 'impedance change' briefly. The final waveform is labeled 'stable for analysis.'

@@ -1,0 +1,20 @@
+[
+  {
+    "timestamp": 1.7,
+    "shape_id": 3,
+    "highlight": "box",
+    "reason": "narration starts discussing demystifying the brain, which matches the title text"
+  },
+  {
+    "timestamp": 21.2,
+    "shape_id": 9,
+    "highlight": "circle",
+    "reason": "narration introduces cognitive complexity"
+  },
+  {
+    "timestamp": 27.9,
+    "shape_id": 14,
+    "highlight": "circle",
+    "reason": "narration introduces technological integration"
+  }
+]

@@ -1,0 +1,8 @@
+Subtopic: Spikes vs Local Field Potentials
+Scene type: manim
+
+Narration:
+The easiest way to understand the difference between spikes and LFPs is to think about the scale of neural activity being measured. These two signals are not competing measurements. They provide different views of the same underlying neural system. A researcher may analyse both simultaneously to understand how individual neuronal firing relates to population-level activity.
+
+Animation description:
+Show a single electrode recording from neural tissue. From the same raw recording, animate a split into two branches: a high-pass filtered branch showing spikes, and a low-pass filtered branch showing the LFP. Label the spike branch as 'individual neuron level' and the LFP branch as 'population level'. Recombine them visually to show they come from the same neural system. Emphasize that they are complementary, not competing.

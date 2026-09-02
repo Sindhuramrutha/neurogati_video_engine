@@ -1,0 +1,21 @@
+1. **0.00–1.06** — On a dark background, the left panel and right panel fade in side by side, both empty for now. A thin divider line separates them. No text or objects yet, as the narration opens with “As the name suggests.”
+
+2. **1.70–4.22** — In the left panel, a stylized straight road fades in, leading from the left edge toward the center where a tollbooth gate stands with its arm raised. A small sign on the tollbooth reads **“HP”**, fading in with the booth. The right panel remains empty, as the narration contrasts high-pass with low-pass.
+
+3. **4.94–6.52** — In the right panel, a noisy signal trace fades in, drawn as a smooth red slow sinusoidal baseline with rapid green oscillations superimposed on it. The left panel's road and gate remain static, as the narration says “Instead of preserving slow signal variations.”
+
+4. **7.74–11.04** — In the right panel, the red slow baseline begins to fade gradually, its color dimming over this interval, while the green rapid oscillations stay bright and continue moving horizontally across the trace. The label **“faster variations remain”** fades in at the top of the right panel in green. The left panel remains static, as the narration says “it removes them and allows faster signal variations to remain.”
+
+5. **12.00–12.92** — A label fades in at the top of the left panel, reading **“slow variations removed”** in red. The road and gate remain static, as the narration says “Imagine a gate.”
+
+6. **12.92–15.10** — A fast-moving rounded rectangle with small wheels enters the left panel from the left edge and moves along the road toward the gate. The gate arm remains raised as the vehicle passes through. A small green checkmark fades in above the passing vehicle. The narration says “that lets only fast-moving vehicles through.”
+
+7. **15.10–16.98** — A slower rounded rectangle with small wheels enters the left panel from the left edge and approaches the gate. The gate arm drops down, blocking the vehicle. A small red X fades in above the blocked vehicle. The narration says “while stopping the slower ones.”
+
+8. **17.70–19.14** — The blocked slow vehicle remains stopped at the lowered gate arm, and the fast vehicle has exited to the right edge. The left panel's label and the right panel's signal hold steady, as the narration says “In just the same way.”
+
+9. **19.36–23.72** — In the right panel, a dashed translucent rectangle appears over the signal trace, hovering over the left side of the trace. It sweeps slowly from left to right across the signal, and as it passes, the green rapid oscillations remain bright and continue moving within the window, while the red slow baseline fades further. The label **“faster variations remain”** stays lit in green, as the narration says “a high-pass filter allows high-frequency signal components to continue through the system.”
+
+10. **24.36–26.18** — The dashed translucent rectangle continues its sweep across the right panel signal trace. The red baseline is now nearly invisible, leaving the green rapid oscillations dominant in the trace. The left panel's slow vehicle remains stopped with the red X above it, supporting the idea of reducing low-frequency components. As the narration says “while reducing lower-frequency components,” the red label **“slow variations removed”** pulses subtly once.
+
+11. **26.18–34.33** — Both panels hold their finished compositions until the end: the left panel with the gate, the stopped slow vehicle under the red X, and the label **“slow variations removed”**; the right panel with the signal reduced to bright green rapid oscillations, the filtered-out red baseline faint, the dashed filter window faded out at the right edge, and the label **“faster variations remain”** glowing steadily. The scene holds on both panels side by side as the narration concludes about low-frequency unwanted information.

@@ -1,0 +1,13 @@
+1. **[0.00]** A title card with the text "Learning Objectives" fades in at the top center of the screen and remains visible for the entire scene.
+
+2. **[2.80]** The first bullet point, "Define a band‑pass filter", slides in from the left edge of the screen with a subtle fade, stopping in a vertical list below the title card. A checkmark icon (✓) appears to its left.
+
+3. **[5.40]** The second bullet point, "Explain how it operates", slides in from the left with a subtle fade, aligning directly below the first bullet in the list, also preceded by a checkmark icon.
+
+4. **[7.36]** The third bullet point, "Understand lower and upper cutoff frequencies", slides in from the left with a subtle fade, joining the list with a checkmark icon to its left.
+
+5. **[10.42]** The fourth bullet point, "Describe applications in neural signal processing", slides in from the left with a subtle fade, with a checkmark icon to its left.
+
+6. **[15.18]** The fifth bullet point, "Recognise advantages and limitations", slides in from the left with a subtle fade, accompanied by a checkmark icon, completing the list of five objectives.
+
+7. **[17.24]** All five bullet points and the title card remain static and fully visible on screen until the scene ends at **18.32** seconds.

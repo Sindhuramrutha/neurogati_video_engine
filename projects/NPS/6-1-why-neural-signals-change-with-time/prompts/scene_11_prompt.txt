@@ -1,0 +1,25 @@
+1. **0.00-1.52** — The screen opens from the previous scene's summary panel, which fades out. In its place, a slowly changing waveform fades in across the upper portion of the screen. The waveform's shape undulates gently and continuously over time — amplitude and frequency shift visibly as it animates. Below it, a separate horizontal area displays a single, static frequency spectrum (a simple curve with peaks, frozen and unchanging). The two elements are stacked vertically with clear separation.
+
+2. **1.52-2.40** — As the narration pauses after "problem," the changing waveform continues to animate at the top. The static spectrum below remains fixed. No new elements appear.
+
+3. **2.40-4.80** — As the narration says "Neural signals change continuously over time," the changing waveform is emphasized with a soft glow or brighter outline. Beneath the waveform, a label fades in reading exactly: "Neural signal — changes over time". The static spectrum remains untouched. The waveform's motion visually illustrates the "changing continuously" idea with noticeable, ongoing variation.
+
+4. **4.80-6.00** — As the narration says "but the conventional Fourier Transform," the static frequency spectrum below is highlighted with a contrasting color or soft glow. A label fades in beneath it, reading exactly: "Conventional Fourier Transform — one spectrum for the whole recording". The waveform at top continues changing.
+
+5. **6.00-10.94** — As the narration says "provides only a single frequency spectrum for the entire recording," the static spectrum's label holds. The spectrum is briefly outlined or boxed to emphasize that it is fixed and unchanging. The waveform continues its ongoing variation at the top, visually contrasting the dynamic signal with the frozen spectrum. No new elements appear.
+
+6. **10.94-13.46** — As the narration pauses after "recording," both the waveform and the static spectrum hold in their current states. The screen is briefly stable. The labels remain visible.
+
+7. **11.82-14.22** — As the narration says "So how can we determine which frequencies are present," a large question mark fades in centered between the changing waveform at top and the static spectrum below. The question mark is bold and prominent. It visually bridges the gap between the dynamic signal and the frozen spectrum.
+
+8. **14.22-15.54** — As the narration says "at different moments in time?" the question mark pulses gently once. A subtle clock icon or time-related annotation appears next to the question mark, suggesting the temporal dimension missing from the static spectrum. The waveform above continues changing; the spectrum below remains static.
+
+9. **16.28-17.56** — As the narration says "The solution is the Short-Time," the large question mark begins to transform. It morphs into a stylized three-dimensional surface — a time-frequency plot — rising up from where the question mark was. The transformation is smooth: the question mark stretches, folds, and becomes the 3D surface. The waveform and static spectrum still occupy their positions at top and bottom.
+
+10. **17.56-18.68** — As the narration says "Fourier Transform," the three-dimensional time-frequency surface is now fully formed and centered. Three axes appear, one at a time: "Time" (horizontal axis along the front), "Frequency" (horizontal axis along the side), and "Power" (vertical axis). The axes are labeled clearly with these exact words. The surface itself shows varying height across the time-frequency plane — peaks and valleys representing power changing across both time and frequency.
+
+11. **18.68-20.26** — As the narration says "or STFT," (transcribed as "SDFT"), a prominent label fades in beside the 3D surface, reading exactly: "Short-Time Fourier Transform (STFT)". The label is bold and clear. The abbreviation "STFT" within the label is highlighted briefly as the narration says it.
+
+12. **20.76-22.44** — As the narration says "which we will study in the next section," a forward-pointing arrow appears to the right of the STFT label, pointing off-screen to the right, indicating progression to the next section. The 3D time-frequency surface, its axes ("Time", "Frequency", "Power"), and the STFT label all remain visible. The waveform at top and static spectrum below are still present but slightly dimmed to keep focus on the 3D surface and label.
+
+13. **22.44-23.15** — The final frame holds until the scene ends at 23.15 seconds: the slowly changing waveform at top, the static spectrum below with its label "Conventional Fourier Transform — one spectrum for the whole recording", the 3D time-frequency surface centered with axes "Time", "Frequency", and "Power" visible, the label "Short-Time Fourier Transform (STFT)" beside the surface, and the forward-pointing arrow to the right of the label. No further changes.

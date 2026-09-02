@@ -1,0 +1,8 @@
+Subtopic: 2.1.4 Components of the Acquisition Chain - Computer
+Scene type: manim
+
+Narration:
+Finally, once the signal is digitized, it's transferred to the computer. Specialized software displays, stores, processes, and analyzes the recorded data. And here's an important point: everything that comes after this stage — filtering, feature extraction, spectral analysis, classification — all of it depends on the quality of the signal that has been acquired up to this point. The computer can only work with what it's been given.
+
+Animation description:
+Show the final box in the chain, labeled 'Computer', lighting up. Inside it, show a monitor displaying a clean digital waveform. Around the monitor, small icon labels appear in sequence as they're named: 'Display', 'Store', 'Process', 'Analyze'. Then downstream boxes appear labeled 'Filtering', 'Feature Extraction', 'Spectral Analysis', 'Classification', each connected by arrows to the acquisition chain, emphasizing that they depend on the acquired signal quality.

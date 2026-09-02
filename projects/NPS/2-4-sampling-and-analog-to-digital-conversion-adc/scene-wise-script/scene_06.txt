@@ -1,0 +1,8 @@
+Subtopic: 2.4.7 Importance of Proper Sampling
+Scene type: manim
+
+Narration:
+The quality of the digital recording depends greatly on how the signal is sampled. If too few samples are collected, important variations in the neural signal may not be represented accurately. Conversely, collecting more samples than necessary increases storage requirements and processing time without always providing additional useful information. So selecting an appropriate sampling frequency is an important consideration during the design of every neural recording system. And here's why it matters downstream: the accuracy of later analyses — like filtering, spectral analysis, and feature extraction — depends on the quality of the digital data produced during the sampling stage. A poorly digitised signal cannot be fully corrected during later processing.
+
+Animation description:
+Two panels. Left panel: a waveform with too few sample points — when the points are connected, the reconstructed shape clearly misses important peaks and valleys. Label: 'Too few samples — information lost.' Right panel: the same waveform with overly dense sample points, label: 'Excessive samples — extra storage, little added benefit,' with a storage meter overflowing. Then a downward arrow chain appears: 'Sampling Quality' → 'Filtering' → 'Spectral Analysis' → 'Feature Extraction', with a warning text: 'Poor digitisation cannot be fully corrected later.'

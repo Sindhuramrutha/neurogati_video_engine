@@ -1,0 +1,11 @@
+1. **0.00–3.10** — A clean, minimal list layout fades in, positioned center-left on the screen. Four horizontal rows are visible as faint placeholder lines, each with an empty circle at its left edge where a checkmark will later appear. No text is yet shown. As the narration says "Low-pass filtering offers several important advantages," a title "Advantages of Low-Pass Filtering" fades in at the top of the layout.
+
+2. **4.14–6.38** — The first list item slides in from the left with a smooth motion: a green checkmark draws itself into the first empty circle, and the text "Reduces high-frequency noise" fades in beside it. The checkmark briefly pulses with a soft green glow as the text finishes appearing. The other three rows remain as empty placeholders.
+
+3. **7.18–8.66** — The second list item slides in from the left: a green checkmark draws itself into the second empty circle, and the text "Produces smoother waveforms" fades in beside it. The first item remains fully visible, now slightly dimmed to draw attention to the new item. The remaining rows stay as placeholders.
+
+4. **9.40–10.98** — The third list item slides in from the left: a green checkmark draws itself into the third empty circle, and the text "Improves signal readability" fades in beside it. The first two items remain visible, dimmed. The last row remains as a placeholder.
+
+5. **11.74–15.70** — The fourth list item slides in from the left: a green checkmark draws itself into the fourth empty circle, and the text "Preprocessing before feature extraction" fades in beside it. All four items are now fully visible with green checkmarks.
+
+6. **15.70–16.55** — The complete list holds on screen: all four items with green checkmarks, the title "Advantages of Low-Pass Filtering" above them, each row cleanly spaced. The entire list gently brightens to full prominence as the scene concludes at 16.55 seconds.

@@ -1,0 +1,25 @@
+1. (0.00–1.74) From the previous scene's end state, the dimmed downstream boxes and caption fade out, leaving the full acquisition chain visible: analog waveform (electrode), amplifier, ADC, computer, and four downstream boxes. Six connected boxes are now arranged left-to-right: Electrode, Amplifier, ADC, Computer, Processing, Display/Analysis. Narration: "Now, here's the crucial insight."
+
+2. (2.52–4.74) The camera frames the entire chain of boxes. A caption appears above: "The acquisition chain is an integrated system". The boxes are shown connected by thick arrows running left-to-right between them. Narration: "The acquisition chain should not be viewed as a collection of independent devices."
+
+3. (5.16–6.66) A glowing pulse of light appears at the Electrode box and travels rightward through the first arrow. As it passes, the Electrode box highlights briefly. A label below the Electrode box reads "Electrode". Narration: "It functions as an integrated system,"
+
+4. (6.92–8.44) The pulse continues rightward into the Amplifier box. The Amplifier box highlights as the pulse passes through it. An arrow from Electrode to Amplifier stays illuminated. Narration: "as an integrated system, where each stage prepares the signal for the next."
+
+5. (8.80–10.94) The pulse moves through the ADC box, which highlights briefly. A small label appears beneath the ADC box showing "sampled signal". The pulse then continues into the Computer box. Narration: "where each stage prepares the signal for the next." (beat overlaps narration 4)
+
+6. (11.68–13.46) First failure scenario: The Electrode box begins to shake visibly. A loose connection icon (an unplugged connector or spark) appears at the Electrode box. The label "poor electrode contact" appears below it in red. Narration: "A poor electrode contact cannot be corrected by a better amplifier."
+
+7. (13.76–15.30) The Amplifier box grows larger and is labeled "better amplifier" in bold. Despite its larger size and better label, glitch artifacts (jagged noise lines) appear in the amplifier's output and propagate through the ADC and Computer boxes. Narration: "cannot be corrected by a better amplifier."
+
+8. (16.30–18.80) Second failure scenario: The scene resets briefly to the clean chain. The electrode stops shaking. The ADC box now shows irregular sampling intervals — the vertical sampling lines inside the ADC box are unevenly spaced, with some clustered and others far apart. The ADC box highlights with a warning color. Narration: "Similarly, incorrect sampling cannot be compensated for during later analysis."
+
+9. (19.10–20.30) The Computer box shows a distorted waveform — a jagged, corrupted signal trace. A red X appears over the Computer box. The label "distorted waveform" appears beneath it. The downstream boxes (Processing, Display/Analysis) show glitch artifacts. Narration: "during later analysis."
+
+10. (21.26–23.60) The scene holds on the corrupted Computer box with the red X. A caption appears: "You can't fix a bad acquisition with good processing." The downstream boxes, despite being labeled "good processing" or "careful analysis", remain filled with glitch artifacts and the red X. Narration: "You can't fix a bad acquisition with good processing."
+
+11. (23.60–26.92) The scene transitions: the glitch artifacts and red X fade out, replaced by a clean, correct version of the entire chain. The Electrode box is stable. The ADC shows evenly spaced sampling lines. The Computer box shows a clean waveform. A green checkmark appears over the chain. The caption "Careful acquisition comes first" fades in prominently below the chain. Narration: "So successful neural signal processing always begins with careful signal acquisition."
+
+12. (26.92–29.04) The caption "Careful acquisition comes first" remains on screen and brightens slightly. The chain holds steady: Electrode, Amplifier, ADC, Computer, Processing, Display/Analysis — all clean and properly connected with evenly spaced sampling in the ADC and a clean waveform in the Computer. The green checkmark pulses once. Narration: "always begins with careful signal acquisition."
+
+13. (29.04–29.95) Final hold: the caption "Careful acquisition comes first" remains centered below the chain. The chain stays on screen, all boxes clean and connected. Narration: (silence)

@@ -1,0 +1,8 @@
+Subtopic: 5.4.9 Summary and Transition to 5.5
+Scene type: manim
+
+Narration:
+In this section, we introduced the band‑pass filter and examined its role in neural signal processing. We learned that a band‑pass filter preserves only a selected range of frequencies while reducing frequencies below the lower cutoff and above the upper cutoff. Because many neural signals occupy characteristic frequency ranges, band‑pass filtering is one of the most commonly used preprocessing techniques in EEG, EMG, LFP, and brain–computer interface applications. So far, we have studied filters that separate signals based on broad frequency ranges. But sometimes interference occurs at one very specific frequency, like power‑line interference at 50 or 60 hertz. Instead of removing an entire range, we might want to remove only that single unwanted frequency while preserving the rest. That is the purpose of the notch filter, which we will study next.
+
+Animation description:
+Begin with a recap: show the band‑pass filter curve with labelled cutoff frequencies and a passband. Then display icons for EEG, EMG, LFP, and BCI with checkmarks. Gradually fade to a new frequency axis showing a narrow notch at 50/60 Hz. Add a label 'Notch filter' and a preview of a filter that removes only that specific frequency. A final arrow points to the next section.

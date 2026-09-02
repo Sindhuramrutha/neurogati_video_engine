@@ -1,0 +1,8 @@
+Subtopic: 6.2.1 Introduction
+Scene type: manim
+
+Narration:
+In the previous section, we learned that neural signals are generally nonstationary. Their frequency content changes continuously as neural activity evolves over time. We also identified an important limitation of the conventional Fourier Transform. Although it tells us which frequencies are present in a signal, it cannot tell us when those frequencies occur. And for many neuroscience applications, that timing information is absolutely essential. Imagine analysing an EEG recording during a visual experiment. Suppose alpha activity appears only after the participant closes their eyes. The Fourier Transform can indicate that alpha frequencies exist somewhere in the recording, but it cannot identify the exact moment at which they appeared. To solve this problem, we need a method that analyses both time and frequency simultaneously. One of the earliest and most widely used solutions is the Short-Time Fourier Transform, commonly abbreviated as STFT.
+
+Animation description:
+A labeled timeline stretches across the screen, representing a segment of an EEG recording. A brain icon appears above it, with animated signal traces superimposed on the timeline. Early in the timeline, labels annotate segments: first 'eyes open', then 'eyes closed'. When the animation reaches the 'eyes closed' region, an oscillating wave in the alpha band (around 10 Hz) appears over that portion of the timeline. At the top, the caption reads 'Which frequencies?' — then the wave and region visually highlight. The caption changes to 'But when?' — and the specific onset moment pulses with a ring highlight.

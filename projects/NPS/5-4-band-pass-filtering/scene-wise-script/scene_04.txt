@@ -1,0 +1,8 @@
+Subtopic: 5.4.5 How Does a Band‑Pass Filter Affect a Signal?
+Scene type: manim
+
+Narration:
+Consider an EEG recording. It may contain slow baseline drift, brain activity, and high‑frequency electrical noise. If we are interested in analysing typical EEG activity between 1 and 40 hertz, a band‑pass filter can remove both the slow drift and the high‑frequency noise simultaneously. The resulting waveform is cleaner and focuses on the frequency range most relevant for the analysis. This demonstrates a major advantage of band‑pass filtering: it removes unwanted components from both ends of the frequency spectrum while preserving the frequencies of interest.
+
+Animation description:
+Top panel: a raw EEG signal that shows a slow wandering baseline drift, a faster oscillatory brain activity, and superimposed high‑frequency noise (random jitter). The signal is coloured grey. An arrow labelled 'Band‑pass filter (1‑40 Hz)' points from the top panel to a bottom panel. Bottom panel: the filtered signal, now smooth and centered, with the drift removed and the noise gone, preserving only the intermediate‑frequency brain activity. Highlight the frequency band on a small spectrum inset to reinforce the filtering.

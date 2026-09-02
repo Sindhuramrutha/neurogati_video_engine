@@ -1,0 +1,8 @@
+Subtopic: 5.1.2 Learning Objectives
+Scene type: image_only
+
+Narration:
+By the end of this section, you should be able to explain why filtering is necessary, distinguish between the signal of interest and unwanted noise, and understand the purpose of filtering in neural signal processing.
+
+Animation description:
+Three objective cards appear one at a time, each with an icon and short label: 'Why filtering is necessary', 'Signal vs. noise', 'Purpose of filtering in neural processing'. The cards fade out at the end.

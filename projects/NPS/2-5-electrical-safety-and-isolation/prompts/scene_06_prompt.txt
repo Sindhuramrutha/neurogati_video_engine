@@ -1,0 +1,31 @@
+1. **0.00–2.24** — From the previous scene's summary panel, the existing bullets fade out smoothly, but the same neutral background remains. As this fade completes, the text "Module Complete" fades in at the top center of the screen, directly beneath it a smaller subtitle reading "Neural Signal Acquisition".
+
+2. **2.76–6.66** — A horizontal flow diagram begins assembling at the center of the screen, from left to right: six rounded rectangular nodes appear in sequence, each with its label beneath it — "Biological Activity", "Electrodes/Sensors", "Amplification", "Signal Conditioning", "ADC", and "Digital Data". Thin arrows connect consecutive nodes, each arrow drawing itself from one node to the next as the chain grows. Below the entire chain, a wide horizontal shield icon with the label "Safety & Isolation" fades in, spanning the full width of the diagram.
+
+3. **7.48–9.02** — The first node in the flow diagram, "Biological Activity", highlights in a warm color and pulses once. The label brightens and a soft glow appears around the node's border.
+
+4. **9.32–13.44** — The second node, "Electrodes/Sensors", highlights and pulses once. A small icon of an electrode appears briefly connected to the node — a thin line with a small circular tip — then fades, symbolizing detection. The node holds its highlight until the narration moves on.
+
+5. **13.92–15.44** — The third node, "Amplification", highlights and pulses once. An upward-pointing arrow flashes next to the node, indicating signal strengthening, then fades.
+
+6. **16.32–17.56** — The fourth node, "Signal Conditioning", highlights and pulses once. A small smoothing waveform icon appears briefly inside the node, then fades.
+
+7. **18.56–21.64** — The fifth node, "ADC", highlights and pulses once. A small stepped digital waveform — a continuous curve on the left transitioning into discrete rectangular steps on the right — appears within the node, then fades.
+
+8. **22.48–25.62** — The shield icon labeled "Safety & Isolation" beneath the diagram highlights and pulses once in green. Then the entire flow diagram — all six nodes, the connecting arrows, and the shield — pulses in unison once as the narration wraps the acquisition chain recap.
+
+9. **26.74–33.04** — The flow diagram moves upward slightly to make room, and the first key concept card flips into view in the center of the screen below it: a rounded rectangle card that rotates in from the left edge. The card contains the text "The acquisition chain provides the complete pathway from biological activity to digital data" with a miniature version of the six-node flow diagram across the top of the card. The card holds steady.
+
+10. **33.72–38.38** — The first concept card flips out to the right, and the second concept card flips in from the left: a rounded rectangle with the text "Different recording modalities use different electrodes or sensors depending on the application". At the top of the card, two small side-by-side electrode icon variants appear — one with a single circular tip and one with a small array of tips — with the label "Electrodes" beneath one and "Sensors" beneath the other.
+
+11. **39.20–42.62** — The second card flips out, and the third card flips in: "Amplification increases the strength of weak biological signals". A small diagram at the top of the card shows a small waveform entering from the left, passing through a triangular amplifier symbol, and a larger waveform exiting to the right.
+
+12. **43.34–46.62** — The third card flips out, and the fourth card flips in: "Signal conditioning prepares the signal for accurate digitization". A small icon at the top shows a noisy, irregular waveform entering a rectangular filter block and a clean, smooth waveform emerging from the other side.
+
+13. **47.48–53.92** — The fourth card flips out, and the fifth card flips in: "Sampling and ADC convert continuous analogue signals into digital data suitable for computer analysis". The card's top icon shows a continuous sinusoidal waveform entering an ADC block labeled "ADC" and discrete sampled steps emerging from the right.
+
+14. **54.80–60.78** — The fifth card flips out, and the sixth card flips in: "Electrical safety and isolation are essential to protect both participants and recording equipment". The card's top icon shows a vertical dashed barrier line with a human figure on the left, an equipment box on the right, and a green waveform passing through the barrier while a red zigzag line halts at the barrier from the left.
+
+15. **61.56–65.44** — The sixth card flips out to the right. All six concept cards reappear briefly in a compact fanned stack in the center of the screen, then shrink together into a small group. The text "Foundation of Neural Signal Acquisition" fades in beneath them, and a subtle glow radiates once from the group of cards.
+
+16. **66.54–77.17** — The flow diagram and concept cards shrink and slide to the left half of the screen, maintaining their arrangement in miniature. On the right half of the screen, three new module titles stack vertically and fade in one at a time: first "Preprocessing", then "Filtering & Frequency Analysis", then "Applications". Each title appears in a clean rectangular outline with a thin connecting arrow between them, the arrows pointing downward indicating sequence. The three titles pulse gently once in unison at approximately 74.5 seconds, and the entire screen holds steady until the clip ends at 77.17 seconds.

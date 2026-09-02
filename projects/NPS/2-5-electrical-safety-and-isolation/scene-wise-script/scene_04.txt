@@ -1,0 +1,8 @@
+Subtopic: Safety and Signal Quality
+Scene type: manim
+
+Narration:
+Electrical safety and signal quality are actually closely related. Poor electrode connections, damaged cables, or improperly configured equipment can degrade the recorded signal — and they can also threaten the safe operation of the system. For this reason, recording systems should always be checked before data acquisition begins. Routine inspection and proper equipment maintenance aren't optional extras; they're essential parts of good laboratory practice.
+
+Animation description:
+A split screen appears. On the left, a clean, intact cable connects an electrode to equipment, and a smooth green waveform is displayed underneath. On the right, a frayed cable with a loose connection produces a noisy, distorted red waveform underneath. A calendar icon with a checkmark appears at center, and a dashed inspection circle scans over the cables. The noisy side gets corrected — the frayed segment is replaced with a clean one — and the red waveform transforms into a smooth green one.

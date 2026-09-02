@@ -1,0 +1,8 @@
+Subtopic: Section Summary
+Scene type: manim
+
+Narration:
+Let's summarize this section. Neural recording systems connect electronic equipment to the human body. Electrical safety is essential for protecting both participants and equipment. Electrical isolation separates the participant from potentially hazardous electrical circuits, while still allowing physiological signals to be recorded. And safe recording practices combined with properly designed biomedical equipment are fundamental components of every neural signal acquisition system.
+
+Animation description:
+Four summary bullet points appear one at a time, each with a simple icon: a person connected to equipment for the first point, a shield for the second, a barrier diagram showing signal passing but current blocked for the third, and a checklist icon for the fourth. The icons animate gently as each point is narrated.

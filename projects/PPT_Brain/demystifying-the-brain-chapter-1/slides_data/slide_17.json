@@ -1,0 +1,140 @@
+{
+  "index": 17,
+  "slide_width_emu": 14630400,
+  "slide_height_emu": 8229600,
+  "shapes": [
+    {
+      "shape_id": 2,
+      "kind": "text",
+      "text": "The Birth of Connectionism",
+      "alt_text": "Text 0",
+      "manim_bbox": [
+        -6.339467189756944,
+        1.7818284935937498,
+        0.6497686298784728,
+        2.470833051701389
+      ]
+    },
+    {
+      "shape_id": 3,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 0",
+      "manim_bbox": [
+        -6.339467189756944,
+        0.458912212135417,
+        -2.113194289913195,
+        1.3408563997743057
+      ]
+    },
+    {
+      "shape_id": 4,
+      "kind": "text",
+      "text": "Broca's Area",
+      "alt_text": "Text 1",
+      "manim_bbox": [
+        -6.118981142847223,
+        -0.1060182738368054,
+        -3.3628472304340273,
+        0.2384261652256945
+      ]
+    },
+    {
+      "shape_id": 5,
+      "kind": "text",
+      "text": "Speech Production",
+      "alt_text": "Text 2",
+      "manim_bbox": [
+        -6.118981142847223,
+        -0.5910887435590277,
+        -2.3336803368229164,
+        -0.23831048524305576
+      ]
+    },
+    {
+      "shape_id": 6,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 1",
+      "manim_bbox": [
+        -2.113194289913195,
+        0.458912212135417,
+        2.1130786099305565,
+        1.3408563997743057
+      ]
+    },
+    {
+      "shape_id": 7,
+      "kind": "text",
+      "text": "The Connection",
+      "alt_text": "Text 3",
+      "manim_bbox": [
+        -1.8927082430034723,
+        -0.1060182738368054,
+        0.8634256694097218,
+        0.2384261652256945
+      ]
+    },
+    {
+      "shape_id": 8,
+      "kind": "text",
+      "text": "Nerve fibers connecting the two areas. Damage here causes Conduction Aphasia (inability to repeat words).",
+      "alt_text": "Text 4",
+      "manim_bbox": [
+        -1.8927082430034723,
+        -1.2966442880902775,
+        1.8925925630208331,
+        -0.23831048524305576
+      ]
+    },
+    {
+      "shape_id": 9,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 2",
+      "manim_bbox": [
+        2.1130786099305565,
+        0.458912212135417,
+        6.339351509774306,
+        1.3408563997743057
+      ]
+    },
+    {
+      "shape_id": 10,
+      "kind": "text",
+      "text": "Wernicke's Area",
+      "alt_text": "Text 5",
+      "manim_bbox": [
+        2.333564656840278,
+        -0.1060182738368054,
+        5.089698569253472,
+        0.2384261652256945
+      ]
+    },
+    {
+      "shape_id": 11,
+      "kind": "text",
+      "text": "Speech Comprehension",
+      "alt_text": "Text 6",
+      "manim_bbox": [
+        2.333564656840278,
+        -0.5910887435590277,
+        6.118865462864584,
+        -0.23831048524305576
+      ]
+    },
+    {
+      "shape_id": 12,
+      "kind": "text",
+      "text": "Wernicke resolved the local/global debate by proposing that while simple functions are localized, complex functions arise from the *interaction* among specific sites. This focus on connections inspired the modern theory of neural networks.",
+      "alt_text": "Text 7",
+      "manim_bbox": [
+        -6.339467189756944,
+        -2.4707173717187505,
+        6.339468161857639,
+        -1.7651618271874998
+      ]
+    }
+  ],
+  "notes_text": null
+}

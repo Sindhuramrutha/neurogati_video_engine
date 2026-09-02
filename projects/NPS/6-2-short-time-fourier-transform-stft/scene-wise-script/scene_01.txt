@@ -1,0 +1,8 @@
+Subtopic: 6.2.2 Learning Objectives
+Scene type: image_only
+
+Narration:
+After completing this section, you should be able to: explain why the Short-Time Fourier Transform was developed; describe the basic principle of STFT; understand the concept of a moving analysis window; explain how STFT provides both time and frequency information; and recognise the advantages and limitations of STFT.
+
+Animation description:
+A clean title card titled 'Learning Objectives' appears at the top. Beneath it, five short bullet points fade in one at a time, each with a small checkmark icon that animates as if being ticked. The camera slowly pans down as new bullets appear.

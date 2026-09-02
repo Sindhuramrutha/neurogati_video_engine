@@ -1,0 +1,8 @@
+Subtopic: Neural Coding: Firing Rate and Temporal Coding
+Scene type: manim
+
+Narration:
+Neural coding refers to the way information is represented in patterns of neural activity. Neurons do not simply turn on or off. Information can be represented through characteristics such as how frequently a neuron fires, when individual spikes occur, patterns of spikes across time, and activity across populations of neurons. One simple way to analyse neural coding is through firing rate. For example, if a neuron produces more spikes during one condition than another, the difference in firing rate may contain information about the stimulus, movement, or behavioural state. Researchers can calculate the number of spikes occurring within a defined time window and compare firing rates across conditions. Information may also be represented by when spikes occur, rather than only by how many spikes occur. Two neurons could have similar firing rates but very different spike timing patterns. Therefore, analysing both firing rate and spike timing can provide a richer understanding of neural coding.
+
+Animation description:
+Show a single neuron's spike train under two different conditions, labeled 'Condition A' and 'Condition B'. Under Condition A, the neuron fires sparsely; under Condition B, it fires rapidly. Use a histogram or bar chart to compare firing rates between the two conditions. Then show two different spike trains that have the same total number of spikes but with different timing patterns, one with evenly spaced spikes and one with bursts and pauses. Highlight that the firing rate is the same but the temporal pattern is different. Label these as 'firing rate coding' and 'temporal coding'.

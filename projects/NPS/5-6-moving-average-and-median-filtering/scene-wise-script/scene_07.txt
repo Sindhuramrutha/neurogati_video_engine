@@ -1,0 +1,8 @@
+Subtopic: 5.6.4 Median Filter – Advantages and Limitations
+Scene type: manim
+
+Narration:
+The median filter excels at removing impulsive or spike‑like noise. It also preserves sharp transitions better than a moving‑average filter, because it doesn’t average them away. However, it’s not the best choice for continuous high‑frequency electrical noise; frequency‑based filters are generally more effective for that kind of noise. So think of it as your tool for isolated artefacts.
+
+Animation description:
+Left panel: a signal with a sharp edge and a spike; after median filtering the edge is preserved and the spike removed. Right panel: same signal processed with a moving average, showing the sharp edge blurred. Then show a purely random high‑frequency noise signal being processed by a median filter; the output remains noisy, and a label indicates: ‘Prefers frequency‑domain filtering’.

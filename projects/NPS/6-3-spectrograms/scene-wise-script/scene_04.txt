@@ -1,0 +1,8 @@
+Subtopic: Interpreting a Spectrogram: EEG Example
+Scene type: manim
+
+Narration:
+Learning to interpret a spectrogram is an important skill in neural signal processing. Let's work through an example with an EEG recording. Suppose alpha activity appears only between five seconds and ten seconds in the recording. The spectrogram will show increased energy around the alpha frequency range only during that time interval. The rest of the time, that band stays dark. Similarly, if higher-frequency activity appears briefly following a sensory stimulus, the spectrogram will display a short burst of energy at the corresponding frequencies. Unlike a conventional frequency spectrum, which would just collapse all of this into one static picture, the spectrogram immediately reveals when these changes occur. This ability to visualise temporal changes makes spectrograms especially valuable for analysing nonstationary neural signals.
+
+Animation description:
+An EEG waveform is shown at the top, with the time axis marked from 0 to 15 seconds. Below it, an initially blank spectrogram appears. Between 5 and 10 seconds, the alpha frequency band (around 8–13 Hz) on the spectrogram lights up in warm colours while the waveform shows rhythmic oscillations, then dims after 10 seconds. Later, a brief stimulus marker appears on the waveform (a vertical line labelled 'Stimulus'), and a short burst of high-frequency energy (around 30–50 Hz) appears in the spectrogram immediately after the marker, lasting only briefly. Dashed vertical lines connect the waveform time points to the corresponding spectrogram regions.

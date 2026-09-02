@@ -1,0 +1,8 @@
+Subtopic: Advantages
+Scene type: manim
+
+Narration:
+ERP analysis provides several important advantages: excellent temporal resolution, direct measurement of stimulus-related neural activity, wide use in cognitive neuroscience, and relatively simple experimental design.
+
+Animation description:
+A list appears with checkmarks next to each item: 'Excellent temporal resolution', 'Direct measurement of stimulus-related neural activity', 'Widely used in cognitive neuroscience', 'Relatively simple experimental design'. Each checkmark appears as its item is spoken.

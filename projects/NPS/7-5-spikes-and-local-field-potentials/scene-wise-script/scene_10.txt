@@ -1,0 +1,8 @@
+Subtopic: Circuit Analysis: Synchronization and Phase
+Scene type: manim
+
+Narration:
+One example of circuit analysis is examining whether oscillations recorded from two locations are synchronized. Suppose two brain regions show oscillations at a similar frequency. If their oscillations are also consistently aligned in phase, this may indicate a functional relationship between the two regions. This kind of analysis cannot be obtained from a single recording contact. Therefore, multiple electrodes allow us to move from local neural activity to relationships between populations to neural circuit analysis.
+
+Animation description:
+Show two electrodes in different brain regions, each recording an LFP trace with similar frequency oscillations. Animate the two oscillations aligned in phase, moving together, with visual alignment markers or peaks coinciding. Contrast with a case where the oscillations are not aligned, showing a phase shift. Then add a third panel showing the progression: local activity at one electrode, relationships between two populations, and a neural circuit diagram. Label the phase-aligned case as indicating a possible functional relationship.

@@ -1,0 +1,23 @@
+1. **0.00–2.88** — On a mostly empty dark background, a low-pass filter diagram fades in at the top: a horizontal left-to-right arrow labeled “input,” passing through a centered rectangular box labeled “Low-pass,” with the arrow continuing rightward labeled “output.” The diagram stays in place through the phrase “low-pass filters.”
+
+2. **2.88–5.16** — Beneath the low-pass diagram, small clarifying text fades in: “Keeps low-frequency components,” then after a beat the continuation “reduces high-frequency ones” appears beside it, matching the two clauses about what low-pass tools do.
+
+3. **5.16–7.52** — A caption below the low-pass diagram fades in, bold and centered: “Not all unwanted signals are high-frequency.” The caption remains on screen as the narration delivers this counterpoint.
+
+4. **7.52–13.46** — The screen’s upper diagram and caption fade out, and the screen divides vertically into two equal halves. On the left half, a jagged signal curve fades in and begins drifting up and down in a slow smooth sinusoidal pattern, with small rapid oscillations superimposed on it. No highlight or labels yet.
+
+5. **13.46–18.22** — The left-half curve continues its drift. A yellow vertical double-headed arrow appears spanning one full slow undulation of the drift, with the label “slow drift” beside it, while the curve’s baseline undulation is highlighted in yellow. The rapid oscillations remain visually distinct from the highlighted slow drift.
+
+6. **18.22–25.18** — Four short text labels fade in, one at a time, near the left-half curve with small dotted lines tentatively connecting each to the yellow-highlighted drift: first “electrode movement” (~18.6s), then “respiration” (~21.5s), then “electrode impedance change” (~23.1s). The labels are equally spaced around the curve, each remaining once it appears.
+
+7. **25.18–28.74** — The fourth label “baseline shift” fades in with a dotted connector to the drift (~25.4s), completing the set of four source labels. All four labels and the yellow drift highlight remain visible as the curve keeps its slow drifting motion.
+
+8. **28.74–35.64** — The left panel’s curve and labels remain, but the panel slowly dims to gray while the right panel begins to brighten, still empty. The narration’s claim that low-frequency components obscure neural activity is represented by the gradual loss of clarity in the left panel.
+
+9. **35.64–42.92** — The left panel fully fades to gray. On the right half, a bold centered box fades in labeled **“High-pass filter”**, along with a subtle filtering icon inside or beside the box: a vertical dashed line with upward arrows labeled “high pass, low reduced.” This stays fully lit through the phrase “High Pass Filter.”
+
+10. **42.92–47.56** — The right-panel high-pass filter box remains centered and bright while its icon’s vertical dashed line pulses once, drawing attention to the filter mechanism as the narration says “how a high-pass filter works.”
+
+11. **47.56–51.34** — A small label “cutoff frequency” fades in beneath the high-pass filter box, with a short horizontal line marking the cutoff position on the icon, as the narration introduces what the cutoff frequency means in high-pass filtering.
+
+12. **51.34–55.10** — The right panel’s high-pass filter box, cutoff label, and icon remain in place. A final line of text fades in below: “Applications in neural signal processing.” The scene holds on this composition until the narration ends, then fades to black at 55.10 seconds.

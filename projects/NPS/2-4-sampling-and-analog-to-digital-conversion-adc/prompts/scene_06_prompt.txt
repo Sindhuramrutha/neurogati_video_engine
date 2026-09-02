@@ -1,0 +1,39 @@
+0.00–0.90: Open with a clean two-panel layout. Left panel: a smooth neural waveform trace on small axes, with only five sparse sample points placed along it. The points are connected by straight line segments, and the reconstructed line visibly cuts across a prominent peak and a deep valley in the original waveform. Label under the left panel: **Too few samples — information lost.** Right panel: the same waveform on identical axes, still visible but dimmed or neutral, with its label hidden for now.
+
+0.90–3.80: Keep both panels steady. As the narration says “quality of the digital recording depends greatly on how the signal is sampled,” softly brighten the left panel and pulse the sparse sample points once so attention lands on the too-few-samples idea. Do not yet introduce the right panel's meaning.
+
+3.80–4.06: Hold the left panel with the five sparse points and the reconstructed line. Let the label **Too few samples — information lost** fade in fully under the left panel if it is not already at full opacity.
+
+4.06–6.38: As the narration says “If too few samples are collected,” animate the sparse sample points on the left waveform: flash each of the five points in sequence, then trace the straight connecting segments through them. When the traced line slices across the tall peak and deep valley, briefly flash those missed features of the underlying waveform so the information loss is explicit. Keep the left label visible.
+
+6.38–10.76: Emphasize the missed features in the left panel. The original smooth waveform remains dimly visible under the reconstructed line. At “important variations,” softly brighten the missed peak and valley. At “may not be represented accurately,” fade in a small annotation arrow pointing to the flat cut between two sparse points where the variation is lost. Hold through 10.76.
+
+10.76–11.68: Hold the left-panel composition as the last phrase settles.
+
+11.68–15.10: Now shift emphasis to the right panel. Fade in an overly dense set of sample dots along the same waveform — five to six times as many points as the left panel. The reconstructed line through these dense points hugs the original waveform closely. Fade in the right panel label: **Excessive samples — extra storage, little added benefit.** At “conversely, collecting more samples than necessary increases,” brighten the right panel and de-emphasize the left panel slightly.
+
+15.10–20.98: With the dense samples visible, add a small storage meter beside the right panel: a vertical bar with a fill level and a small label **storage**. As the narration says “storage requirements and processing time,” animate the storage meter filling upward until it reaches the top of its range and overflows or flashes a full indicator, while the dense sample dots pulse lightly. At “without always providing additional useful information,” show the reconstructed dense line already matching the original waveform closely — no further improvement appears as the points multiply. Hold through 20.98.
+
+20.98–21.86: Hold the overflowing storage meter and the dense right-panel waveform briefly.
+
+21.86–24.72: Fade in a short horizontal arrow chain below the two panels: **Sampling Frequency** at the top of a downward arrow leading to a small highlighted caption **design consideration**. As the narration says “selecting an appropriate sampling frequency,” move a small slider or tuning mark along a frequency axis beneath the two panels, settling in a middle position between the left sparse and right dense extremes. Label the axis **sampling frequency**.
+
+24.72–28.80: Keep the frequency slider visible. As the narration says “important consideration during the design of every neural recording system,” add a faint schematic of a neural recording system around the slider — a small electrode symbol, amplifier box, and ADC box all connected — and pulse the sampling-frequency label. Hold through 28.80.
+
+28.80–29.50: Hold the slider and recording-system schematic briefly as the section about appropriate frequency concludes.
+
+29.50–31.48: Fade out the recording-system schematic and slider. Fade in the phrase **And here’s why it matters downstream** centered near the top of the layout. Beneath it, faintly show the start of a vertical chain: three dim round nodes labeled **Filtering**, **Spectral Analysis**, and **Feature Extraction**, vertically stacked with downward arrows between them.
+
+31.48–34.70: As the narration says “the accuracy of later analyses, like filtering,” brighten the first node in the chain, **Filtering**, and draw a highlighted arrow from the digital-data quality of the sampled waveform down into that node. Keep the other two nodes dim.
+
+34.70–36.40: Move emphasis to the second node, **Spectral Analysis**, brightening it and drawing the next arrow in the chain. Keep **Filtering** at a medium brightness, now passed.
+
+36.40–37.94: Move emphasis to the third node, **Feature Extraction**, brightening it and drawing the final arrow in the chain. All three nodes now sit in sequence with arrows connecting them.
+
+37.94–42.44: Add a quality-edge line connecting the sampling stage to the whole downstream chain: a thick arrow from the too-few-samples left panel to the top of the **Filtering** node, labeled **depends on**. As the narration says “the quality of the digital data produced during the sampling stage,” flash the connection between sampling quality and the downstream analyses, and briefly pulse the left panel's too-few-samples waveform as a reminder.
+
+42.44–43.32: Hold the full chain with the dependency arrow and label **depends on** visible.
+
+43.32–47.34: Fade in a warning caption centered beneath the whole composition: **Poor digitisation cannot be fully corrected later.** As the narration says those words, tint the left-panel too-few waveform with a fading coloration and show a corrected-output node at the bottom of the chain remaining dim or failing to reach full brightness even as a small “corrective” arrow is drawn onto it. The warning text pulses gently.
+
+47.34–48.25: Hold the final composition: the too-few-samples panel, the dense-samples panel with the overflowing storage meter, the downward chain **Filtering → Spectral Analysis → Feature Extraction**, the dependency arrow, and the bold warning text **Poor digitisation cannot be fully corrected later** all visible. Let the scene settle through 48.25.

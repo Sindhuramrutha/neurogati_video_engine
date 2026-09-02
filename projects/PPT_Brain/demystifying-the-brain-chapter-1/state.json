@@ -1,0 +1,2792 @@
+[
+  {
+    "id": 1,
+    "subtopic": "Slide 1",
+    "narration": "Here we\u2019re taking on the challenge of demystifying the brain\u2014an organ that still stands as one of science\u2019s most complex and fascinating frontiers. The idea is that when we combine biological insight with advances in technology, we can finally start to unlock how cognitive processing actually works. To do that, we\u2019ll look first at cognitive complexity, which involves understanding the segmented way our thought processes operate, and then at technological integration\u2014specifically, how robotics and AI give us models for neural function.",
+    "animation_description": "(unused -- render_prompt set directly)",
+    "scene_type": "manim",
+    "audio_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\PPT_Brain\\demystifying-the-brain-chapter-1\\audio\\slide_01.wav",
+    "timestamps": [
+      {
+        "word": "Here,",
+        "start": 0.0,
+        "end": 0.42
+      },
+      {
+        "word": "we're",
+        "start": 0.5,
+        "end": 0.54
+      },
+      {
+        "word": "taking",
+        "start": 0.54,
+        "end": 0.76
+      },
+      {
+        "word": "on",
+        "start": 0.76,
+        "end": 0.98
+      },
+      {
+        "word": "the",
+        "start": 0.98,
+        "end": 1.06
+      },
+      {
+        "word": "challenge",
+        "start": 1.06,
+        "end": 1.4
+      },
+      {
+        "word": "of",
+        "start": 1.4,
+        "end": 1.7
+      },
+      {
+        "word": "demystifying",
+        "start": 1.7,
+        "end": 2.36
+      },
+      {
+        "word": "the",
+        "start": 2.36,
+        "end": 2.6
+      },
+      {
+        "word": "brain,",
+        "start": 2.6,
+        "end": 2.84
+      },
+      {
+        "word": "an",
+        "start": 3.5,
+        "end": 3.58
+      },
+      {
+        "word": "organ",
+        "start": 3.58,
+        "end": 3.88
+      },
+      {
+        "word": "that",
+        "start": 3.88,
+        "end": 4.16
+      },
+      {
+        "word": "still",
+        "start": 4.16,
+        "end": 4.4
+      },
+      {
+        "word": "stands",
+        "start": 4.4,
+        "end": 4.9
+      },
+      {
+        "word": "as",
+        "start": 4.9,
+        "end": 5.16
+      },
+      {
+        "word": "one",
+        "start": 5.16,
+        "end": 5.32
+      },
+      {
+        "word": "of",
+        "start": 5.32,
+        "end": 5.42
+      },
+      {
+        "word": "science's",
+        "start": 5.42,
+        "end": 5.98
+      },
+      {
+        "word": "most",
+        "start": 5.98,
+        "end": 6.46
+      },
+      {
+        "word": "complex",
+        "start": 6.46,
+        "end": 7.14
+      },
+      {
+        "word": "and",
+        "start": 7.14,
+        "end": 7.48
+      },
+      {
+        "word": "fascinating",
+        "start": 7.48,
+        "end": 8.04
+      },
+      {
+        "word": "frontiers.",
+        "start": 8.04,
+        "end": 8.72
+      },
+      {
+        "word": "The",
+        "start": 9.52,
+        "end": 9.72
+      },
+      {
+        "word": "idea",
+        "start": 9.72,
+        "end": 9.92
+      },
+      {
+        "word": "is",
+        "start": 9.92,
+        "end": 10.36
+      },
+      {
+        "word": "that",
+        "start": 10.36,
+        "end": 10.54
+      },
+      {
+        "word": "when",
+        "start": 10.54,
+        "end": 10.96
+      },
+      {
+        "word": "we",
+        "start": 10.96,
+        "end": 11.1
+      },
+      {
+        "word": "combine",
+        "start": 11.1,
+        "end": 11.36
+      },
+      {
+        "word": "biological",
+        "start": 11.36,
+        "end": 11.94
+      },
+      {
+        "word": "insight",
+        "start": 11.94,
+        "end": 12.58
+      },
+      {
+        "word": "with",
+        "start": 12.58,
+        "end": 12.94
+      },
+      {
+        "word": "advances",
+        "start": 12.94,
+        "end": 13.32
+      },
+      {
+        "word": "in",
+        "start": 13.32,
+        "end": 13.66
+      },
+      {
+        "word": "technology,",
+        "start": 13.66,
+        "end": 14.02
+      },
+      {
+        "word": "we",
+        "start": 14.76,
+        "end": 14.92
+      },
+      {
+        "word": "can",
+        "start": 14.92,
+        "end": 15.06
+      },
+      {
+        "word": "finally",
+        "start": 15.06,
+        "end": 15.48
+      },
+      {
+        "word": "start",
+        "start": 15.48,
+        "end": 15.8
+      },
+      {
+        "word": "to",
+        "start": 15.8,
+        "end": 16.0
+      },
+      {
+        "word": "unlock",
+        "start": 16.0,
+        "end": 16.28
+      },
+      {
+        "word": "how",
+        "start": 16.28,
+        "end": 16.66
+      },
+      {
+        "word": "cognitive",
+        "start": 16.66,
+        "end": 17.04
+      },
+      {
+        "word": "processing",
+        "start": 17.04,
+        "end": 17.6
+      },
+      {
+        "word": "actually",
+        "start": 17.6,
+        "end": 18.18
+      },
+      {
+        "word": "works.",
+        "start": 18.18,
+        "end": 18.64
+      },
+      {
+        "word": "To",
+        "start": 19.38,
+        "end": 19.72
+      },
+      {
+        "word": "do",
+        "start": 19.72,
+        "end": 19.86
+      },
+      {
+        "word": "that,",
+        "start": 19.86,
+        "end": 20.14
+      },
+      {
+        "word": "we'll",
+        "start": 20.3,
+        "end": 20.48
+      },
+      {
+        "word": "look",
+        "start": 20.48,
+        "end": 20.66
+      },
+      {
+        "word": "first",
+        "start": 20.66,
+        "end": 20.9
+      },
+      {
+        "word": "at",
+        "start": 20.9,
+        "end": 21.2
+      },
+      {
+        "word": "cognitive",
+        "start": 21.2,
+        "end": 21.62
+      },
+      {
+        "word": "complexity,",
+        "start": 21.62,
+        "end": 22.08
+      },
+      {
+        "word": "which",
+        "start": 22.74,
+        "end": 23.04
+      },
+      {
+        "word": "involves",
+        "start": 23.04,
+        "end": 23.34
+      },
+      {
+        "word": "understanding",
+        "start": 23.34,
+        "end": 24.1
+      },
+      {
+        "word": "the",
+        "start": 24.1,
+        "end": 24.44
+      },
+      {
+        "word": "segmented",
+        "start": 24.44,
+        "end": 25.06
+      },
+      {
+        "word": "way",
+        "start": 25.06,
+        "end": 25.24
+      },
+      {
+        "word": "our",
+        "start": 25.24,
+        "end": 25.54
+      },
+      {
+        "word": "thought",
+        "start": 25.54,
+        "end": 25.8
+      },
+      {
+        "word": "processes",
+        "start": 25.8,
+        "end": 26.34
+      },
+      {
+        "word": "operate,",
+        "start": 26.34,
+        "end": 26.8
+      },
+      {
+        "word": "and",
+        "start": 27.52,
+        "end": 27.66
+      },
+      {
+        "word": "then",
+        "start": 27.66,
+        "end": 27.78
+      },
+      {
+        "word": "at",
+        "start": 27.78,
+        "end": 27.9
+      },
+      {
+        "word": "technological",
+        "start": 27.9,
+        "end": 28.3
+      },
+      {
+        "word": "integration,",
+        "start": 28.3,
+        "end": 29.08
+      },
+      {
+        "word": "specifically",
+        "start": 29.72,
+        "end": 30.38
+      },
+      {
+        "word": "how",
+        "start": 30.38,
+        "end": 30.98
+      },
+      {
+        "word": "robotics",
+        "start": 30.98,
+        "end": 31.32
+      },
+      {
+        "word": "and",
+        "start": 31.32,
+        "end": 31.78
+      },
+      {
+        "word": "AI",
+        "start": 31.78,
+        "end": 32.02
+      },
+      {
+        "word": "give",
+        "start": 32.02,
+        "end": 32.48
+      },
+      {
+        "word": "us",
+        "start": 32.48,
+        "end": 32.64
+      },
+      {
+        "word": "models",
+        "start": 32.64,
+        "end": 32.86
+      },
+      {
+        "word": "for",
+        "start": 32.86,
+        "end": 33.22
+      },
+      {
+        "word": "neural",
+        "start": 33.22,
+        "end": 33.36
+      },
+      {
+        "word": "function.",
+        "start": 33.36,
+        "end": 33.9
+      }
+    ],
+    "render_prompt": "1. 0.00-34.62: Display the slide background image via ImageMobject(ASSET_PATHS['pptx_demystifying-the-brain-chapter-1_slide_01']), scaled to fill the frame width and centered. This is the ONLY content on screen unless a beat below says otherwise -- never add, remove, redraw, resize, or reposition the slide image itself at any point in this scene. Keep it static and fully visible for the entire scene duration.\n2. 1.70-21.20: Construct `Rectangle(width=4.91, height=0.78, color=YELLOW, stroke_width=5, fill_opacity=0)` and `.move_to(np.array([-4.17, 3.25, 0]))` -- a single complete rectangle outline fully enclosing the element with a small even margin on every side, animated in with `Create(rectangle)` played to full completion. This corresponds to 'Demystifying the Brain' on the slide -- narration starts discussing demystifying the brain, which matches the title text. Fade this highlight out at the end of this beat (before the next beat's highlight, if any, appears); do not leave multiple highlights on screen at once.\n3. 21.20-27.90: Construct `Ellipse(width=2.42, height=0.51, color=YELLOW, stroke_width=5, fill_opacity=0)` and `.move_to(np.array([-1.18, -0.04, 0]))` -- a single, complete, closed oval outline that fully encloses the element with a small even margin on every side. This must be the actual `Ellipse` mobject, not an `Arc`, not a partial curve, and not `Create`/`DrawBorderThenFill` cut off partway -- animate it in with `Create(ellipse)` played to full completion so the closed oval is entirely visible, not a swoosh or incomplete arc. This corresponds to 'Cognitive Complexity' on the slide -- narration introduces cognitive complexity. Fade this highlight out at the end of this beat (before the next beat's highlight, if any, appears); do not leave multiple highlights on screen at once.\n4. 27.90-34.62: Construct `Ellipse(width=2.83, height=0.51, color=YELLOW, stroke_width=5, fill_opacity=0)` and `.move_to(np.array([-0.97, -2.28, 0]))` -- a single, complete, closed oval outline that fully encloses the element with a small even margin on every side. This must be the actual `Ellipse` mobject, not an `Arc`, not a partial curve, and not `Create`/`DrawBorderThenFill` cut off partway -- animate it in with `Create(ellipse)` played to full completion so the closed oval is entirely visible, not a swoosh or incomplete arc. This corresponds to 'Technological Integration' on the slide -- narration introduces technological integration. Fade this highlight out at the end of this beat (before the next beat's highlight, if any, appears); do not leave multiple highlights on screen at once.",
+    "code": "ASSET_PATHS = {'heart': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\test_heart.svg', 'brain': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\brain_test.svg', 'stopwatch': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\stopwatch.svg', 'activity': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\activity.svg', 'soundwave': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\soundwave.svg', 'grid_matrix': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\grid-3x3-gap-fill.svg', 'bar_chart': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bar-chart.svg', 'graph_trend': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\graph-up-arrow.svg', 'cpu': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\cpu.svg', 'funnel': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\funnel.svg', 'table': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\table.svg', 'hospital': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hospital.svg', 'capsule': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\capsule.svg', 'clipboard_pulse': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\clipboard2-pulse.svg', 'hand': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hand-index-thumb.svg', 'broadcast': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\broadcast-pin.svg', 'gear': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\gear.svg', 'arrow_repeat': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\arrow-repeat.svg', 'lightbulb': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\lightbulb.svg', 'bell': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bell.svg', 'check_circle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\check-circle.svg', 'x_circle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\x-circle.svg', 'rulers': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\rulers.svg', 'puzzle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\puzzle.svg', 'fig_measurement_funnel': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_measurement_funnel.png', 'fig_mindmap_three_pillars': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_three_pillars.png', 'fig_mindmap_full': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_full.png', 'pptx_demystifying-the-brain-chapter-1_slide_01': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\slide_01.png'}\n\nimport numpy as np\nfrom manim import *\n\n\nclass Scene1(Scene):\n    def construct(self):\n        self.camera.background_color = \"#0F1116\"\n\n        # Slide background: static for the whole scene\n        slide = ImageMobject(\n            ASSET_PATHS[\"pptx_demystifying-the-brain-chapter-1_slide_01\"]\n        )\n        slide.scale_to_fit_width(config.frame_width)\n        slide.move_to(ORIGIN)\n        self.add(slide)\n\n        # 0.00 - 1.70: slide only\n        self.wait(max(0.05, 1.70))\n\n        # 1.70 - 21.20: 'Demystifying the Brain'\n        rect = (\n            Rectangle(\n                width=4.91,\n                height=0.78,\n                color=YELLOW,\n                stroke_width=5,\n                fill_opacity=0,\n            )\n            .move_to(np.array([-4.17, 3.25, 0]))\n        )\n        self.play(Create(rect), run_time=max(0.05, 1.5))\n        self.wait(max(0.05, 17.5))\n        self.play(FadeOut(rect), run_time=max(0.05, 0.5))\n\n        # 21.20 - 27.90: 'Cognitive Complexity'\n        ellipse1 = (\n            Ellipse(\n                width=2.42,\n                height=0.51,\n                color=YELLOW,\n                stroke_width=5,\n                fill_opacity=0,\n            )\n            .move_to(np.array([-1.18, -0.04, 0]))\n        )\n        self.play(Create(ellipse1), run_time=max(0.05, 1.2))\n        self.wait(max(0.05, 4.9))\n        self.play(FadeOut(ellipse1), run_time=max(0.05, 0.6))\n\n        # 27.90 - 34.62: 'Technological Integration'\n        ellipse2 = (\n            Ellipse(\n                width=2.83,\n                height=0.51,\n                color=YELLOW,\n                stroke_width=5,\n                fill_opacity=0,\n            )\n            .move_to(np.array([-0.97, -2.28, 0]))\n        )\n        self.play(Create(ellipse2), run_time=max(0.05, 1.2))\n        self.wait(max(0.05, 4.92))\n        self.play(FadeOut(ellipse2), run_time=max(0.05, 0.6))",
+    "video_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\PPT_Brain\\demystifying-the-brain-chapter-1\\manim\\Scene1\\media\\videos\\Scene1\\1080p60\\Scene1.mp4",
+    "render_attempts": 1,
+    "render_status": "rendered",
+    "last_feedback": null,
+    "composed_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\PPT_Brain\\demystifying-the-brain-chapter-1\\rendered_video\\slide_01_with_audio.mp4"
+  },
+  {
+    "id": 2,
+    "subtopic": "Slide 2",
+    "narration": "So here's Lewis Carroll, the author of Alice in Wonderland, writing in 1890, in a novel called Sylvie and Bruno, and he's imagining the hand moving because certain forces from the brain are impressed upon it \u2014 a kind of nerve-force stored in the brain, which he speculates could be traced back to chemical forces supplied by the blood. And that really sets up the theme for this lecture: the history of neuroscience is a long journey filled with errors and breakthroughs, moving from ancient misconceptions \u2014 like the idea that the heart was the seat of consciousness \u2014 all the way to modern gene therapies, where we're now mapping the complex electrical networks of the mind.",
+    "animation_description": "(unused -- render_prompt set directly)",
+    "scene_type": "manim",
+    "audio_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\PPT_Brain\\demystifying-the-brain-chapter-1\\audio\\slide_02.wav",
+    "timestamps": [
+      {
+        "word": "So",
+        "start": 0.0,
+        "end": 0.42
+      },
+      {
+        "word": "here's",
+        "start": 0.42,
+        "end": 0.76
+      },
+      {
+        "word": "Lewis",
+        "start": 0.76,
+        "end": 0.98
+      },
+      {
+        "word": "Carroll,",
+        "start": 0.98,
+        "end": 1.32
+      },
+      {
+        "word": "the",
+        "start": 1.98,
+        "end": 2.04
+      },
+      {
+        "word": "author",
+        "start": 2.04,
+        "end": 2.3
+      },
+      {
+        "word": "of",
+        "start": 2.3,
+        "end": 2.5
+      },
+      {
+        "word": "Alice",
+        "start": 2.5,
+        "end": 2.76
+      },
+      {
+        "word": "in",
+        "start": 2.76,
+        "end": 3.04
+      },
+      {
+        "word": "Wonderland,",
+        "start": 3.04,
+        "end": 3.32
+      },
+      {
+        "word": "writing",
+        "start": 3.92,
+        "end": 4.32
+      },
+      {
+        "word": "in",
+        "start": 4.32,
+        "end": 4.6
+      },
+      {
+        "word": "1890",
+        "start": 4.6,
+        "end": 4.9
+      },
+      {
+        "word": "in",
+        "start": 4.9,
+        "end": 5.96
+      },
+      {
+        "word": "a",
+        "start": 5.96,
+        "end": 6.02
+      },
+      {
+        "word": "novel",
+        "start": 6.02,
+        "end": 6.28
+      },
+      {
+        "word": "called",
+        "start": 6.28,
+        "end": 6.66
+      },
+      {
+        "word": "Sylvie",
+        "start": 6.66,
+        "end": 7.22
+      },
+      {
+        "word": "and",
+        "start": 7.22,
+        "end": 7.38
+      },
+      {
+        "word": "Bruno,",
+        "start": 7.38,
+        "end": 7.58
+      },
+      {
+        "word": "and",
+        "start": 8.18,
+        "end": 8.42
+      },
+      {
+        "word": "he's",
+        "start": 8.42,
+        "end": 8.64
+      },
+      {
+        "word": "imagining",
+        "start": 8.64,
+        "end": 8.88
+      },
+      {
+        "word": "the",
+        "start": 8.88,
+        "end": 9.32
+      },
+      {
+        "word": "hand",
+        "start": 9.32,
+        "end": 9.52
+      },
+      {
+        "word": "moving",
+        "start": 9.52,
+        "end": 9.82
+      },
+      {
+        "word": "because",
+        "start": 9.82,
+        "end": 10.4
+      },
+      {
+        "word": "certain",
+        "start": 10.4,
+        "end": 10.7
+      },
+      {
+        "word": "forces",
+        "start": 10.7,
+        "end": 11.12
+      },
+      {
+        "word": "from",
+        "start": 11.12,
+        "end": 11.48
+      },
+      {
+        "word": "the",
+        "start": 11.48,
+        "end": 11.6
+      },
+      {
+        "word": "brain",
+        "start": 11.6,
+        "end": 11.8
+      },
+      {
+        "word": "are",
+        "start": 11.8,
+        "end": 12.1
+      },
+      {
+        "word": "impressed",
+        "start": 12.1,
+        "end": 12.32
+      },
+      {
+        "word": "upon",
+        "start": 12.32,
+        "end": 12.76
+      },
+      {
+        "word": "it.",
+        "start": 12.76,
+        "end": 12.92
+      },
+      {
+        "word": "A",
+        "start": 13.52,
+        "end": 13.7
+      },
+      {
+        "word": "kind",
+        "start": 13.7,
+        "end": 13.9
+      },
+      {
+        "word": "of",
+        "start": 13.9,
+        "end": 14.02
+      },
+      {
+        "word": "nerve",
+        "start": 14.02,
+        "end": 14.2
+      },
+      {
+        "word": "force",
+        "start": 14.2,
+        "end": 14.58
+      },
+      {
+        "word": "stored",
+        "start": 14.58,
+        "end": 14.92
+      },
+      {
+        "word": "in",
+        "start": 14.92,
+        "end": 15.16
+      },
+      {
+        "word": "the",
+        "start": 15.16,
+        "end": 15.24
+      },
+      {
+        "word": "brain,",
+        "start": 15.24,
+        "end": 15.48
+      },
+      {
+        "word": "which",
+        "start": 15.86,
+        "end": 16.18
+      },
+      {
+        "word": "he",
+        "start": 16.18,
+        "end": 16.3
+      },
+      {
+        "word": "speculates",
+        "start": 16.3,
+        "end": 16.8
+      },
+      {
+        "word": "could",
+        "start": 16.8,
+        "end": 17.02
+      },
+      {
+        "word": "be",
+        "start": 17.02,
+        "end": 17.12
+      },
+      {
+        "word": "traced",
+        "start": 17.12,
+        "end": 17.34
+      },
+      {
+        "word": "back",
+        "start": 17.34,
+        "end": 17.72
+      },
+      {
+        "word": "to",
+        "start": 17.72,
+        "end": 18.0
+      },
+      {
+        "word": "chemical",
+        "start": 18.0,
+        "end": 18.28
+      },
+      {
+        "word": "forces",
+        "start": 18.28,
+        "end": 18.82
+      },
+      {
+        "word": "supplied",
+        "start": 18.82,
+        "end": 19.26
+      },
+      {
+        "word": "by",
+        "start": 19.26,
+        "end": 19.74
+      },
+      {
+        "word": "the",
+        "start": 19.74,
+        "end": 19.88
+      },
+      {
+        "word": "blood.",
+        "start": 19.88,
+        "end": 20.06
+      },
+      {
+        "word": "And",
+        "start": 20.84,
+        "end": 21.14
+      },
+      {
+        "word": "that",
+        "start": 21.14,
+        "end": 21.28
+      },
+      {
+        "word": "really",
+        "start": 21.28,
+        "end": 21.54
+      },
+      {
+        "word": "sets",
+        "start": 21.54,
+        "end": 21.84
+      },
+      {
+        "word": "up",
+        "start": 21.84,
+        "end": 22.08
+      },
+      {
+        "word": "the",
+        "start": 22.08,
+        "end": 22.24
+      },
+      {
+        "word": "theme",
+        "start": 22.24,
+        "end": 22.5
+      },
+      {
+        "word": "for",
+        "start": 22.5,
+        "end": 22.7
+      },
+      {
+        "word": "this",
+        "start": 22.7,
+        "end": 22.86
+      },
+      {
+        "word": "lecture.",
+        "start": 22.86,
+        "end": 23.24
+      },
+      {
+        "word": "The",
+        "start": 23.88,
+        "end": 23.98
+      },
+      {
+        "word": "history",
+        "start": 23.98,
+        "end": 24.22
+      },
+      {
+        "word": "of",
+        "start": 24.22,
+        "end": 24.46
+      },
+      {
+        "word": "neuroscience",
+        "start": 24.46,
+        "end": 24.8
+      },
+      {
+        "word": "is",
+        "start": 24.8,
+        "end": 25.44
+      },
+      {
+        "word": "a",
+        "start": 25.44,
+        "end": 25.54
+      },
+      {
+        "word": "long",
+        "start": 25.54,
+        "end": 25.78
+      },
+      {
+        "word": "journey",
+        "start": 25.78,
+        "end": 26.28
+      },
+      {
+        "word": "filled",
+        "start": 26.28,
+        "end": 26.62
+      },
+      {
+        "word": "with",
+        "start": 26.62,
+        "end": 26.94
+      },
+      {
+        "word": "errors",
+        "start": 26.94,
+        "end": 27.22
+      },
+      {
+        "word": "and",
+        "start": 27.22,
+        "end": 27.62
+      },
+      {
+        "word": "breakthroughs,",
+        "start": 27.62,
+        "end": 28.36
+      },
+      {
+        "word": "moving",
+        "start": 28.44,
+        "end": 28.96
+      },
+      {
+        "word": "from",
+        "start": 28.96,
+        "end": 29.22
+      },
+      {
+        "word": "ancient",
+        "start": 29.22,
+        "end": 29.58
+      },
+      {
+        "word": "misconceptions",
+        "start": 29.58,
+        "end": 30.16
+      },
+      {
+        "word": "like",
+        "start": 30.16,
+        "end": 31.14
+      },
+      {
+        "word": "the",
+        "start": 31.14,
+        "end": 31.32
+      },
+      {
+        "word": "idea",
+        "start": 31.32,
+        "end": 31.56
+      },
+      {
+        "word": "that",
+        "start": 31.56,
+        "end": 31.9
+      },
+      {
+        "word": "the",
+        "start": 31.9,
+        "end": 32.02
+      },
+      {
+        "word": "heart",
+        "start": 32.02,
+        "end": 32.26
+      },
+      {
+        "word": "was",
+        "start": 32.26,
+        "end": 32.54
+      },
+      {
+        "word": "the",
+        "start": 32.54,
+        "end": 32.7
+      },
+      {
+        "word": "seed",
+        "start": 32.7,
+        "end": 32.94
+      },
+      {
+        "word": "of",
+        "start": 32.94,
+        "end": 33.04
+      },
+      {
+        "word": "consciousness,",
+        "start": 33.04,
+        "end": 33.4
+      },
+      {
+        "word": "all",
+        "start": 34.36,
+        "end": 34.64
+      },
+      {
+        "word": "the",
+        "start": 34.64,
+        "end": 34.8
+      },
+      {
+        "word": "way",
+        "start": 34.8,
+        "end": 34.94
+      },
+      {
+        "word": "to",
+        "start": 34.94,
+        "end": 35.1
+      },
+      {
+        "word": "modern",
+        "start": 35.1,
+        "end": 35.34
+      },
+      {
+        "word": "gene",
+        "start": 35.34,
+        "end": 35.68
+      },
+      {
+        "word": "therapies,",
+        "start": 35.68,
+        "end": 36.06
+      },
+      {
+        "word": "where",
+        "start": 36.68,
+        "end": 36.94
+      },
+      {
+        "word": "we're",
+        "start": 36.94,
+        "end": 37.0
+      },
+      {
+        "word": "now",
+        "start": 37.0,
+        "end": 37.22
+      },
+      {
+        "word": "mapping",
+        "start": 37.22,
+        "end": 37.6
+      },
+      {
+        "word": "the",
+        "start": 37.6,
+        "end": 37.8
+      },
+      {
+        "word": "complex",
+        "start": 37.8,
+        "end": 38.24
+      },
+      {
+        "word": "electrical",
+        "start": 38.24,
+        "end": 38.56
+      },
+      {
+        "word": "networks",
+        "start": 38.56,
+        "end": 39.16
+      },
+      {
+        "word": "of",
+        "start": 39.16,
+        "end": 39.56
+      },
+      {
+        "word": "the",
+        "start": 39.56,
+        "end": 39.64
+      },
+      {
+        "word": "mind.",
+        "start": 39.64,
+        "end": 39.9
+      },
+      {
+        "word": "mind.",
+        "start": 39.9,
+        "end": 40.06
+      },
+      {
+        "word": ".",
+        "start": 40.26,
+        "end": 40.48
+      },
+      {
+        "word": ".",
+        "start": 40.48,
+        "end": 40.48
+      },
+      {
+        "word": ".",
+        "start": 40.48,
+        "end": 40.56
+      },
+      {
+        "word": ".",
+        "start": 40.56,
+        "end": 40.58
+      },
+      {
+        "word": ".",
+        "start": 40.58,
+        "end": 40.6
+      }
+    ],
+    "render_prompt": "1. 0.00-40.62: Display the slide background image via ImageMobject(ASSET_PATHS['pptx_demystifying-the-brain-chapter-1_slide_02']), scaled to fill the frame width and centered. This is the ONLY content on screen unless a beat below says otherwise -- never add, remove, redraw, resize, or reposition the slide image itself at any point in this scene. Keep it static and fully visible for the entire scene duration.\n2. 0.00-6.66: Construct `Rectangle(width=5.57, height=8.24, color=YELLOW, stroke_width=5, fill_opacity=0)` and `.move_to(np.array([-4.44, 0.00, 0]))` -- a single complete rectangle outline fully enclosing the element with a small even margin on every side, animated in with `Create(rectangle)` played to full completion. This corresponds to 'Image 0' on the slide -- Narration begins by introducing Lewis Carroll and continues discussing his quote, which is visually associated with his portrait.. Fade this highlight out at the end of this beat (before the next beat's highlight, if any, appears); do not leave multiple highlights on screen at once.\n3. 6.66-8.88: Construct `Rectangle(width=7.59, height=1.62, color=YELLOW, stroke_width=5, fill_opacity=0)` and `.move_to(np.array([2.67, 2.07, 0]))` -- a single complete rectangle outline fully enclosing the element with a small even margin on every side, animated in with `Create(rectangle)` played to full completion. This corresponds to 'Brain Ideas Through the Centuries' on the slide -- Narration starts focusing on the quote from Sylvie and Bruno, the cited work listed in the title.. Fade this highlight out at the end of this beat (before the next beat's highlight, if any, appears); do not leave multiple highlights on screen at once.\n4. 8.88-20.84: Construct `Rectangle(width=7.25, height=1.30, color=YELLOW, stroke_width=5, fill_opacity=0)` and `.move_to(np.array([2.83, 0.28, 0]))` -- a single complete rectangle outline fully enclosing the element with a small even margin on every side, animated in with `Create(rectangle)` played to full completion. This corresponds to '\"My hand moves because certain forces... are impressed on it by my brain. This nerve-force, stored in the brain, would probably be traceable... to chemical forces supplied to the brain by the blood.\"' on the slide -- Narration begins paraphrasing the quote about nerve-force and chemical forces, directly matching the quotation text.. Fade this highlight out at the end of this beat (before the next beat's highlight, if any, appears); do not leave multiple highlights on screen at once.\n5. 20.84-40.62: Construct `Rectangle(width=7.59, height=1.65, color=YELLOW, stroke_width=5, fill_opacity=0)` and `.move_to(np.array([2.67, -2.06, 0]))` -- a single complete rectangle outline fully enclosing the element with a small even margin on every side, animated in with `Create(rectangle)` played to full completion. This corresponds to 'The history of neuroscience is a fascinating journey of errors and breakthroughs. From ancient misconceptions to modern gene therapies, our understanding has evolved from viewing the heart as the seat of consciousness to mapping the complex electrical networks of the mind.' on the slide -- Narration shifts to explaining the theme of the lecture, which corresponds to the main historical description text.. Fade this highlight out at the end of this beat (before the next beat's highlight, if any, appears); do not leave multiple highlights on screen at once.",
+    "code": "ASSET_PATHS = {'heart': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\test_heart.svg', 'brain': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\brain_test.svg', 'stopwatch': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\stopwatch.svg', 'activity': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\activity.svg', 'soundwave': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\soundwave.svg', 'grid_matrix': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\grid-3x3-gap-fill.svg', 'bar_chart': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bar-chart.svg', 'graph_trend': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\graph-up-arrow.svg', 'cpu': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\cpu.svg', 'funnel': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\funnel.svg', 'table': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\table.svg', 'hospital': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hospital.svg', 'capsule': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\capsule.svg', 'clipboard_pulse': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\clipboard2-pulse.svg', 'hand': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hand-index-thumb.svg', 'broadcast': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\broadcast-pin.svg', 'gear': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\gear.svg', 'arrow_repeat': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\arrow-repeat.svg', 'lightbulb': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\lightbulb.svg', 'bell': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bell.svg', 'check_circle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\check-circle.svg', 'x_circle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\x-circle.svg', 'rulers': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\rulers.svg', 'puzzle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\puzzle.svg', 'fig_measurement_funnel': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_measurement_funnel.png', 'fig_mindmap_three_pillars': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_three_pillars.png', 'fig_mindmap_full': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_full.png', 'pptx_demystifying-the-brain-chapter-1_slide_02': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\slide_02.png'}\n\nfrom manim import *\nimport numpy as np\n\nclass Scene2(Scene):\n    def construct(self):\n        self.camera.background_color = \"#0F1116\"\n\n        slide = ImageMobject(ASSET_PATHS[\"pptx_demystifying-the-brain-chapter-1_slide_02\"])\n        slide.scale_to_fit_width(config.frame_width)\n        slide.move_to(ORIGIN)\n        self.add(slide)\n\n        highlights = [\n            ({\"w\": 5.57, \"h\": 8.24, \"pos\": np.array([-4.44, 0.00, 0])}, 4.50, 1.16, 1.00),\n            ({\"w\": 7.59, \"h\": 1.62, \"pos\": np.array([2.67, 2.07, 0])}, 1.00, 0.42, 0.80),\n            ({\"w\": 7.25, \"h\": 1.30, \"pos\": np.array([2.83, 0.28, 0])}, 5.00, 5.46, 1.50),\n            ({\"w\": 7.59, \"h\": 1.65, \"pos\": np.array([2.67, -2.06, 0])}, 6.00, 11.78, 2.00),\n        ]\n\n        for spec, create_time, wait_time, fade_time in highlights:\n            rect = Rectangle(\n                width=spec[\"w\"],\n                height=spec[\"h\"],\n                color=YELLOW,\n                stroke_width=5,\n                fill_opacity=0,\n            ).move_to(spec[\"pos\"])\n\n            self.play(Create(rect), run_time=max(0.05, create_time))\n            self.wait(max(0.05, wait_time))\n            self.play(FadeOut(rect), run_time=max(0.05, fade_time))",
+    "video_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\PPT_Brain\\demystifying-the-brain-chapter-1\\manim\\Scene2\\media\\videos\\Scene2\\1080p60\\Scene2.mp4",
+    "render_attempts": 1,
+    "render_status": "rendered",
+    "last_feedback": null,
+    "composed_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\PPT_Brain\\demystifying-the-brain-chapter-1\\rendered_video\\slide_02_with_audio.mp4"
+  },
+  {
+    "id": 3,
+    "subtopic": "Slide 3",
+    "narration": "So before modern science, where intelligence actually lives in the body was a genuinely fierce philosophical fight. On one side you had Hippocrates, the father of Western medicine, who already in the fourth and third centuries B.C. correctly pointed to the brain as the seat of sensation and intelligence, and Plato backed him up, because tying the physical brain to his philosophical ideals just fit his worldview. But then you have Aristotle, who for all his brilliance got this one badly wrong: he argued the heart was the seat of consciousness, and probably the thing that misled him was the observation that the body dies when the heart stops, yet it can survive a brain injury.",
+    "animation_description": "(unused -- render_prompt set directly)",
+    "scene_type": "manim",
+    "audio_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\PPT_Brain\\demystifying-the-brain-chapter-1\\audio\\slide_03.wav",
+    "timestamps": [
+      {
+        "word": "So,",
+        "start": 0.0,
+        "end": 0.4
+      },
+      {
+        "word": "before",
+        "start": 0.5,
+        "end": 0.6
+      },
+      {
+        "word": "modern",
+        "start": 0.6,
+        "end": 1.04
+      },
+      {
+        "word": "science,",
+        "start": 1.04,
+        "end": 1.6
+      },
+      {
+        "word": "where",
+        "start": 2.14,
+        "end": 2.22
+      },
+      {
+        "word": "intelligence",
+        "start": 2.22,
+        "end": 2.6
+      },
+      {
+        "word": "actually",
+        "start": 2.6,
+        "end": 3.06
+      },
+      {
+        "word": "lives",
+        "start": 3.06,
+        "end": 3.54
+      },
+      {
+        "word": "in",
+        "start": 3.54,
+        "end": 3.66
+      },
+      {
+        "word": "the",
+        "start": 3.66,
+        "end": 3.74
+      },
+      {
+        "word": "body",
+        "start": 3.74,
+        "end": 4.02
+      },
+      {
+        "word": "was",
+        "start": 4.02,
+        "end": 4.52
+      },
+      {
+        "word": "a",
+        "start": 4.52,
+        "end": 4.6
+      },
+      {
+        "word": "genuinely",
+        "start": 4.6,
+        "end": 5.0
+      },
+      {
+        "word": "fierce",
+        "start": 5.0,
+        "end": 5.5
+      },
+      {
+        "word": "philosophical",
+        "start": 5.5,
+        "end": 5.88
+      },
+      {
+        "word": "fight.",
+        "start": 5.88,
+        "end": 6.56
+      },
+      {
+        "word": "On",
+        "start": 7.4,
+        "end": 7.5
+      },
+      {
+        "word": "one",
+        "start": 7.5,
+        "end": 7.66
+      },
+      {
+        "word": "side,",
+        "start": 7.66,
+        "end": 8.04
+      },
+      {
+        "word": "you",
+        "start": 8.04,
+        "end": 8.24
+      },
+      {
+        "word": "had",
+        "start": 8.24,
+        "end": 8.38
+      },
+      {
+        "word": "Hippocrates,",
+        "start": 8.38,
+        "end": 8.86
+      },
+      {
+        "word": "the",
+        "start": 9.48,
+        "end": 9.66
+      },
+      {
+        "word": "father",
+        "start": 9.66,
+        "end": 9.96
+      },
+      {
+        "word": "of",
+        "start": 9.96,
+        "end": 10.16
+      },
+      {
+        "word": "Western",
+        "start": 10.16,
+        "end": 10.42
+      },
+      {
+        "word": "medicine,",
+        "start": 10.42,
+        "end": 10.84
+      },
+      {
+        "word": "who",
+        "start": 11.54,
+        "end": 11.66
+      },
+      {
+        "word": "already",
+        "start": 11.66,
+        "end": 11.98
+      },
+      {
+        "word": "in",
+        "start": 11.98,
+        "end": 12.18
+      },
+      {
+        "word": "the",
+        "start": 12.18,
+        "end": 12.26
+      },
+      {
+        "word": "fourth",
+        "start": 12.26,
+        "end": 12.52
+      },
+      {
+        "word": "and",
+        "start": 12.52,
+        "end": 12.72
+      },
+      {
+        "word": "third",
+        "start": 12.72,
+        "end": 12.9
+      },
+      {
+        "word": "centuries,",
+        "start": 12.9,
+        "end": 13.42
+      },
+      {
+        "word": "BC",
+        "start": 13.96,
+        "end": 14.04
+      },
+      {
+        "word": "correctly",
+        "start": 14.04,
+        "end": 14.66
+      },
+      {
+        "word": "pointed",
+        "start": 14.66,
+        "end": 15.06
+      },
+      {
+        "word": "to",
+        "start": 15.06,
+        "end": 15.36
+      },
+      {
+        "word": "the",
+        "start": 15.36,
+        "end": 15.46
+      },
+      {
+        "word": "brain",
+        "start": 15.46,
+        "end": 15.66
+      },
+      {
+        "word": "as",
+        "start": 15.66,
+        "end": 16.24
+      },
+      {
+        "word": "the",
+        "start": 16.24,
+        "end": 16.4
+      },
+      {
+        "word": "seat",
+        "start": 16.4,
+        "end": 16.62
+      },
+      {
+        "word": "of",
+        "start": 16.62,
+        "end": 16.74
+      },
+      {
+        "word": "sensation",
+        "start": 16.74,
+        "end": 17.14
+      },
+      {
+        "word": "and",
+        "start": 17.14,
+        "end": 17.54
+      },
+      {
+        "word": "intelligence,",
+        "start": 17.54,
+        "end": 17.88
+      },
+      {
+        "word": "and",
+        "start": 18.6,
+        "end": 18.78
+      },
+      {
+        "word": "Plato",
+        "start": 18.78,
+        "end": 18.96
+      },
+      {
+        "word": "backed",
+        "start": 18.96,
+        "end": 19.34
+      },
+      {
+        "word": "him",
+        "start": 19.34,
+        "end": 19.56
+      },
+      {
+        "word": "up,",
+        "start": 19.56,
+        "end": 19.7
+      },
+      {
+        "word": "because",
+        "start": 20.12,
+        "end": 20.44
+      },
+      {
+        "word": "tying",
+        "start": 20.44,
+        "end": 20.78
+      },
+      {
+        "word": "the",
+        "start": 20.78,
+        "end": 21.02
+      },
+      {
+        "word": "physical",
+        "start": 21.02,
+        "end": 21.26
+      },
+      {
+        "word": "brain",
+        "start": 21.26,
+        "end": 21.64
+      },
+      {
+        "word": "to",
+        "start": 21.64,
+        "end": 21.94
+      },
+      {
+        "word": "his",
+        "start": 21.94,
+        "end": 22.06
+      },
+      {
+        "word": "philosophical",
+        "start": 22.06,
+        "end": 22.48
+      },
+      {
+        "word": "ideals",
+        "start": 22.48,
+        "end": 23.06
+      },
+      {
+        "word": "just",
+        "start": 23.06,
+        "end": 23.56
+      },
+      {
+        "word": "fit",
+        "start": 23.56,
+        "end": 23.82
+      },
+      {
+        "word": "his",
+        "start": 23.82,
+        "end": 24.04
+      },
+      {
+        "word": "worldview.",
+        "start": 24.04,
+        "end": 24.26
+      },
+      {
+        "word": "But",
+        "start": 24.94,
+        "end": 25.5
+      },
+      {
+        "word": "then",
+        "start": 25.5,
+        "end": 25.7
+      },
+      {
+        "word": "you",
+        "start": 25.7,
+        "end": 25.88
+      },
+      {
+        "word": "have",
+        "start": 25.88,
+        "end": 26.08
+      },
+      {
+        "word": "Aristotle,",
+        "start": 26.08,
+        "end": 26.38
+      },
+      {
+        "word": "who",
+        "start": 27.0,
+        "end": 27.3
+      },
+      {
+        "word": "for",
+        "start": 27.3,
+        "end": 27.46
+      },
+      {
+        "word": "all",
+        "start": 27.46,
+        "end": 27.7
+      },
+      {
+        "word": "his",
+        "start": 27.7,
+        "end": 27.9
+      },
+      {
+        "word": "brilliance",
+        "start": 27.9,
+        "end": 28.26
+      },
+      {
+        "word": "got",
+        "start": 28.26,
+        "end": 28.64
+      },
+      {
+        "word": "this",
+        "start": 28.64,
+        "end": 28.86
+      },
+      {
+        "word": "one",
+        "start": 28.86,
+        "end": 29.12
+      },
+      {
+        "word": "badly",
+        "start": 29.12,
+        "end": 29.46
+      },
+      {
+        "word": "wrong.",
+        "start": 29.46,
+        "end": 29.86
+      },
+      {
+        "word": "He",
+        "start": 30.52,
+        "end": 30.7
+      },
+      {
+        "word": "argued",
+        "start": 30.7,
+        "end": 30.98
+      },
+      {
+        "word": "the",
+        "start": 30.98,
+        "end": 31.18
+      },
+      {
+        "word": "heart",
+        "start": 31.18,
+        "end": 31.34
+      },
+      {
+        "word": "was",
+        "start": 31.34,
+        "end": 31.58
+      },
+      {
+        "word": "the",
+        "start": 31.58,
+        "end": 31.74
+      },
+      {
+        "word": "seat",
+        "start": 31.74,
+        "end": 31.98
+      },
+      {
+        "word": "of",
+        "start": 31.98,
+        "end": 32.08
+      },
+      {
+        "word": "consciousness,",
+        "start": 32.08,
+        "end": 32.42
+      },
+      {
+        "word": "and",
+        "start": 33.28,
+        "end": 33.42
+      },
+      {
+        "word": "probably",
+        "start": 33.42,
+        "end": 33.74
+      },
+      {
+        "word": "the",
+        "start": 33.74,
+        "end": 34.02
+      },
+      {
+        "word": "thing",
+        "start": 34.02,
+        "end": 34.28
+      },
+      {
+        "word": "that",
+        "start": 34.28,
+        "end": 34.48
+      },
+      {
+        "word": "misled",
+        "start": 34.48,
+        "end": 34.76
+      },
+      {
+        "word": "him",
+        "start": 34.76,
+        "end": 35.14
+      },
+      {
+        "word": "was",
+        "start": 35.14,
+        "end": 35.48
+      },
+      {
+        "word": "the",
+        "start": 35.48,
+        "end": 35.62
+      },
+      {
+        "word": "observation",
+        "start": 35.62,
+        "end": 36.06
+      },
+      {
+        "word": "that",
+        "start": 36.06,
+        "end": 36.6
+      },
+      {
+        "word": "the",
+        "start": 36.6,
+        "end": 36.68
+      },
+      {
+        "word": "body",
+        "start": 36.68,
+        "end": 36.96
+      },
+      {
+        "word": "dies",
+        "start": 36.96,
+        "end": 37.28
+      },
+      {
+        "word": "when",
+        "start": 37.28,
+        "end": 37.56
+      },
+      {
+        "word": "the",
+        "start": 37.56,
+        "end": 37.68
+      },
+      {
+        "word": "heart",
+        "start": 37.68,
+        "end": 37.84
+      },
+      {
+        "word": "stops,",
+        "start": 37.84,
+        "end": 38.34
+      },
+      {
+        "word": "yet",
+        "start": 38.64,
+        "end": 38.96
+      },
+      {
+        "word": "it",
+        "start": 38.96,
+        "end": 39.1
+      },
+      {
+        "word": "can",
+        "start": 39.1,
+        "end": 39.24
+      },
+      {
+        "word": "survive",
+        "start": 39.24,
+        "end": 39.54
+      },
+      {
+        "word": "a",
+        "start": 39.54,
+        "end": 39.9
+      },
+      {
+        "word": "brain",
+        "start": 39.9,
+        "end": 40.14
+      },
+      {
+        "word": "injury.",
+        "start": 40.14,
+        "end": 40.6
+      }
+    ],
+    "render_prompt": "1. 0.00-41.35: Display the slide background image via ImageMobject(ASSET_PATHS['pptx_demystifying-the-brain-chapter-1_slide_03']), scaled to fill the frame width and centered. This is the ONLY content on screen unless a beat below says otherwise -- never add, remove, redraw, resize, or reposition the slide image itself at any point in this scene. Keep it static and fully visible for the entire scene duration.\n2. 2.14-8.38: Construct `Rectangle(width=7.60, height=0.94, color=YELLOW, stroke_width=5, fill_opacity=0)` and `.move_to(np.array([2.67, 1.36, 0]))` -- a single complete rectangle outline fully enclosing the element with a small even margin on every side, animated in with `Create(rectangle)` played to full completion. This corresponds to 'Before modern science, the location of intelligence was a subject of fierce philosophical debate.' on the slide -- narration introduces the debate about where intelligence lives. Fade this highlight out at the end of this beat (before the next beat's highlight, if any, appears); do not leave multiple highlights on screen at once.\n3. 8.38-15.46: Construct `Ellipse(width=3.73, height=0.58, color=YELLOW, stroke_width=5, fill_opacity=0)` and `.move_to(np.array([0.96, 0.36, 0]))` -- a single, complete, closed oval outline that fully encloses the element with a small even margin on every side. This must be the actual `Ellipse` mobject, not an `Arc`, not a partial curve, and not `Create`/`DrawBorderThenFill` cut off partway -- animate it in with `Create(ellipse)` played to full completion so the closed oval is entirely visible, not a swoosh or incomplete arc. This corresponds to 'Hippocrates (460\u2013379 B.C.)' on the slide -- narration begins discussing Hippocrates, a short name label. Fade this highlight out at the end of this beat (before the next beat's highlight, if any, appears); do not leave multiple highlights on screen at once.\n4. 15.46-26.08: Construct `Rectangle(width=7.15, height=1.29, color=YELLOW, stroke_width=5, fill_opacity=0)` and `.move_to(np.array([2.67, -0.46, 0]))` -- a single complete rectangle outline fully enclosing the element with a small even margin on every side, animated in with `Create(rectangle)` played to full completion. This corresponds to 'The father of Western medicine correctly identified the brain as the seat of sensation and intelligence. Plato supported this view, aligning the physical brain with his philosophical ideals.' on the slide -- narration explains Hippocrates' view on the brain as seat of intelligence. Fade this highlight out at the end of this beat (before the next beat's highlight, if any, appears); do not leave multiple highlights on screen at once.\n5. 26.08-31.18: Construct `Ellipse(width=2.97, height=0.58, color=YELLOW, stroke_width=5, fill_opacity=0)` and `.move_to(np.array([0.58, -1.83, 0]))` -- a single, complete, closed oval outline that fully encloses the element with a small even margin on every side. This must be the actual `Ellipse` mobject, not an `Arc`, not a partial curve, and not `Create`/`DrawBorderThenFill` cut off partway -- animate it in with `Create(ellipse)` played to full completion so the closed oval is entirely visible, not a swoosh or incomplete arc. This corresponds to 'Aristotle' on the slide -- narration shifts to Aristotle, a short name label. Fade this highlight out at the end of this beat (before the next beat's highlight, if any, appears); do not leave multiple highlights on screen at once.\n6. 31.18-41.35: Construct `Rectangle(width=7.15, height=1.29, color=YELLOW, stroke_width=5, fill_opacity=0)` and `.move_to(np.array([2.67, -2.65, 0]))` -- a single complete rectangle outline fully enclosing the element with a small even margin on every side, animated in with `Create(rectangle)` played to full completion. This corresponds to 'Despite his brilliance, Aristotle erred significantly. He believed the heart was the seat of consciousness, likely misled by the observation that a body dies when the heart stops, but can survive brain injury.' on the slide -- narration explains Aristotle's mistaken heart-centered view. Fade this highlight out at the end of this beat (before the next beat's highlight, if any, appears); do not leave multiple highlights on screen at once.",
+    "code": "ASSET_PATHS = {'heart': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\test_heart.svg', 'brain': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\brain_test.svg', 'stopwatch': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\stopwatch.svg', 'activity': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\activity.svg', 'soundwave': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\soundwave.svg', 'grid_matrix': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\grid-3x3-gap-fill.svg', 'bar_chart': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bar-chart.svg', 'graph_trend': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\graph-up-arrow.svg', 'cpu': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\cpu.svg', 'funnel': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\funnel.svg', 'table': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\table.svg', 'hospital': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hospital.svg', 'capsule': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\capsule.svg', 'clipboard_pulse': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\clipboard2-pulse.svg', 'hand': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hand-index-thumb.svg', 'broadcast': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\broadcast-pin.svg', 'gear': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\gear.svg', 'arrow_repeat': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\arrow-repeat.svg', 'lightbulb': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\lightbulb.svg', 'bell': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bell.svg', 'check_circle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\check-circle.svg', 'x_circle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\x-circle.svg', 'rulers': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\rulers.svg', 'puzzle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\puzzle.svg', 'fig_measurement_funnel': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_measurement_funnel.png', 'fig_mindmap_three_pillars': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_three_pillars.png', 'fig_mindmap_full': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_full.png', 'pptx_demystifying-the-brain-chapter-1_slide_03': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\slide_03.png'}\n\nfrom manim import *\nimport numpy as np\n\nclass Scene3(Scene):\n    def construct(self):\n        self.camera.background_color = \"#0F1116\"\n\n        slide = ImageMobject(ASSET_PATHS[\"pptx_demystifying-the-brain-chapter-1_slide_03\"])\n        slide.scale_to_fit_width(config.frame_width)\n        slide.move_to(ORIGIN)\n        self.add(slide)\n        self.wait(max(0.05, 2.14))\n\n        def show_highlight(mobject, total_duration, create_run=1.5, fade_run=0.8):\n            self.play(Create(mobject), run_time=max(0.05, create_run))\n            wait_time = total_duration - create_run - fade_run\n            self.wait(max(0.05, wait_time))\n            self.play(FadeOut(mobject), run_time=max(0.05, fade_run))\n\n        rect1 = Rectangle(width=7.60, height=0.94, color=YELLOW, stroke_width=5, fill_opacity=0)\n        rect1.move_to(np.array([2.67, 1.36, 0]))\n        show_highlight(rect1, 6.24)\n\n        ellipse1 = Ellipse(width=3.73, height=0.58, color=YELLOW, stroke_width=5, fill_opacity=0)\n        ellipse1.move_to(np.array([0.96, 0.36, 0]))\n        show_highlight(ellipse1, 7.08)\n\n        rect2 = Rectangle(width=7.15, height=1.29, color=YELLOW, stroke_width=5, fill_opacity=0)\n        rect2.move_to(np.array([2.67, -0.46, 0]))\n        show_highlight(rect2, 10.62)\n\n        ellipse2 = Ellipse(width=2.97, height=0.58, color=YELLOW, stroke_width=5, fill_opacity=0)\n        ellipse2.move_to(np.array([0.58, -1.83, 0]))\n        show_highlight(ellipse2, 5.10)\n\n        rect3 = Rectangle(width=7.15, height=1.29, color=YELLOW, stroke_width=5, fill_opacity=0)\n        rect3.move_to(np.array([2.67, -2.65, 0]))\n        show_highlight(rect3, 10.17)",
+    "video_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\PPT_Brain\\demystifying-the-brain-chapter-1\\manim\\Scene3\\media\\videos\\Scene3\\1080p60\\Scene3.mp4",
+    "render_attempts": 1,
+    "render_status": "rendered",
+    "last_feedback": null,
+    "composed_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\PPT_Brain\\demystifying-the-brain-chapter-1\\rendered_video\\slide_03_with_audio.mp4"
+  },
+  {
+    "id": 4,
+    "subtopic": "Slide 4",
+    "narration": "So here we have Galen, who's often called the restorer of anatomy. Because religious restrictions prevented him from dissecting human bodies, this Greek physician turned to animal cadavers to study the brain \u2014 and while he became a true master of anatomy, his ideas about function remained flawed for centuries afterward. On the anatomical side, he correctly identified the ventricles, the pia mater, and the hemispheres, and he even distinguished between autonomous nerves serving the internal organs and somatic nerves controlling voice and movement. But when it came to function, he had no microscopic tools, so he believed that \"animal spirits,\" or pneumata, surged through the nerves to produce movement and settled into the ventricles when the body was at rest.",
+    "animation_description": "(unused -- render_prompt set directly)",
+    "scene_type": "manim",
+    "audio_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\PPT_Brain\\demystifying-the-brain-chapter-1\\audio\\slide_04.wav",
+    "timestamps": [
+      {
+        "word": "So,",
+        "start": 0.0,
+        "end": 0.4
+      },
+      {
+        "word": "here",
+        "start": 0.52,
+        "end": 0.64
+      },
+      {
+        "word": "we",
+        "start": 0.64,
+        "end": 0.8
+      },
+      {
+        "word": "have",
+        "start": 0.8,
+        "end": 0.96
+      },
+      {
+        "word": "Galen,",
+        "start": 0.96,
+        "end": 1.38
+      },
+      {
+        "word": "who's",
+        "start": 1.76,
+        "end": 1.98
+      },
+      {
+        "word": "often",
+        "start": 1.98,
+        "end": 2.32
+      },
+      {
+        "word": "called",
+        "start": 2.32,
+        "end": 2.62
+      },
+      {
+        "word": "the",
+        "start": 2.62,
+        "end": 2.84
+      },
+      {
+        "word": "restorer",
+        "start": 2.84,
+        "end": 3.44
+      },
+      {
+        "word": "of",
+        "start": 3.44,
+        "end": 3.56
+      },
+      {
+        "word": "anatomy.",
+        "start": 3.56,
+        "end": 3.76
+      },
+      {
+        "word": "Because",
+        "start": 4.72,
+        "end": 4.96
+      },
+      {
+        "word": "religious",
+        "start": 4.96,
+        "end": 5.26
+      },
+      {
+        "word": "restrictions",
+        "start": 5.26,
+        "end": 5.84
+      },
+      {
+        "word": "prevented",
+        "start": 5.84,
+        "end": 6.5
+      },
+      {
+        "word": "him",
+        "start": 6.5,
+        "end": 6.88
+      },
+      {
+        "word": "from",
+        "start": 6.88,
+        "end": 7.1
+      },
+      {
+        "word": "dissecting",
+        "start": 7.1,
+        "end": 7.72
+      },
+      {
+        "word": "human",
+        "start": 7.72,
+        "end": 7.9
+      },
+      {
+        "word": "bodies,",
+        "start": 7.9,
+        "end": 8.32
+      },
+      {
+        "word": "this",
+        "start": 8.86,
+        "end": 9.1
+      },
+      {
+        "word": "Greek",
+        "start": 9.1,
+        "end": 9.32
+      },
+      {
+        "word": "physician",
+        "start": 9.32,
+        "end": 9.74
+      },
+      {
+        "word": "turned",
+        "start": 9.74,
+        "end": 10.24
+      },
+      {
+        "word": "to",
+        "start": 10.24,
+        "end": 10.5
+      },
+      {
+        "word": "animal",
+        "start": 10.5,
+        "end": 10.84
+      },
+      {
+        "word": "cadavers",
+        "start": 10.84,
+        "end": 11.38
+      },
+      {
+        "word": "to",
+        "start": 11.38,
+        "end": 11.62
+      },
+      {
+        "word": "study",
+        "start": 11.62,
+        "end": 11.84
+      },
+      {
+        "word": "the",
+        "start": 11.84,
+        "end": 12.04
+      },
+      {
+        "word": "brain,",
+        "start": 12.04,
+        "end": 12.3
+      },
+      {
+        "word": "and",
+        "start": 12.8,
+        "end": 13.12
+      },
+      {
+        "word": "while",
+        "start": 13.12,
+        "end": 13.3
+      },
+      {
+        "word": "he",
+        "start": 13.3,
+        "end": 13.5
+      },
+      {
+        "word": "became",
+        "start": 13.5,
+        "end": 13.78
+      },
+      {
+        "word": "a",
+        "start": 13.78,
+        "end": 13.98
+      },
+      {
+        "word": "true",
+        "start": 13.98,
+        "end": 14.2
+      },
+      {
+        "word": "master",
+        "start": 14.2,
+        "end": 14.56
+      },
+      {
+        "word": "of",
+        "start": 14.56,
+        "end": 14.84
+      },
+      {
+        "word": "anatomy,",
+        "start": 14.84,
+        "end": 15.14
+      },
+      {
+        "word": "his",
+        "start": 15.82,
+        "end": 15.9
+      },
+      {
+        "word": "ideas",
+        "start": 15.9,
+        "end": 16.28
+      },
+      {
+        "word": "about",
+        "start": 16.28,
+        "end": 16.64
+      },
+      {
+        "word": "function",
+        "start": 16.64,
+        "end": 17.0
+      },
+      {
+        "word": "remained",
+        "start": 17.0,
+        "end": 17.62
+      },
+      {
+        "word": "flawed",
+        "start": 17.62,
+        "end": 18.02
+      },
+      {
+        "word": "for",
+        "start": 18.02,
+        "end": 18.4
+      },
+      {
+        "word": "centuries",
+        "start": 18.4,
+        "end": 18.72
+      },
+      {
+        "word": "afterward.",
+        "start": 18.72,
+        "end": 19.28
+      },
+      {
+        "word": "On",
+        "start": 20.26,
+        "end": 20.48
+      },
+      {
+        "word": "the",
+        "start": 20.48,
+        "end": 20.58
+      },
+      {
+        "word": "anatomical",
+        "start": 20.58,
+        "end": 20.86
+      },
+      {
+        "word": "side,",
+        "start": 20.86,
+        "end": 21.56
+      },
+      {
+        "word": "he",
+        "start": 21.9,
+        "end": 22.06
+      },
+      {
+        "word": "correctly",
+        "start": 22.06,
+        "end": 22.36
+      },
+      {
+        "word": "identified",
+        "start": 22.36,
+        "end": 22.92
+      },
+      {
+        "word": "the",
+        "start": 22.92,
+        "end": 23.26
+      },
+      {
+        "word": "ventricles,",
+        "start": 23.26,
+        "end": 23.74
+      },
+      {
+        "word": "the",
+        "start": 24.08,
+        "end": 24.16
+      },
+      {
+        "word": "pyomator",
+        "start": 24.16,
+        "end": 24.6
+      },
+      {
+        "word": "and",
+        "start": 24.6,
+        "end": 24.92
+      },
+      {
+        "word": "the",
+        "start": 24.92,
+        "end": 25.04
+      },
+      {
+        "word": "hemispheres,",
+        "start": 25.04,
+        "end": 25.56
+      },
+      {
+        "word": "and",
+        "start": 25.56,
+        "end": 26.26
+      },
+      {
+        "word": "he",
+        "start": 26.26,
+        "end": 26.38
+      },
+      {
+        "word": "even",
+        "start": 26.38,
+        "end": 26.6
+      },
+      {
+        "word": "distinguished",
+        "start": 26.6,
+        "end": 26.94
+      },
+      {
+        "word": "between",
+        "start": 26.94,
+        "end": 27.54
+      },
+      {
+        "word": "autonomous",
+        "start": 27.54,
+        "end": 27.9
+      },
+      {
+        "word": "nerves,",
+        "start": 27.9,
+        "end": 28.5
+      },
+      {
+        "word": "serving",
+        "start": 28.88,
+        "end": 29.12
+      },
+      {
+        "word": "the",
+        "start": 29.12,
+        "end": 29.3
+      },
+      {
+        "word": "internal",
+        "start": 29.3,
+        "end": 29.68
+      },
+      {
+        "word": "organs",
+        "start": 29.68,
+        "end": 30.1
+      },
+      {
+        "word": "and",
+        "start": 30.1,
+        "end": 30.42
+      },
+      {
+        "word": "somatic",
+        "start": 30.42,
+        "end": 30.78
+      },
+      {
+        "word": "nerves",
+        "start": 30.78,
+        "end": 31.22
+      },
+      {
+        "word": "controlling",
+        "start": 31.22,
+        "end": 31.5
+      },
+      {
+        "word": "voice",
+        "start": 31.5,
+        "end": 32.04
+      },
+      {
+        "word": "and",
+        "start": 32.04,
+        "end": 32.38
+      },
+      {
+        "word": "movement.",
+        "start": 32.38,
+        "end": 32.62
+      },
+      {
+        "word": "But",
+        "start": 33.34,
+        "end": 33.64
+      },
+      {
+        "word": "when",
+        "start": 33.64,
+        "end": 33.76
+      },
+      {
+        "word": "it",
+        "start": 33.76,
+        "end": 33.84
+      },
+      {
+        "word": "came",
+        "start": 33.84,
+        "end": 33.98
+      },
+      {
+        "word": "to",
+        "start": 33.98,
+        "end": 34.14
+      },
+      {
+        "word": "function,",
+        "start": 34.14,
+        "end": 34.32
+      },
+      {
+        "word": "he",
+        "start": 35.02,
+        "end": 35.12
+      },
+      {
+        "word": "had",
+        "start": 35.12,
+        "end": 35.3
+      },
+      {
+        "word": "no",
+        "start": 35.3,
+        "end": 35.5
+      },
+      {
+        "word": "microscopic",
+        "start": 35.5,
+        "end": 35.86
+      },
+      {
+        "word": "tools,",
+        "start": 35.86,
+        "end": 36.5
+      },
+      {
+        "word": "so",
+        "start": 36.5,
+        "end": 37.4
+      },
+      {
+        "word": "he",
+        "start": 37.4,
+        "end": 37.54
+      },
+      {
+        "word": "believed",
+        "start": 37.54,
+        "end": 37.9
+      },
+      {
+        "word": "that",
+        "start": 37.9,
+        "end": 38.14
+      },
+      {
+        "word": "animal",
+        "start": 38.14,
+        "end": 38.52
+      },
+      {
+        "word": "spirits,",
+        "start": 38.52,
+        "end": 39.08
+      },
+      {
+        "word": "or",
+        "start": 39.6,
+        "end": 39.68
+      },
+      {
+        "word": "pneumata,",
+        "start": 39.68,
+        "end": 40.02
+      },
+      {
+        "word": "surged",
+        "start": 40.54,
+        "end": 40.74
+      },
+      {
+        "word": "through",
+        "start": 40.74,
+        "end": 41.1
+      },
+      {
+        "word": "the",
+        "start": 41.1,
+        "end": 41.24
+      },
+      {
+        "word": "nerves",
+        "start": 41.24,
+        "end": 41.46
+      },
+      {
+        "word": "to",
+        "start": 41.46,
+        "end": 41.72
+      },
+      {
+        "word": "produce",
+        "start": 41.72,
+        "end": 41.98
+      },
+      {
+        "word": "movement",
+        "start": 41.98,
+        "end": 42.34
+      },
+      {
+        "word": "and",
+        "start": 42.34,
+        "end": 42.94
+      },
+      {
+        "word": "settled",
+        "start": 42.94,
+        "end": 43.22
+      },
+      {
+        "word": "into",
+        "start": 43.22,
+        "end": 43.54
+      },
+      {
+        "word": "the",
+        "start": 43.54,
+        "end": 43.68
+      },
+      {
+        "word": "ventricles",
+        "start": 43.68,
+        "end": 44.14
+      },
+      {
+        "word": "when",
+        "start": 44.14,
+        "end": 44.34
+      },
+      {
+        "word": "the",
+        "start": 44.34,
+        "end": 44.44
+      },
+      {
+        "word": "body",
+        "start": 44.44,
+        "end": 44.72
+      },
+      {
+        "word": "was",
+        "start": 44.72,
+        "end": 44.9
+      },
+      {
+        "word": "at",
+        "start": 44.9,
+        "end": 45.04
+      },
+      {
+        "word": "rest.",
+        "start": 45.04,
+        "end": 45.22
+      }
+    ],
+    "render_prompt": "1. 0.00-46.05: Display the slide background image via ImageMobject(ASSET_PATHS['pptx_demystifying-the-brain-chapter-1_slide_04']), scaled to fill the frame width and centered. This is the ONLY content on screen unless a beat below says otherwise -- never add, remove, redraw, resize, or reposition the slide image itself at any point in this scene. Keep it static and fully visible for the entire scene duration.\n2. 0.96-4.72: Construct `Rectangle(width=7.76, height=0.87, color=YELLOW, stroke_width=5, fill_opacity=0)` and `.move_to(np.array([-2.65, 3.14, 0]))` -- a single complete rectangle outline fully enclosing the element with a small even margin on every side, animated in with `Create(rectangle)` played to full completion. This corresponds to 'Galen: The Restorer of Anatomy' on the slide -- narration introduces Galen and the slide title. Fade this highlight out at the end of this beat (before the next beat's highlight, if any, appears); do not leave multiple highlights on screen at once.\n3. 4.72-20.26: Construct `Rectangle(width=6.41, height=1.52, color=YELLOW, stroke_width=5, fill_opacity=0)` and `.move_to(np.array([-3.33, 1.70, 0]))` -- a single complete rectangle outline fully enclosing the element with a small even margin on every side, animated in with `Create(rectangle)` played to full completion. This corresponds to 'Restricted by religious bans on human dissection, the Greek physician Galen studied animal cadavers to understand the brain. While he became a master of anatomy, his understanding of function remained flawed for centuries.' on the slide -- narration explains Galen's restriction to animal cadavers and flawed function. Fade this highlight out at the end of this beat (before the next beat's highlight, if any, appears); do not leave multiple highlights on screen at once.\n4. 20.26-22.06: Construct `Arrow(start=np.array((-4.869386042317709, -0.9426509257812501, 0)), end=np.array([-4.87, 0.46, 0]), color=YELLOW, stroke_width=6, buff=0.1)` -- a single arrow with a clear visible tip, pointing directly at that point from outside the element, animated in with `Create(arrow)` or `GrowArrow(arrow)`. This corresponds to 'Anatomical Mastery' on the slide -- narration begins discussing anatomical mastery section. Fade this highlight out at the end of this beat (before the next beat's highlight, if any, appears); do not leave multiple highlights on screen at once.\n5. 22.06-33.34: Construct `Rectangle(width=5.89, height=1.20, color=YELLOW, stroke_width=5, fill_opacity=0)` and `.move_to(np.array([-3.29, -0.38, 0]))` -- a single complete rectangle outline fully enclosing the element with a small even margin on every side, animated in with `Create(rectangle)` played to full completion. This corresponds to 'Galen identified the ventricles, pia mater, and hemispheres. He distinguished between autonomous nerves (internal organs) and somatic nerves (voice and movement).' on the slide -- narration details Galen's anatomical findings. Fade this highlight out at the end of this beat (before the next beat's highlight, if any, appears); do not leave multiple highlights on screen at once.\n6. 33.34-35.02: Construct `Arrow(start=np.array((-4.869386042317709, -0.26197917107638924, 0)), end=np.array([-4.87, -1.66, 0]), color=YELLOW, stroke_width=6, buff=0.1)` -- a single arrow with a clear visible tip, pointing directly at that point from outside the element, animated in with `Create(arrow)` or `GrowArrow(arrow)`. This corresponds to 'Functional Errors' on the slide -- narration shifts to functional errors. Fade this highlight out at the end of this beat (before the next beat's highlight, if any, appears); do not leave multiple highlights on screen at once.\n7. 35.02-46.05: Construct `Rectangle(width=5.89, height=1.20, color=YELLOW, stroke_width=5, fill_opacity=0)` and `.move_to(np.array([-3.29, -2.50, 0]))` -- a single complete rectangle outline fully enclosing the element with a small even margin on every side, animated in with `Create(rectangle)` played to full completion. This corresponds to 'Lacking microscopic tools, he believed \"animal spirits\" or pneumata surged through nerves to produce movement, lodging in the ventricles when at rest.' on the slide -- narration explains Galen's mistaken theory of animal spirits. Fade this highlight out at the end of this beat (before the next beat's highlight, if any, appears); do not leave multiple highlights on screen at once.",
+    "code": "ASSET_PATHS = {'heart': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\test_heart.svg', 'brain': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\brain_test.svg', 'stopwatch': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\stopwatch.svg', 'activity': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\activity.svg', 'soundwave': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\soundwave.svg', 'grid_matrix': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\grid-3x3-gap-fill.svg', 'bar_chart': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bar-chart.svg', 'graph_trend': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\graph-up-arrow.svg', 'cpu': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\cpu.svg', 'funnel': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\funnel.svg', 'table': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\table.svg', 'hospital': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hospital.svg', 'capsule': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\capsule.svg', 'clipboard_pulse': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\clipboard2-pulse.svg', 'hand': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hand-index-thumb.svg', 'broadcast': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\broadcast-pin.svg', 'gear': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\gear.svg', 'arrow_repeat': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\arrow-repeat.svg', 'lightbulb': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\lightbulb.svg', 'bell': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bell.svg', 'check_circle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\check-circle.svg', 'x_circle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\x-circle.svg', 'rulers': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\rulers.svg', 'puzzle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\puzzle.svg', 'fig_measurement_funnel': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_measurement_funnel.png', 'fig_mindmap_three_pillars': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_three_pillars.png', 'fig_mindmap_full': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_full.png', 'pptx_demystifying-the-brain-chapter-1_slide_04': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\slide_04.png'}\n\nimport numpy as np\nfrom manim import *\n\nclass Scene4(Scene):\n    def construct(self):\n        self.camera.background_color = \"#0F1116\"\n\n        slide = ImageMobject(ASSET_PATHS[\"pptx_demystifying-the-brain-chapter-1_slide_04\"])\n        slide.scale_to_fit_width(config.frame_width)\n        slide.move_to(ORIGIN)\n        self.add(slide)\n\n        self.wait(max(0.05, 0.96))\n\n        self._highlight_rectangle(7.76, 0.87, [-2.65, 3.14, 0], 3.76)\n        self._highlight_rectangle(6.41, 1.52, [-3.33, 1.70, 0], 15.54)\n        self._highlight_arrow(\n            (-4.869386042317709, -0.9426509257812501, 0),\n            [-4.87, 0.46, 0],\n            1.80,\n        )\n        self._highlight_rectangle(5.89, 1.20, [-3.29, -0.38, 0], 11.28)\n        self._highlight_arrow(\n            (-4.869386042317709, -0.26197917107638924, 0),\n            [-4.87, -1.66, 0],\n            1.68,\n        )\n        self._highlight_rectangle(5.89, 1.20, [-3.29, -2.50, 0], 11.03)\n\n    def _highlight_rectangle(self, width, height, pos, duration):\n        rect = Rectangle(\n            width=width,\n            height=height,\n            color=YELLOW,\n            stroke_width=5,\n            fill_opacity=0,\n        )\n        rect.move_to(np.array(pos))\n        self.play(Create(rect), run_time=max(0.05, duration - 0.5))\n        self.play(FadeOut(rect), run_time=max(0.05, 0.5))\n\n    def _highlight_arrow(self, start, end, duration):\n        arrow = Arrow(\n            start=np.array(start),\n            end=np.array(end),\n            color=YELLOW,\n            stroke_width=6,\n            buff=0.1,\n        )\n        self.play(Create(arrow), run_time=max(0.05, duration - 0.5))\n        self.play(FadeOut(arrow), run_time=max(0.05, 0.5))",
+    "video_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\PPT_Brain\\demystifying-the-brain-chapter-1\\manim\\Scene4\\media\\videos\\Scene4\\1080p60\\Scene4.mp4",
+    "render_attempts": 1,
+    "render_status": "rendered",
+    "last_feedback": null,
+    "composed_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\PPT_Brain\\demystifying-the-brain-chapter-1\\rendered_video\\slide_04_with_audio.mp4"
+  },
+  {
+    "id": 5,
+    "subtopic": "Slide 5",
+    "narration": "For nearly fifteen hundred years, the split between studying structure and studying function held. Leonardo da Vinci, the artist-scientist, compared dissecting the brain to peeling an onion, and although his anatomical drawings were remarkable, he still followed the ancient tradition of attributing cognitive functions to the ventricles. Ren\u00e9 Descartes, by contrast, proposed a radical answer to the mind\u2013body problem in the form of dualism, arguing that the body operates as a machine governed by physical laws while the mind is a non-material entity\u2014a position that let scientists set the soul aside and investigate the brain as a biological machine.",
+    "animation_description": "(unused -- render_prompt set directly)",
+    "scene_type": "manim",
+    "audio_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\PPT_Brain\\demystifying-the-brain-chapter-1\\audio\\slide_05.wav",
+    "timestamps": [
+      {
+        "word": "For",
+        "start": 0.0,
+        "end": 0.38
+      },
+      {
+        "word": "nearly",
+        "start": 0.38,
+        "end": 0.56
+      },
+      {
+        "word": "1500",
+        "start": 0.56,
+        "end": 1.12
+      },
+      {
+        "word": "years,",
+        "start": 1.12,
+        "end": 1.8
+      },
+      {
+        "word": "the",
+        "start": 2.28,
+        "end": 2.4
+      },
+      {
+        "word": "split",
+        "start": 2.4,
+        "end": 2.66
+      },
+      {
+        "word": "between",
+        "start": 2.66,
+        "end": 3.0
+      },
+      {
+        "word": "studying",
+        "start": 3.0,
+        "end": 3.44
+      },
+      {
+        "word": "structure",
+        "start": 3.44,
+        "end": 3.78
+      },
+      {
+        "word": "and",
+        "start": 3.78,
+        "end": 4.28
+      },
+      {
+        "word": "studying",
+        "start": 4.28,
+        "end": 4.62
+      },
+      {
+        "word": "function",
+        "start": 4.62,
+        "end": 4.98
+      },
+      {
+        "word": "held.",
+        "start": 4.98,
+        "end": 5.42
+      },
+      {
+        "word": "Leonardo",
+        "start": 6.2,
+        "end": 6.54
+      },
+      {
+        "word": "da",
+        "start": 6.54,
+        "end": 6.92
+      },
+      {
+        "word": "Vinci,",
+        "start": 6.92,
+        "end": 7.28
+      },
+      {
+        "word": "the",
+        "start": 7.56,
+        "end": 7.78
+      },
+      {
+        "word": "artist's",
+        "start": 7.78,
+        "end": 8.18
+      },
+      {
+        "word": "scientist,",
+        "start": 8.18,
+        "end": 8.54
+      },
+      {
+        "word": "compared",
+        "start": 9.12,
+        "end": 9.36
+      },
+      {
+        "word": "dissecting",
+        "start": 9.36,
+        "end": 10.16
+      },
+      {
+        "word": "the",
+        "start": 10.16,
+        "end": 10.24
+      },
+      {
+        "word": "brain",
+        "start": 10.24,
+        "end": 10.46
+      },
+      {
+        "word": "to",
+        "start": 10.46,
+        "end": 10.74
+      },
+      {
+        "word": "peeling",
+        "start": 10.74,
+        "end": 11.12
+      },
+      {
+        "word": "an",
+        "start": 11.12,
+        "end": 11.24
+      },
+      {
+        "word": "onion,",
+        "start": 11.24,
+        "end": 11.54
+      },
+      {
+        "word": "and",
+        "start": 12.12,
+        "end": 12.32
+      },
+      {
+        "word": "although",
+        "start": 12.32,
+        "end": 12.58
+      },
+      {
+        "word": "his",
+        "start": 12.58,
+        "end": 12.8
+      },
+      {
+        "word": "anatomical",
+        "start": 12.8,
+        "end": 13.14
+      },
+      {
+        "word": "drawings",
+        "start": 13.14,
+        "end": 13.78
+      },
+      {
+        "word": "were",
+        "start": 13.78,
+        "end": 14.18
+      },
+      {
+        "word": "remarkable,",
+        "start": 14.18,
+        "end": 14.46
+      },
+      {
+        "word": "he",
+        "start": 15.22,
+        "end": 15.32
+      },
+      {
+        "word": "still",
+        "start": 15.32,
+        "end": 15.54
+      },
+      {
+        "word": "followed",
+        "start": 15.54,
+        "end": 15.96
+      },
+      {
+        "word": "the",
+        "start": 15.96,
+        "end": 16.16
+      },
+      {
+        "word": "ancient",
+        "start": 16.16,
+        "end": 16.4
+      },
+      {
+        "word": "tradition",
+        "start": 16.4,
+        "end": 16.92
+      },
+      {
+        "word": "of",
+        "start": 16.92,
+        "end": 17.26
+      },
+      {
+        "word": "attributing",
+        "start": 17.26,
+        "end": 17.88
+      },
+      {
+        "word": "cognitive",
+        "start": 17.88,
+        "end": 18.12
+      },
+      {
+        "word": "functions",
+        "start": 18.12,
+        "end": 18.64
+      },
+      {
+        "word": "to",
+        "start": 18.64,
+        "end": 19.14
+      },
+      {
+        "word": "the",
+        "start": 19.14,
+        "end": 19.24
+      },
+      {
+        "word": "ventricles.",
+        "start": 19.24,
+        "end": 19.68
+      },
+      {
+        "word": "Ren\u00e9",
+        "start": 20.64,
+        "end": 20.98
+      },
+      {
+        "word": "Descartes,",
+        "start": 20.98,
+        "end": 21.7
+      },
+      {
+        "word": "by",
+        "start": 21.74,
+        "end": 21.88
+      },
+      {
+        "word": "contrast,",
+        "start": 21.88,
+        "end": 22.24
+      },
+      {
+        "word": "proposed",
+        "start": 22.84,
+        "end": 23.14
+      },
+      {
+        "word": "a",
+        "start": 23.14,
+        "end": 23.44
+      },
+      {
+        "word": "radical",
+        "start": 23.44,
+        "end": 23.78
+      },
+      {
+        "word": "answer",
+        "start": 23.78,
+        "end": 24.18
+      },
+      {
+        "word": "to",
+        "start": 24.18,
+        "end": 24.44
+      },
+      {
+        "word": "the",
+        "start": 24.44,
+        "end": 24.54
+      },
+      {
+        "word": "mind.",
+        "start": 24.54,
+        "end": 24.72
+      },
+      {
+        "word": "Body",
+        "start": 25.5,
+        "end": 25.64
+      },
+      {
+        "word": "problem",
+        "start": 25.64,
+        "end": 26.02
+      },
+      {
+        "word": "in",
+        "start": 26.02,
+        "end": 26.32
+      },
+      {
+        "word": "the",
+        "start": 26.32,
+        "end": 26.42
+      },
+      {
+        "word": "form",
+        "start": 26.42,
+        "end": 26.62
+      },
+      {
+        "word": "of",
+        "start": 26.62,
+        "end": 26.78
+      },
+      {
+        "word": "dualism,",
+        "start": 26.78,
+        "end": 27.28
+      },
+      {
+        "word": "arguing",
+        "start": 27.28,
+        "end": 28.16
+      },
+      {
+        "word": "that",
+        "start": 28.16,
+        "end": 28.46
+      },
+      {
+        "word": "the",
+        "start": 28.46,
+        "end": 28.52
+      },
+      {
+        "word": "body",
+        "start": 28.52,
+        "end": 28.84
+      },
+      {
+        "word": "operates",
+        "start": 28.84,
+        "end": 29.34
+      },
+      {
+        "word": "as",
+        "start": 29.34,
+        "end": 29.58
+      },
+      {
+        "word": "a",
+        "start": 29.58,
+        "end": 29.66
+      },
+      {
+        "word": "machine",
+        "start": 29.66,
+        "end": 30.0
+      },
+      {
+        "word": "governed",
+        "start": 30.0,
+        "end": 30.38
+      },
+      {
+        "word": "by",
+        "start": 30.38,
+        "end": 30.72
+      },
+      {
+        "word": "physical",
+        "start": 30.72,
+        "end": 31.06
+      },
+      {
+        "word": "laws",
+        "start": 31.06,
+        "end": 31.46
+      },
+      {
+        "word": "while",
+        "start": 31.46,
+        "end": 32.14
+      },
+      {
+        "word": "the",
+        "start": 32.14,
+        "end": 32.28
+      },
+      {
+        "word": "mind",
+        "start": 32.28,
+        "end": 32.56
+      },
+      {
+        "word": "is",
+        "start": 32.56,
+        "end": 32.84
+      },
+      {
+        "word": "a",
+        "start": 32.84,
+        "end": 32.92
+      },
+      {
+        "word": "non",
+        "start": 32.92,
+        "end": 33.18
+      },
+      {
+        "word": "-material",
+        "start": 33.18,
+        "end": 33.38
+      },
+      {
+        "word": "entity,",
+        "start": 33.38,
+        "end": 34.18
+      },
+      {
+        "word": "a",
+        "start": 34.76,
+        "end": 34.92
+      },
+      {
+        "word": "position",
+        "start": 34.92,
+        "end": 35.26
+      },
+      {
+        "word": "that",
+        "start": 35.26,
+        "end": 35.58
+      },
+      {
+        "word": "lets",
+        "start": 35.58,
+        "end": 35.72
+      },
+      {
+        "word": "scientists",
+        "start": 35.72,
+        "end": 36.28
+      },
+      {
+        "word": "set",
+        "start": 36.28,
+        "end": 36.84
+      },
+      {
+        "word": "the",
+        "start": 36.84,
+        "end": 37.0
+      },
+      {
+        "word": "soul",
+        "start": 37.0,
+        "end": 37.24
+      },
+      {
+        "word": "aside",
+        "start": 37.24,
+        "end": 37.58
+      },
+      {
+        "word": "and",
+        "start": 37.58,
+        "end": 38.3
+      },
+      {
+        "word": "investigate",
+        "start": 38.3,
+        "end": 38.6
+      },
+      {
+        "word": "the",
+        "start": 38.6,
+        "end": 39.04
+      },
+      {
+        "word": "brain",
+        "start": 39.04,
+        "end": 39.28
+      },
+      {
+        "word": "as",
+        "start": 39.28,
+        "end": 39.66
+      },
+      {
+        "word": "a",
+        "start": 39.66,
+        "end": 39.74
+      },
+      {
+        "word": "biological",
+        "start": 39.74,
+        "end": 40.08
+      },
+      {
+        "word": "machine.",
+        "start": 40.08,
+        "end": 40.76
+      }
+    ],
+    "render_prompt": "1. 0.00-41.50: Display the slide background image via ImageMobject(ASSET_PATHS['pptx_demystifying-the-brain-chapter-1_slide_05']), scaled to fill the frame width and centered. This is the ONLY content on screen unless a beat below says otherwise -- never add, remove, redraw, resize, or reposition the slide image itself at any point in this scene. Keep it static and fully visible for the entire scene duration.\n2. 6.20-20.64: Construct `Rectangle(width=6.37, height=1.24, color=YELLOW, stroke_width=5, fill_opacity=0)` and `.move_to(np.array([3.33, 0.56, 0]))` -- a single complete rectangle outline fully enclosing the element with a small even margin on every side, animated in with `Create(rectangle)` played to full completion. This corresponds to 'The artist-scientist likened dissecting the brain to peeling an onion. While his anatomical drawings were superb, he still attributed cognitive functions to the ventricles, following ancient tradition.' on the slide -- narration begins discussing Leonardo da Vinci's anatomical drawings and ventricle attribution. Fade this highlight out at the end of this beat (before the next beat's highlight, if any, appears); do not leave multiple highlights on screen at once.\n3. 20.64-41.50: Construct `Rectangle(width=6.37, height=1.90, color=YELLOW, stroke_width=5, fill_opacity=0)` and `.move_to(np.array([3.33, -1.52, 0]))` -- a single complete rectangle outline fully enclosing the element with a small even margin on every side, animated in with `Create(rectangle)` played to full completion. This corresponds to 'Descartes proposed a radical solution to the mind-body problem: Dualism. He argued the body is a machine following physical laws, while the mind is a non-material entity. This allowed scientists to ignore the \"soul\" and study the brain as a biological machine.' on the slide -- narration begins discussing Descartes' dualism and body-as-machine argument. Fade this highlight out at the end of this beat (before the next beat's highlight, if any, appears); do not leave multiple highlights on screen at once.",
+    "code": "ASSET_PATHS = {'heart': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\test_heart.svg', 'brain': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\brain_test.svg', 'stopwatch': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\stopwatch.svg', 'activity': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\activity.svg', 'soundwave': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\soundwave.svg', 'grid_matrix': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\grid-3x3-gap-fill.svg', 'bar_chart': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bar-chart.svg', 'graph_trend': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\graph-up-arrow.svg', 'cpu': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\cpu.svg', 'funnel': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\funnel.svg', 'table': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\table.svg', 'hospital': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hospital.svg', 'capsule': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\capsule.svg', 'clipboard_pulse': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\clipboard2-pulse.svg', 'hand': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hand-index-thumb.svg', 'broadcast': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\broadcast-pin.svg', 'gear': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\gear.svg', 'arrow_repeat': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\arrow-repeat.svg', 'lightbulb': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\lightbulb.svg', 'bell': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bell.svg', 'check_circle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\check-circle.svg', 'x_circle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\x-circle.svg', 'rulers': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\rulers.svg', 'puzzle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\puzzle.svg', 'fig_measurement_funnel': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_measurement_funnel.png', 'fig_mindmap_three_pillars': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_three_pillars.png', 'fig_mindmap_full': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_full.png', 'pptx_demystifying-the-brain-chapter-1_slide_05': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\slide_05.png'}\n\nimport numpy as np\nfrom manim import *\n\n\nclass Scene5(Scene):\n    def construct(self):\n        self.camera.background_color = \"#0F1116\"\n\n        # 1. Slide background image, static and fully visible for the whole scene.\n        slide = ImageMobject(ASSET_PATHS[\"pptx_demystifying-the-brain-chapter-1_slide_05\"])\n        slide.scale_to_fit_width(config.frame_width)\n        slide.move_to(ORIGIN)\n        self.add(slide)\n\n        # 0.00-6.20: only the slide is shown.\n        self.wait(max(0.05, 6.2))\n\n        # 2. 6.20-20.64: highlight Leonardo da Vinci / ventricles region.\n        rect1 = Rectangle(\n            width=6.37,\n            height=1.24,\n            color=YELLOW,\n            stroke_width=5,\n            fill_opacity=0,\n        )\n        rect1.move_to(np.array([3.33, 0.56, 0]))\n        self.play(Create(rect1), run_time=max(0.05, 1.0))\n        self.wait(max(0.05, 12.84))\n        self.play(FadeOut(rect1), run_time=max(0.05, 0.6))\n\n        # 3. 20.64-41.50: highlight Descartes / dualism region.\n        rect2 = Rectangle(\n            width=6.37,\n            height=1.90,\n            color=YELLOW,\n            stroke_width=5,\n            fill_opacity=0,\n        )\n        rect2.move_to(np.array([3.33, -1.52, 0]))\n        self.play(Create(rect2), run_time=max(0.05, 1.0))\n        self.wait(max(0.05, 18.86))\n        self.play(FadeOut(rect2), run_time=max(0.05, 1.0))",
+    "video_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\PPT_Brain\\demystifying-the-brain-chapter-1\\manim\\Scene5\\media\\videos\\Scene5\\1080p60\\Scene5.mp4",
+    "render_attempts": 1,
+    "render_status": "rendered",
+    "last_feedback": null,
+    "composed_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\PPT_Brain\\demystifying-the-brain-chapter-1\\rendered_video\\slide_05_with_audio.mp4"
+  }
+]

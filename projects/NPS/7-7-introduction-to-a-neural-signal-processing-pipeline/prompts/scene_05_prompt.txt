@@ -1,0 +1,86 @@
+1. **0.00–3.50**  
+   The previous scene's layout — the two panels (Interpretation and Classification), the BCI example, and all their contents — fades out and clears. At the top center of the screen, a four-box pipeline diagram fades in: the same general structure as the introduction's main pipeline, with four equally spaced rectangular boxes connected by arrows pointing left to right. The box labels are **“Raw Neural Signal”**, **“Preprocessing”**, **“Feature Extraction”**, and **“Interpretation / Classification”**. Each box has a distinct color fill (e.g., blue-gray, teal, green, orange). The diagram remains the focal point.
+
+2. **3.50–4.70**  
+   The **“Raw Neural Signal”** box brightens and pulses once, with a subtle glow. The label is spoken as the pulse occurs.
+
+3. **4.70–5.68**  
+   The pulse dims on the first box and shifts sequentially to the **“Preprocessing”** box, which pulses with a subtle glow. The connecting arrow between **“Raw Neural Signal”** and **“Preprocessing”** pulses in tandem, reinforcing the left-to-right flow.
+
+4. **5.68–7.02**  
+   The pulse shifts further right to the **“Feature Extraction”** box, which glows and pulses. The arrow from **“Preprocessing”** to **“Feature Extraction”** pulses.
+
+5. **7.02–8.32**  
+   The pulse reaches the fourth box, **“Interpretation / Classification”**, which glows and pulses. The arrow from **“Feature Extraction”** to **“Interpretation / Classification”** pulses. All four boxes then hold at steady brightness; the top diagram is now complete.
+
+6. **9.60–13.46**  
+   From the bottom of the top pipeline diagram, a thin vertical connector or downward arrow extends, and directly beneath it the first of four horizontal pipeline diagrams begins to fade in: an empty five-box skeleton that mirrors the top diagram's structure but with five boxes and matching stage colors. The five boxes are connected by arrows and appear initially unlabeled except for ghosted placeholder outlines. This diagram sits in the lower half of the screen, spanning most of the width.
+
+7. **13.46–14.72**  
+   The first pipeline diagram begins filling from left to right. Its first box becomes solid with the label **“Raw EEG”** in the same color as **“Raw Neural Signal”**. The box glows briefly. A small sleep-related marker (a small icon of a bed or crescent moon) appears faintly above the diagram's right end in anticipation. A top label appears above this pipeline: **“Sleep Staging”**.
+
+8. **15.44–16.30**  
+   The second box in the first pipeline fills with the label **“Filtering”**, using the same color as **“Preprocessing”**. The arrow from **“Raw EEG”** to **“Filtering”** brightens.
+
+9. **16.96–18.22**  
+   The third box fills with the label **“Frequency features”**, using the same color as **“Feature Extraction”**. The arrow from **“Filtering”** to **“Frequency features”** brightens.
+
+10. **18.22–19.34**  
+    The fourth box fills with the label **“Classification”**, using the same color as **“Interpretation / Classification”**. The arrow from **“Frequency features”** to **“Classification”** brightens.
+
+11. **19.34–19.96**  
+    The fifth and final box fills with the label **“Sleep stage”**. The arrow from **“Classification”** to **“Sleep stage”** brightens. The bed/crescent icon above the right end brightens. The first pipeline is now complete: **“Raw EEG → Filtering → Frequency features → Classification → Sleep stage”**. The pipeline holds.
+
+12. **20.72–22.38**  
+    The first pipeline shifts upward slightly and dims partially to make room. Below it, a second horizontal pipeline skeleton fades in, same structure and color scheme but empty. A top label appears above it: **“Epilepsy Detection”**. Its first box fills immediately with **“Raw EEG”**.
+
+13. **22.38–23.46**  
+    The second box of the second pipeline fills with **“Preprocessing”**, matching the **“Preprocessing”** color. The arrow between the first two boxes brightens.
+
+14. **24.36–26.08**  
+    The third box fills with the label **“Relevant signal features”**, using the **“Feature Extraction”** color. The arrow from **“Preprocessing”** to **“Relevant signal features”** brightens.
+
+15. **26.08–27.46**  
+    The fourth box fills with **“Classification”**, matching the **“Interpretation / Classification”** color. The arrow from **“Relevant signal features”** to **“Classification”** brightens.
+
+16. **27.46–29.22**  
+    The fifth box fills with **“Seizure / non-seizure”**. The arrow from **“Classification”** to **“Seizure / non-seizure”** brightens. A small waveform-with-spike icon appears near the right end to signal seizure focus. The second pipeline is now complete: **“Raw EEG → Preprocessing → Relevant signal features → Classification → Seizure / non-seizure”**. The pipeline holds.
+
+17. **28.98–31.66**  
+    The first two pipelines slide further upward and dim slightly. A third pipeline skeleton fades in below them. Its top label appears: **“Movement Analysis”**. The first box fills with **“Raw EMG”**, in the same color as **“Raw Neural Signal”**. To distinguish it from the EEG-based pipelines, a small label or icon showing a muscle/arm appears near the first box.
+
+18. **31.66–32.82**  
+    The second box of the third pipeline fills with **“Filtering”**, using the **“Preprocessing”** color. The corresponding arrow brightens.
+
+19. **33.60–35.32**  
+    The third box fills with **“Amplitude/frequency features”**, using the **“Feature Extraction”** color. The arrow from **“Filtering”** to **“Amplitude/frequency features”** brightens.
+
+20. **35.76–37.18**  
+    The fourth box fills with **“Interpretation / classification”**. The arrow from **“Amplitude/frequency features”** to **“Interpretation / classification”** brightens. The box is drawn with a split fill or two-tone shading to reflect the dual label — half orange (interpretation), half orange-red (classification), with the text centered across both.
+
+21. **38.14–38.96**  
+    The fifth box fills with **“Movement information”**. The arrow from **“Interpretation / classification”** to **“Movement information”** brightens. A small walking/flexing-arm icon appears near the right end. The third pipeline is now complete: **“Raw EMG → Filtering → Amplitude/frequency features → Interpretation/classification → Movement information”**.
+
+22. **40.08–42.04**  
+    The three completed pipelines shift further upward and dim. A fourth pipeline skeleton fades in at the bottom of the stack. Its top label appears: **“Brain-Computer Interface”**. The first box fills with **“Raw EEG”** in the **“Raw Neural Signal”** color. A small brain icon appears near the first box to distinguish this use case.
+
+23. **42.04–43.30**  
+    The second box of the fourth pipeline fills with **“Preprocessing”**. The arrow from **“Raw EEG”** to **“Preprocessing”** brightens.
+
+24. **44.30–45.52**  
+    The third box fills with **“Neural features”**, using the **“Feature Extraction”** color. The arrow from **“Preprocessing”** to **“Neural features”** brightens.
+
+25. **45.66–46.96**  
+    The fourth box fills with **“Classification”**, matching the **“Interpretation / Classification”** color. The arrow from **“Neural features”** to **“Classification”** brightens.
+
+26. **46.96–48.06**  
+    The fifth box fills with **“Control command”**. The arrow from **“Classification”** to **“Control command”** brightens. The fourth pipeline is now complete: **“Raw EEG → Preprocessing → Neural features → Classification → Control command”**.
+
+27. **48.06–50.44**  
+    The full composition now shows the top four-box general pipeline at center-top, with the four task-specific pipelines stacked beneath it: **Sleep Staging**, **Epilepsy Detection**, **Movement Analysis**, and **Brain-Computer Interface**. All are fully visible. The top pipeline pulses gently once to anchor the general structure.
+
+28. **50.44–52.44**  
+    The stage-specific boxes — **“Filtering”** vs. **“Preprocessing”** in the second slot, **“Frequency features”** / **“Relevant signal features”** / **“Amplitude/frequency features”** / **“Neural features”** in the third slot, and the differing final outputs — pulse sequentially or brighten in turn, indicating where the specifics differ. Small subtle highlight rings flicker across the four pipelines' varying elements. The common four-box skeleton stays steady, showing the unchanged backbone.
+
+29. **52.44–55.65**  
+    At the bottom of the screen, below the four pipelines, a caption fades in: **“Same general framework, different specifics”** in larger, semi-bold type. It pulses gently once, remaining softly lit. The entire composition — top general pipeline, four stacked specific pipelines, and bottom caption — holds steady through the end of the scene, reaching **55.65**.

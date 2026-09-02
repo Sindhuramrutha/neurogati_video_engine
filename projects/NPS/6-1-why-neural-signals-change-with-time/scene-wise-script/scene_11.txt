@@ -1,0 +1,8 @@
+Subtopic: Transition to Section 6.2
+Scene type: manim
+
+Narration:
+We now understand the problem. Neural signals change continuously over time, but the conventional Fourier Transform provides only a single frequency spectrum for the entire recording. So how can we determine which frequencies are present at different moments in time? The solution is the Short-Time Fourier Transform, or STFT, which we will study in the next section.
+
+Animation description:
+The screen shows a slowly changing waveform at the top, with a single static frequency spectrum below it. The static spectrum is labelled 'Conventional Fourier Transform — one spectrum for the whole recording'. A large question mark appears between the changing waveform and the static spectrum. Then the question mark transforms into a stylised three-dimensional surface — a time–frequency plot — with the axes 'Time', 'Frequency', and 'Power' appearing. The label 'Short-Time Fourier Transform (STFT)' fades in prominently beside this surface, and an arrow points forward off-screen, indicating the next section.

@@ -1,0 +1,15 @@
+1. **0.00–3.92** The same continuous signal waveform from the previous scene is visible across the full width of the frame. As the narration says "four simple steps," a small numbered list fades in at the left edge: four steps, each just a faint number "1", "2", "3", "4" stacked vertically, with "1" brightest.
+
+2. **4.80–6.74** The numbering list dims except for step "1", which brightens. As the narration says "select a short time window," a bright rectangular window outline slides into position over the leftmost segment of the waveform, matching the first window position from the previous scene. The window outline is a crisp rectangle with a subtle fill, enclosing one short segment of the waveform.
+
+3. **7.44–10.04** The label "Step 1: Select window" fades in just above the waveform, near the positioned window. The waveform regions outside the bright window fade slightly — the windowed segment stays at full brightness while the rest dims to a lighter stroke. As the narration says "using a window function," the window outline briefly pulses and a faint curve overlays the segment inside, emphasizing the window's shape.
+
+4. **10.50–13.14** The bright window remains over the first segment, with the rest of the signal dimmed. The text "Only the data within this window are analyzed" is not shown literally; instead, the enclosed segment brightens further and the dimmed outside regions fade a bit more, visually isolating the windowed portion as the only active data. The scene holds this isolation through the end of the phrase.
+
+5. **14.30–16.26** The frame now splits: on the left, the windowed segment of the waveform stays visible with the bright rectangle; on the right, a copy of just that segment appears — extracted and enlarged. A label "Step 2: Apply Fourier Transform" fades in below the extracted segment.
+
+6. **17.04–19.28** A small schematic Fourier Transform icon appears above the extracted segment on the right. It shows a simple pair of curves: a small time-domain wave transitioning into a small spectrum with a few peaks — a compact, recognizable FFT-style icon, drawn in the same stroke color. The icon is small enough to read as a diagram, not a full plot.
+
+7. **19.28–21.06** Below the extracted segment and Fourier icon, a small spectrum plot fades in. It has the same simple axes style as the previous scene: unlabeled horizontal and vertical axes, with a peaked curve inside. This curve matches the peak pattern of the first spectrum from the previous scene.
+
+8. **21.06–24.70** As the narration says "frequency content for that short time interval," the tallest peaks in the spectrum plot brighten one after another — the dominant peaks are highlighted with a stronger stroke, while smaller peaks remain dimmer. The full composition holds: left side shows the windowed waveform with step 1 label, right side shows the extracted segment, Fourier symbol, and the spectrum plot with step 2 label. The two highest peaks stay highlighted through the end of the scene.

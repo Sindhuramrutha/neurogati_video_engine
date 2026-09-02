@@ -1,0 +1,8 @@
+Subtopic: 2.1.6 Summary
+Scene type: manim
+
+Narration:
+Let's wrap up. In this section, we introduced the neural signal acquisition chain and examined each of its major components. The most important point to remember is that every neural recording system follows the same fundamental workflow: Biological Source, Electrode or Sensor, Amplifier, Filter, Analog-to-Digital Converter, and Computer. Although the sensing technology may differ across EEG, EMG, ECoG, or MEG, the overall acquisition process remains essentially the same.
+
+Animation description:
+Show the six-box chain again, fading in as one complete unit: Biological Source → Electrode/Sensor → Amplifier → Filter → ADC → Computer. Below it, show four small labeled icons for EEG, EMG, ECoG, and MEG connected by lines pointing upward to the same generic chain, visually conveying that all modalities map onto the same flow. The chain pulses once at the end.

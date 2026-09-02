@@ -1,0 +1,19 @@
+1. 0.00-1.54: A noisy signal trace fades in across the upper half of the frame — an irregular, jagged waveform with visible high-frequency random fluctuations riding on a smoother underlying trend. The horizontal axis is labeled "Time" and the vertical axis "Amplitude". No other elements on screen yet.
+
+2. 1.54-3.68: A translucent rectangular boxcar window (semitransparent rectangle, contrasting color) appears over the leftmost segment of the noisy signal, spanning roughly one-tenth of the trace width. The label "Moving average window" appears beside it.
+
+3. 2.42-3.68: The boxcar window begins sliding smoothly rightward along the noisy signal, moving step by step. At each position, the values inside the window are briefly highlighted.
+
+4. 3.68-5.82: As the window slides, a second, much smoother trace begins drawing in the lower half of the frame, directly beneath the noisy signal, sharing the same time axis. Each point on the smooth trace is plotted at the center of the current window position, representing the average of the values inside the boxcar. The smooth trace visibly lacks the random high-frequency jitter of the original. The label "Smoothed signal" appears below it.
+
+5. 5.82-7.62: The boxcar window completes its traversal across the full width of the signal and fades out. The scene holds: upper half shows the noisy signal, lower half shows the smooth trace. Both are overlaid with the same horizontal time alignment so the smoothing is visually obvious.
+
+6. 7.62-9.14: The upper noisy signal and lower smooth trace shrink or slide upward slightly to make room, and a new mini-example appears in the lower third of the frame: a raw EMG signal trace — dense, rapid positive and negative oscillations centered around zero. The label "Raw EMG" appears beside it.
+
+7. 9.14-10.12: The EMG signal transforms: the portion below zero is flipped upward (full-wave rectified), producing a signal with only positive spikes. The label changes to "Rectified EMG". Simultaneously, a smooth curve fades in over the rectified spikes, tracing the upper contour of the signal — the envelope. The label "Envelope (moving average)" appears pointing to the smooth curve.
+
+8. 10.12-11.44: The envelope curve is highlighted, pulsing gently once or emphasized in a contrasting color, while the rectified EMG spikes remain visible beneath it. The viewer's attention is directed to how the envelope captures the overall shape of the varying burst amplitudes.
+
+9. 11.44-12.40: The frame holds on the complete example: the smooth envelope curve over the rectified EMG, with both labels visible. The earlier smoothing example may remain faintly in the background or have faded out; the EMG envelope is now the focus.
+
+10. 12.40-13.20: The EMG envelope example holds static for the remaining duration. No further changes.

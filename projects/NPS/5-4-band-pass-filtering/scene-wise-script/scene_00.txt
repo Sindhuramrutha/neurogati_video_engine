@@ -1,0 +1,8 @@
+Subtopic: 5.4.1 Introduction
+Scene type: manim
+
+Narration:
+In the previous sections, we studied two fundamental filters: low‑pass and high‑pass. A low‑pass filter removes high frequencies, and a high‑pass filter removes low frequencies. But many neural signals are concentrated in a specific frequency band. For those, neither filter alone is enough. We need a filter that preserves only a selected range of frequencies, while removing both lower and higher frequencies outside that range. That’s called a band‑pass filter. Band‑pass filtering is one of the most common preprocessing steps in neural signal processing because many physiological signals are analysed in specific frequency bands.
+
+Animation description:
+Show a frequency axis horizontally. On the left, a low‑pass filter curve that drops off at high frequencies. On the right, a high‑pass filter curve that drops off at low frequencies. Then both filters fade together and morph into a single band‑pass filter curve that has a flat passband in the middle, with attenuation on both low and high ends. Add text labels: 'Low‑pass', 'High‑pass', then 'Band‑pass'. Finally, display a stylised brain signal icon next to the band‑pass filter to emphasise its use in neural signal processing.

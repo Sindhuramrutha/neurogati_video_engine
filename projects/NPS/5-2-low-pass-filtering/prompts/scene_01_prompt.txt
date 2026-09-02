@@ -1,0 +1,13 @@
+1. **0.00–1.22** — Scene opens cleanly, carrying continuity from the previous scene's final frame: the smooth filtered waveform and low-pass filter icon from the previous scene remain briefly visible but dim slightly as focus shifts. A title caption fades in at the top: "Learning Objectives" in moderate type.
+
+2. **1.78–3.74** — The previous scene's visual dissolves out. The first objective badge slides in from the left, centered vertically in the upper area: a rounded rectangular badge containing a small green checkmark icon at its left edge and the exact text "Define a low-pass filter" to its right. The badge settles with a brief fade-and-slide motion as the narration says "define a low-pass filter."
+
+3. **4.46–6.12** — A second badge slides in below the first, aligned in a vertical list: same rounded rectangular style, green checkmark icon at left, with the exact text "Explain its operating principle." The first badge remains in place.
+
+4. **6.58–7.90** — A third badge slides in below the second: same style, same checkmark, with the exact text "Describe the cutoff frequency." The previous two badges remain visible above it.
+
+5. **8.76–11.52** — A fourth badge slides in below the third: same style, with the exact text "Identify situations where low-pass filtering is useful." The three earlier badges remain in place, forming a growing vertical list.
+
+6. **12.42–15.02** — A fifth and final badge slides in below the fourth: same style, with the exact text "Understand both its advantages and its limitations." All five badges now form a complete, evenly spaced vertical list.
+
+7. **14.74–16.15** — The full list of five badges holds steady on screen through the end. All checkmark icons remain, and a subtle simultaneous glow or brief emphasis sweep passes across the list from top to bottom, indicating the objectives as a set. The scene holds through 16.15 seconds.

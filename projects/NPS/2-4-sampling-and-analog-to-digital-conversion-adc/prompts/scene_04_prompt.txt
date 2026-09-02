@@ -1,0 +1,23 @@
+1. 0.00–3.08: Hold the previous scene's final composition briefly. Then fade to a clean slate showing a single smooth continuous waveform across the center of the screen — the same gentle wavy curve as the previous scene's analogue signal, with a horizontal time axis and vertical amplitude axis. Fade in the label **sampling frequency (sampling rate)** centered above the waveform.
+
+2. 3.46–5.74: Fade in a short definition line beneath the title: **number of samples collected every second**. Highlight the phrase with a soft pulse, while the waveform beneath remains static and visible.
+
+3. 6.42–7.50: Beneath the definition line, fade in **measured in Hertz** in slightly smaller text. Simultaneously, fade in a small **Hz** badge near the label.
+
+4. 8.24–11.64: Along the time axis of the single smooth waveform, animate a vertical dashed line sweeping repeatedly from left to right across the wave. At a steady rhythm, the sweep leaves behind a small bold dot at each point where it crosses the waveform — showing waves measured at equal time intervals. The phrase **how frequently the analog signal is measured** appears beneath the axis.
+
+5. 12.44–17.56: The scene now splits from one waveform into a three-panel layout across the screen. Each panel shows the **same smooth waveform** on its own smaller time/amplitude axes. In the left panel, draw sparse dots along the curve — roughly 8 to 10 dots visible across the panel — and label the panel **250 Hz**. Fade beneath that panel a caption: **250 samples per second**.
+
+6. 18.32–21.10: In the middle panel, draw dots along the same waveform noticeably more densely packed — roughly twice as many dots as the left panel, filling the curve visibly more fully. Fade in the label **500 Hz** above the middle panel, and a caption beneath: **500 samples per second**.
+
+7. 21.90–29.98: In the right panel, draw dots very densely packed along the same waveform — the dots almost merge into a continuous curve, tracing its shape very closely. Fade in the label **1000 Hz** above the right panel, and a caption beneath: **1000 samples per second**.
+
+8. 29.98–33.46: Keep all three panels visible. Gently pulse the right panel's dense dots and its **1000 Hz** label to draw attention. Fade in a note below the three panels: **more measurements over the same period of time**
+
+9. 34.20–39.96: Below the three-panel layout, fade in a horizontal bar chart with three bars labeled **250 Hz**, **500 Hz**, and **1000 Hz** left to right. The bar heights clearly increase from short to medium to tall. Above the bars, fade in the title **Storage & Computational Cost**, pulsing slightly as the bars animate upward. Let all bars reach their heights, showing 1000 Hz as the tallest.
+
+10. 40.60–47.02: Keep the cost bar chart on screen but slide it slightly to the left to make room. Fade in a second separate gauge/chart on the right, also with three bars labeled **250 Hz**, **500 Hz**, **1000 Hz**, all growing from left to right. Title it **Accuracy**. Briefly draw a simple two-way arrow or balance icon between the two charts as the narration says “balancing”, then let it fade.
+
+11. 48.22–57.08: Show all three waveform panels again in a row, while dimming both gauges into a smaller corner. Overlay clear horizontal alignment across all three panels so the original smooth waveform shape in each panel is visibly identical. The right panel's **1000 Hz** label pulses, and its dense dots trace the original curve most accurately. Fade in bold text centered below: **Sampling frequency must be sufficiently high to capture the important characteristics of the biological signal without losing information.**
+
+12. 57.08–58.02: Final hold on the full composition: the three waveform panels showing the same curve with sparse, medium, and dense dots; the **250 Hz**, **500 Hz**, and **1000 Hz** labels; the side-by-side **Storage & Computational Cost** and **Accuracy** gauges; and the bold takeaway text below. All elements remain static and fully visible through the end of the scene.

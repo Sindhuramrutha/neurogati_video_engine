@@ -1,0 +1,8 @@
+Subtopic: 2.3.6 Amplification and Signal Conditioning in the Acquisition Chain
+Scene type: manim
+
+Narration:
+Let us return to the neural signal acquisition chain: biological source, electrode, amplifier, signal conditioning, ADC, computer. Once the electrode detects the biological signal, the amplifier increases its strength. The conditioned signal is then cleaned and prepared for digitisation. Only after these steps is the signal suitable for conversion into digital data by the analog-to-digital converter. Understanding this sequence is important because later stages of the acquisition chain depend heavily on the quality of the amplified and conditioned signal.
+
+Animation description:
+Draw a horizontal chain diagram with six connected blocks in sequence: 'Biological Source', 'Electrode', 'Amplifier', 'Signal Conditioning', 'ADC', 'Computer'. Use arrows connecting each block. Animate the chain lighting up block by block as the narration walks through it, starting from the biological source and moving rightward. Show a small waveform appear at the electrode output, get taller after the amplifier, get cleaner after signal conditioning, and change into a series of discrete digital dots/samples after the ADC before reaching the computer. Highlight the amplifier and signal conditioning blocks with a glow, with a caption appearing: 'later stages depend on the quality of the amplified and conditioned signal'.

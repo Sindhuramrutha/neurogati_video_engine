@@ -1,0 +1,8 @@
+Subtopic: 6.2.9 Limitations
+Scene type: manim
+
+Narration:
+Although STFT represents a major improvement over the conventional Fourier Transform, it is not a perfect solution. Because it uses a single fixed window, it cannot simultaneously achieve high time resolution and high frequency resolution. This limitation becomes particularly important when analysing neural signals that contain both slow oscillations and rapid transient events. For this reason, more advanced techniques, such as wavelet analysis, were later developed.
+
+Animation description:
+A warning-card layout appears with the title 'Limitations'. Inside, an animated signal combines a slow low-frequency oscillation and a very brief transient spike. A fixed window is shown trying to capture both: when the window is large enough for the slow oscillation's frequency content, the transient spike is smeared in time; the animation zooms in on the spike with a blurred timestamp marker. Then a simplified diagram of a wavelet, with a small localized wave packet, fades in alongside the text 'wavelet analysis'.

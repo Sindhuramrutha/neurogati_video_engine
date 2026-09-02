@@ -1,0 +1,8 @@
+Subtopic: Why is This Distinction Important?
+Scene type: manim
+
+Narration:
+Understanding the difference between these two response types helps researchers choose the appropriate analysis method. If the objective is to measure neural responses that occur consistently after each stimulus, ERP analysis is often appropriate. However, if the objective is to study changes in neural oscillations whose timing varies across trials, time-frequency analysis provides more suitable information. This is one of the reasons why modern neuroscience frequently combines ERP analysis with techniques such as spectrograms and wavelet analysis. Together, these methods provide complementary insights into neural activity. Importantly, ERP analysis primarily reveals time-locked neural responses, while time-frequency methods are particularly useful for studying induced neural activity that may not be visible after averaging.
+
+Animation description:
+A flow diagram is drawn. At the top, a question box reads 'Objective: consistent responses after each stimulus?'. A labeled arrow points to 'ERP analysis' with an icon of an averaged waveform. A second branch from the top question reads 'Objective: oscillatory changes with variable timing?'. This arrow points to 'Time-frequency analysis' with an icon of a spectrogram. Finally, the two analysis methods are shown converging into a box labeled 'Complementary insights', highlighting the combined modern approach.

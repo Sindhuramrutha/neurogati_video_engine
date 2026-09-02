@@ -1,0 +1,21 @@
+1. **0.00–2.06** — A raw EEG waveform appears on the left third of the screen, scrolling horizontally and visibly noisy: jagged, irregular oscillations with variable amplitude and small high-frequency jitter. No labels or other elements yet.
+
+2. **2.06–5.48** — The label "Raw EEG waveform" fades in beneath the noisy waveform. As the narration says "do not rely solely on the recorded waveform," the waveform desaturates slightly and a large red "×" fades in beside it, then fades out, leaving the waveform visually de-emphasized.
+
+3. **5.48–7.88** — The red "×" disappears completely. A horizontal arrow fades in, pointing from the right edge of the raw waveform toward the center-right area of the screen. The words "Signal Processing" fade in at the arrow's midpoint in medium-weight text.
+
+4. **7.88–12.20** — Five processing blocks fade into view, arranged in a horizontal row across the center-right of the screen, connected by thin arrows from left to right. Each block is a rounded rectangle with a small icon inside. The blocks are labeled, in order: "Filtering," "Spectral Analysis," "Spectrogram," "Wavelet Analysis," and "ERP Analysis." The first block is connected to the "Signal Processing" arrow.
+
+5. **12.20–15.78** — The first block, "Filtering," glows and enlarges slightly. Inside the block, a small icon appears showing a jagged waveform entering from the left and a smoother waveform exiting to the right. As the narration says "unwanted electrical interference," small red spark-like marks appear on the jagged side, then fade out, leaving only the smooth output.
+
+6. **15.78–19.50** — The "Filtering" block dims back to normal. The second block, "Spectral Analysis," glows and enlarges slightly. Inside the block, a small bar chart icon appears with several vertical bars of varying heights arranged across a frequency axis, suggesting dominant frequency bands. The tallest bars pulse once as the narration says "dominant frequency bands." The glow fades at the end.
+
+7. **19.50–23.48** — The "Spectral Analysis" block dims back to normal. The third block, "Spectrogram," glows and enlarges slightly. Inside the block, a small grid appears with colored horizontal bands that vary in brightness across the vertical axis and shift along the horizontal time axis, suggesting oscillatory components changing over time. A small "t →" label appears at the bottom edge of the icon.
+
+8. **23.48–26.68** — The "Spectrogram" block dims back to normal. The fourth block, "Wavelet Analysis," glows and enlarges slightly. Inside the block, a small wavelet-shaped curve — a short oscillatory burst with a sharp peak in the center and tails fading to zero on both sides — appears. A brief transient pulse ripples through the curve as the narration says "transient neural events."
+
+9. **26.68–32.02** — The "Wavelet Analysis" block dims back to normal. The fifth block, "ERP Analysis," glows and enlarges slightly. Inside the block, a small axis appears with several overlapping faint waveform traces, all showing a similar deflection near the center. A vertical dashed line marks the deflection point. The combined traces form a clear averaged waveform that thickens and brightens as the narration says "response to specific stimuli."
+
+10. **32.02–36.30** — The "ERP Analysis" block dims back to normal. A final arrow fades in, pointing from the right edge of the "ERP Analysis" block toward a clean waveform on the far right of the screen. The clean waveform appears at the arrow's endpoint: a smooth, regular oscillation with consistent amplitude and clear structure.
+
+11. **36.30–40.48** — The label "Extracted information" fades in beneath the clean waveform. All five processing blocks pulse once in sequence from left to right. A subtle light-gray bracket or connecting line appears above the five blocks, with the words "Concepts from earlier modules" in small text above it. The entire composition — raw waveform on the left, processing blocks in the center, clean structured signal on the right — holds until the final timestamp.

@@ -1,0 +1,8 @@
+Subtopic: 7.1.4 Understanding Epilepsy
+Scene type: manim
+
+Narration:
+Epilepsy is a neurological disorder characterized by recurrent seizures caused by abnormal electrical activity within the brain. Under normal conditions, neurons communicate through organized electrical activity. In epilepsy, this normal activity is temporarily disrupted by excessive and highly synchronized firing of groups of neurons. This abnormal activity produces distinctive electrical patterns that can often be observed in EEG recordings. The appearance of these abnormal patterns depends on the type of epilepsy, the brain regions involved, and whether the seizure activity is localized or widespread. Because seizures are fundamentally electrical events, EEG provides valuable information that cannot be obtained from structural brain imaging alone.
+
+Animation description:
+A definition box appears: 'Epilepsy = neurological disorder characterized by recurrent seizures caused by abnormal electrical activity within the brain.' A comparison panel is shown: normal neurons firing in organized, unsynchronized patterns (top) versus epileptic neurons firing in excessive, synchronized bursts (bottom). A brain map shows both localized and widespread abnormal activity.

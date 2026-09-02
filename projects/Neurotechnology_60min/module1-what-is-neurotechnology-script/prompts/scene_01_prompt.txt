@@ -1,0 +1,13 @@
+1. **0.00–2.50** — A clean checklist fades in centered on screen, set against a simple dark background. A single checkmark sits to the left of each item as a faint outline placeholder. The first objective appears as the first line in plain, bright text: **“Define neurotechnology and explain the different ways technology can interact with the nervous system”**. The rest of the list is not yet visible.
+
+2. **3.26–8.54** — The text of the first objective brightens, and its faint checkmark outline fills in with a smooth animated stroke, drawing from bottom to top. As the checkmark completes, the line item pulses once with a subtle emphasis glow, then settles.
+
+3. **9.24–13.80** — A second objective fades in beneath the first: **“Understand the nervous system from electrical, chemical, and computational perspectives”**. Its checkmark outline fills with the same animated stroke, and the item pulses once as the narration finishes the line.
+
+4. **14.78–19.14** — A third objective fades in below the second: **“Describe the basic pathway from neural activity to a technological output”**. The checkmark animates in, and the item pulses once before settling.
+
+5. **20.00–23.00** — A fourth objective appears beneath the third: **“Distinguish between recording, decoding, and modulation”**. The checkmark draws in with the same stroke animation, and the line pulses once as the narrator says “modulation.”
+
+6. **23.94–29.90** — A fifth objective fades in below the fourth: **“Understand the difference between reading from the nervous system and influencing or writing to it”**. The checkmark animates in, and the item pulses once at “writing to it.”
+
+7. **30.48–36.17** — The final objective fades in at the bottom of the list: **“Recognize how these ideas connect the different technologies covered in the rest of the course”**. Its checkmark animates in like the others, but the text of this item appears in a warm amber tone distinct from the earlier white items. A soft glow lingers on this line after the checkmark completes, and the list holds on screen with all six items visible, the final line emphasized, for the remaining narration and to the end of the scene.

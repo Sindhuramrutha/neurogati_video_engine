@@ -1,0 +1,8 @@
+Subtopic: 5.4.4 Lower and Upper Cutoff Frequencies
+Scene type: manim
+
+Narration:
+A band‑pass filter is defined by two cutoff frequencies. The lower cutoff frequency determines where the filter begins to preserve the signal – frequencies below this value are attenuated. The upper cutoff frequency determines where the filter begins to suppress higher‑frequency components – frequencies above this value are attenuated. For example, if we set the lower cutoff to 1 hertz and the upper cutoff to 40 hertz, then frequencies below 1 hertz are reduced, frequencies between 1 and 40 hertz are preserved, and frequencies above 40 hertz are reduced. The resulting signal contains only the frequency components within the selected band.
+
+Animation description:
+Draw a frequency axis with a band‑pass filter magnitude response curve. Place two vertical dashed lines at the lower cutoff (label f_L) and upper cutoff (label f_H). Shade the region below f_L in red (attenuated), the region between f_L and f_H in green (passband), and the region above f_H in red (attenuated). Then update the cutoffs to concrete values: f_L = 1 Hz, f_H = 40 Hz. Text labels appear inside each shaded region: 'Attenuated', 'Preserved', 'Attenuated'.

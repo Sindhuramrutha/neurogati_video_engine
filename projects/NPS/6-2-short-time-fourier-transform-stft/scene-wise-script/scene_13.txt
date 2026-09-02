@@ -1,0 +1,8 @@
+Subtopic: 6.2.10 Summary
+Scene type: manim
+
+Narration:
+In this section, we introduced the Short-Time Fourier Transform. We learned that STFT overcomes one of the major limitations of the conventional Fourier Transform by analysing short segments of the signal instead of the entire recording. This allows us to determine both the frequency content and its variation over time. However, we also learned that STFT uses a fixed analysis window, creating a trade-off between time resolution and frequency resolution.
+
+Animation description:
+A summary layout showing three key points with corresponding mini-diagrams: first, a small window over a waveform; second, a time-varying set of frequency spectra; third, a balance scale with small and large windows labeled 'time vs frequency resolution'. The points are revealed sequentially as the narration covers them.

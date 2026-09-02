@@ -1,0 +1,8 @@
+Subtopic: 7.7.3 Stage 2: Preprocessing
+Scene type: manim
+
+Narration:
+Stage two is preprocessing. Preprocessing refers to the operations used to prepare the raw neural signal for further analysis. The goal is not simply to make the signal look cleaner. The goal is to reduce unwanted components while preserving the neural information relevant to the research question. Preprocessing may include filtering, artifact detection, artifact removal, signal segmentation, baseline correction, and normalization. For example, an EEG recording may contain power-line interference, eye-blink artifacts, muscle activity, and baseline drift. Appropriate preprocessing can reduce these unwanted components. This connects directly to the earlier modules of the course, where we studied filtering, artifacts, and signal cleaning.
+
+Animation description:
+The raw noisy signal trace from the previous scene appears at the top of the screen. Below it, a series of processing steps appear as small labeled boxes: 'Filtering', 'Artifact Detection', 'Artifact Removal', 'Signal Segmentation', 'Baseline Correction', 'Normalization'. As each is named, it lights up. The raw trace is shown being transformed: first a high-frequency noise component is visually removed, then a large spike (eye-blink artifact) is detected and removed, then the baseline drift is corrected. The trace becomes progressively cleaner but retains the underlying neural waveform shape. A side panel shows power-line interference as a periodic waveform, an eye-blink as a large triangular spike, muscle activity as rapid irregular fluctuations, and baseline drift as a slow upward trend. Each unwanted component fades away as preprocessing is applied.

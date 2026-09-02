@@ -1,0 +1,8 @@
+Subtopic: Introduction
+Scene type: manim
+
+Narration:
+In the previous sections, we studied techniques like the Short-Time Fourier Transform, spectrograms, and wavelet analysis to understand how neural activity changes over time and across different frequency ranges. These techniques analyse continuous neural activity. But many neuroscience experiments are designed around specific events. For example, a participant may hear a sound, see an image, receive a tactile stimulus, or press a button in response to a task. Researchers are often interested in understanding how the brain responds immediately after such events. So rather than analysing the entire EEG recording, they focus on the neural activity that occurs around each event. One of the most widely used methods for studying these responses is the Event-Related Potential, commonly known as the ERP.
+
+Animation description:
+A timeline representing a continuous EEG recording is shown at the top. Below it, icons appear in sequence: a speaker for a sound, an eye for an image, a hand for a tactile stimulus, and a button being pressed. The timeline is then visually narrowed with a highlighted window appearing around a single event marker, showing that the focus is on the activity around that event. The letters 'ERP' appear prominently at the end.

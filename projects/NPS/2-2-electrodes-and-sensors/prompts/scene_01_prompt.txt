@@ -1,0 +1,13 @@
+1. 0.00–2.84: A clean, centered title appears at the top of the screen reading “Learning Objectives”. Below it, an empty bulleted-list area is visible, with five faint placeholder bullet icons aligned vertically down the left side — all currently unlabeled and dimmed to about 20% opacity. The title remains steady.
+
+2. 2.84–5.80: The first bullet fades in next to the topmost check-box icon, which simultaneously gains a checkmark: “Explain the purpose of an electrode or sensor.” The other four bullets remain dim placeholders. No motion beyond the fade-in of this single line.
+
+3. 6.40–10.92: The second bullet fades in below the first, its check-box icon also gaining a checkmark as it appears: “Distinguish between surface electrodes, needle electrodes, and microelectrodes.” The first bullet stays fully visible and static above it. The remaining three bullets remain dim placeholders.
+
+4. 11.20–15.04: The third bullet fades in below the second, its check-box icon gaining a checkmark: “Describe the electrodes used in EEG and ECoG recordings.” The two previous bullets remain fully visible and static above it, with their checkmarks intact. The remaining two bullets stay dim placeholders.
+
+5. 15.78–19.22: The fourth bullet fades in below the third, its check-box icon gaining a checkmark: “Explain why MEG uses magnetic sensors instead of electrodes.” The three previous bullets remain fully visible and static above it, with their checkmarks intact. The final bullet stays a dim placeholder.
+
+6. 19.76–23.54: The fifth bullet fades in below the fourth, its check-box icon gaining a checkmark: “Compare the advantages and limitations of different recording sensors.” All five bullets are now fully visible, evenly spaced in a vertical list, each with a checked check-box icon to its left.
+
+7. 23.54–24.35: The complete five-item list remains static on screen under the “Learning Objectives” title, with all five check-boxes checked and all text fully legible. The screen holds this final state without any further motion until the scene ends at 24.35.

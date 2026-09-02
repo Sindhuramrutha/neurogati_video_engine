@@ -1,0 +1,8 @@
+Subtopic: Applications of ERP Analysis
+Scene type: image_only
+
+Narration:
+ERP analysis is widely used because it provides excellent temporal resolution, allowing researchers to study how rapidly the brain responds to events. Some common applications include: sensory processing — studying the brain's response to visual, auditory, or tactile stimuli; cognitive neuroscience — investigating attention, perception, memory, language, and decision-making; clinical research — examining changes in neural processing associated with neurological or psychiatric disorders; and brain–computer interfaces — detecting stimulus-related brain responses, such as the P300, for communication and control applications.
+
+Animation description:
+Four cards appear in sequence, one for each application. First, a card with an icon representing a sound wave and an eye, labelled 'Sensory Processing'. Second, a card with a brain icon and thought bubbles, labelled 'Cognitive Neuroscience'. Third, a card with a medical cross icon, labelled 'Clinical Research'. Fourth, a card showing a brain connected to a computer or a communication device, labelled 'Brain–Computer Interfaces'. Each card appears with a brief highlight as the narration mentions it.

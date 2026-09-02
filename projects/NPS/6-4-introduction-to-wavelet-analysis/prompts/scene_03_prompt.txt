@@ -1,0 +1,21 @@
+1. **0.00-4.74**: The screen fades in from the previous scene's final wavelet-centered frame. A title fades in centered at the top: 'Multi-Resolution Analysis'. Beneath it, a full neural signal waveform fades in across the middle of the screen — a continuous trace with a slow, large-amplitude oscillation on the left portion and a fast, sharp transient spike on the right portion. The title brightens as 'multi-resolution analysis' is said.
+
+2. **5.66-8.92**: The signal remains fixed. A rectangular window outline fades in over the left portion of the signal, with a fixed width. The window slides to the right across the signal in discrete steps, its width never changing as it moves. A label fades in beneath the signal: 'one fixed window'. The window holds at a position over the middle portion of the signal.
+
+3. **9.40-12.64**: The fixed rectangular window fades out. Five wavelets fade in overlaid on the signal at different positions: two wide wavelets over the slow oscillation on the left, one medium wavelet over the transition region, and two narrow wavelets over the sharp transient on the right. All five wavelets share the same basic shape, stretched or compressed horizontally. A label fades in beneath the signal: 'multiple scales'. The wavelets brighten as 'multiple scales' is said.
+
+4. **13.50-16.70**: The two wide wavelets over the slow oscillation brighten and pulse gently. A label appears near them: 'Large wavelets: slower components'. The wide wavelets visibly stretch slightly wider as 'slower components' is said.
+
+5. **17.06-20.28**: The two narrow wavelets over the sharp transient brighten and pulse gently. A label appears near them: 'Small wavelets: rapid transient events'. The narrow wavelets visibly compress slightly narrower as 'rapid transient events' is said.
+
+6. **21.14-25.18**: All five wavelets are now shown simultaneously over the signal. The wide wavelets on the left and narrow wavelets on the right are both highlighted, emphasizing that different parts of the same signal receive different wavelet sizes. The slow oscillation region is tinted blue; the transient spike region is tinted red. A label beneath the signal reads: 'Different resolutions for different parts'. The label brightens as 'different resolutions' is said.
+
+7. **26.18-31.42**: The signal with the five wavelets holds. The slow oscillation and the brief transient spike are highlighted alternately — first the slow oscillation pulses blue, then the transient pulses red — demonstrating that both feature types appear within the same recording. A label fades in beneath: 'Slow oscillations and brief events in the same recording'.
+
+8. **32.00-36.76**: The blue slow oscillation and red transient spike are highlighted simultaneously, both visible on the same continuous waveform. The wavelets over each region pulse gently together. The section of the signal around the transient is briefly enlarged as a zoomed inset in the top-right corner, showing a close-up of the narrow wavelets fitted tightly around the spike. The inset fades out.
+
+9. **37.66-39.02**: The screen splits into two halves with a vertical dividing line down the center. The full signal remains visible across both halves. A header appears above the split: 'Direct Comparison'. The wavelets fade out, leaving just the raw signal on both sides.
+
+10. **40.00-42.00**: On the left half of the screen, a single fixed-width rectangular window fades in over the signal. The window slides across the left-half signal in small discrete steps, its width constant throughout. Beneath the left half, a label fades in: 'STFT: one fixed window'.
+
+11. **42.54-45.38**: On the right half of the screen, five wavelets of different sizes fade in over the signal — two wide wavelets over the slow oscillation, one medium wavelet in the middle, and two narrow wavelets over the transient. The wavelets pulse once together. Beneath the right half, a label fades in: 'Wavelet analysis: multiple scales'. Both halves hold side by side: fixed window on the left, multi-scale wavelets on the right. The final frame holds until 46.20.

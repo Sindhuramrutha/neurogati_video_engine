@@ -1,0 +1,8 @@
+Subtopic: 2.2.5 Needle Electrodes
+Scene type: manim
+
+Narration:
+Needle electrodes are inserted directly into biological tissue. Unlike surface electrodes, they are capable of recording signals much closer to their source. They are commonly used during clinical EMG examinations to record the electrical activity of individual muscles. Because they are positioned inside the muscle, needle electrodes provide higher-quality recordings than surface electrodes. However, they are invasive and may cause discomfort.
+
+Animation description:
+A cross-section of skin and underlying muscle tissue is shown. A needle-shaped electrode is seen penetrating the skin, entering the muscle tissue below. The tip of the needle is positioned within the muscle fibers. Small electrical pulses are detected near the tip and travel up the needle shaft along a wire. The surface electrode from the previous scene is shown as a faded comparison on the skin surface, highlighting the distance difference from the signal source.

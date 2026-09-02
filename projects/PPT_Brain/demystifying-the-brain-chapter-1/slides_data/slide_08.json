@@ -1,0 +1,116 @@
+{
+  "index": 8,
+  "slide_width_emu": 14630400,
+  "slide_height_emu": 8229600,
+  "shapes": [
+    {
+      "shape_id": 2,
+      "kind": "text",
+      "text": "The Neuron Doctrine",
+      "alt_text": "Text 0",
+      "manim_bbox": [
+        -6.446643235520834,
+        2.8846067401909723,
+        -1.6998842934548613,
+        3.477893403420139
+      ]
+    },
+    {
+      "shape_id": 3,
+      "kind": "text",
+      "text": "The \"noodle\" theory was overturned by two giants of neuroscience who shared the Nobel Prize in 1906.",
+      "alt_text": "Text 1",
+      "manim_bbox": [
+        -6.446643235520834,
+        2.2010420575694445,
+        6.446643235520834,
+        2.5048614365104167
+      ]
+    },
+    {
+      "shape_id": 4,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 0",
+      "manim_bbox": [
+        -6.446643235520834,
+        -1.9234956440972217,
+        -0.11863419664930497,
+        1.9874997259201388
+      ]
+    },
+    {
+      "shape_id": 5,
+      "kind": "text",
+      "text": "Camillo Golgi",
+      "alt_text": "Text 2",
+      "manim_bbox": [
+        -6.446643235520834,
+        -2.4099533015104173,
+        -4.0732632784375,
+        -2.113309969895833
+      ]
+    },
+    {
+      "shape_id": 6,
+      "kind": "text",
+      "text": "Developed a staining technique that \"colored\" individual cells, making them stand out against the background.",
+      "alt_text": "Text 3",
+      "manim_bbox": [
+        -6.446643235520834,
+        -3.131481432552083,
+        -0.11863419664930497,
+        -2.5238426746701395
+      ]
+    },
+    {
+      "shape_id": 7,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 1",
+      "manim_bbox": [
+        0.11863419664930497,
+        -1.9234956440972217,
+        6.446643235520834,
+        1.9874997259201388
+      ]
+    },
+    {
+      "shape_id": 8,
+      "kind": "text",
+      "text": "Ramon y Cajal",
+      "alt_text": "Text 4",
+      "manim_bbox": [
+        0.11863419664930497,
+        -2.4099533015104173,
+        2.4920141537326375,
+        -2.113309969895833
+      ]
+    },
+    {
+      "shape_id": 9,
+      "kind": "text",
+      "text": "Used Golgi's stain to prove the brain is made of discrete cells (neurons) that contact each other via \"wires,\" establishing the Neuron Doctrine.",
+      "alt_text": "Text 5",
+      "manim_bbox": [
+        0.11863419664930497,
+        -3.131481432552083,
+        6.446643235520834,
+        -2.5238426746701395
+      ]
+    },
+    {
+      "shape_id": 10,
+      "kind": "text",
+      "text": "Later, Ross Harrison confirmed this by observing embryonic neurons extending tentacles to make contact, proving gaps existed between them.",
+      "alt_text": "Text 6",
+      "manim_bbox": [
+        -6.446643235520834,
+        -3.648842171041667,
+        6.446643235520834,
+        -3.3450227921006945
+      ]
+    }
+  ],
+  "notes_text": null
+}

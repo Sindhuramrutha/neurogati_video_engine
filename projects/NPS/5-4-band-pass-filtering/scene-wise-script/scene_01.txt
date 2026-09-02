@@ -1,0 +1,8 @@
+Subtopic: 5.4.2 Learning Objectives
+Scene type: manim
+
+Narration:
+After completing this section, you should be able to: define a band‑pass filter; explain how it operates; understand the lower and upper cutoff frequencies; describe the applications of band‑pass filtering in neural signal processing; and recognise its advantages and limitations.
+
+Animation description:
+A title card: 'Learning Objectives'. Then five bullet points appear one by one with a checkmark icon: 'Define a band‑pass filter', 'Explain how it operates', 'Understand lower and upper cutoff frequencies', 'Describe applications in neural signal processing', 'Recognise advantages and limitations'. Each bullet slides in from the left with a subtle fade.
