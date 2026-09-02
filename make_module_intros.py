@@ -26,6 +26,31 @@ from utils.tts import synthesize
 # Content is grounded in this project's own real section titles -- see
 # projects/NPS/input_files/Module-*/ -- not invented.
 MODULE_INTROS: dict[int, dict[str, str]] = {
+    1: {
+        "title": "Understanding Neural Signals",
+        "narration": (
+            "Module One: Understanding Neural Signals. Learn what a biological signal "
+            "actually is, how the resting membrane potential gives rise to the action "
+            "potential, and how neural signals look across different scales and waveforms. "
+            "Let's get started!"
+        ),
+        "animation_description": (
+            "A dynamic title card animation with real motion throughout, not a static "
+            "layout. 'MODULE 1' flies in and settles at the top of the screen, then "
+            "'Understanding Neural Signals' writes itself in below, letter by letter. A flat "
+            "baseline line draws itself in, representing the resting membrane potential. As "
+            "the narration says 'action potential', the line suddenly spikes sharply upward "
+            "and back down in the classic action-potential shape, animating like a real "
+            "voltage trace. As it mentions 'different scales', the trace shrinks and "
+            "duplicates into two or three smaller copies at different sizes, suggesting the "
+            "same kind of signal viewed at different scales. As it mentions 'waveform "
+            "characteristics', two or three visibly different waveform shapes (a smooth wave, "
+            "a jagged irregular wave, a sharp spiky burst) appear briefly side by side. For "
+            "the closing line 'Let's get started!', clear the diagram and have that phrase "
+            "burst in large and bold at the center with a quick scale-up/flash entrance, held "
+            "to the end."
+        ),
+    },
     2: {
         "title": "The Neural Signal Acquisition Chain",
         "narration": (
@@ -49,6 +74,55 @@ MODULE_INTROS: dict[int, dict[str, str]] = {
             "get started!', clear the chain diagram and have that phrase burst in "
             "large and bold at the center with a quick scale-up/flash entrance, "
             "held to the end."
+        ),
+    },
+    3: {
+        "title": "Noise, Artifacts, and Preprocessing",
+        "narration": (
+            "Module Three: Noise, Artifacts, and Preprocessing. Learn where noise and "
+            "physiological artifacts come from, the difference between stationary and "
+            "nonstationary signals, and how to detect and remove artifacts from real data. "
+            "Let's get started!"
+        ),
+        "animation_description": (
+            "A dynamic title card animation with real motion throughout, not a static "
+            "layout. 'MODULE 3' flies in and settles at the top, then 'Noise, Artifacts, and "
+            "Preprocessing' writes itself in below, letter by letter. A clean waveform draws "
+            "itself in. As the narration says 'noise', small jittery wiggles overlay onto the "
+            "waveform; as it says 'physiological artifacts', two or three large abrupt spikes "
+            "burst into the trace at random points along it. As the narration contrasts "
+            "'stationary and nonstationary signals', briefly show two short traces side by "
+            "side -- one with uniform, unchanging amplitude throughout (stationary), the "
+            "other visibly changing character partway through (nonstationary). As it "
+            "mentions 'detection and removal', the noise and spikes fade out one at a time "
+            "and the trace smooths back into the original clean waveform. For the closing "
+            "line 'Let's get started!', clear the diagram and have that phrase burst in large "
+            "and bold at the center with a quick scale-up/flash entrance, held to the end."
+        ),
+    },
+    4: {
+        "title": "Time and Frequency Domains",
+        "narration": (
+            "Module Four: Time and Frequency Domains. Learn how signals are represented in "
+            "time, why we need the frequency domain, and how the Fourier transform, "
+            "sampling, and neural frequency bands reveal the hidden structure in a signal. "
+            "Let's get started!"
+        ),
+        "animation_description": (
+            "A dynamic title card animation with real motion throughout, not a static "
+            "layout. 'MODULE 4' flies in and settles at the top, then 'Time and Frequency "
+            "Domains' writes itself in below, letter by letter. A wavy time-domain signal "
+            "draws itself in on the left half of the screen. As the narration mentions "
+            "'frequency-domain' and 'Fourier', that same waveform visually decomposes into "
+            "two or three separate simple sine waves of different frequencies stacking below "
+            "it, which then recombine into a bar-chart-style power spectrum growing in on the "
+            "right half. As it mentions 'sampling and the Nyquist principle', a row of evenly "
+            "spaced dots animates appearing along the original waveform, marking discrete "
+            "sample points. As it mentions 'neural frequency bands', two or three small "
+            "labeled color-coded horizontal bands briefly stack in and then fade. For the "
+            "closing line 'Let's get started!', clear the diagram and have that phrase burst "
+            "in large and bold at the center with a quick scale-up/flash entrance, held to "
+            "the end."
         ),
     },
     5: {
