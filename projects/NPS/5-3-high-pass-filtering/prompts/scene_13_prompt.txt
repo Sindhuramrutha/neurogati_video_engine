@@ -1,0 +1,15 @@
+1. **0.00–0.80** — The screen opens from the previous scene's caution layout, which fades away completely. In the upper center, a bold heading fades in: **“Summary: High-Pass Filter”**, with a thin horizontal divider line drawing itself beneath the heading. The narration says “So, to summarize…”
+
+2. **1.36–5.20** — Below the heading, the first bullet point fades in as a single line of text with a small waveform icon on its left: **“Preserves high-frequency components while reducing frequencies below a selected cutoff frequency.”** The waveform icon is a small simple sine-like squiggle with fast oscillations. The bullet and its icon hold steady while no new items appear yet. The narration says “we introduced the high-pass filter and its role in neural signal processing.”
+
+3. **6.06–12.02** — The first bullet remains in place. The highlight emphasis shifts to its text: the phrase **“preserves high-frequency components”** briefly brightens, then the phrase **“reducing frequencies below a selected cutoff frequency”** brightens in turn, as if the sentence is being read. No new bullet appears yet, keeping attention on this first point. The narration says “A high-pass filter preserves high-frequency components while reducing frequencies below a selected cutoff frequency.”
+
+4. **13.04–15.20** — A second bullet fades in below the first, with a small downward arrow icon on its left: **“Reduces baseline drift.”** The downward arrow icon dips slightly downward as the bullet appears. The narration says “It is commonly used to reduce baseline drift…”
+
+5. **15.78–17.08** — A third bullet fades in below the second, with a motion-wave icon on its left: **“Suppresses slow movement artefacts.”** The motion-wave icon shows a gentle, slow undulating wiggle distinct from the first bullet's fast waveform icon. The narration says “suppress slow movement artefacts…”
+
+6. **17.84–20.90** — A fourth bullet fades in below the third, with a fast square-wave icon on its left: **“Improves visibility of rapidly changing neural activity.”** The square-wave icon is a sharp, fast oscillating square pattern to convey rapidly changing activity. The narration says “and improve the visibility of rapidly changing neural activity.”
+
+7. **21.82–26.98** — A fifth bullet fades in below the fourth, with a small yellow warning triangle icon on its left: **“Must be configured carefully to avoid removing useful physiological information.”** As this bullet appears, its warning triangle gently pulses — a soft periodic glow that repeats every second or so. The other four bullets remain steady above it. The narration says “And like all filters, it must be configured carefully to avoid removing useful physiological information.”
+
+8. **26.98–28.55** — The full summary card holds: heading with divider, five bullet items each with their icons, and the warning triangle continuing its gentle pulse. The complete card fades out smoothly over the final half-second.

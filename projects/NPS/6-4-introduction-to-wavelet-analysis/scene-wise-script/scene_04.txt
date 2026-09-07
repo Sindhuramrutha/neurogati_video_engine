@@ -1,0 +1,8 @@
+Subtopic: STFT versus Wavelet Analysis
+Scene type: manim
+
+Narration:
+The differences between the two techniques can be summarised as follows. Rather than replacing the STFT, wavelet analysis extends the range of signals that can be analysed effectively. Both techniques remain valuable, and the choice depends on the characteristics of the data and the objectives of the study. Importantly, wavelet analysis is not simply a better version of the STFT. Both techniques have strengths, and the choice depends on the nature of the neural signal and the scientific question being investigated.
+
+Animation description:
+A simple comparison table appears. On the left, under 'STFT', a single fixed-size rectangle is shown, with text 'fixed window' and 'uniform resolution'. On the right, under 'Wavelet Analysis', multiple wavelets of different sizes are shown, with text 'variable window sizes' and 'multi-resolution'. Below the table, a sentence appears saying 'Wavelet analysis extends the STFT' with the word 'extends' highlighted, not 'replaces'.

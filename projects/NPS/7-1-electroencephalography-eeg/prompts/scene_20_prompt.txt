@@ -1,0 +1,39 @@
+1. **0.00–1.64** — Screen opens from previous scene's final composition fading out. A heading fades in at top center reading exactly "Signal Processing in EEG." A noisy raw EEG waveform fades in below, drawn as a continuous squiggly line with visible random high-frequency jitter and baseline wander. The line traces left to right across the full width.
+
+2. **1.64–2.94** — As narration says "often contain noise," the noisy waveform continues scrolling. Random high-amplitude, fast oscillations appear superimposed on the trace, drawn as jagged erratic fuzz along the line.
+
+3. **2.94–4.38** — As narration says "eye movement artefacts," two large, slow, smooth deflections appear in the trace, one after another, drawn as broad rounded humps that push the baseline up and down over about a second each. These are visually distinct from the fast fuzz — much wider and slower.
+
+4. **4.38–5.80** — As narration says "muscle activity," bursts of very high-frequency, low-amplitude spikes appear in the trace, tightly clustered and irregular, looking like dense fuzzy bursts riding on top of the waveform.
+
+5. **5.80–7.88** — As narration says "and other unwanted signals," a few smaller irregular wiggles and an occasional random jump in the baseline are visible. Then the waveform pauses its scroll briefly, giving the viewer a clear look at all the noise types together: slow eye-movement humps, dense muscle bursts, and fast random fuzz.
+
+6. **7.88–10.10** — As narration says "Signal processing techniques help improve recording quality," a rectangular filtering block appears to the right of the noisy waveform, drawn as a solid rounded rectangle with the exact label "Filtering" inside it. An arrow points from the noisy waveform into the block.
+
+7. **10.10–14.28** — As narration says "improve recording quality and assist in identifying abnormal neural activity," a second arrow emerges from the right side of the filtering block, leading to a cleaner EEG waveform that fades in on the right side of the screen. The clean waveform is visibly smoother: the eye-movement humps are gone, the muscle bursts are gone, and the line is a clear, low-jitter EEG trace with a single prominent spike visible. The noisy waveform on the left dims slightly. The label under the clean waveform fades in reading exactly "Clean EEG."
+
+8. **14.28–16.34** — Pause. The filtering block sits between the noisy and clean waveforms, clearly showing the transformation: noise in, clean signal out. The clean waveform holds steadily.
+
+9. **16.34–19.60** — As narration says "Some commonly used techniques include: filtering," the filtering block pulses once gently to emphasize it. The clean waveform remains visible on the right.
+
+10. **19.60–25.50** — As narration says "which removes unwanted electrical interference while preserving clinically important EEG activity," the noisy waveform on the left dims further while the noisy features on it (eye artefacts, muscle bursts, random fuzz) fade out one by one, leaving only the underlying clean shape. The clean waveform on the right brightens. The filtering block stays between them.
+
+11. **25.50–30.20** — As narration says "Time-domain analysis, where epileptic spikes and sharp waves can be detected," a new rectangular panel appears below the filtering row, labeled exactly "Time-Domain Analysis" at the top. Inside it, a magnified segment of the clean EEG waveform is shown: a sharp upward spike followed by a broader sharp wave, both outlined in a highlighted box. The box pulses once to draw attention to the spike.
+
+12. **30.20–34.62** — As narration says "by analyzing changes in the EEG waveform over time," the highlighted box moves slowly across the waveform in the time-domain panel, tracing the shape of the spike and sharp wave as they occur over time. The panel pulses with a subtle border glow each time the box passes over the spike and sharp wave.
+
+13. **34.62–36.54** — As narration says "Time-frequency analysis," the time-domain panel dims slightly. A new spectrogram panel fades in below it, labeled exactly "Time-Frequency Analysis." The spectrogram is a rectangular heatmap grid with time on the horizontal axis and frequency on the vertical axis. Initially it shows low-intensity background across all frequencies.
+
+14. **36.54–44.28** — As narration says "where spectrograms and wavelet analysis allow clinicians and researchers to examine how seizure-related frequency components evolve," the spectrogram begins to fill in. Frequency bands light up: a low-frequency brightening appears first, then mid-frequency activity emerges. The heatmap colors shift from dark blue through green to bright yellow at higher power.
+
+15. **44.28–47.24** — As narration says "evolve before, during, and after a seizure," the spectrogram shows a clear progression: low-intensity diffuse activity before, a burst of strong broadband high-intensity activity across the middle of the time axis, then tapering back down. The bright band forms a clear "mountain" shape, peaking during the seizure and settling after.
+
+16. **47.24–52.46** — As narration says "which is particularly useful because seizure activity changes dynamically over time," the spectrogram's bright band shimmers and oscillates, showing how the frequency content shifts over time. The label "Seizure" appears near the peak of the bright region, and the waveform continues to scroll.
+
+17. **52.46–54.90** — As narration says "And automated detection," the spectrogram panel dims. A new block fades in on the far right side of the screen, labeled exactly "Automated Detection" inside a rectangular block. An arrow points from the time-domain panel and spectrogram panel into the block. Inside the block, a small generic diagram appears: a schematic of a machine learning block, drawn as a simple flow: input square → processing square → output square, with the exact label "ML Algorithm" on the processing square.
+
+18. **54.90–64.24** — As narration says "where modern signal-processing algorithms and machine learning methods can automatically identify abnormal EEG patterns and assist clinicians in seizure detection," the automated detection block begins to process the EEG. An indicator light on the ML algorithm block pulses. Then a pop-up alert appears above the clean waveform, styled as a small rectangular notification with the exact label "Automatic Detection Alert." The notification pulses once and remains visible.
+
+19. **64.24–68.50** — As narration says "Although these systems support clinical decision-making," the automatic detection alert dims slightly. A note fades in below the alert, reading exactly "Complements expert interpretation." The note is styled as a small tag or footnote, not a warning, with a subtle border. The clean EEG waveform continues scrolling.
+
+20. **68.50–72.53** — As narration says "they complement rather than replace expert interpretation," the note brightens. The entire composition holds: clean waveform at top, time-domain panel, spectrogram panel, automated detection block with the alert and note. The note "Complements expert interpretation" pulses once gently to emphasize it. Then the screen holds steadily until the full 72.53-second duration elapses.

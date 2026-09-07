@@ -1,0 +1,8 @@
+Subtopic: 5.7.4 Choosing the Appropriate Filter – High-Pass
+Scene type: manim
+
+Narration:
+Use a high-pass filter when your recording contains unwanted low-frequency components. Common applications are removing baseline drift, reducing slow motion artefacts, and isolating spike activity from slower background signals.
+
+Animation description:
+Show a frequency axis with a green passband above a cutoff and a red stopband below. Then a drifting signal: a waveform rides on a slow upward curve. When the high-pass filter is applied, the drift is removed and the baseline flattens. Another example: a mixed signal containing a low-frequency sinusoid and sharp neural spikes. After filtering, only the spikes remain, with the slow component removed. Text tags 'Baseline drift', 'Spike isolation' appear.

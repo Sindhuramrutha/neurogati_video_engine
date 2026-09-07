@@ -1,0 +1,38 @@
+[
+  {
+    "timestamp": 0.96,
+    "shape_id": 2,
+    "highlight": "box",
+    "reason": "narration introduces Galen and the slide title"
+  },
+  {
+    "timestamp": 4.72,
+    "shape_id": 3,
+    "highlight": "box",
+    "reason": "narration explains Galen's restriction to animal cadavers and flawed function"
+  },
+  {
+    "timestamp": 20.26,
+    "shape_id": 6,
+    "highlight": "arrow",
+    "reason": "narration begins discussing anatomical mastery section"
+  },
+  {
+    "timestamp": 22.06,
+    "shape_id": 7,
+    "highlight": "box",
+    "reason": "narration details Galen's anatomical findings"
+  },
+  {
+    "timestamp": 33.34,
+    "shape_id": 10,
+    "highlight": "arrow",
+    "reason": "narration shifts to functional errors"
+  },
+  {
+    "timestamp": 35.02,
+    "shape_id": 11,
+    "highlight": "box",
+    "reason": "narration explains Galen's mistaken theory of animal spirits"
+  }
+]

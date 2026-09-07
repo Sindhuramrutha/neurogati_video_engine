@@ -1,0 +1,8 @@
+Subtopic: 5.2.5 How Does a Low-Pass Filter Affect a Signal?
+Scene type: manim
+
+Narration:
+Let's see what happens in practice. Consider an EEG recording that contains both useful brain activity and unwanted high-frequency electrical noise. When this recording passes through a low-pass filter, the low-frequency brain activity is preserved, and the high-frequency noise is reduced. The resulting waveform appears smoother and easier to interpret. The filter therefore improves the visibility of the physiological signal by suppressing unwanted high-frequency components. But it is important to remember that the filter removes all frequencies above the selected cutoff, regardless of whether they represent noise or useful physiological information. That's why the cutoff frequency must be selected carefully.
+
+Animation description:
+A single clean EEG-like waveform is shown. It starts as a jagged, noisy curve with visible rapid oscillations. A low-pass filter block appears in the middle between the initial and filtered signal. The waveform smoothly transitions into a cleaner, smoother curve with the high-frequency jitter removed. The two versions are shown side by side, labeled 'Before Filtering' and 'After Low-Pass Filtering'. Then an overlay appears with a warning icon and text 'All frequencies above cutoff are removed', emphasizing the caveat.

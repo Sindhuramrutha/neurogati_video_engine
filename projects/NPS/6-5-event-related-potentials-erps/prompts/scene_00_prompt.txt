@@ -1,0 +1,29 @@
+1. **0.00–2.76** — A horizontal timeline representing a continuous EEG recording fades in across the upper portion of the screen. The line runs the full width of the frame, with a dense but small oscillating waveform trace running along it from left to right, establishing ongoing continuous neural activity. No specific event markers yet.
+
+2. **2.76–4.82** — Label “Short-Time Fourier Transform” appears briefly in small text near the top of the timeline, then fades away at 4.82.
+
+3. **4.82–6.48** — Label “Spectrograms” and “Wavelet analysis” appear in the same position in sequence, each fading in as named and fading out by 6.48. During this, the waveform trace continues along the timeline as continuous activity.
+
+4. **11.36–12.30** — The words “Continuous neural activity” appear underscored beneath the timeline, with the waveform trace gently highlighted along the entire length of the line.
+
+5. **15.32–18.66** — The waveform trace dims slightly, and a vertical dashed line drops onto the timeline at a point near the middle, representing a specific event of interest. The text “specific events” appears once, then fades. The dashed line remains.
+
+6. **19.40–21.96** — A speaker icon pops in above a point on the timeline, with a short expanding-ring animation around it to suggest a sound occurring. The word “Sound” appears briefly beneath the icon, then disappears. The icon remains in place.
+
+7. **22.40–23.00** — An eye icon pops in to the right of the speaker icon, above a different point on the timeline. The word “Image” appears briefly beneath it, then disappears.
+
+8. **23.42–24.52** — A hand icon pops in to the right of the eye icon, above a third point on the timeline. The word “Tactile stimulus” appears briefly beneath it, then disappears.
+
+9. **25.10–27.18** — A button icon appears to the right of the hand icon, above a fourth point on the timeline. A brief pressing animation shows the button being depressed. The word “Button press” appears briefly beneath it, then disappears. All four icons remain visible above the timeline.
+
+10. **27.94–33.64** — The icons each connect to the timeline by a thin vertical line snapped to a point on the waveform, showing the event-to-timeline association. The waveform segment immediately after each icon's event point is subtly highlighted, with a small pulse moving rightward along the waveform from each event point, suggesting the brain's immediate response after the event.
+
+11. **34.50–37.48** — The icons and the entire waveform begin to recede visually: the far ends of the timeline fade into low opacity while a rectangular zoom window grows around a single event marker — the second icon (eye/image). The rest of the timeline outside the window dims to low opacity. A zoomed-in view inside the window appears: the waveform segment around the event is enlarged, showing pre-event baseline and post-event activity. A vertical line inside the window marks the event point precisely at the icon.
+
+12. **37.98–41.34** — The zoom window expands slightly to fill a larger section of the screen, and the word “around each event” appears beneath it. The other icons remain visible but dimmed outside the window, confirming the focus is only on the windowed window around the selected event.
+
+13. **42.14–47.06** — The zoomed waveform around the event sharpens, and the timeline outside the window fades completely to black. The text “Event-Related Potential” appears prominently below the zoomed waveform, with each word appearing in sequence as the corresponding word is spoken.
+
+14. **47.68–49.48** — The letters “ERP” appear in large bold type centered on the screen, with the full phrase “Event-Related Potential” shrinking above it. The zoomed waveform remains visible, now positioned as a small inset at the top.
+
+15. **49.48–50.23** — The ERP letters remain centered, with the zoomed waveform window still visible above, no further changes, holding until the end of the scene at 50.23 seconds.

@@ -1,0 +1,3 @@
+1. 0.00–1.56: Crossfade from the previous split-screen frame (red X on the bad setup, green checkmarks on the good setup, bottom text “Filter residual interference, not poor practices.”) to a centered frequency-spectrum plot. The spectrum has a horizontal axis labeled “Frequency (Hz)” and a vertical axis labeled “Magnitude.” A smooth continuous curve runs across the plot, with a single narrow vertical gap centered at 50 Hz; the curve is otherwise intact. An axis tick labeled “50” sits at the gap.
+
+2. 1.56–6.64: The 50 Hz gap pulses to draw attention. At 2.64, a very narrow vertical shaded band appears inside the gap, labeled “removed band,” emphasizing the notch’s narrowness. At 4.46, a dashed vertical line drops onto the 50

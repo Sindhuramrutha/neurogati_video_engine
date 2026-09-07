@@ -1,0 +1,8 @@
+Subtopic: 7.1.1 Connecting EEG to Neural Signal Processing
+Scene type: manim
+
+Narration:
+It's important to recognize that EEG applications do not rely solely on the recorded waveform. Instead, meaningful information is extracted through signal processing. For example: filters remove unwanted electrical interference; spectral analysis identifies dominant frequency bands; spectrograms reveal how neural oscillations change over time; wavelet analysis detects transient neural events; and event-related potential analysis measures the brain's response to specific stimuli. Thus, every application discussed in this section builds upon the concepts developed throughout the earlier modules of this course.
+
+Animation description:
+A raw EEG waveform is shown on the left, with a noisy, messy appearance. Arrows lead from it to five processing blocks arrayed in sequence: 'Filtering', 'Spectral Analysis', 'Spectrogram', 'Wavelet Analysis', 'ERP Analysis'. Each block has a small icon or mini-diagram. The blocks glow in sequence as they are named. A final arrow points to a clean, structured signal.

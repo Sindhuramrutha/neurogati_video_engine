@@ -1,0 +1,31 @@
+1. 0.00-3.00: A blank screen, then a faint horizontal time axis begins to draw from left to right, stopping about 70% of the way across. A vertical tick line appears at the left-to-center area of the axis, marking stimulus onset, with the label "Stimulus" fading in beneath it.
+
+2. 3.00-6.26: The label "Time-Locked Neural Activity" fades in above the time axis, centered. No trial data appears yet; the screen establishes the topic as the narration defines the term.
+
+3. 6.26-11.26: The time axis holds steady. A vertical dashed line draws upward from the t=0 tick, extending above the axis to serve as an alignment reference for stimulus onset. No deflections are shown yet.
+
+4. 11.26-14.50: A small tone icon, such as a simple speaker symbol labeled "tone," appears at the left edge, before the t=0 line. The stimulus marker remains.
+
+5. 14.50-19.60: The first EEG epoch fades in as a horizontal line segment above the time axis, aligned so its start coincides with t=0. The epoch is a mostly flat line with a single small deflection (a brief upward bump with a smooth rise and fall) starting at the 100 ms mark on the axis.
+
+6. 19.60-21.94: A vertical dashed line drops down from the top of the frame to intersect the deflection in the first epoch at 100 ms, emphasizing the consistent latency after stimulus onset. The deflection stays visible and unmoving.
+
+7. 21.94-25.70: The same epoch remains, and the dashed line through the 100 ms peak stays. A second epoch fades in directly below the first, also aligned to the same t=0 line. Its deflection also peaks at 100 ms but with a slightly different amplitude (a bit taller or shorter than the first).
+
+8. 25.70-29.36: A third epoch fades in below the second, again aligned to the same t=0. Its deflection peaks at 100 ms with a slightly different amplitude, but the vertical dashed line passes through all three deflections, showing consistent latency despite varying amplitudes.
+
+9. 29.36-33.12: A fourth and fifth epoch fade in below the stack, each with a 100 ms deflection of slightly different amplitude. The vertical dashed line now passes through all five epochs' deflection peaks, reinforcing the consistent timing.
+
+10. 33.12-36.72: The five epochs remain stacked. A separate panel appears to the right of the epochs, initially blank with the label "Average" fading in beneath it.
+
+11. 36.72-42.36: The five epochs are pushed slightly to the left, and they begin to render smaller in the left panel while the right panel starts to draw a single clean waveform. The right panel shows the averaged epoch: a mostly flat line with one clear deflection at 100 ms, with noticeably reduced noise compared to the individual trials.
+
+12. 42.36-46.88: The left panel with five epochs is de-emphasized, and the right panel with the clean averaged deflection grows to full prominence. The vertical dashed line through 100 ms is drawn in both panels, showing the peak latency aligns across individual trials and the averaged result. The label "Average" beneath the right panel is now fully visible.
+
+13. 46.88-52.46: The averaged panel holds, emphasizing the clean deflection at 100 ms. The label "100 ms" fades in directly beneath the deflection, marking the latency. The same 100 ms mark is highlighted on the time axis in the left panel.
+
+14. 52.46-56.24: The averaged waveform intensifies in brightness, and the noise on the averaged trace visibly reduces further, making the 100 ms deflection stand out more prominently as though additional trials have been averaged into it.
+
+15. 56.24-59.52: Additional individual epochs fade in one by one in a faint stack behind the averaged panel, bringing the count to 100. The averaged panel remains in front, showing the clean deflection at 100 ms, now with the noise almost gone.
+
+16. 59.52-64.65: The final scene holds: the 100 faint stacked epochs on the left, the vertical dashed line through 100 ms in all of them, the clean averaged waveform on the right with the same dashed line through its 100 ms deflection, and the labels "Stimulus," "100 ms," and "Average" visible. The narration concludes as the visual remains steady.

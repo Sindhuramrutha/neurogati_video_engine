@@ -1,0 +1,8 @@
+Subtopic: 5.7.5 Selecting Filters for Common Neural Signals
+Scene type: manim
+
+Narration:
+The right filter also depends on the recording modality. For example, EEG, EMG, local field potentials, and single-unit spikes all have different frequency bands of interest. The exact filter settings must always be chosen based on your study's objectives and the characteristics of the recorded data.
+
+Animation description:
+A decision tree diagram appears at the center. The root question is 'What kind of recording?'. Branching nodes show 'EEG', 'EMG', 'LFP', 'Spikes'. At each leaf, a box with the recommended filter type(s) lights up as the narration mentions them. The boxes remain generic (e.g., 'band-pass for EEG/MEG', 'high-pass for spike detection') without invented cutoffs. The tree then fades into a reminder text: 'Exact settings depend on study objectives and data characteristics'.

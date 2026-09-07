@@ -1,0 +1,8 @@
+Subtopic: 5.4.8 Limitations
+Scene type: manim
+
+Narration:
+Although band‑pass filtering is highly effective, the choice of cutoff frequencies is critical. If the selected frequency band is too narrow, useful physiological information may be lost. If the band is too wide, unwanted components may remain in the recording. Therefore, cutoff frequencies should always be selected according to the characteristics of the signal and the objectives of the analysis. Remember, a band‑pass filter does not automatically improve every recording. Its effectiveness depends on choosing an appropriate frequency range for the physiological signal being studied. Choosing incorrect cutoff frequencies may remove useful information or preserve unwanted interference.
+
+Animation description:
+Show a frequency axis with a band‑pass filter curve. First, animate the passband width: it starts narrow, and a waveform below shows that some fine details are lost. Then the passband widens, and the waveform still contains some noise. A text label appears: 'Cutoff choice is critical'. Then show a split screen with two examples: one where the passband is ideal (clear signal), and one where it is too narrow (missing components) or too wide (noise remains). Finally, a warning box: 'Incorrect cutoff frequencies may remove useful information or preserve unwanted interference.'

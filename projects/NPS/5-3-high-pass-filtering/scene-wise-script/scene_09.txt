@@ -1,0 +1,8 @@
+Subtopic: Applications in Neural Signal Processing: Spike Recordings
+Scene type: manim
+
+Narration:
+Extracellular recordings from microelectrodes often use high-pass filters to isolate action potentials from slower local field potentials. Since spikes contain predominantly high-frequency components, high-pass filtering helps separate those spikes from the slower neural activity.
+
+Animation description:
+A stylized microelectrode tip near a collection of neurons rendered as small circular cell bodies with dendrites. A recording wire connects to a digital chart display. Initially, the displayed signal contains both slow local field potential waves — broad low-frequency undulations — and sharp narrow upward spikes representing action potentials riding on top. A high-pass filter box is shown. With an animated click or flash, the filter activates, the slow broad waves shrink and fade away, and the sharp narrow spikes remain clearly separated and well-defined. A text callout 'spikes: high-frequency' points at the spikes, while 'LFP: low-frequency' points at the fading slow waves. The final plot is labeled 'spike recording after filtering'.

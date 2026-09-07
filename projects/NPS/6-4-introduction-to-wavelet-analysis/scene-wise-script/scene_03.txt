@@ -1,0 +1,8 @@
+Subtopic: Multi-Resolution Analysis
+Scene type: manim
+
+Narration:
+One of the most important concepts in wavelet analysis is multi-resolution analysis. Instead of examining the entire signal using one fixed window, wavelet analysis examines the signal at multiple scales. Large wavelets are used to analyse slower components of the signal, while small wavelets are used to analyse rapid transient events. As a result, different parts of the same signal are analysed with different resolutions. This adaptive behaviour makes wavelet analysis particularly suitable for neural recordings, where both slow oscillations and brief events often occur within the same recording. Let's look at a direct comparison: the STFT uses a fixed window, while wavelet analysis uses multiple window sizes.
+
+Animation description:
+A neural signal is displayed with a slow, large-amplitude wave and a fast, sharp transient. On the left half of the screen, the STFT approach is shown: a single fixed-size rectangular window moves across the signal, always the same width. On the right half, the wavelet approach is shown: five wavelets of different sizes are overlaid on different parts of the signal. Wide wavelets cover the slow oscillation; narrow wavelets cover the transient. The wavelets are stretched and compressed versions of the same shape. Text labels: 'STFT: one fixed window' and 'Wavelet analysis: multiple scales'.

@@ -1,0 +1,8 @@
+Subtopic: 5.5.9 Summary and Transition
+Scene type: manim
+
+Narration:
+So, to wrap up, a notch filter removes a very narrow frequency band centered around a specific frequency, making it especially useful for reducing power line interference at 50 or 60 hertz. Because it affects only a tiny slice of the spectrum, it preserves most of your physiological signal while getting rid of that unwanted electrical hum. Now, all the filters we've seen so far separate signals based on their frequency content. But not every filtering technique works in the frequency domain. Some filters operate directly on the signal waveform in the time domain, and they're great for dealing with random fluctuations and impulsive noise. In the next section, we'll look at two simple but widely used time domain filters: the moving average filter and the median filter.
+
+Animation description:
+A frequency spectrum is shown with a narrow gap at 50 Hz, the rest of the curve intact. The view zooms out to show this spectrum alongside a clean EEG waveform. A transition arrow points to a new timeline view showing a raw, noisy signal with arrows indicating upcoming time domain windows, labeled 'Moving Average' and 'Median Filter' underneath.

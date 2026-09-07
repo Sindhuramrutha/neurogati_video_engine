@@ -1,0 +1,8 @@
+Subtopic: 2.3.2 Learning Objectives
+Scene type: manim
+
+Narration:
+After completing this section, you should be able to: explain why neural signals require amplification; describe the function of an amplifier; understand the concept of signal conditioning; and explain why amplification must occur before further signal processing.
+
+Animation description:
+A clean title card with the heading 'Learning Objectives'. Four bullet points appear one at a time with a subtle checkmark icon next to each as it animates in: 'Explain why neural signals require amplification', 'Describe the function of an amplifier', 'Understand the concept of signal conditioning', 'Explain why amplification must occur before further signal processing'. Use minimal motion — text slides in sequentially, checkmarks draw themselves with a quick stroke.

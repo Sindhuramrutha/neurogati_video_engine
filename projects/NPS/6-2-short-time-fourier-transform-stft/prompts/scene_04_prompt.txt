@@ -1,0 +1,25 @@
+1. **0.00–1.80** A continuous waveform spanning the full screen width appears, drawn in a steady default stroke across the horizontal middle of the frame. The wave has moderate amplitude variation and several periods visible along its length.
+
+2. **2.62–4.42** A bright rectangular window outline appears at the far left of the waveform, enclosing the first short segment (roughly the leftmost 10% of the signal). Inside the rectangle, the waveform stroke brightens and thickens to emphasize the selected segment. The rest of the waveform remains visibly dimmer.
+
+3. **4.50–6.70** A small label "STFT" appears near the top of the frame and remains visible. The highlighted window stays fixed on the first segment.
+
+4. **7.28–9.34** The waveform briefly pulses or flickers in full width, then only the highlighted first segment remains bright as the windowed region is emphasized. A subtle vertical divider appears at the left edge of the window to mark the segment boundary.
+
+5. **9.76–12.52** A small Fourier transform indicator — a simple frequency-axis glyph or a pair of small spectrum bars — appears directly below the highlighted window segment, suggesting analysis of that one segment. The rest of the waveform remains dim.
+
+6. **13.54–15.82** The view widens slightly or zooms out just enough to show the entire waveform, with all of it briefly shaded in a neutral gray to signal the whole signal is not analyzed at once. The bright window remains only on the first segment.
+
+7. **16.24–20.02** The window brightens again over the first segment, and the surrounding waveform stays dim, drawing focus to the small analyzed portion. The label "STFT" remains visible.
+
+8. **20.66–23.78** The rectangular window outline — already at the far left — becomes more prominent. The waveform inside it brightens, and everything outside remains dim. The window holds this position at the beginning of the signal.
+
+9. **24.42–26.72** The interior of the window pulses once with a bright highlight, drawing attention to only the data inside the rectangle. The outside waveform remains dim and unhighlighted.
+
+10. **27.68–30.00** The window smoothly slides rightward by one segment width (about 10% of the waveform length). The newly enclosed segment brightens as the window settles, while the previous segment dims back to match the rest of the waveform.
+
+11. **30.58–31.88** The newly positioned window pulses once, and a second Fourier transform indicator appears briefly below it, matching the first segment's analysis marker.
+
+12. **32.74–36.40** The window continues sliding rightward in discrete steps — one segment width per step — pausing briefly each time to highlight the newly selected region. This repeats until the window reaches the far right end of the waveform, covering the last segment. At the final step, the entire waveform briefly dims except the last windowed segment, then all highlights fade.
+
+13. **36.40–37.17** The full waveform is visible in a uniform neutral stroke, no window present. The "STFT" label fades out, leaving the complete continuous waveform on screen.

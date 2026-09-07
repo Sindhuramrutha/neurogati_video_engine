@@ -1,0 +1,8 @@
+Subtopic: 5.2.6 Applications in Neural Signal Processing
+Scene type: manim
+
+Narration:
+Low-pass filters are widely used in neuroscience because many physiological signals carry important information at relatively low frequencies. For EEG, low-pass filters are frequently used to reduce high-frequency electrical noise while preserving the frequency components relevant for EEG analysis. For local field potentials, or LFPs, since these primarily contain lower-frequency activity, low-pass filtering is commonly used to separate LFPs from higher-frequency spike activity. For EMG envelope extraction, after rectifying an EMG signal, a low-pass filter is often applied to obtain the smooth EMG envelope, which represents the overall level of muscle activation.
+
+Animation description:
+Three panels appear in sequence, one for each application. The first panel shows an EEG-like waveform with noise being reduced to a cleaner signal, labeled 'EEG'. The second panel shows an LFP waveform that separates from a superimposed sharp spike train, with the low-pass filter removing the spikes and leaving the smooth LFP, labeled 'LFP'. The third panel shows an EMG signal that has been rectified into positive pulses, then low-pass filtered into a smooth envelope curve, labeled 'EMG Envelope'. Each panel is animated with its signals changing according to the application described.

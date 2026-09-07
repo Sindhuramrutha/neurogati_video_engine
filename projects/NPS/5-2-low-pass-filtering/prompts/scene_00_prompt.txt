@@ -1,0 +1,19 @@
+1. **0.00–1.66** — Title card fades in on a clean background: the text "5.2 Low-Pass Filtering" centered in large type. It holds steady while the narration opens with "In the previous section."
+
+2. **1.66–3.44** — The title card dissolves into a stylized animated signal waveform running horizontally across the upper portion of the screen. The waveform is a continuous, irregular line oscillating in real time, suggesting a neural recording. The narration references filtering improving the "quality of neural recordings."
+
+3. **3.44–7.36** — The waveform visibly separates into two layered components: a smooth, slow-varying wave at the bottom of the stack, and a jagged, fast-oscillating wave directly above it. The jagged upper wave is tinted red and blinks or shakes slightly to mark it as unwanted. The narration covers "reducing unwanted signal components."
+
+4. **7.36–10.96** — The two layers remain on screen. A subtle emphasis highlights first the red high-frequency layer, then the smooth lower layer, in alternation — showing they do not occupy the same place. The narration says "not all unwanted signals live in the same place."
+
+5. **10.96–15.80** — The red jagged layer pulses quickly to indicate high-frequency content, while the smooth lower wave pulses slowly to indicate low-frequency content. The two layers are shown as occupying distinct frequency bands. Narration contrasts "very high frequencies" with "much lower frequencies."
+
+6. **15.80–21.74** — The smooth lower wave is labeled "Physiological Activity" with a small text label appearing near it. The jagged upper wave is labeled "High-Frequency Noise" with a corresponding label. Narration describes removing unwanted high-frequency components while preserving slower physiological activity.
+
+7. **21.74–25.26** — A large low-pass filter icon slides in between the two layers: a brick-wall or gate-like outline that is open at the bottom. It visually blocks the upper red jagged layer while leaving a clear passage for the lower smooth wave. The narration introduces "the low-pass filter" as the commonly used tool.
+
+8. **25.26–29.82** — The filter icon is emphasized: its open-bottom passage is highlighted, showing the smooth lower wave passing through unchanged while the red jagged layer above is stopped by the wall. Small arrows or flow lines may show the signal moving through the filter from left to right. Narration says we'll understand "how a low-pass filter operates."
+
+9. **29.82–31.66** — A brief visual demonstration appears on the waveform: the portion of the signal before the filter shows both layers combined, while the portion after the filter shows only the smooth lower wave. The red jagged layer fades out or is visually removed after the filter. Narration covers "how it modifies a signal."
+
+10. **31.66–35.23** — The scene pulls back slightly to show a broader context: the filtered smooth waveform continues, with the filter icon and labels still visible. A small label or caption reads "Neural Signal Processing" near the bottom, and a subtle pulse travels along the remaining smooth wave. The narration concludes with "where it's applied in neural signal processing," and the scene holds through the final timestamp.

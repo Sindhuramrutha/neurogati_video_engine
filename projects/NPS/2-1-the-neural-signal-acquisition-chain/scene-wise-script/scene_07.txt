@@ -1,0 +1,8 @@
+Subtopic: 2.1.4 Components of the Acquisition Chain - ADC
+Scene type: manim
+
+Narration:
+Up to this stage, everything we have is still an analog signal — a continuous voltage that varies smoothly in time. But computers can only process digital information. That's where the Analog-to-Digital Converter comes in. The ADC samples the analog signal at regular intervals, and it converts each sample into a numerical value. The result is a digital representation of the original biological signal: a sequence of numbers, not a continuous waveform.
+
+Animation description:
+Show a smooth continuous analog waveform on the left. Then overlay a series of evenly spaced vertical gridlines representing sampling intervals. At each gridline intersection with the waveform, place a dot and label its corresponding numerical value, such as 0.2, 0.5, 0.8, 0.6, etc. On the right side, show a staircase plot connecting these sampled values, with a caption 'digital representation'. Animate the regular interval by highlighting the uniform spacing between samples.

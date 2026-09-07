@@ -1,0 +1,25 @@
+1. (0.00–0.50) The scene opens continuing from the previous scene: the amplified output waveform from the previous scene (large vertical amplitude, identical underlying oscillatory shape) remains on screen. Jagged high-frequency noise spikes appear riding on top of the waveform — small, random, sharp vertical jitter superimposed along the entire wave. Narration: "Even"
+
+2. (0.50–1.36) The noisy waveform holds, with the jagged spikes clearly visible along the amplified waveform's surface. A label beneath reads "amplified signal + interference." Narration: "after amplification,"
+
+3. (2.10–3.16) The noisy waveform remains centered. A flow line begins drawing from the noisy waveform toward the right side of the frame. Narration: "the recorded signal still"
+
+4. (3.64–5.18) The noise spikes on the waveform pulse or brighten once, drawing attention to the unwanted jaggedness riding on the otherwise smooth oscillation. The label "unwanted electrical interference" appears beneath the noisy waveform, replacing or joining the earlier label. Narration: "contains unwanted electrical interference."
+
+5. (6.18–7.64) A rectangular box draws itself in the center-right of the frame, connected to the flow line from the noisy waveform. The box is labeled "Filter" in clean text on its face. The flow line with the noisy waveform enters the left side of the box. Narration: "So the next stage is the filter."
+
+6. (8.50–10.80) A clean, smooth waveform emerges from the right side of the filter box — same underlying shape and amplitude as the noisy input, but with no jagged spikes. The input (noisy) and output (clean) waveforms sit on either side of the filter box. Narration: "Filters remove unwanted frequency components"
+
+7. (11.38–12.92) The clean output waveform brightens or pulses gently. The flow line through the filter box animates continuously, and a caption "signal of interest" appears beneath the clean output waveform. Narration: "while preserving the signal of interest."
+
+8. (13.78–16.66) Below the waveforms, a frequency spectrum panel appears: a horizontal axis labeled "frequency" with vertical bars. A group of tall low-frequency bars on the left is labeled "signal," and a cluster of shorter, jagged high-frequency bars on the right is labeled "interference." The low-frequency bars are visually distinct from the high-frequency bars. Narration: "Different recording applications use different types of filters."
+
+9. (17.62–20.88) The frequency spectrum panel holds. A subtle overlay or fade appears around the entire filter box, suggesting the concept is being set aside. The screen remains stable, not advancing. Narration: "We'll dive into the principles of filtering in detail later in this course,"
+
+10. (21.26–22.62) A simple text caption appears near the filter box: "remember." The clean output waveform and the frequency bars remain visible. Narration: "so for now, just remember,"
+
+11. (23.34–24.70) A second frequency spectrum panel appears below the first, representing the output: the tall low-frequency signal bars remain, while the high-frequency interference bars are absent or struck through with a visible red line. A label "after filtering" appears beneath this second panel. The first panel is labeled "before filtering." Narration: "the filter's job is to clean"
+
+12. (25.14–26.56) The high-frequency bars in the "before" panel fade or are struck through one by one in sync with the narration, while the "after" panel's low-frequency bars remain bright. The clean output waveform pulses once, emphasizing the removal of interference. Narration: "up the signal by removing interference."
+
+13. (26.56–27.57) The full scene holds: noisy input waveform on the left with jagged spikes, the "Filter" box in the center, the clean output waveform on the right, and the two frequency spectrum panels below showing before/after. All elements remain static. Narration: (silence)

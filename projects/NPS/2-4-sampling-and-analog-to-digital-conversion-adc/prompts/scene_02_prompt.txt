@@ -1,0 +1,61 @@
+1. 0.00–1.88: Fade in two empty rectangular panels side by side, one on the left and one on the right, both roughly equal size and separated by a small gap. Label the left panel **Analogue** and the right panel **Digital** above each, in small clean text.
+
+2. 1.88–2.76: Brief hold on the two empty labelled panels as the narration pauses between ideas.
+
+3. 2.76–4.44: Inside the left panel, draw a smooth continuous wavy curve that enters from the left and exits to the right. The curve undulates organically with two or three gentle peaks and troughs, with no breaks or sharp corners.
+
+4. 4.44–5.52: Animate a subtle vertical dashed marker sweeping along the horizontal axis of the left panel from left to right, while the curve itself continues to wiggle fluidly, emphasizing the continuous range of amplitude values over time.
+
+5. 5.52–7.08: Extend the left panel's curve slightly rightward or add a subtly shifting highlight on the curve as it continues its continuous motion, underlining the phrase "over time". The label **Analogue — amplitude changes continuously over time** fades in beneath the left panel.
+
+6. 7.08–7.78: Brief hold on the left panel with its label while the curve keeps undulating gently.
+
+7. 7.78–8.94: In the right panel, fade in a horizontal time axis. On that axis, begin placing a sequence of discrete vertical bars at evenly spaced positions, each bar's height differing from its neighbors to suggest variability.
+
+8. 8.94–10.26: Complete the sequence of vertical bars across the right panel — about 10 to 14 bars — standing at clearly separated, evenly spaced points along the axis, with a tiny gap between each bar to emphasize discreteness.
+
+9. 10.26–11.56: Add small numeric labels or a clean numerical value above each bar (e.g. simple integer values matching bar heights), reinforcing that each bar is a specific number rather than a continuum.
+
+10. 11.56–12.34: Fade in the label **Digital — discrete numerical values** beneath the right panel. Briefly pulse the bars sequentially from left to right to draw the eye.
+
+11. 12.34–13.18: Hold both panels side by side: the left curve undulating continuously, the right bars steady, each labelled.
+
+12. 13.18–14.56: Shift focus to the left panel: add a subtle glow or highlighted outline around the analogue curve to draw attention back to it while the narration says electrical signals are naturally analogue.
+
+13. 14.56–16.04: Continue the glow around the left curve and let the curve's wiggling become slightly more pronounced to match the emphasis on "naturally analogue".
+
+14. 16.04–16.54: Fade in a short secondary label or small tag inside the left panel — **neural signal** — placed near the curve, indicating that the already-drawn analogue curve represents the electrical output of neurons.
+
+15. 16.54–18.60: Keep the left panel as the visual focus, with the curve moving continuously. Briefly dim the right panel slightly to maintain attention on the analogue neural curve.
+
+16. 17.70–20.94: Animate the left curve's amplitude changing slowly and continuously over time — gently rising then falling in complex natural variation — emphasizing the continuous nature of voltage change as neural activity changes.
+
+17. 20.94–22.00: Hold the left curve with its continuous variation. Bring the right panel back to full brightness.
+
+18. 22.00–24.46: Highlight the left curve once more with a pulse or soft outline. Fade in a small text label below it reading **continuous representation** for the duration of this phrase.
+
+19. 24.46–27.06: Briefly flash or pulse a small set of physiological waveform details along the left curve to connect it to real neural activity, then fade back to normal. The curve keeps undulating continuously.
+
+20. 27.06–31.36: Shift focus to the right panel. Add a red X or warning mark above the right panel's sequence of discrete bars, while dimming the left panel slightly. The red X communicates that computers cannot directly interpret continuous voltage.
+
+21. 31.72–34.22: In the right panel, add a bright overlay of `0`s and `1`s (binary-style digits) lining up with the existing discrete bars, illustrating storage and processing as numbers. The left panel remains dim.
+
+22. 34.22–35.02: Let the binary digits and bars pulse gently together, emphasizing digital systems store and process numbers.
+
+23. 35.02–35.86: Hold the full two-panel layout with the left analogue curve dimmed and the right digital bars with binary digits bright.
+
+24. 35.86–36.64: Below the two panels, fade in a prominent horizontal arrow pointing from the left panel to the right panel.
+
+25. 36.64–38.56: Along the arrow, fade in small moving dots or a small travelling pulse that flows from the analogue curve on the left toward the digital bars on the right, showing a signal being transferred.
+
+26. 38.56–40.42: Keep the arrow and moving pulse animating from left to right. Brighten the left curve and right bars simultaneously so the conversion pathway is highlighted.
+
+27. 40.42–41.70: Add a faint intermediate label near the midpoint of the arrow: **convert**. The pulse continues moving across the arrow.
+
+28. 41.70–43.30: Fade in a clear label beneath the arrow in full prominence: **ADC conversion**.
+
+29. 43.30–44.44: Hold the arrow, its moving pulse, and the **ADC conversion** label beneath the two panels.
+
+30. 44.44–47.74: Boldly enlarge or brighten the **ADC conversion** label and add a small rectangular chip icon above or beside it — a black rectangle with metal pins on its sides — labelled **ADC**, prominent and central below the panels.
+
+31. 47.74–48.65: Final hold on the complete composition: the left analogue curve with its **Analogue — amplitude changes continuously over time** label, the right digital bars with **Digital — discrete numerical values** label, the arrow flowing between them, and the prominent **ADC conversion** label with the ADC chip icon squarely below both panels. All elements fully visible through the end.

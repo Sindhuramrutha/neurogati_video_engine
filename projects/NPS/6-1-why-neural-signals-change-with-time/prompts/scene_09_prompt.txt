@@ -1,0 +1,105 @@
+1. **0.00-1.84** — As the narration asks "Now, why does this create a problem?", the waveform display from the previous scene holds on screen: the continuous EEG trace spanning the baseline with its three segments — large regular alpha oscillations in the left third, reduced irregular activity in the middle third, small irregular activity with one sharp deflection in the right third. The three vertical dashed boundaries and the segment labels "Eyes closed (0–10 s)", "Eyes open (10–20 s)", and "Stimulus (20–30 s)" remain visible beneath their respective regions. The sub-labels "Alpha prominent", "Alpha decreases", and "Event-related response" above the waveform fade out, leaving the waveform clean and the question hanging.
+
+2. **1.84-2.48** — Pause. The waveform holds. A subtle darkening or desaturation falls over the whole scene, conveying a shift into a more skeptical, questioning mode. No new elements appear.
+
+3. **2.48-3.40** — As the narration says "At first glance," the waveform brightens slightly, resuming full visibility. The display now emphasizes the left third — the "Eyes closed" segment containing the large regular alpha waves — by gently highlighting that region while the other two segments dim somewhat. No new labels yet.
+
+4. **3.40-4.58** — As the narration says "analyzing the frequency content," the right two-thirds of the waveform fade to a faint gray trace, leaving only the first "Eyes closed" segment in full contrast. A soft outline traces the first segment's waveform. The label "Eyes closed (0–10 s)" beneath it brightens.
+
+5. **4.58-6.00** — As the narration says "of a neural signal," the label beneath the first segment changes to read "Neural signal" — replacing "Eyes closed (0–10 s)" — while the first segment highlight holds. The words "Neural signal" appear centered beneath the waveform's left third. The tracing continues to show the clean regular alpha oscillations.
+
+6. **6.00-6.92** — As the narration says "seems straightforward," the waveform display softens. A subtle green check mark or similar affirmative symbol fades in near the first segment, just above the trace, suggesting initial confidence. The rest of the scene remains unchanged: dimmed right two-thirds, highlighted left third, "Neural signal" label beneath.
+
+7. **6.92-7.90** — Pause. The check mark holds above the first segment. The waveform remains steady. No new elements appear.
+
+8. **7.90-8.62** — As the narration says "However," the green check mark vanishes abruptly. The scene darkens slightly again. A brief visual tension appears: the first segment's highlight flickers once, then steadies.
+
+9. **8.62-10.14** — As the narration says "most classical frequency analysis methods," text fades in centered above the waveform, replacing any lingering labels: "Classical frequency analysis". The waveform display remains below, with all three segments now at equal, slightly dimmed visibility. The three vertical dashed boundaries remain visible.
+
+10. **10.14-11.30** — As the narration says "assume," the word "assume" appears in italic or emphasized styling adjacent to "Classical frequency analysis," the two phrases now reading together as "Classical frequency analysis — assume". The waveform brightens slightly, but no other change occurs.
+
+11. **11.30-12.16** — As the narration says "that the signal," the phrase above the waveform simplifies to a single line: "Signal remains unchanged". The word "signal" is emphasized. The waveform below remains static, all three segments equal in visibility.
+
+12. **12.16-13.16** — As the narration says "remains unchanged," the waveform's three segments visually freeze — not dimming, but becoming static, as if the motion of the trace is paused. The middle and right segments, which previously showed reduced and variable activity, remain exactly as they were. The left segment's regular alpha waves also hold steady. The label "Signal remains unchanged" holds above.
+
+13. **13.16-14.94** — As the narration says "throughout the observation period," a translucent banner or rectangle glides slowly from left to right beneath the waveform, spanning the full width, labeled "Observation period". The banner settles over the entire duration of the trace, reinforcing the assumption of constancy. The waveform remains frozen in its three-part pattern.
+
+14. **14.94-15.62** — Pause. The banner labeled "Observation period" holds beneath the full waveform. The "Signal remains unchanged" label remains above. The scene waits, static.
+
+15. **15.62-17.32** — As the narration says "If the frequency content changes," the banner and the "Signal remains unchanged" label fade out. The waveform unfreezes slightly — the left segment's large regular alpha waves animate again, while the middle and right segments show their reduced, irregular patterns with one transient deflection in the right third. The three segments now look clearly different from one another.
+
+16. **17.32-18.72** — As the narration says "during the recording," the waveform continues to show all three segments with their differing patterns: large regular alpha on the left, reduced irregular activity in the middle, small irregular activity with one sharp deflection on the right. The segment labels "Eyes closed (0–10 s)", "Eyes open (10–20 s)", and "Stimulus (20–30 s)" reappear beneath their respective regions.
+
+17. **18.72-20.36** — As the narration says "then calculating a single frequency spectrum," text appears centered above the waveform: "Single frequency spectrum". Below the waveform, a new panel begins to fade in — an empty set of axes, horizontally oriented with frequency on the x-axis and magnitude or power on the y-axis. The axes are faint and unlabeled.
+
+18. **20.36-21.56** — As the narration says "for the entire signal," a filled curve begins drawing inside the lower spectrum panel from left to right. The curve rises from near zero, peaks in the frequency range corresponding to alpha activity — a prominent peak — and falls back. No explicit numeric labels appear on the spectrum axes yet, only the shape exists. The waveform above remains fully visible.
+
+19. **21.56-23.04** — As the narration says "provides only an overall average," the spectrum curve brightens and solidifies into its final form: a single clear peak, with lower amplitude elsewhere. The peak is centered in the spectrum. Simultaneously, the label "Overall average" fades in beneath the spectrum panel. The waveform above remains unchanged.
+
+20. **23.04-23.60** — Pause. The spectrum curve with its single prominent peak holds. The label "Overall average" remains beneath the spectrum. The waveform above stays fully visible with its three distinct segments.
+
+21. **23.60-25.42** — As the narration says "only," the word "only" flashes once above the spectrum panel, then fades. The spectrum curve remains. No other changes.
+
+22. **25.42-26.32** — As the narration says "It does not indicate," the spectrum panel dims slightly. A translucent question mark symbol fades in to the right of the spectrum's single peak, positioned near the top of the peak. The question mark is subtle but clearly visible. The waveform above remains unchanged.
+
+23. **26.32-27.36** — As the narration says "when specific frequencies," the question mark next to the spectrum peak animates slightly — it bobs or pulses once — drawing attention. The spectrum curve itself remains unchanged. Above, the waveform remains visible with its three distinct segments.
+
+24. **27.36-28.28** — As the narration says "were present," the question mark holds. A faint dashed line extending from the question mark horizontally to the left, as if trying to trace a time location but failing, appears then fades quickly. No resolved time information is shown. The spectrum remains otherwise unchanged.
+
+25. **28.28-28.94** — Pause. The spectrum with its single peak and the question mark hold. The waveform above remains fully visible. No new elements appear.
+
+26. **28.94-29.52** — As the narration says "For example," the scene shifts slightly: the waveform above remains, but the spectrum panel below dims further. A soft reset is implied — the example begins.
+
+27. **29.52-31.08** — As the narration says "suppose alpha activity is present," the left third of the waveform — the "Eyes closed" segment — brightens significantly. The large regular alpha waves in that segment glow softly. The label "Alpha present (0–10 s)" fades in beneath the left segment, replacing the previous "Eyes closed (0–10 s)" label. The middle and right segments remain dimmed.
+
+28. **31.08-32.24** — As the narration says "only during the first," the first segment's waveform displays prominently. The labels on the other two segments dim to near invisibility — no "Eyes open" or "Stimulus" labels remain visible. Only the first segment carries an active label: "Alpha present (0–10 s)".
+
+29. **32.24-32.86** — As the narration says "ten seconds," the first segment's label brightens once — "Alpha present (0–10 s)" — with emphasis on the "10 s" portion. The vertical dashed line at the 10-second boundary pulses once.
+
+30. **32.86-34.84** — As the narration says "of an EEG recording," the waveform display holds: first segment brightly highlighted with large regular alpha waves and label "Alpha present (0–10 s)", the other two segments faintly visible but dimmed. The spectrum panel below remains dimmed. No new elements appear.
+
+31. **34.84-35.70** — Pause. The first segment highlight holds. The spectrum panel below remains faint. The waveform above continues showing the three-part structure, with attention on the first segment.
+
+32. **35.70-36.70** — As the narration says "A conventional Fourier Transform," text appears centered above the waveform: "Conventional Fourier Transform". The spectrum panel below brightens to full opacity, showing the single prominent peak. The waveform above remains with its highlighted first segment and dimmed other two segments.
+
+33. **36.70-37.68** — As the narration says "may indicate," an arrow or brace fades in, originating from the peak in the spectrum below, extending upward and spreading open to encompass the entire width of the waveform above. The brace or brackets suggest the alpha peak captures information from the full recording duration. No time-specific marking appears.
+
+34. **37.68-38.32** — As the narration says "that alpha," the spectrum peak — the prominent peak itself — is labeled "Alpha" with the word appearing adjacent to the peak, just to the right of its apex. The peak is visually emphasized, perhaps by slight thickening of the curve at that point or a gentle glow around the peak.
+
+35. **38.32-39.06** — As the narration says "frequencies exist," the label "Alpha" next to the spectrum peak brightens. The peak remains prominent. The arrow or brace from the peak to the waveform above remains visible, spanning the full width. No time information is shown.
+
+36. **39.06-40.06** — As the narration says "somewhere in," the arrow or brace from the spectrum peak to the waveform above swings slightly, as if sweeping across the full width of the waveform, indicating uncertainty about *where* the alpha activity occurs. The "Alpha" label remains next to the spectral peak. The first segment of the waveform remains highlighted.
+
+37. **40.06-40.78** — As the narration says "the recording," the sweep motion completes. The arrow or brace settles to encompass the full waveform width. The spectrum peak and "Alpha" label hold. No precise time localization is indicated.
+
+38. **40.78-41.56** — Pause. The full waveform, the highlighted first segment with label "Alpha present (0–10 s)", the dimmed other segments, the spectrum below with its prominent "Alpha" peak, and the spanning arrow or brace all hold. No new elements appear.
+
+39. **41.56-42.24** — As the narration says "but it cannot identify," the arrow or brace spanning the waveform fades out. The spectrum peak remains with its "Alpha" label. The first segment highlight remains. No location indicator appears on the waveform.
+
+40. **42.24-43.00** — As the narration says "the exact time," a small clock icon fades in next to the "Alpha" label in the spectrum, just to the right of the peak. The clock icon is simple: a circle with two hands, unlabeled. No time markings appear on the waveform.
+
+41. **43.00-43.74** — As the narration says "at which," the clock icon next to the spectrum peak pulses once. The waveform above remains. No time-specific information appears anywhere in the display.
+
+42. **43.74-44.30** — As the narration says "they occurred," a small question mark fades in directly next to the clock icon, so that the cluster reads "Alpha" with a clock icon and a "?" beside it. The implication is clear: alpha exists somewhere, but the exact time is unknown. The waveform above remains unchanged.
+
+43. **44.30-45.14** — Pause. The spectrum panel with the prominent "Alpha" peak, the clock icon, and the question mark holds. The waveform above remains with its highlighted first segment and the label "Alpha present (0–10 s)". No new elements appear.
+
+44. **45.14-46.54** — As the narration says "For many neuroscience applications," the cluster — the clock icon and question mark next to the "Alpha" label — is highlighted with a soft glow or outline. The spectrum panel brightens slightly. The waveform above remains. The emphasis is on the uncertainty implied by the question mark and clock.
+
+45. **46.54-47.34** — As the narration says "this information," the glow around the clock and question mark cluster holds. The spectrum peak pulses once gently. No other changes.
+
+46. **47.34-48.52** — As the narration says "is essential," the word "Essential" fades in directly beneath the spectrum panel, centered, in a clear readable style. The highlight on the clock and question mark persists. The waveform above remains unchanged.
+
+47. **48.52-49.48** — Pause. The display holds: waveform above with first segment highlighted and label "Alpha present (0–10 s)", spectrum below with prominent "Alpha" peak, clock icon, question mark, and the word "Essential" beneath the spectrum panel. No new elements appear.
+
+48. **49.48-50.76** — As the narration says "We often need to know not only," the phrase "What frequencies are present?" fades in centered below the spectrum panel, replacing the word "Essential". The text is clear and readable. The spectrum panel with its alpha peak, clock icon, and question mark remains above the text.
+
+49. **50.76-52.10** — As the narration says "what frequencies are present," the spectrum panel with its single prominent "Alpha" peak brightens. The label "Alpha" next to the peak glows softly. The phrase "What frequencies are present?" remains below. The waveform above remains visible.
+
+50. **52.10-52.64** — Pause. The spectrum panel holds with its alpha peak highlighted. The phrase "What frequencies are present?" remains beneath. The waveform above remains unchanged. No new elements appear.
+
+51. **52.64-53.34** — As the narration says "but also when," the text below the spectrum panel changes to read "When do they occur?" replacing the previous phrase. Simultaneously, the clock icon and question mark next to the "Alpha" peak brighten significantly, drawing attention. The waveform above remains with the first segment highlighted.
+
+52. **53.34-53.70** — As the narration says "they occur," the final display holds: waveform above with its three segments — first segment brightly highlighted showing large regular alpha waves with label "Alpha present (0–10 s)", the other two segments dimmed — and the spectrum below with its single prominent peak labeled "Alpha", the clock icon and question mark next to it, and the text "When do they occur?" beneath. The alpha peak, clock icon, and question mark pulse together once, then settle.
+
+53. **53.70-54.42** — The final frame holds until the scene ends at 54.42 seconds: the waveform above with the highlighted "Alpha present (0–10 s)" first segment and dimmed other segments, the spectrum below with its single prominent "Alpha" peak, the clock icon and question mark beside the peak, and the text "When do they occur?" beneath the spectrum panel. No further changes.

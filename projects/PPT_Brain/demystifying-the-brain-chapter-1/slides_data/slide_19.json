@@ -1,0 +1,224 @@
+{
+  "index": 19,
+  "slide_width_emu": 14630400,
+  "slide_height_emu": 8229600,
+  "shapes": [
+    {
+      "shape_id": 2,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 0",
+      "manim_bbox": [
+        1.7777777499999994,
+        -3.9999999375,
+        7.111111,
+        3.9999999375
+      ]
+    },
+    {
+      "shape_id": 3,
+      "kind": "text",
+      "text": "Pavlov and Classical Conditioning",
+      "alt_text": "Text 0",
+      "manim_bbox": [
+        -6.438773108298611,
+        2.4417827945486112,
+        1.097221719027778,
+        3.042014145138889
+      ]
+    },
+    {
+      "shape_id": 4,
+      "kind": "text",
+      "text": "Russian psychologist Ivan Pavlov discovered \"conditioning\" by accident while studying digestion in dogs.",
+      "alt_text": "Text 1",
+      "manim_bbox": [
+        -6.438773108298611,
+        1.53888886484375,
+        1.1054398582986105,
+        2.1537036700520833
+      ]
+    },
+    {
+      "shape_id": 5,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 2",
+      "manim_bbox": [
+        -6.2466432386458335,
+        0.1703703677083337,
+        -6.054629048975695,
+        1.0347224490798612
+      ]
+    },
+    {
+      "shape_id": 6,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 3",
+      "manim_bbox": [
+        -6.438773108298611,
+        0.5844910961458334,
+        -5.862500151423611,
+        1.1607640530208334
+      ]
+    },
+    {
+      "shape_id": 7,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 1",
+      "manim_bbox": [
+        -6.294675706059028,
+        0.7285875262847221,
+        -6.0065965815625,
+        1.01666665078125
+      ]
+    },
+    {
+      "shape_id": 8,
+      "kind": "text",
+      "text": "Observation",
+      "alt_text": "Text 4",
+      "manim_bbox": [
+        -5.670485961753473,
+        0.8306717086111113,
+        -3.2692125473437503,
+        1.1307873839062497
+      ]
+    },
+    {
+      "shape_id": 9,
+      "kind": "text",
+      "text": "Dogs salivated not just at food, but at the sight of the technician who fed them.",
+      "alt_text": "Text 5",
+      "manim_bbox": [
+        -5.670485961753473,
+        0.40810148093749987,
+        1.1054398582986105,
+        0.7155088835416668
+      ]
+    },
+    {
+      "shape_id": 10,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 6",
+      "manim_bbox": [
+        -5.95856508625,
+        -1.4357635626736114,
+        -5.7665508965798615,
+        -0.3098376543402779
+      ]
+    },
+    {
+      "shape_id": 11,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 7",
+      "manim_bbox": [
+        -6.150693983802084,
+        -0.7600690072743053,
+        -5.574421026927084,
+        -0.18379605039930613
+      ]
+    },
+    {
+      "shape_id": 12,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 2",
+      "manim_bbox": [
+        -6.006597553663195,
+        -0.615972577135417,
+        -5.718518429166667,
+        -0.3278934526388886
+      ]
+    },
+    {
+      "shape_id": 13,
+      "kind": "text",
+      "text": "Experiment",
+      "alt_text": "Text 8",
+      "manim_bbox": [
+        -5.382407809357639,
+        -0.5138883948090278,
+        -2.981134394947917,
+        -0.2137727195138881
+      ]
+    },
+    {
+      "shape_id": 14,
+      "kind": "text",
+      "text": "Pavlov rang a bell before feeding. Eventually, the bell alone triggered salivation.",
+      "alt_text": "Text 9",
+      "manim_bbox": [
+        -5.382407809357639,
+        -1.2438660250868052,
+        1.1054388861979172,
+        -0.6290512198784723
+      ]
+    },
+    {
+      "shape_id": 15,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 10",
+      "manim_bbox": [
+        -5.6703702817708335,
+        -3.04189846515625,
+        -5.478356092100695,
+        -1.9159725568229167
+      ]
+    },
+    {
+      "shape_id": 16,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 11",
+      "manim_bbox": [
+        -5.862500151423611,
+        -2.366203909756944,
+        -5.286227194548611,
+        -1.789930952881944
+      ]
+    },
+    {
+      "shape_id": 17,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 3",
+      "manim_bbox": [
+        -5.718402749184028,
+        -2.2221065075173607,
+        -5.4303236246875,
+        -1.9340273830208332
+      ]
+    },
+    {
+      "shape_id": 18,
+      "kind": "text",
+      "text": "Result",
+      "alt_text": "Text 12",
+      "manim_bbox": [
+        -5.094213004878473,
+        -2.1200232972916666,
+        -2.6929395904687503,
+        -1.8199076219965278
+      ]
+    },
+    {
+      "shape_id": 19,
+      "kind": "text",
+      "text": "The animal learned to associate a neutral stimulus with a biological response.",
+      "alt_text": "Text 13",
+      "manim_bbox": [
+        -5.094213004878473,
+        -2.84999995546875,
+        1.1054398582986105,
+        -2.235185150260416
+      ]
+    }
+  ],
+  "notes_text": null
+}

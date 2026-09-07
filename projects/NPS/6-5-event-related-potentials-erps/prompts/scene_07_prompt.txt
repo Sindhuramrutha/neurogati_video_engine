@@ -1,0 +1,27 @@
+1. **0.00-3.52** — From the previous scene's final composition (stacked EEG epochs, averaged waveform, and "ERP = average of many aligned EEG epochs" text), the full frame fades out smoothly. A compact recap icon fades in center-screen: a small stack of faint miniature EEG traces (4–5 short overlapping wavy lines) with a downward arrow pointing to a single cleaner waveform below, all contained within a rounded rectangle. No text, just the visual icon. The icon sits alone on a clean background.
+
+2. **3.52-6.94** — The recap icon holds. Subtle motion: one of the miniature traces gently brightens at a small consistent deflection point, then the arrow and the clean waveform pulse softly, reiterating the averaging concept. The icon remains compact and centered.
+
+3. **6.94-9.38** — The recap icon fades out entirely. The screen transitions: a vertical divider appears, splitting the screen into left and right halves. Each half remains empty and dark for a breath. The divider gives clear separation for the upcoming contrast.
+
+4. **9.38-14.46** — On the left half, a stimulus marker appears: a small vertical tick mark near the left edge with the label "Stimulus" below it. A single EEG trace fades in extending rightward from the marker: a mostly flat/low-amplitude line with one clear, consistent deflection (a pronounced peak or trough) occurring at a fixed short latency after the stimulus tick. The deflection is highlighted with a soft colored outline. The right half remains empty.
+
+5. **14.46-21.08** — The left trace holds; the clear deflection stays highlighted. On the right half, a matching stimulus marker appears at the same horizontal position. A second EEG trace fades in: an oscillatory waveform with several cycles of sinusoidal activity after the stimulus marker. The oscillation has no single consistent deflection point — the waveform looks like a brief burst of rhythmic activity. Subtle text fades in under the left trace: "Time-locked" and under the right trace: "Induced". Both labels appear simultaneously, centered under their respective traces.
+
+6. **21.08-27.74** — Both waveforms remain visible. On the left, the highlighted deflection pulses gently once, reinforcing the consistent latency. On the right, the oscillatory burst continues to animate — the phase of the oscillation shifts slightly (e.g., the wave pattern shifts left/right by a small amount), as if showing subtle variability across imagined trials. The labels "Time-locked" and "Induced" remain under each side.
+
+7. **27.74-33.50** — The right half receives a brief visual emphasis: a few ghosted copies of the oscillatory trace fade in behind the main right-hand trace, each with a slightly different phase (the wave crests and troughs shifted left or right relative to the main trace). This shows that across trials the oscillation phase varies and doesn't align. The ghosted copies are semi-transparent and fade in quickly, then settle. The left "Time-locked" trace holds unchanged.
+
+8. **33.50-41.18** — The ghosted phase-shifted traces on the right fade out, leaving just the single right-hand oscillatory trace. A brief visual marker appears over the right trace: a dashed vertical bracket or small annotation "No consistent deflection" with an arrow pointing to the right waveform. On the left, the clear deflection is still highlighted. The contrast between the consistent left deflection and the absent right deflection is made explicit.
+
+9. **41.18-44.54** — The annotation on the right fades out. Both traces hold steady. The left trace's highlighted deflection and right trace's oscillatory burst remain. A subtle shift in lighting or background tint begins, preparing for the onward transition.
+
+10. **44.54-49.10** — The left trace and its "Time-locked" label brighten slightly, and the highlighted deflection pulses once. The narration at this point is describing the consistent-time case. Then the highlight eases back to normal.
+
+11. **49.10-56.42** — The right trace and its "Induced" label brighten, with the oscillatory burst animating more prominently (the wave visibly cycles). The label "Induced" is emphasized. The left trace dims slightly but remains visible.
+
+12. **56.42-63.42** — Both traces return to equal brightness. The side-by-side comparison holds: left "Time-locked" trace with one highlighted consistent deflection; right "Induced" trace with an oscillatory burst and no aligned deflection. The labels remain in place. The visual composition is stable and balanced.
+
+13. **63.42-70.40** — The comparison composition holds. As the narration introduces the final section distinction, the two labels "Time-locked" and "Induced" each pulse softly (first the left, then the right) as the respective terms are spoken. The two waveforms remain clearly contrasted.
+
+14. **70.40-71.78** — Final hold: the full side-by-side layout remains on screen — left "Time-locked" waveform with its highlighted deflection, right "Induced" oscillatory waveform, divider, stimulus markers, and both labels. In the bottom center, the text "Section 6.6" fades in cleanly. The scene ends with this stable, complete composition at full duration.

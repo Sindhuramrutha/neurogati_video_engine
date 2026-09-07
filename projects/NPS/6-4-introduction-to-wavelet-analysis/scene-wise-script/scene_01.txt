@@ -1,0 +1,8 @@
+Subtopic: Why Do We Need Wavelet Analysis?
+Scene type: manim
+
+Narration:
+Let's revisit the limitation of the Short-Time Fourier Transform more carefully. Suppose we choose a large analysis window. The large window provides excellent frequency resolution, because it contains many data points. But if a brief neural event occurs, the exact timing of that event becomes difficult to determine. Now suppose we choose a small analysis window. The timing of rapid events can be identified accurately. But because the window contains fewer data points, the frequency resolution becomes poorer. This trade-off exists because the window size remains fixed throughout the analysis. Neural signals rarely behave this way. Some neural events develop slowly over time, while others occur almost instantaneously. Ideally, we would like the analysis window to adapt automatically to the characteristics of the signal. This is the fundamental idea behind wavelet analysis.
+
+Animation description:
+A neural signal waveform is shown. First, a large rectangular window appears over a slow portion of the signal; inside the window, many data points are visible, and a frequency spectrum appears next to it with a sharp, narrow peak, indicating good frequency resolution. Then a brief transient spike occurs in the signal; the large window straddles it, and the timing of the spike is blurred or uncertain, shown as a fuzzy region. The scene transitions to a small window: it tightly frames the transient spike, and the timing is shown precisely with a clear vertical line, but the accompanying frequency spectrum is now broad and smeared, indicating poor frequency resolution. The window size remains constant in each case, and a label emphasises 'Fixed window size'.

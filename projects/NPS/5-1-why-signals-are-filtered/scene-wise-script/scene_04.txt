@@ -1,0 +1,8 @@
+Subtopic: 5.1.5 Signal Versus Noise
+Scene type: manim
+
+Narration:
+Before applying any filter, it's important to distinguish between two concepts. Signal is the physiological activity we want to analyse. Examples include brain activity in EEG, muscle activity in EMG, local field potentials, and neural spikes. Noise, on the other hand, refers to unwanted components that interfere with the signal of interest. Examples include electrical interference, motion artefacts, muscle artefacts in EEG, baseline drift, and power-line interference. The objective of filtering is not to remove everything except the desired waveform. Rather, the objective is to improve the visibility of the physiological signal while preserving its important characteristics.
+
+Animation description:
+The screen splits into two columns. The left column, titled 'Signal', turns green, and icons or small waveforms appear one by one: EEG brain activity, EMG muscle activity, local field potentials, a neural spike train. The right column, titled 'Noise', turns red, and shows: electrical interference lines, a motion-artifact wiggle, muscle-artifact burst, drifting baseline, power-line ripple. At the bottom, a concluding note appears: 'Goal: improve visibility of signal, preserve its characteristics'.

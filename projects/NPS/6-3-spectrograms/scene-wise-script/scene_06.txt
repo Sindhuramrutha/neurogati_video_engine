@@ -1,0 +1,8 @@
+Subtopic: Advantages and Limitations
+Scene type: manim
+
+Narration:
+Spectrograms provide several important advantages. They simultaneously display time and frequency information. They make nonstationary signals easier to interpret. They provide an intuitive visual representation of STFT results. And they help identify transient neural events. But spectrograms also have limitations, and these limitations are inherited directly from the STFT. The quality of a spectrogram depends on the chosen window size. A small window improves time resolution but reduces frequency resolution. A large window improves frequency resolution but reduces time resolution. Therefore, every spectrogram reflects the same time–frequency trade-off introduced by the Short-Time Fourier Transform.
+
+Animation description:
+The left side of the screen shows a checklist of advantages appearing one by one with green check marks. The right side then opens into two side-by-side spectrogram panels. The first panel shows a spectrogram generated with a small window, with sharp vertical transitions in time but blurred frequency bands; it is labelled 'Small window: good time resolution, poor frequency resolution'. The second panel shows a spectrogram generated with a large window, with blurred time transitions but crisp frequency bands; it is labelled 'Large window: poor time resolution, good frequency resolution'.

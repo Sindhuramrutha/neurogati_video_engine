@@ -1,0 +1,8 @@
+Subtopic: 7.1.5 Role of Signal Processing in BCIs
+Scene type: manim
+
+Narration:
+Signal processing is the foundation of every EEG-based BCI. Without appropriate processing, the recorded EEG signal contains too much variability and noise for reliable interpretation. Several techniques introduced earlier in this course are commonly used. Filtering removes electrical interference and physiological artefacts. Spectral analysis measures changes in EEG frequency bands associated with different mental states. Time-frequency analysis, such as STFT and wavelet analysis, helps identify transient neural activity. Feature extraction transforms raw EEG into informative numerical features suitable for classification. Machine learning classification algorithms recognise patterns in EEG activity and convert them into control commands. Together, these stages transform raw neural signals into meaningful actions.
+
+Animation description:
+A raw noisy EEG waveform is processed through sequential blocks: Filtering, Spectral Analysis (power spectrum), Time-Frequency Analysis (STFT/wavelet plot), Feature Extraction (numerical feature table), Machine Learning (classification decision boundary). The final output is a control command. Each block is highlighted as described.

@@ -1,0 +1,19 @@
+1. 0.00-1.12: The screen is blank for a beat, then a faint horizontal timeline begins to draw in from the left edge toward the right, stopping about 70% of the way across before any labels appear, as narration recaps the previous section.
+
+2. 1.66-4.82: The timeline finishes drawing as a solid horizontal line. At the left-to-center area, a vertical tick line appears marking t=0, with the label "Stimulus" fading in directly beneath it. The timeline remains otherwise empty, setting up the reference point.
+
+3. 5.22-10.38: Above the timeline, three identical sinusoidal bursts fade in one by one, each a smooth oscillation with a clear rise and fall. They are stacked vertically in three parallel rows. All three bursts start at exactly the same horizontal offset to the right of the t=0 line, so the three oscillation starting points align vertically.
+
+4. 11.72-19.24: A translucent vertical guide line slides from the t=0 mark to the right and stops at the common starting point of the three bursts, emphasizing that the timing after stimulus is approximately the same across every presentation. The three upper bursts pulse softly in unison, their aligned peaks reinforcing that the responses occur at the same time following every stimulus.
+
+5. 20.80-25.20: The label "Time-Locked" fades in above the three aligned upper bursts, centered over the group. The three bursts stay visible and keep their exact alignment.
+
+6. 25.20-32.08: A second set of three sinusoidal bursts fades in below the timeline, also stacked in three parallel rows and similar in shape to the first set. Each lower burst starts at a different horizontal offset from the t=0 line: the first starts closest to t=0, the second starts about 20% farther right, and the third starts about 40% farther right, so the three starting points are visibly staggered from trial to trial.
+
+7. 32.80-38.66: The lower three bursts pulse softly in sequence rather than in unison, with each one delayed by a different amount. A subtle emphasis, such as slightly dimming the upper group while the lower group brightens, directs attention to the fact that these lower responses are not precisely synchronized across repeated trials even though they are still related to the event.
+
+8. 39.42-42.44: The label "Induced" fades in below the lower three staggered bursts, centered under that group. The screen now shows both groups — "Time-Locked" above the aligned bursts and "Induced" below the staggered bursts — with "Stimulus" still under the t=0 line.
+
+9. 42.44-48.24: The labels "Time-Locked" and "Induced" are prominently highlighted, while the upper and lower burst groups each briefly intensify in turn. The t=0 line and "Stimulus" label remain visible, establishing the two core concepts: the aligned upper group as time-locked neural activity and the staggered lower group as induced neural activity.
+
+10. 49.15-59.45: The entire scene holds as a static comparison: the timeline, t=0 mark with "Stimulus," the three aligned bursts under "Time-Locked," and the three staggered bursts under "Induced." No new elements appear; the visual remains steady while the narration explains why understanding the difference matters for selecting analysis methods and interpreting recordings.

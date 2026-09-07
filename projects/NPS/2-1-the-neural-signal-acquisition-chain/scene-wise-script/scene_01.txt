@@ -1,0 +1,8 @@
+Subtopic: 2.1.2 Learning Objective
+Scene type: manim
+
+Narration:
+By the end of this section, you should be able to do three things. First, define what the neural signal acquisition chain is. Second, identify its major components. And third, explain the function of each stage. Those are our goals for this section.
+
+Animation description:
+Show a simple checklist panel with three items appearing one by one as each is spoken: 'Define the neural signal acquisition chain', 'Identify its major components', 'Explain the function of each stage'. Each item is preceded by a small empty square that fills with a checkmark as it appears. Keep the panel centered and static otherwise.

@@ -1,0 +1,8 @@
+Subtopic: 7.1.4 Introduction to EEG for Epilepsy
+Scene type: manim
+
+Narration:
+Epilepsy is one of the most common neurological disorders, affecting millions of people worldwide. It is characterized by recurrent seizures that result from abnormal, excessive, or synchronous electrical activity in the brain. Because EEG records the brain's electrical activity directly and with excellent temporal resolution, it has become one of the primary tools used to evaluate patients with epilepsy. EEG not only helps detect abnormal electrical activity but also assists clinicians in identifying the type of seizure, determining the region of the brain involved, monitoring treatment, and supporting surgical planning.
+
+Animation description:
+A world map appears with many dots indicating affected people worldwide. A brain icon appears with abnormal, excessive firing patterns. An EEG waveform shows a seizure onset with sharp spikes. Four application panels appear: seizure type identification, brain region localisation, treatment monitoring, surgical planning.

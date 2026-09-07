@@ -20,9 +20,9 @@ from pathlib import Path
 
 from utils.ffmpeg_utils import duration_seconds
 
-TARGET_WIDTH = 1280
-TARGET_HEIGHT = 720
-TARGET_FPS = 24
+TARGET_WIDTH = 1920
+TARGET_HEIGHT = 1080
+TARGET_FPS = 30
 PAD_BUFFER_SECONDS = 1.0  # safety margin beyond the exact measured gap
 
 

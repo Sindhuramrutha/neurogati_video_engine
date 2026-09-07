@@ -1,0 +1,17 @@
+1. **0.00–2.76** — Screen opens with a clean summary card centered, initially blank. At top of card, a smoothed, filtered waveform appears as a visual anchor: a single waveform trace (blue) with small regular oscillations but no sharp transient peaks, visibly smoother than the jagged neural traces from the previous scene. Below the waveform, a heading fades in: "Low-Pass Filter — Summary." Narration says "In this section, we introduced the low-pass filter."
+
+2. **2.76–5.78** — First bullet point fades in and slides slightly upward from below the heading: "Allows low-frequency components to pass." It appears with a subtle left-to-right slide. As the narration says "and examined its role in neural signal processing," the anchored waveform above pulses gently once, reinforcing that this is the same filter concept being revisited.
+
+3. **6.64–10.40** — Second bullet point fades in below the first: "Reduces frequencies above the cutoff." As the narration says "allows low-frequency components to pass," the first bullet briefly highlights (soft glow, then fades back to normal). The waveform anchor shows a subtle animation: a slow sine-like component travels along the waveform from left to right, visually indicating low-frequency content passing through.
+
+4. **10.40–14.04** — As the narration says "while reducing frequencies above a selected cutoff frequency," the second bullet highlights. Small high-frequency ripple marks (tiny jagged squiggles) appear above the waveform and then shrink and dissolve as they approach a vertical dashed line overlaid on the waveform, labeled "Cutoff." The dashed line remains visible across the waveform anchor, showing the divider between passed and attenuated frequencies.
+
+5. **14.80–19.32** — Third bullet fades in: "Suppresses high-frequency interference." The small high-frequency squiggles above the waveform reappear, then are suppressed — they flatten and disappear as they reach the dashed cutoff line. The waveform anchor becomes slightly cleaner, with the small oscillations smoothing out briefly. Narration says "Low-pass filtering is widely used to suppress high-frequency interference."
+
+6. **19.32–20.56** — As the narration says "and improve signal quality," the waveform anchor brightens and the remaining trace appears cleaner and more stable. The third bullet briefly pulses once to emphasize the result.
+
+7. **21.32–24.50** — Fourth bullet fades in: "Choose cutoff carefully to preserve useful information." The vertical dashed cutoff line on the waveform anchor becomes animated — it slides slightly too far down toward the left side of the waveform, causing the trace to become visibly over-smoothed and flatten. Narration says "However, careful selection of the cutoff frequency is essential."
+
+8. **24.50–27.92** — The over-smoothed waveform show a faint ghost outline of a sharp peak that is no longer present, with a small red "X" at its former location above the trace. The dashed cutoff line slides back up to a moderate position, and the waveform briefly regains a slightly sharper profile showing preserved detail. The fourth bullet highlights and pulses as the narration says "to avoid removing useful physiological information." All four bullets remain visible, card holds steady.
+
+9. **27.92–28.82** — The full summary card remains on screen, all four bullets listed, waveform anchor showing a clean smoothed trace with the dashed cutoff line at a moderate, appropriate level. All elements hold steady through the final 28.82 seconds as the scene concludes.

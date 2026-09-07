@@ -1,0 +1,42 @@
+1. **0.00–2.56** — Open on a clean, minimal canvas. At center, a large label fades in: "The Problem". The label stays centered and remains visible for the opening beats.
+
+2. **2.56–4.66** — A horizontal timeline appears below the "The Problem" label: a single flat line with tick marks at 0 s, 10 s, 20 s, and 30 s, labeled "0 s", "10 s", "20 s", "30 s". A small upward-facing marker sits at the left end.
+
+3. **4.66–5.96** — The timeline brightens to emphasize the full span. A label "30 seconds" fades in beneath the timeline, centered.
+
+4. **5.96–8.16** — The first region of the timeline, from 0 s to 10 s, fills with a distinct color (e.g., blue). Above the filled region, a smooth sinusoid fades in oscillating at roughly 10 Hz, labeled "alpha" at its left end. The 0–10 s region is labeled "alpha dominant".
+
+5. **8.16–9.58** — The alpha sinusoid continues oscillating above the 0–10 s region. The "alpha dominant" label stays visible.
+
+6. **9.58–11.12** — The second region of the timeline, from 10 s to 20 s, fills with a second distinct color (e.g., orange). Above it, a faster sinusoid fades in oscillating at roughly 20 Hz, labeled "beta" at its left end. The 10–20 s region is labeled "beta dominant".
+
+7. **11.12–13.54** — The beta sinusoid continues oscillating above the 10–20 s region. The "beta dominant" label stays visible. The alpha region remains filled but the alpha sinusoid dims slightly.
+
+8. **13.54–16.14** — The third region of the timeline, from 20 s to 30 s, fills with a third distinct color (e.g., green). Above it, an even faster sinusoid fades in oscillating at roughly 40 Hz, labeled "gamma" at its left end. The 20–30 s region is labeled "gamma brief".
+
+9. **16.14–18.28** — The gamma sinusoid plays briefly above the 20–30 s region, then visibly shortens or fades sooner than the other sinusoids to convey "briefly". The "gamma brief" label stays visible.
+
+10. **18.28–21.64** — The entire timeline and all three sinusoids shrink and move to the upper half of the screen. A large arrow or bracket appears spanning the full 0–30 s timeline, labeled "entire 30-second recording". The three colored regions remain visible.
+
+11. **21.64–25.20** — Below the timeline, a single frequency spectrum plot fades in: axes with frequency on the horizontal axis and magnitude on the vertical axis. Three tall, distinct vertical peaks appear at positions labeled "alpha", "beta", and "gamma" (left to right). A title below the plot reads "Single Frequency Spectrum".
+
+12. **25.20–27.68** — The three peaks pulse once in sequence (alpha, then beta, then gamma) to emphasize they all come from the entire signal. The timeline, now compressed, stays connected to the spectrum by a faint arrow or bracket.
+
+13. **27.68–31.62** — The three peaks brighten slightly. Labels "alpha", "beta", "gamma" under the peaks are emphasized. The phrase "frequencies are present" is visually echoed by each peak highlighting in turn.
+
+14. **31.62–34.92** — A large clock icon fades in overlaid on the spectrum plot. The clock hands spin backward rapidly. A bold question mark appears beside the clock. No temporal ordering information is connected to the peaks — the timeline's three regions fade to gray or vanish, leaving only the three peaks.
+
+15. **34.92–37.02** — The clock icon and question mark remain prominent. A text label fades in below or beside the spectrum: "No timing information". The three peaks stay static.
+
+16. **37.02–40.12** — The phrase "significant limitation" is emphasized: a red or bold outline appears around the spectrum plot with the clock icon. The three peaks remain but are dimmed. A subtle shake or warning marker appears on the plot.
+
+17. **40.12–44.32** — A side panel or inset fades in showing a stylized, dynamic neural signal: an irregular, noisy waveform whose amplitude and frequency change continuously. A label "neural activity is dynamic" appears. The spectrum plot with the clock icon remains to the left or above, unchanged.
+
+18. **44.32–49.14** — The side panel expands or moves to center. The dynamic waveform is emphasized. Two adjacent labels appear beside it: "frequency" and "time", both highlighted equally. A weighing or balance visual appears showing time is just as important as frequency.
+
+19. **49.14–51.52** — The labels "which frequencies are present?" and "at what time do they occur?" appear stacked beside the waveform. Both question marks pulse once.
+
+20. **51.52–56.00** — The screen transitions: the spectrum plot and clock icon shrink and move to the right side as a "past limitation" reference. Center screen shows a new, clean area with the words "Short-Time Fourier Transform" fading in prominently, with a small arrow pointing forward.
+
+21. **56.00–56.70** — The final frame holds: "Short-Time Fourier Transform" centered, the old limitation thumbnail on the right, and the dynamic waveform on the left. No new motion; the frame lingers as the narration closes.
+

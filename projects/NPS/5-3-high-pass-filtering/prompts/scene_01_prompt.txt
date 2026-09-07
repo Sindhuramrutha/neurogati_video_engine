@@ -1,0 +1,17 @@
+1. **0.00–0.50** — On a dark background continuing from the previous scene’s fade-to-black, the title text **“Learning Objectives”** fades in at the top-center, bold and large, as the narration begins “After.”
+
+2. **0.50–2.04** — The title “Learning Objectives” remains at the top. No other elements yet — the screen waits with just the title while the narration delivers “completing this section.”
+
+3. **2.04–2.80** — Below the title, three small dots or an ellipsis fade in, centered horizontally, signaling that the objectives are about to be listed. These remain only briefly as the narration says “you should be able to.”
+
+4. **2.80–4.52** — The first objective slides in from the left, stopping a third of the way down the screen: a dark rectangular bullet followed by the text **“Define a high-pass filter.”** As it arrives, it is fully bright and highlighted. The title remains at top. The ellipsis fades out.
+
+5. **5.22–7.30** — The second objective slides in from the left and stops below the first: rectangular bullet plus text **“Explain how a high-pass filter operates.”** As it arrives, it is bright. Simultaneously, the first objective dims to roughly half brightness but remains fully readable and on screen.
+
+6. **8.06–9.84** — The third objective slides in from the left below the second: bullet plus text **“Describe the role of cutoff frequency.”** It arrives bright. The previous two objectives dim further while staying visible.
+
+7. **10.92–13.72** — The fourth objective slides in from the left below the third: bullet plus text **“Identify applications of high-pass filtering in neuroscience.”** It arrives bright and highlighted. The previous three objectives remain visible but dimmed.
+
+8. **14.76–18.04** — The fifth and final objective slides in from the left below the fourth: bullet plus text **“Understand the advantages and limitations of high-pass filtering.”** It arrives bright. The fourth objective dims slightly as the fifth appears.
+
+9. **18.04–18.77** — All five items are now fully visible and their brightness equalizes to uniform full intensity, laid out as a tidy vertical checklist with aligned bullets and consistent spacing. The composition holds steady: “Learning Objectives” title at top, five objective items below, each with a rectangular bullet. The scene ends on this completed checklist, fading out at 18.77 seconds.

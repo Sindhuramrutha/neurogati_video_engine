@@ -1,0 +1,8 @@
+Subtopic: 6.2.5 How Does STFT Work? — Step 1 and Step 2
+Scene type: manim
+
+Narration:
+The operation of STFT can be understood in four simple steps. Step one: select a short time window. A small portion of the signal is selected using a window function. Only the data within this window are analysed. Step two: apply the Fourier Transform. A Fourier Transform is performed on the data inside the window. This provides the frequency content for that short time interval.
+
+Animation description:
+The same continuous signal waveform is shown. A bright rectangular window slides into position over the first segment, labeled 'Step 1: Select window'. The surrounding regions fade slightly to emphasize the window's contents. Then the scene splits: on the right, the selected segment is extracted and a small schematic Fourier Transform icon rotates above it, with a spectrum plot appearing below labeled 'Step 2: Apply Fourier Transform'. The segment's dominant frequency peaks in the spectrum are highlighted.

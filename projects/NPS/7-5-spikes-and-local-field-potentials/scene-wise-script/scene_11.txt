@@ -1,0 +1,8 @@
+Subtopic: Neural Prostheses: Definition and Decoding Pipeline
+Scene type: manim
+
+Narration:
+A neural prosthesis is a system that uses neural signals to restore, replace, or assist a function that has been lost or impaired. Neural recordings can contain information about a person's intended actions. For example, neural activity associated with an intended hand or arm movement can be recorded and analysed. A simplified neural prosthesis pipeline is: neural recording, then preprocessing, then feature extraction, then decoding, then device control. The recorded neural signal first needs to be cleaned and processed. Relevant features can then be extracted. For spike-based systems, these features may include spike counts, firing rates, spike timing, and activity of multiple neurons. LFP-based features can include characteristics of population activity or frequency-specific power. A decoder can then translate these features into an estimate of the user's intended movement.
+
+Animation description:
+Show a person with a recording device connected to their head or brain. From the recording, animate a pipeline with labeled blocks: 'Neural recording', 'Preprocessing', 'Feature extraction', 'Decoding', and 'Device control'. At the feature extraction block, show spike-based features like spike counts, firing rates, spike timing, and population activity, and LFP-based features like frequency-specific power. At the decoding block, show a computational model translating features into an estimated movement trajectory. At the device control block, show a robotic arm or cursor moving.

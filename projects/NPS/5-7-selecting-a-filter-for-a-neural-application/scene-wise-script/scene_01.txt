@@ -1,0 +1,8 @@
+Subtopic: 5.7.2 Learning Objectives
+Scene type: image_only
+
+Narration:
+After this section, you should be able to identify the factors that go into filter selection, match different filters to common neural recording problems, understand why filter selection depends on the application, and recognise that no single filter is suitable for every recording.
+
+Animation description:
+Display a title card with the heading 'Learning Objectives'. Below, four bullet points appear one after another in sync with the narration: 'Identify factors involved in filter selection', 'Match filters to common neural recording problems', 'Understand why filter selection depends on the application', 'Recognise that no single filter works for every recording'. The card remains static.

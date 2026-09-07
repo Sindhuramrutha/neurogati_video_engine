@@ -1,0 +1,8 @@
+Subtopic: 6.2.3 Important Note
+Scene type: image_only
+
+Narration:
+So here's the key distinction in one line. The Fourier Transform answers: what frequencies exist? The Short-Time Fourier Transform answers: what frequencies exist, and when do they occur?
+
+Animation description:
+Two side-by-side cards appear. The left card is labeled 'Fourier Transform' and underneath appears the text 'What frequencies exist?' The right card is labeled 'Short-Time Fourier Transform' and underneath appears the text 'What frequencies exist, and when?', with the word 'when' highlighted and pulsing.

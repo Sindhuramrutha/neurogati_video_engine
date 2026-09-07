@@ -1,0 +1,35 @@
+1. **0.00-1.10** — A clean horizontal axis appears at center, unlabelled, fading in from blank. A simple smooth oscillating waveform (sine-like, moderate amplitude and frequency) draws itself left to right across the axis, completing by about 1 second.
+
+2. **1.10-4.38** — The finished waveform remains on screen. At 2.06, a subtle ripple-pulse passes along the waveform from left to right, suggesting the filtering process improving the recording. At 3.56, a small text label “neural recording” fades in beneath the left end of the waveform.
+
+3. **4.38-7.84** — Small animated ticks or noise-like squiggles fade out from around the waveform, one layer at a time, leaving the main waveform visibly smoother and cleaner. The label “neural recording” remains below. At 6.96 a brief pause holds the clean waveform steady.
+
+4. **7.84-11.34** — A secondary small inset panel fades in at the upper right, initially blank. As the narration says “frequency domain,” axes appear in the inset panel (horizontal axis: “Frequency (Hz)”, vertical axis: “Power”) and the panel enlarges slightly to a readable small plot.
+
+5. **11.34-14.38** — In the inset frequency plot, three or four prominent vertical peaks rise one at a time at distinct frequency positions (e.g., near 8 Hz, 15 Hz, 25 Hz, 40 Hz). The peaks pulse once each as they appear. A faint arrow from the main waveform points toward the inset plot, connecting the two.
+
+6. **14.38-15.28** — The frequency plot inset fades slightly into the background, but remains visible at reduced opacity in the upper right. The main waveform settles at a moderate oscillation.
+
+7. **15.28-18.16** — The question “Constant throughout?” fades in above the main waveform in large text, positioned over the right half of the waveform. A large bold question mark appears beside it at 18.16. The waveform continues oscillating steadily underneath.
+
+8. **18.16-23.46** — The question text stays prominent. The question mark slowly scales up and down once, emphasizing doubt. At 19.40, the main waveform is highlighted with a subtle bright outline while the phrase “frequencies … constant … entire recording” plays, drawing attention to the waveform’s unchanged pattern so far.
+
+9. **23.46-28.44** — The question mark remains but fades to 60% opacity. At 24.20, a red “No.” stamp or bold red cross fades in next to the question at 27.88, directly answering the question. The word “No” remains visible while the narration says “the answer is no.”
+
+10. **28.44-31.72** — The “No.” and question mark fade out together. The waveform begins to visibly shift its oscillation frequency and amplitude: first slightly, then more noticeably, with the waveform morphing from the earlier stable pattern into a new, more complex shape. The shift appears organic and continuous.
+
+11. **31.72-34.70** — Below the waveform, a horizontal timeline line appears. At 33.88, the first labelled marker “Rest” appears at the far left of the timeline. The waveform visibly settles into a lower-frequency, relaxed pattern.
+
+12. **34.70-36.78** — At 34.70, a second labelled marker “Movement” appears to the right of “Rest.” The waveform shifts to a higher-frequency, larger-amplitude oscillation. The transition between “Rest” and “Movement” is sharp and observable.
+
+13. **36.78-38.52** — At 36.78, a third labelled marker “Stimulus” appears to the right of “Movement.” The waveform shows a burst of high-frequency, spiky activity, then returns to a moderate oscillation.
+
+14. **38.52-39.88** — At 38.52, a fourth labelled marker “Sleep” appears to the right of “Stimulus.” The waveform changes to a very slow, large-amplitude oscillation. At 39.50, a fifth labelled marker “Cognition” appears at the right end of the timeline. The waveform shifts to a complex, fast, irregular-looking oscillation.
+
+15. **39.88-44.40** — All five markers (“Rest”, “Movement”, “Stimulus”, “Sleep”, “Cognition”) remain visible along the timeline. The waveform continues moving through the pattern shifts described, cycling through the different frequency/amplitude states as the narration mentions each event again.
+
+16. **44.40-49.00** — The waveform continues morphing through distinct frequency and amplitude changes, directly illustrating “characteristics … change over time.” The timeline markers remain as reference. The waveform’s overall shape looks non-repeating.
+
+17. **49.00-54.72** — At 49.62, the waveform freezes momentarily and a soft glow outlines it. The timeline and waveform slowly pan or zoom slightly to show the changing pattern across the full recording. At 52.38, the title “Nonstationary Signals” fades in above the waveform, in bold text, replacing where the earlier question was. The title holds steady.
+
+18. **54.72-55.50** — The title “Nonstationary Signals” remains visible. The waveform resumes moving and continues to change frequency and amplitude until the very end of the scene. The timeline markers fade slightly but remain legible. The scene ends with the waveform still oscillating and shifting shape.

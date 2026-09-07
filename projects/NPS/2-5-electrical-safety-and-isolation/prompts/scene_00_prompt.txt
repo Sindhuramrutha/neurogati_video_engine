@@ -1,0 +1,31 @@
+1. **0.00–1.10** — Screen opens on a stylized human figure standing on the left, drawn in simple outline. A single cable line runs from the figure's head to the right, connecting first to a simple amplifier box (a small rectangle with an "amp" label) and then continuing to a computer on the right (a monitor-and-tower silhouette). The signal path is visible but static for now.
+
+2. **1.40–2.36** — The screen fades in a subtle title label above the scene reading "Neural Signal Acquisition." The cable from the human to the amplifier to the computer brightens slightly to draw the eye along the whole chain, indicating the complete path from person to equipment.
+
+3. **2.92–4.00** — A soft, pulsing waveform (a small sine-like oscillation traveling left to right) begins moving along the cable from the human toward the amplifier and computer, visually marking the neural signal being captured. The label "Neural Signal Acquisition" stays visible.
+
+4. **4.56–5.62** — The waveform's point of origin at the human's head pulses gently; a tiny label "detecting" appears just above the head connection and then fades, keeping focus on the first stage of the chain.
+
+5. **5.98–6.84** — The waveform reaches the amplifier box; the amplifier box pulses once and a small label "amplifying" appears briefly above it, then fades as the waveform's amplitude visibly increases after passing through the amplifier.
+
+6. **7.18–7.90** — As the waveform continues along the cable, a small label "conditioning" appears near the cable segment between amplifier and computer; the waveform shape becomes slightly cleaner and more regular after this point, showing conditioning.
+
+7. **8.14–9.78** — The waveform arrives at the computer; the computer screen flashes a brief grid of digital-looking dots or a simple binary pattern, and a label "digital data" appears above the computer. The waveform disappears into the computer, completing the acquisition chain.
+
+8. **10.70–15.04** — The whole acquisition chain remains on screen but dims slightly. A yellow warning triangle with a lightning bolt symbol fades in above the connection point between the cable and the human's head, pulsing once to draw attention. A label "Electrical Safety" fades in next to the triangle. The narration marks the shift from signal acquisition to the new concern; the warning symbol stays visible.
+
+9. **15.96–20.40** — The warning triangle shrinks and moves to the upper side of the screen, staying lit but out of the way. The human figure brightens back to full visibility. Small dots or electrode marks appear on the human's head and arm, with short thin cable lines connecting them into the main cable, showing that electrodes and sensors are physically attached to the person.
+
+10. **20.98–22.22** — The camera zooms slightly toward the human's arm or head — specifically the surface where the electrode markers sit — and a small label "on the skin" appears near the electrode on the skin. That electrode pulses gently to emphasize surface contact.
+
+11. **23.14–25.80** — The scene shifts emphasis to a second small illustration overlapping the human figure's midsection: a simple outline showing a cross-section of tissue with an electrode tip inside. A label "inside the body" appears, and a small "surgery" tag fades in briefly near it. This emphasizes electrodes sometimes placed into deeper tissues, as during surgery.
+
+12. **26.76–30.34** — The view returns to the full human-to-equipment connection. The cable between the human and the equipment brightens again, and a dashed line or highlighted path traces the direct connection from the person to the electronic equipment. A label "directly connected" appears along the cable, emphasizing the physical link between participant and electronics.
+
+13. **30.96–35.94** — The screen splits visually into two small protective symbols: one shield icon appears over the human figure and one over the computer or amplifier, both with a small "protected" label. A red or orange jagged hazard bolt appears briefly along the cable and then is crossed out or blocked by the shields. This shows the system protecting both the person and the equipment from electrical hazards.
+
+14. **37.02–40.20** — The hazard bolt fades away, the shields remain in place, and the warning triangle from earlier pulses once again in the upper corner. A label "Why electrical safety matters" fades in centered above the scene, setting up the section's focus.
+
+15. **40.86–46.12** — The two shields pull back slightly, and a new label "Electrical Isolation" fades in below the title. A visual gap appears in the middle of the cable between the human and the amplifier — drawn as a small break with an isolation barrier symbol (two parallel lines or a dashed gap) — while the signal waveform continues passing across it. The scene holds on this barrier, the human figure, and the equipment until the narration completes.
+
+16. **46.12–46.92** — The full scene holds steady: human figure on the left, amplifier and computer on the right, warning triangle upper side, title "Electrical Safety" and label "Electrical Isolation" visible, with the isolation gap in the cable gently pulsing. No new elements are added; the final held frame carries the scene to the end of the clip.

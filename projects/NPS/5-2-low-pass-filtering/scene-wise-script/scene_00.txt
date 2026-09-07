@@ -1,0 +1,8 @@
+Subtopic: 5.2.1 Introduction
+Scene type: manim
+
+Narration:
+In the previous section, we saw that filtering improves the quality of neural recordings by reducing unwanted signal components. But not all unwanted signals live in the same place. Some occur at very high frequencies, while others occur at much lower frequencies. To remove unwanted high-frequency components while preserving slower physiological activity, one of the most commonly used tools is the low-pass filter. In this section, we'll understand how a low-pass filter operates, how it modifies a signal, and where it's applied in neural signal processing.
+
+Animation description:
+A clean title card with '5.2 Low-Pass Filtering' fades in, then dissolves into a stylized animated signal waveform along the top of the screen. The waveform visibly separates into two layers: a smooth, slow-varying wave labeled 'Physiological Activity' at the bottom, and a jagged, fast-oscillating wave labeled 'High-Frequency Noise' just above it. The high-frequency layer is tinted red and blinks or shakes slightly to mark it as unwanted. A large low-pass filter icon (a gate or brick-wall outline that is open at the bottom) slides in between the two layers.

@@ -1,0 +1,8 @@
+Subtopic: Summary
+Scene type: manim
+
+Narration:
+To summarize, we distinguished between time-locked and induced neural activity. Time-locked responses occur at approximately the same latency after repeated events, and therefore become clearer through ERP averaging. In contrast, induced neural activity is related to the event but varies in timing across trials. Because averaging reduces these responses, they are typically investigated using time-frequency analysis methods such as the STFT, spectrograms, and wavelet analysis. Understanding this distinction is essential for selecting appropriate analytical techniques and correctly interpreting neural recordings.
+
+Animation description:
+A final recap graphic appears. On the left, a short stack of aligned waveforms and an arrow pointing to an ERP average, labeled 'Time-Locked: ERP averaging works'. On the right, a stack of misaligned waveforms with an arrow pointing to a faded, smeared average, labeled 'Induced: Averaging fails'. Below, three icons appear: 'STFT', 'Spectrogram', and 'Wavelet Analysis', grouped under a label 'Use time-frequency analysis for induced activity'. The icons highlight one by one as they are named.

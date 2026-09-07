@@ -1,0 +1,8 @@
+Subtopic: 5.2.9 Summary
+Scene type: manim
+
+Narration:
+In this section, we introduced the low-pass filter and examined its role in neural signal processing. We learned that a low-pass filter allows low-frequency components to pass while reducing frequencies above a selected cutoff frequency. Low-pass filtering is widely used to suppress high-frequency interference and improve signal quality. However, careful selection of the cutoff frequency is essential to avoid removing useful physiological information.
+
+Animation description:
+A clean summary card appears with four bullet points, each appearing with a subtle fade and slide: 'Allows low-frequency components to pass', 'Reduces frequencies above the cutoff', 'Suppresses high-frequency interference', and 'Choose cutoff carefully to preserve useful information'. A smooth, filtered waveform illustration sits at the top of the card as a visual anchor.

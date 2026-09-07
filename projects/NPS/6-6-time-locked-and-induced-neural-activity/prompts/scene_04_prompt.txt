@@ -1,0 +1,31 @@
+1. 0.00-2.54: The previous scene's final image fades out. A blank background fades in, with an empty flow-diagram layout centered on screen.
+
+2. 2.54-5.66: A rounded rectangular box fades in at the top center of the screen, containing the exact text: "Objective: consistent responses after each stimulus?" No other elements appear yet.
+
+3. 5.66-6.24: A labeled arrow fades in, pointing downward from the top question box toward the left side of the screen.
+
+4. 7.06-9.22: The top question box remains highlighted while the narration introduces the first objective. The arrow from the top box brightens slightly to draw attention to the upcoming branch.
+
+5. 9.22-12.08: The label on the left-pointing arrow fades in with the text "Consistent timing" near the top of the arrow. The top question box dims slightly.
+
+6. 12.08-14.92: A new rounded rectangular box fades in at the lower left, connected to the end of the left arrow. The box contains the text "ERP analysis" and a small icon of an averaged waveform (a smooth, symmetric positive deflection) inside it.
+
+7. 15.72-17.66: A second arrow fades in, branching from the top question box and pointing downward toward the right side of the screen. The top question box's text updates or a second question box fades in next to the first, reading: "Objective: oscillatory changes with variable timing?"
+
+8. 17.66-21.58: The label on the right-pointing arrow fades in with the text "Variable timing" near the top of the arrow. The right question box is highlighted while the left branch dims slightly.
+
+9. 21.58-25.78: A second rounded rectangular box fades in at the lower right, connected to the end of the right arrow. The box contains the text "Time-frequency analysis" and a small icon of a spectrogram (a grid with color-coded frequency bands and time on the axes) inside it.
+
+10. 25.78-30.62: Both analysis boxes remain visible, now equally emphasized. The top question boxes dim slightly as focus shifts to the two analysis methods.
+
+11. 30.62-35.30: A label "Spectrograms & Wavelet analysis" fades in near the right analysis box, with small annotation arrows pointing from this label to the time-frequency analysis box. The term is highlighted as it is named.
+
+12. 36.02-39.62: Two arrows fade in, one from each analysis box, both pointing downward and converging toward a single point at the bottom center of the screen.
+
+13. 39.62-40.32: A rounded rectangular box fades in at the convergence point, containing the text "Complementary insights". The converging arrows connect the two analysis boxes to this bottom box.
+
+14. 41.30-45.96: The left branch (ERP analysis box and its arrow) is highlighted, and the bottom box brightens. The ERP analysis box pulses slightly to emphasize its connection to time-locked responses. A small caption "Reveals time-locked neural responses" fades in near the ERP analysis box.
+
+15. 46.70-51.12: The right branch (time-frequency analysis box and its arrow) is highlighted, and the bottom box remains bright. The time-frequency analysis box pulses slightly to emphasize its connection to induced activity. A small caption "Reveals induced activity — may not be visible after averaging" fades in near the time-frequency analysis box.
+
+16. 51.12-54.27: The full flow diagram holds steady with all elements visible: both question boxes at top, both analysis boxes at middle, the converging arrows, and the bottom "Complementary insights" box. The bottom box glows softly as the narration concludes.

@@ -1,0 +1,8 @@
+Subtopic: Spike Sorting
+Scene type: manim
+
+Narration:
+A single electrode may detect activity from several nearby neurons. The recorded signal therefore may contain spikes from multiple neurons mixed together. Spike sorting attempts to separate these spikes according to characteristics such as their waveform shape. This allows researchers to estimate which spikes came from different neurons and study their firing patterns separately. This is an important example of how signal processing converts a raw neural recording into interpretable information.
+
+Animation description:
+Show a single electrode tip surrounded by three nearby neurons, each colored differently. When each neuron fires, its spike appears on a shared recorded trace in the corresponding color. Overlay a messy combined trace showing spikes of different shapes overlapping. Then animate a spike sorting process: each detected spike is assigned to one of the three neurons based on waveform shape. Show three separate firing patterns, one per neuron, appearing as distinct spike trains. Label the process as 'spike sorting'.

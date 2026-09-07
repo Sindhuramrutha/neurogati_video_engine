@@ -1,0 +1,8 @@
+Subtopic: Neural Prostheses: Example with a Robotic Arm
+Scene type: manim
+
+Narration:
+Consider a person attempting to move a robotic arm. The system could record neural activity, detect spikes or analyse LFPs, extract relevant neural features, use a computational model to estimate the intended movement, convert that estimate into a control command, and move the robotic device. This illustrates how neural signal processing can transform electrical activity in the nervous system into an external action.
+
+Animation description:
+Show a person with a neural recording device, thinking of moving their arm. From the recording, show spikes and LFPs being detected. Then show a computational model estimating a movement trajectory, drawn as a dashed line. Convert this into a control command that moves a robotic arm. Animate the robotic arm reaching toward a target object. Label each step: recording, spike or LFP analysis, feature extraction, movement estimation, control command, and device movement.

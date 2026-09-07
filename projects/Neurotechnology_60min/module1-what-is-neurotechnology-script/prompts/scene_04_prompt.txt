@@ -1,0 +1,43 @@
+1. **0.00–4.46** — On a clean, dark background, the text **“A simple pipeline”** fades in at upper center, with “pipeline” in a slightly bolder weight. The screen is otherwise mostly empty, establishing a fresh visual space distinct from the previous scene's three-panel layout.
+
+2. **5.34–8.14** — Below the title, two small endpoint labels fade in: **“Biological source”** at the far left and **“Action”** at the far right. A faint horizontal path line stretches between them, rising into place left to right. The two labels sit at opposite ends of this line.
+
+3. **8.70–15.32** — Along the path line, seven empty rectangular boxes fade in sequentially from left to right, spacing themselves evenly between the two endpoints. As each box appears, its label fades in beneath it: **“Brain/Nerve”**, **“Signal”**, **“Sensor”**, **“Acquisition”**, **“Processing”**, **“Interpretation”**, **“Action”**. Arrows form between adjacent boxes, all pointing left to right. The “Action” endpoint label on the far right merges into the “Action” box. By the end, the full pipeline of seven boxes and six connecting arrows is visible.
+
+4. **16.28–17.90** — The whole pipeline is fully assembled. No single box is highlighted yet; a subtle pulse travels from left to right along the arrows, suggesting the pipeline will now be stepped through one box at a time.
+
+5. **18.46–20.66** — The **“Brain/Nerve”** box glows and enlarges slightly, rising from the line by a few pixels. Inside the box, small references to neural anatomy fade in: a simplified brain outline on one side and a short nerve segment on the other.
+
+6. **20.42–23.28** — Still focused on the Brain/Nerve box, four tiny labels fade in just inside its lower portion, one at a time: **“brain”**, **“spinal cord”**, **“peripheral nerves”**, **“muscles”**. The labels blink once as each is named, then settle into place as small stacked text within the box. The brain and nerve outlines remain static.
+
+7. **24.12–27.48** — The Brain/Nerve box dims slightly. The **“Signal”** box glows and enlarges. Between the Brain/Nerve and Signal boxes, small animated pulses begin to travel along the connecting arrow: tiny bright dots moving left to right, representing electrical potential and magnetic field. Inside the Signal box, a single simple waveform line fades in and begins oscillating gently.
+
+8. **27.92–30.66** — The pulses between Brain/Nerve and Signal continue. Inside the Signal box, two small labels fade in beneath the waveform: **“electrical potential”** and **“magnetic field”**, in small stacked text. The Signal box pulses once with each label.
+
+9. **31.50–33.62** — The Signal box dims. The **“Sensor”** box glows and enlarges, and the waveform inside Signal shrinks into a compact icon that slides along the arrow into the left edge of the Sensor box, suggesting the signal entering.
+
+10. **34.42–38.04** — Inside the Sensor box, a first paired set of sensor icons fades in at upper left: a simplified side-view scalp outline with a few electrode dots placed on it, and beside it a small voltage-difference symbol (a “+” and “−” separated by a small gap). The label **“EEG”** fades in beneath this icon set.
+
+11. **38.80–43.10** — A second paired set of sensor icons fades in at upper right of the Sensor box: a head outline surrounded by a curved ring of sensor dots, with a small magnetic field icon (a few concentric arc lines) beside it. The label **“MEG”** fades in beneath it.
+
+12. **43.96–48.76** — A third paired set of sensor icons fades in at lower center of the Sensor box: a simple muscle shape (a short bundle of parallel lines with a slight bulge) with three electrode dots on its surface, and beside it a small jagged electrical activity trace. The label **“EMG”** fades in beneath it. The Sensor box now holds all three icon groups, each with its label, while the signal waveform icon at the left edge pulses.
+
+13. **49.52–55.26** — The Sensor box dims. The **“Acquisition”** box glows and enlarges. Inside it, a continuous smooth analog waveform fades in on the left half. A vertical dividing line appears through the middle of the box. On the right half, the same waveform fades in as a discrete-time version: the curve replaced by a sequence of small dots at regular intervals, like samples of the original. A small arrow crosses the divider from the analog side to the digital side, with the label **“digitize”** fading in just above it.
+
+14. **56.10–57.32** — The Acquisition box dims. The **“Processing”** box glows and enlarges. Inside it, a noisy waveform fades in: a jagged, fuzzy trace with irregularities and spikes along its length.
+
+15. **58.06–60.50** — The noisy waveform in the Processing box deforms more dramatically: random jitter, a sudden large spike, and a wandering baseline make the trace look clearly contaminated. The label **“raw recording”** fades in below the noisy waveform.
+
+16. **61.14–65.24** — Small annotation markers fade in around the noisy waveform at distinct points: **“noise”** near the fuzzy sections, **“artifacts”** near the large spike, **“interference”** near a repeated undulating disturbance on the baseline, and **“unwanted components”** along a region of low-amplitude wobble. Each label pulses once as it appears. The noisy waveform continues to scroll slowly through the box.
+
+17. **66.14–71.20** — Inside the Processing box, the noisy waveform begins to transform. A subtle dotted outline of the raw trace remains behind, while a second, much cleaner smooth curve draws itself over the same path, steadying the baseline and removing the spikes. A small arrow labeled **“improve”** appears briefly, then fades. The result is a clean smooth waveform with the label **“prepared for analysis”** in small text beneath. The noisy raw trace becomes faint and ghosted.
+
+18. **72.08–75.92** — The Processing box dims. The **“Interpretation”** box glows and enlarges. Inside it, the clean waveform from Processing slides in from the left edge. The waveform then compresses while a small symbol fades in beside it on the right: a simple rounded label or tag shape. Inside the tag, a small glyph appears — a circle with a small checkmark, representing a decoded interpretation. The label **“interpreted information”** fades in below.
+
+19. **76.66–79.14** — The Interpretation box dims. The **“Action”** box at the far right glows and enlarges. The tag or symbol from Interpretation slides along the arrow into the Action box. The Action box pulses once as the symbol arrives.
+
+20. **79.76–85.90** — From the Action box, three thick arrows branch outward to three distinct icons, appearing one at a time. First, **“clinical decision”**: a simple clinical decision chart — a branching tree with boxes labeled **“Diagnosis”**, **“Treatment”**, and **“Follow-up”**, connected by arrows. Second, **“prosthetic device”**: a simple robotic hand, drawn as a basic palm with jointed hinged fingers, animated to open and close once. Third, **“feedback to user”**: a circular feedback loop — an arrow leaving a small icon of a person and curving back to the person, with a small screen or speaker icon midway. Each icon is labeled beneath with its corresponding phrase.
+
+21. **86.72–88.70** — The three action icons fade or shrink toward the Action box. The pipeline recenters: all seven boxes are now sized equally again, with the Brain/Nerve box at the left and the Action box at the right. The title **“A simple pipeline”** remains visible above. The screen holds steady for a moment, showing the entire pipeline at equal emphasis.
+
+22. **89.56–93.58** — One final time, each box lights up in sequence from left to right, starting with **“Brain/Nerve”** and ending with **“Action”**, with each glow lasting roughly half a second. The pipeline holds with all boxes steady, no single box emphasized, through the end at 93.58.

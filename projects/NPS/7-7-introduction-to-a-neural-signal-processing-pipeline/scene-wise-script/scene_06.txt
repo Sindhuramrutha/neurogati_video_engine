@@ -1,0 +1,8 @@
+Subtopic: 7.7.7 Capstone Activity
+Scene type: manim
+
+Narration:
+Now it is your turn to apply the concepts from the entire course. Choose one application: sleep staging, epilepsy detection, movement analysis, or brain-computer interface. Then design a simple processing pipeline. For example, for sleep staging: start with raw EEG, then preprocessing to remove artifacts and apply appropriate filtering, then feature extraction to calculate frequency-band power, then classification to classify the signal into a sleep stage, then output: wake, NREM, or REM. The important part of this activity is not choosing the most advanced algorithm. The goal is to understand why each stage is necessary and how the stages connect together.
+
+Animation description:
+Four application cards appear at the top: 'Sleep staging', 'Epilepsy detection', 'Movement analysis', 'Brain-computer interface'. The sleep staging card is highlighted and expands into a vertical pipeline diagram below. The pipeline shows: a raw EEG trace, then a box labeled 'Preprocessing' with sub-items 'Remove artifacts' and 'Apply appropriate filtering', then a box labeled 'Feature Extraction' with sub-item 'Calculate frequency-band power', then a box labeled 'Classification' with sub-item 'Classify into sleep stage', then a final output box showing three colored labels: 'Wake', 'NREM', 'REM'. The entire pipeline pulses. A text overlay appears at the bottom: 'Goal: understand why each stage is necessary and how the stages connect together'.

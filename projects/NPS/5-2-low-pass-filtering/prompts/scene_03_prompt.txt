@@ -1,0 +1,15 @@
+1. **0.00–2.70** — Scene opens in continuity with the previous scene's gate-and-waveforms visual still visible, then dissolves out. A frequency response plot fades in with frequency on the horizontal axis and gain (amplitude) on the vertical axis. The curve enters flat at gain = 1 across the low-frequency range, following the narration's setup that a low-pass filter does not simply separate frequencies into two groups.
+
+2. **5.60–9.52** — The plot holds. Text "Cutoff Frequency" fades in near a marked point on the horizontal axis where the flat portion of the curve ends. A subtle vertical dashed line runs upward from that point, drawing attention as the narration names the parameter. The curve remains flat at gain = 1 up to that point.
+
+3. **10.54–15.96** — The curve begins to bend downward at the cutoff point, showing a smooth, graceful roll-off to the right of the dashed line. The vertical dashed line brightens. As the narration defines "frequency above which signal components begin to be attenuated," the portion of the curve beyond the cutoff is emphasized with a soft highlight tracing along its descending slope.
+
+4. **16.64–20.74** — The horizontal axis label at the cutoff line updates to read "40 Hz." A small arrow on the axis points to the 40 Hz tick mark where the curve begins to slope downward. Text "Cutoff Frequency (40 Hz)" appears near the dashed vertical line.
+
+5. **20.98–26.48** — The flat region of the curve to the left of 40 Hz is labeled "Passband" with a light shading beneath it. The curve remains at gain = 1 across this entire region, emphasizing that components below 40 Hz pass with minimal attenuation. The arrow at 40 Hz stays visible.
+
+6. **27.22–34.52** — The region to the right of the 40 Hz line, where the curve rolls off downward, is shaded and labeled "Attenuation Region." The curve's descent through this region is animated slightly — a moving dot travels along the falling curve as the narration describes how the filter gradually reduces amplitude as frequency increases beyond 40 Hz.
+
+7. **35.44–40.78** — The camera or view zooms slightly to the area around 40 Hz. The curve's smooth, gradual bend is emphasized — a brief highlight sweeps along the curve near 40 Hz, showing it slopes gently rather than dropping vertically. No sharp cliff appears. Text "not an abrupt boundary" appears near the curve as the narration makes this point.
+
+8. **41.96–46.02** — View pulls back to show the full plot. The "Attenuation Region" shading extends progressively rightward, with the curve continuing its gradual downward slope across that region. The labels "Passband," "Cutoff Frequency (40 Hz)," and "Attenuation Region" remain visible. The final frame holds to 46.02 seconds with the full plot, gentle roll-off curve, and all labels on screen.

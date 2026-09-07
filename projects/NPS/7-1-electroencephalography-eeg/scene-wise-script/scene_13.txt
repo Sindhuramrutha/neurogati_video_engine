@@ -1,0 +1,8 @@
+Subtopic: 7.1.3 Sleep Stages and EEG - Deep Sleep and REM
+Scene type: manim
+
+Narration:
+Deep sleep is characterized by slow, high-amplitude EEG activity, with delta waves becoming dominant. This stage is considered important for physical recovery and restorative processes. During REM sleep, EEG activity becomes more irregular and resembles wakefulness in many respects. Although the brain is highly active during this stage, voluntary skeletal muscles remain largely inactive. REM sleep is strongly associated with vivid dreaming and memory consolidation.
+
+Animation description:
+A high-amplitude, slow delta waveform (around 1-2 Hz) appears for deep sleep, with a restorative icon (muscle/heart). Then a fast, irregular waveform appears for REM, resembling wakefulness. An eye icon with rapid movement arrows appears to indicate rapid eye movement. A muscle icon with an X appears to indicate muscle inactivity. A dream cloud icon and a memory consolidation icon appear.

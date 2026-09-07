@@ -1,0 +1,8 @@
+Subtopic: Why is Averaging Necessary?
+Scene type: manim
+
+Narration:
+Why do we need averaging? A single EEG recording contains a mixture of many different neural processes. The brain is continuously active, even when no experimental task is being performed. As a result, the response to a single stimulus is often very small compared with the ongoing background EEG. If we examine only one trial, the event-related response may be difficult to distinguish from the surrounding neural activity. To improve the visibility of the response, the same stimulus is presented repeatedly. For each presentation, a short EEG segment is extracted around the event. These segments are then averaged together. Because the event-related response occurs at approximately the same time in every trial, it is reinforced during averaging. In contrast, much of the unrelated background EEG varies randomly from trial to trial and therefore tends to cancel out. The result is a much clearer representation of the brain's response to the stimulus.
+
+Animation description:
+Multiple EEG epochs are shown stacked vertically, each with a vertical stimulus onset marker aligned across all of them. Each epoch shows noisy, wiggly traces. As they are all aligned at the stimulus marker, a subtle consistent waveform is visible in each. The epochs then slide together and collapse into a single average waveform at the bottom, which appears much smoother and shows a clear positive and negative deflection. The random fluctuations in the individual traces visibly cancel out during the averaging.

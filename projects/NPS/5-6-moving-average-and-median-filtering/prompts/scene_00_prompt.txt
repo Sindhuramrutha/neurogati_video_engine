@@ -1,0 +1,16 @@
+1. **0.00s** — A noisy waveform (irregular, fluctuating line) appears center-screen with a label “Time domain” beneath it. The waveform represents a signal with random variations, no specific numbers attached.
+
+2. **4.90s** — Three small filter‑symbol icons flash into view beside the waveform: a low‑pass curve (smooth fall‑off at high frequencies), a high‑pass curve (sharp rise then flat), and a band‑pass curve (peaked around a central frequency). They position to the right of the waveform.
+
+3. **7.70s** — A large red “X” is drawn over the three filter icons, crossing them out. The icons then dim slightly, becoming visually de‑emphasized.
+
+4. **8.58s** — The crossed‑out icons slide off‑screen or fade out entirely. The noisy waveform is highlighted: it brightens or gains a subtle glowing outline, while the “Time domain” label remains visible. This shift brings attention back to the waveform itself.
+
+5. **15.86s** — A small cursor (a vertical bar or arrow) appears over a sample point on the waveform. It moves step‑by‑step along the waveform, pausing momentarily at each discrete sample as if “modifying it sample by sample,” synchronizing with the narration. The motion ends and the cursor disappears by 17.02s.
+
+6. **27.14s** — An averaging‑operation icon (a bar with an overline or Σ symbol) appears beside the waveform, labeled “Moving‑Average”.  
+   **28.78s** — A second icon (a sorting symbol, e.g., three vertical marks with the middle one highlighted, or an arrow pointing to a median element) appears next to it, labeled “Median”. The waveform and its label remain visible but both icons now share the focus.
+
+7. **30.16s** — The view zooms slightly to center the two filter icons more prominently, as if preparing to examine them. The noisy waveform stays in the background, slightly out of focus.
+
+8. **33.54s** — The entire scene begins a slow fade‑out, transitioning to the next scene. The fade completes at the end of the timeline, **34.48s**.

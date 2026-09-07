@@ -1,0 +1,3571 @@
+[
+  {
+    "id": 0,
+    "subtopic": "5.1.1 Introduction",
+    "narration": "In an ideal world, every neural recording would contain only the physiological signal we want to study. Unfortunately, that's rarely the case. Whether we record EEG, EMG, ECoG, or microelectrode signals, the waveform we acquire usually contains not just the biological signal of interest, but also unwanted electrical activity from a whole range of sources. These unwanted components can come from electrical equipment, movement of the subject, muscle activity, poor electrode contact, or simply the surrounding environment. And if we don't remove these unwanted signals, they make interpretation difficult and reduce the accuracy of later analyses. That's why signal filtering is an essential step in neural signal processing.",
+    "animation_description": "A stylized neural recording trace appears on screen, a clean wiggling line reminiscent of brain activity. One by one, colored noise components fade in and distort the trace: a slow sinusoidal drift, a high-frequency buzz from equipment, a sharp spike from movement, a power-line frequency ripple. Each noise source is labeled. The clean trace becomes progressively messier until it's hard to see the original shape. A final overlay message appears: 'Filtering removes what we don't want.'",
+    "scene_type": "manim",
+    "audio_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\NPS\\5-1-why-signals-are-filtered\\audio\\scene_00.wav",
+    "timestamps": [
+      {
+        "word": "In",
+        "start": 0.0,
+        "end": 0.4
+      },
+      {
+        "word": "an",
+        "start": 0.4,
+        "end": 0.46
+      },
+      {
+        "word": "ideal",
+        "start": 0.46,
+        "end": 0.7
+      },
+      {
+        "word": "world,",
+        "start": 0.7,
+        "end": 1.16
+      },
+      {
+        "word": "every",
+        "start": 1.5,
+        "end": 1.88
+      },
+      {
+        "word": "neural",
+        "start": 1.88,
+        "end": 2.14
+      },
+      {
+        "word": "recording",
+        "start": 2.14,
+        "end": 2.66
+      },
+      {
+        "word": "would",
+        "start": 2.66,
+        "end": 2.98
+      },
+      {
+        "word": "contain",
+        "start": 2.98,
+        "end": 3.26
+      },
+      {
+        "word": "only",
+        "start": 3.26,
+        "end": 3.8
+      },
+      {
+        "word": "the",
+        "start": 3.8,
+        "end": 3.94
+      },
+      {
+        "word": "physiological",
+        "start": 3.94,
+        "end": 4.34
+      },
+      {
+        "word": "signal",
+        "start": 4.34,
+        "end": 4.92
+      },
+      {
+        "word": "we",
+        "start": 4.92,
+        "end": 5.22
+      },
+      {
+        "word": "want",
+        "start": 5.22,
+        "end": 5.42
+      },
+      {
+        "word": "to",
+        "start": 5.42,
+        "end": 5.56
+      },
+      {
+        "word": "study.",
+        "start": 5.56,
+        "end": 5.84
+      },
+      {
+        "word": "Unfortunately,",
+        "start": 6.58,
+        "end": 7.0
+      },
+      {
+        "word": "that's",
+        "start": 7.7,
+        "end": 8.02
+      },
+      {
+        "word": "rarely",
+        "start": 8.02,
+        "end": 8.2
+      },
+      {
+        "word": "the",
+        "start": 8.2,
+        "end": 8.48
+      },
+      {
+        "word": "case.",
+        "start": 8.48,
+        "end": 8.72
+      },
+      {
+        "word": "Whether",
+        "start": 9.38,
+        "end": 9.62
+      },
+      {
+        "word": "we",
+        "start": 9.62,
+        "end": 9.8
+      },
+      {
+        "word": "record",
+        "start": 9.8,
+        "end": 10.16
+      },
+      {
+        "word": "EEG,",
+        "start": 10.16,
+        "end": 10.44
+      },
+      {
+        "word": "EMG,",
+        "start": 11.64,
+        "end": 11.9
+      },
+      {
+        "word": "EcoG,",
+        "start": 12.48,
+        "end": 12.86
+      },
+      {
+        "word": "or",
+        "start": 13.26,
+        "end": 13.46
+      },
+      {
+        "word": "microelectrode",
+        "start": 13.46,
+        "end": 14.28
+      },
+      {
+        "word": "signals,",
+        "start": 14.28,
+        "end": 14.48
+      },
+      {
+        "word": "the",
+        "start": 15.14,
+        "end": 15.26
+      },
+      {
+        "word": "waveform",
+        "start": 15.26,
+        "end": 15.74
+      },
+      {
+        "word": "we",
+        "start": 15.74,
+        "end": 15.96
+      },
+      {
+        "word": "acquire",
+        "start": 15.96,
+        "end": 16.24
+      },
+      {
+        "word": "usually",
+        "start": 16.24,
+        "end": 16.82
+      },
+      {
+        "word": "contains",
+        "start": 16.82,
+        "end": 17.2
+      },
+      {
+        "word": "not",
+        "start": 17.2,
+        "end": 17.72
+      },
+      {
+        "word": "just",
+        "start": 17.72,
+        "end": 17.96
+      },
+      {
+        "word": "the",
+        "start": 17.96,
+        "end": 18.1
+      },
+      {
+        "word": "biological",
+        "start": 18.1,
+        "end": 18.38
+      },
+      {
+        "word": "signal",
+        "start": 18.38,
+        "end": 19.0
+      },
+      {
+        "word": "of",
+        "start": 19.0,
+        "end": 19.24
+      },
+      {
+        "word": "interest,",
+        "start": 19.24,
+        "end": 19.5
+      },
+      {
+        "word": "but",
+        "start": 20.12,
+        "end": 20.32
+      },
+      {
+        "word": "also",
+        "start": 20.32,
+        "end": 20.64
+      },
+      {
+        "word": "unwanted",
+        "start": 20.64,
+        "end": 21.1
+      },
+      {
+        "word": "electrical",
+        "start": 21.1,
+        "end": 21.62
+      },
+      {
+        "word": "activity",
+        "start": 21.62,
+        "end": 22.16
+      },
+      {
+        "word": "from",
+        "start": 22.16,
+        "end": 22.68
+      },
+      {
+        "word": "a",
+        "start": 22.68,
+        "end": 22.8
+      },
+      {
+        "word": "whole",
+        "start": 22.8,
+        "end": 23.0
+      },
+      {
+        "word": "range",
+        "start": 23.0,
+        "end": 23.28
+      },
+      {
+        "word": "of",
+        "start": 23.28,
+        "end": 23.46
+      },
+      {
+        "word": "sources.",
+        "start": 23.46,
+        "end": 23.78
+      },
+      {
+        "word": "These",
+        "start": 24.68,
+        "end": 24.98
+      },
+      {
+        "word": "unwanted",
+        "start": 24.98,
+        "end": 25.38
+      },
+      {
+        "word": "components",
+        "start": 25.38,
+        "end": 26.0
+      },
+      {
+        "word": "can",
+        "start": 26.0,
+        "end": 26.52
+      },
+      {
+        "word": "come",
+        "start": 26.52,
+        "end": 26.76
+      },
+      {
+        "word": "from",
+        "start": 26.76,
+        "end": 26.98
+      },
+      {
+        "word": "electrical",
+        "start": 26.98,
+        "end": 27.24
+      },
+      {
+        "word": "equipment,",
+        "start": 27.24,
+        "end": 27.86
+      },
+      {
+        "word": "movement",
+        "start": 27.86,
+        "end": 28.84
+      },
+      {
+        "word": "of",
+        "start": 28.84,
+        "end": 29.14
+      },
+      {
+        "word": "the",
+        "start": 29.14,
+        "end": 29.22
+      },
+      {
+        "word": "subject,",
+        "start": 29.22,
+        "end": 29.6
+      },
+      {
+        "word": "muscle",
+        "start": 30.02,
+        "end": 30.34
+      },
+      {
+        "word": "activity,",
+        "start": 30.34,
+        "end": 30.8
+      },
+      {
+        "word": "poor",
+        "start": 31.42,
+        "end": 31.64
+      },
+      {
+        "word": "electrode",
+        "start": 31.64,
+        "end": 32.16
+      },
+      {
+        "word": "contact,",
+        "start": 32.16,
+        "end": 32.68
+      },
+      {
+        "word": "or",
+        "start": 33.18,
+        "end": 33.4
+      },
+      {
+        "word": "simply",
+        "start": 33.4,
+        "end": 33.7
+      },
+      {
+        "word": "the",
+        "start": 33.7,
+        "end": 33.92
+      },
+      {
+        "word": "surrounding",
+        "start": 33.92,
+        "end": 34.32
+      },
+      {
+        "word": "environment.",
+        "start": 34.32,
+        "end": 34.78
+      },
+      {
+        "word": "And",
+        "start": 35.78,
+        "end": 35.86
+      },
+      {
+        "word": "if",
+        "start": 35.86,
+        "end": 35.98
+      },
+      {
+        "word": "we",
+        "start": 35.98,
+        "end": 36.08
+      },
+      {
+        "word": "don't",
+        "start": 36.08,
+        "end": 36.34
+      },
+      {
+        "word": "remove",
+        "start": 36.34,
+        "end": 36.58
+      },
+      {
+        "word": "these",
+        "start": 36.58,
+        "end": 36.9
+      },
+      {
+        "word": "unwanted",
+        "start": 36.9,
+        "end": 37.2
+      },
+      {
+        "word": "signals,",
+        "start": 37.2,
+        "end": 37.78
+      },
+      {
+        "word": "they",
+        "start": 38.4,
+        "end": 38.5
+      },
+      {
+        "word": "make",
+        "start": 38.5,
+        "end": 38.66
+      },
+      {
+        "word": "interpretation",
+        "start": 38.66,
+        "end": 39.0
+      },
+      {
+        "word": "difficult",
+        "start": 39.0,
+        "end": 39.84
+      },
+      {
+        "word": "and",
+        "start": 39.84,
+        "end": 40.32
+      },
+      {
+        "word": "reduce",
+        "start": 40.32,
+        "end": 40.54
+      },
+      {
+        "word": "the",
+        "start": 40.54,
+        "end": 40.92
+      },
+      {
+        "word": "accuracy",
+        "start": 40.92,
+        "end": 41.3
+      },
+      {
+        "word": "of",
+        "start": 41.3,
+        "end": 41.68
+      },
+      {
+        "word": "later",
+        "start": 41.68,
+        "end": 41.94
+      },
+      {
+        "word": "analyses.",
+        "start": 41.94,
+        "end": 42.34
+      },
+      {
+        "word": "That's",
+        "start": 43.48,
+        "end": 43.78
+      },
+      {
+        "word": "why",
+        "start": 43.78,
+        "end": 43.9
+      },
+      {
+        "word": "signal",
+        "start": 43.9,
+        "end": 44.2
+      },
+      {
+        "word": "filtering",
+        "start": 44.2,
+        "end": 44.74
+      },
+      {
+        "word": "is",
+        "start": 44.74,
+        "end": 45.24
+      },
+      {
+        "word": "an",
+        "start": 45.24,
+        "end": 45.34
+      },
+      {
+        "word": "essential",
+        "start": 45.34,
+        "end": 45.56
+      },
+      {
+        "word": "step",
+        "start": 45.56,
+        "end": 46.1
+      },
+      {
+        "word": "in",
+        "start": 46.1,
+        "end": 46.38
+      },
+      {
+        "word": "neural",
+        "start": 46.38,
+        "end": 46.64
+      },
+      {
+        "word": "signal",
+        "start": 46.64,
+        "end": 47.0
+      },
+      {
+        "word": "processing.",
+        "start": 47.0,
+        "end": 47.52
+      }
+    ],
+    "render_prompt": "1. **0.00\u20131.50** \u2014 A blank dark background. A single clean neural trace line fades in, centered horizontally: a smooth, gently wiggling waveform running left to right across the screen, with no labels yet. The line is a solid, calm color (e.g., soft green) and the wiggling is a simple physiologically plausible oscillation, faintly resembling brain activity.\n\n2. **1.50\u20135.84** \u2014 The clean trace continues wiggling on its own. As the narrator says \"only the physiological signal we want to study,\" the trace remains the sole object on screen, with no overlays or distortions. A small label appears near the trace reading \"physiological signal.\"\n\n3. **6.58\u20138.72** \u2014 On \"Unfortunately,\" the trace's clean appearance is emphasized visually for a beat, then a subtle visual cue (like a brief dimming or hesitation in the line) signals that this ideal state is \"rarely the case.\" No new noise components yet.\n\n4. **9.38\u201314.48** \u2014 Four small text labels appear one by one near the trace as each is named, perhaps above the trace in sequence: \"EEG,\" \"EMG,\" \"ECoG,\" \"microelectrode.\" They are simple tags, not yet distorting the trace, indicating these are all acquisition contexts where the same issue arises.\n\n5. **15.14\u201323.78** \u2014 The phrase \"unwanted electrical activity\" triggers the first visual shift: the trace begins to blur or thicken subtly, like contamination is starting. On the word \"sources,\" small faint arrow-like annotations or dotted lines appear pointing toward the trace, but no specific noise components are rendered yet.\n\n6. **24.68\u201327.86** \u2014 A distinct colored noise component fades in over the trace and begins distorting it: a high-frequency buzz. Its color is distinguishable from the clean line (e.g., electric blue), and it overlays the trace as rapid, jagged oscillations riding on top of the original wave. A label near it reads \"electrical equipment.\"\n\n7. **27.86\u201329.60** \u2014 A second colored noise component fades in: a sharp, abrupt spike or series of spike-like distortions from movement. It appears in another distinct color (e.g., red/orange). Its label reads \"movement of subject.\" The trace now shows intermittent sharp jumps or jerks.\n\n8. **30.02\u201330.80** \u2014 A third component fades in: low-amplitude irregular muscle-activity noise, shown as a fast, uneven ripple in yet another color (e.g., purple). Its label reads \"muscle activity.\"\n\n9. **31.42\u201332.68** \u2014 A fourth component fades in: a slow sinusoidal drift, shown as a gentle upward-downward undulation of the entire trace's baseline, in a distinct color (e.g., yellow). Its label reads \"poor electrode contact.\" The trace's centerline slowly wanders up and down.\n\n10. **33.18\u201334.78** \u2014 A fifth component fades in: a regular power-line frequency ripple, shown as a uniform, fast sinusoidal wave at consistent frequency, in a final distinct color (e.g., cyan). Its label reads \"surrounding environment.\" By now all five noise components are layered over the trace, each with its own label.\n\n11. **35.78\u201342.34** \u2014 The trace is now severely distorted: the original clean waveform is nearly impossible to distinguish beneath the combined high-frequency buzz, movement spikes, muscle ripples, baseline drift, and power-line ripple. The line is thick, jittery, and visually chaotic, with overlapping colored oscillations. The labels remain visible.\n\n12. **43.48\u201346.38** \u2014 On \"That's why signal filtering,\" the chaotic trace is highlighted with a brief visual emphasis (e.g., a subtle outline or glow around the whole mess), and an overlay message begins to fade in, centered near the bottom of the screen.\n\n13. **46.38\u201348.35** \u2014 The overlay message is now fully visible, reading exactly: \"Filtering removes what we don't want.\" The distorted trace remains visible behind or above the message. The message and the distorted trace stay on screen until the end of the scene at 48.35 seconds.",
+    "code": "ASSET_PATHS = {'heart': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\test_heart.svg', 'brain': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\brain_test.svg', 'stopwatch': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\stopwatch.svg', 'activity': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\activity.svg', 'soundwave': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\soundwave.svg', 'grid_matrix': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\grid-3x3-gap-fill.svg', 'bar_chart': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bar-chart.svg', 'graph_trend': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\graph-up-arrow.svg', 'cpu': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\cpu.svg', 'funnel': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\funnel.svg', 'table': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\table.svg', 'hospital': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hospital.svg', 'capsule': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\capsule.svg', 'clipboard_pulse': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\clipboard2-pulse.svg', 'hand': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hand-index-thumb.svg', 'broadcast': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\broadcast-pin.svg', 'gear': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\gear.svg', 'arrow_repeat': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\arrow-repeat.svg', 'lightbulb': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\lightbulb.svg', 'bell': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bell.svg', 'check_circle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\check-circle.svg', 'x_circle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\x-circle.svg', 'rulers': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\rulers.svg', 'puzzle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\puzzle.svg', 'fig_measurement_funnel': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_measurement_funnel.png', 'fig_mindmap_three_pillars': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_three_pillars.png', 'fig_mindmap_full': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_full.png'}\n\nfrom manim import *\nimport numpy as np\n\nclass Scene0(Scene):\n    def construct(self):\n        self.camera.background_color = \"#0F1116\"\n\n        time_tracker = ValueTracker(0)\n        time_tracker.add_updater(lambda m, dt: m.set_value(m.get_value() + dt))\n\n        x_min, x_max = -6.0, 6.0\n        num_points = 300\n        xs = np.linspace(x_min, x_max, num_points)\n\n        def base_y(t):\n            return 0.5*np.sin(2*PI*0.45*xs + 0.8*t) + 0.2*np.sin(2*PI*0.7*xs - 0.6*t)\n\n        def noise1_y(t):\n            return 0.18*np.sin(2*PI*8*xs + 20*t) + 0.08*np.sin(2*PI*13*xs - 30*t)\n\n        def noise2_y(t):\n            spikes = np.abs(np.sin(2*PI*1.2*xs + 0.7*t))**9 + np.abs(np.sin(2*PI*1.8*xs - 1.0*t))**9\n            return 0.4 * spikes\n\n        def noise3_y(t):\n            return (0.1*np.sin(2*PI*12*xs + 35*t)\n                    + 0.1*np.sin(2*PI*18*xs - 45*t)\n                    + 0.05*np.sin(2*PI*27*xs + 60*t))\n\n        def noise4_y(t):\n            return 0.45*np.sin(2*PI*0.16*xs + 0.3*t) + 0.25*np.sin(2*PI*0.09*xs - 0.2*t)\n\n        def noise5_y(t):\n            return 0.22*np.sin(2*PI*9*xs + 80*t) + 0.1*np.sin(2*PI*5*xs + 120*t)\n\n        def wave1_y(t): return base_y(t) + noise1_y(t)\n        def wave2_y(t): return base_y(t) + noise2_y(t)\n        def wave3_y(t): return base_y(t) + noise3_y(t)\n        def wave4_y(t): return base_y(t) + noise4_y(t)\n        def wave5_y(t): return base_y(t) + noise5_y(t)\n        def combined_y(t): return base_y(t)+noise1_y(t)+noise2_y(t)+noise3_y(t)+noise4_y(t)+noise5_y(t)\n\n        def make_points(y_func, t=0.0):\n            y = y_func(t)\n            return np.stack([xs, y, np.zeros_like(xs)], axis=1)\n\n        def make_wave(y_func, color=WHITE, width=3, opacity=1):\n            mob = VMobject()\n            mob.set_points_as_corners(make_points(y_func, 0))\n            mob.set_stroke(color, width=width, opacity=opacity)\n            mob.set_fill(opacity=0)\n            mob.add_updater(lambda m: m.set_points_as_corners(make_points(y_func, time_tracker.get_value())))\n            return mob\n\n        clean_trace = make_wave(base_y, color=GREEN, width=3, opacity=0)\n        noise_trace1 = make_wave(wave1_y, color=BLUE, width=2.2, opacity=0)\n        noise_trace2 = make_wave(wave2_y, color=ORANGE, width=2.2, opacity=0)\n        noise_trace3 = make_wave(wave3_y, color=PURPLE, width=2.2, opacity=0)\n        noise_trace4 = make_wave(wave4_y, color=YELLOW, width=2.2, opacity=0)\n        noise_trace5 = make_wave(wave5_y, color=TEAL, width=2.2, opacity=0)\n        chaotic_trace = make_wave(combined_y, color=WHITE, width=6, opacity=0)\n        trace_group = VGroup(clean_trace, noise_trace1, noise_trace2, noise_trace3, noise_trace4, noise_trace5, chaotic_trace)\n\n        phys_label = Text(\"physiological signal\", color=GREEN, font_size=36).next_to(clean_trace, UP, buff=0.8)\n\n        ctx_labels = []\n        ctx_texts = [\"EEG\", \"EMG\", \"ECoG\", \"microelectrode\"]\n        for i, s in enumerate(ctx_texts):\n            lab = Text(s, color=WHITE, font_size=28)\n            lab.scale_to_fit_width(2.2)\n            lab.move_to(np.array([-3.6 + i*2.4, 2.8, 0]))\n            ctx_labels.append(lab)\n\n        noise_label_defs = [\n            (\"electrical equipment\", BLUE),\n            (\"movement of subject\", ORANGE),\n            (\"muscle activity\", PURPLE),\n            (\"poor electrode contact\", YELLOW),\n            (\"surrounding environment\", TEAL),\n        ]\n        noise_label_positions = [\n            np.array([-4.5, -1.7, 0]),\n            np.array([-0.5, -1.7, 0]),\n            np.array([3.5, -1.7, 0]),\n            np.array([-3.0, -2.45, 0]),\n            np.array([3.0, -2.45, 0]),\n        ]\n        noise_labels = []\n        for (s, color), pos in zip(noise_label_defs, noise_label_positions):\n            lab = Text(s, color=color, font_size=26)\n            lab.scale_to_fit_width(3.6)\n            lab.move_to(pos)\n            noise_labels.append(lab)\n\n        # Beat 1\n        self.add(clean_trace)\n        self.play(clean_trace.animate.set_stroke(opacity=1), run_time=max(0.05, 1.5))\n\n        # Beat 2\n        self.play(FadeIn(phys_label, shift=UP*0.2), run_time=max(0.05, 1.0))\n        self.wait(max(0.05, 3.34))\n\n        self.wait(max(0.05, 0.74))  # gap to beat 3\n\n        # Beat 3\n        self.play(Indicate(clean_trace, color=GREEN, scale_factor=1.05), run_time=max(0.05, 0.8))\n        self.play(clean_trace.animate.set_stroke(opacity=0.45), run_time=max(0.05, 0.4))\n        self.play(clean_trace.animate.set_stroke(opacity=1.0), run_time=max(0.05, 0.4))\n        self.wait(max(0.05, 0.54))\n\n        self.wait(max(0.05, 0.66))  # gap to beat 4\n\n        # Beat 4\n        self.play(FadeOut(phys_label), run_time=max(0.05, 0.35))\n        for lab in ctx_labels:\n            self.play(FadeIn(lab, shift=UP*0.2), run_time=max(0.05, 1.10))\n        self.wait(max(0.05, 0.35))\n\n        self.wait(max(0.05, 0.66))  # gap to beat 5\n\n        # Beat 5\n        contamination_arrows = VGroup(\n            Arrow(np.array([-5, 1.6, 0]), np.array([-2.5, 0.4, 0]), color=GREY_B, stroke_opacity=0.35, max_tip_length_to_length_ratio=0.2),\n            Arrow(np.array([5, 1.6, 0]), np.array([2.5, 0.4, 0]), color=GREY_B, stroke_opacity=0.35, max_tip_length_to_length_ratio=0.2),\n            Arrow(np.array([-1.0, -1.2, 0]), np.array([-0.3, -0.2, 0]), color=GREY_B, stroke_opacity=0.35, max_tip_length_to_length_ratio=0.2),\n            Arrow(np.array([1.0, -1.2, 0]), np.array([0.3, -0.2, 0]), color=GREY_B, stroke_opacity=0.35, max_tip_length_to_length_ratio=0.2),\n        )\n        self.play(clean_trace.animate.set_stroke(width=5), run_time=max(0.05, 1.4))\n        self.wait(max(0.05, 2.2))\n        self.play(FadeIn(contamination_arrows), run_time=max(0.05, 1.6))\n        self.wait(max(0.05, 3.44))\n\n        # gap before beat 6, fade out faint arrows\n        self.wait(max(0.05, 0.3))\n        self.play(FadeOut(contamination_arrows), run_time=max(0.05, 0.5))\n        self.wait(max(0.05, 0.1))\n\n        # Beat 6\n        self.add(noise_trace1)\n        self.play(\n            noise_trace1.animate.set_stroke(opacity=1),\n            FadeIn(noise_labels[0], shift=UP*0.2),\n            run_time=max(0.05, 1.8),\n        )\n        self.wait(max(0.05, 1.38))\n\n        # Beat 7\n        self.add(noise_trace2)\n        self.play(\n            noise_trace2.animate.set_stroke(opacity=1),\n            FadeIn(noise_labels[1], shift=UP*0.2),\n            run_time=max(0.05, 1.0),\n        )\n        self.wait(max(0.05, 0.74))\n\n        self.wait(max(0.05, 0.42))  # gap to beat 8\n\n        # Beat 8\n        self.add(noise_trace3)\n        self.play(\n            noise_trace3.animate.set_stroke(opacity=1),\n            FadeIn(noise_labels[2], shift=UP*0.2),\n            run_time=max(0.05, 0.5),\n        )\n        self.wait(max(0.05, 0.28))\n\n        self.wait(max(0.05, 0.62))  # gap to beat 9\n\n        # Beat 9\n        self.add(noise_trace4)\n        self.play(\n            noise_trace4.animate.set_stroke(opacity=1),\n            FadeIn(noise_labels[3], shift=UP*0.2),\n            run_time=max(0.05, 0.8),\n        )\n        self.wait(max(0.05, 0.46))\n\n        self.wait(max(0.05, 0.50))  # gap to beat 10\n\n        # Beat 10\n        self.add(noise_trace5)\n        self.play(\n            noise_trace5.animate.set_stroke(opacity=1),\n            FadeIn(noise_labels[4], shift=UP*0.2),\n            run_time=max(0.05, 1.0),\n        )\n        self.wait(max(0.05, 0.60))\n\n        self.wait(max(0.05, 1.00))  # gap to beat 11\n\n        # Beat 11\n        self.add(chaotic_trace)\n        self.play(\n            chaotic_trace.animate.set_stroke(opacity=1),\n            clean_trace.animate.set_stroke(opacity=0.35, width=5),\n            run_time=max(0.05, 2.0),\n        )\n        self.wait(max(0.05, 4.56))\n\n        self.wait(max(0.05, 1.14))  # gap to beat 12\n\n        # Beat 12\n        highlight_rect = SurroundingRectangle(trace_group, color=YELLOW, buff=0.3, corner_radius=0.15)\n        message = Text(\"Filtering removes what we don't want.\", color=YELLOW, font_size=38)\n        message.scale_to_fit_width(11)\n        message.move_to(DOWN*3.15)\n        self.play(\n            FadeIn(message, shift=UP*0.2),\n            Create(highlight_rect),\n            run_time=max(0.05, 2.9),\n        )\n\n        # Beat 13\n        self.wait(max(0.05, 1.97))",
+    "video_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\NPS\\5-1-why-signals-are-filtered\\manim\\Scene0\\media\\videos\\Scene0\\1080p60\\Scene0.mp4",
+    "render_attempts": 1,
+    "render_status": "rendered",
+    "last_feedback": null,
+    "composed_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\NPS\\5-1-why-signals-are-filtered\\rendered_video\\scene_00_with_audio.mp4"
+  },
+  {
+    "id": 1,
+    "subtopic": "5.1.2 Learning Objectives",
+    "narration": "By the end of this section, you should be able to explain why filtering is necessary, distinguish between the signal of interest and unwanted noise, and understand the purpose of filtering in neural signal processing.",
+    "animation_description": "Three objective cards appear one at a time, each with an icon and short label: 'Why filtering is necessary', 'Signal vs. noise', 'Purpose of filtering in neural processing'. The cards fade out at the end.",
+    "scene_type": "manim",
+    "audio_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\NPS\\5-1-why-signals-are-filtered\\audio\\scene_01.wav",
+    "timestamps": [
+      {
+        "word": "By",
+        "start": 0.0,
+        "end": 0.36
+      },
+      {
+        "word": "the",
+        "start": 0.36,
+        "end": 0.48
+      },
+      {
+        "word": "end",
+        "start": 0.48,
+        "end": 0.66
+      },
+      {
+        "word": "of",
+        "start": 0.66,
+        "end": 0.78
+      },
+      {
+        "word": "this",
+        "start": 0.78,
+        "end": 0.88
+      },
+      {
+        "word": "section,",
+        "start": 0.88,
+        "end": 1.26
+      },
+      {
+        "word": "you",
+        "start": 1.82,
+        "end": 1.92
+      },
+      {
+        "word": "should",
+        "start": 1.92,
+        "end": 2.08
+      },
+      {
+        "word": "be",
+        "start": 2.08,
+        "end": 2.18
+      },
+      {
+        "word": "able",
+        "start": 2.18,
+        "end": 2.42
+      },
+      {
+        "word": "to",
+        "start": 2.42,
+        "end": 2.56
+      },
+      {
+        "word": "explain",
+        "start": 2.56,
+        "end": 2.96
+      },
+      {
+        "word": "why",
+        "start": 2.96,
+        "end": 3.36
+      },
+      {
+        "word": "filtering",
+        "start": 3.36,
+        "end": 3.76
+      },
+      {
+        "word": "is",
+        "start": 3.76,
+        "end": 4.2
+      },
+      {
+        "word": "necessary,",
+        "start": 4.2,
+        "end": 4.84
+      },
+      {
+        "word": "distinguish",
+        "start": 5.4,
+        "end": 5.7
+      },
+      {
+        "word": "between",
+        "start": 5.7,
+        "end": 6.22
+      },
+      {
+        "word": "the",
+        "start": 6.22,
+        "end": 6.46
+      },
+      {
+        "word": "signal",
+        "start": 6.46,
+        "end": 6.8
+      },
+      {
+        "word": "of",
+        "start": 6.8,
+        "end": 7.04
+      },
+      {
+        "word": "interest",
+        "start": 7.04,
+        "end": 7.38
+      },
+      {
+        "word": "and",
+        "start": 7.38,
+        "end": 7.84
+      },
+      {
+        "word": "unwanted",
+        "start": 7.84,
+        "end": 8.24
+      },
+      {
+        "word": "noise,",
+        "start": 8.24,
+        "end": 8.72
+      },
+      {
+        "word": "and",
+        "start": 9.24,
+        "end": 9.52
+      },
+      {
+        "word": "understand",
+        "start": 9.52,
+        "end": 9.78
+      },
+      {
+        "word": "the",
+        "start": 9.78,
+        "end": 10.2
+      },
+      {
+        "word": "purpose",
+        "start": 10.2,
+        "end": 10.5
+      },
+      {
+        "word": "of",
+        "start": 10.5,
+        "end": 10.74
+      },
+      {
+        "word": "filtering",
+        "start": 10.74,
+        "end": 11.16
+      },
+      {
+        "word": "in",
+        "start": 11.16,
+        "end": 11.58
+      },
+      {
+        "word": "neural",
+        "start": 11.58,
+        "end": 11.84
+      },
+      {
+        "word": "signal",
+        "start": 11.84,
+        "end": 12.22
+      },
+      {
+        "word": "processing.",
+        "start": 12.22,
+        "end": 12.76
+      }
+    ],
+    "render_prompt": "1. **0.00\u20131.26** \u2014 A dark background. Three faint card outlines are placed horizontally centered, side by side, but all three are entirely blank and slightly dimmed, waiting to be filled in. No icons or text yet.\n\n2. **1.82\u20132.96** \u2014 The first card brightens and moves slightly forward in emphasis. It gains a simple line icon related to questioning or reasoning (e.g., a circled question mark) and below it the label fades in reading exactly: \"Why filtering is necessary.\" The other two cards remain dim and blank.\n\n3. **3.36\u20134.84** \u2014 The first card stays fully visible while the narration emphasizes \"necessary.\" The icon and text remain steady, with no new cards appearing yet.\n\n4. **5.40\u20137.38** \u2014 The second card brightens and moves slightly forward. It gains a simple icon representing signal vs. noise (e.g., a smooth wavy line overlaid with a jagged line) and below it the label fades in reading exactly: \"Signal vs. noise.\" The first card remains visible but steps back slightly in emphasis.\n\n5. **7.84\u20138.72** \u2014 The second card stays fully visible while the narration emphasizes \"unwanted noise.\" No new cards appear yet.\n\n6. **9.24\u201310.74** \u2014 The third card brightens and moves slightly forward. It gains a simple icon representing filtering (e.g., a waveform passing through a funnel or filter symbol) and below it the label fades in reading exactly: \"Purpose of filtering in neural processing.\" The first two cards remain visible but step back in emphasis.\n\n7. **11.16\u201312.76** \u2014 All three cards are now fully visible in a row, each with its icon and label, arranged in order: \"Why filtering is necessary,\" \"Signal vs. noise,\" and \"Purpose of filtering in neural processing.\" The cards hold steady as the narration finishes the phrase \"neural signal processing.\"\n\n8. **12.76\u201313.60** \u2014 The three cards fade out smoothly as the scene ends, leaving the dark background empty.",
+    "code": "ASSET_PATHS = {'heart': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\test_heart.svg', 'brain': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\brain_test.svg', 'stopwatch': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\stopwatch.svg', 'activity': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\activity.svg', 'soundwave': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\soundwave.svg', 'grid_matrix': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\grid-3x3-gap-fill.svg', 'bar_chart': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bar-chart.svg', 'graph_trend': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\graph-up-arrow.svg', 'cpu': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\cpu.svg', 'funnel': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\funnel.svg', 'table': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\table.svg', 'hospital': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hospital.svg', 'capsule': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\capsule.svg', 'clipboard_pulse': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\clipboard2-pulse.svg', 'hand': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hand-index-thumb.svg', 'broadcast': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\broadcast-pin.svg', 'gear': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\gear.svg', 'arrow_repeat': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\arrow-repeat.svg', 'lightbulb': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\lightbulb.svg', 'bell': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bell.svg', 'check_circle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\check-circle.svg', 'x_circle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\x-circle.svg', 'rulers': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\rulers.svg', 'puzzle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\puzzle.svg', 'fig_measurement_funnel': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_measurement_funnel.png', 'fig_mindmap_three_pillars': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_three_pillars.png', 'fig_mindmap_full': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_full.png'}\n\nfrom manim import *\nimport numpy as np\n\nclass Scene1(Scene):\n    def construct(self):\n        self.camera.background_color = \"#0F1116\"\n\n        centers = [\n            np.array([-4.4, 0, 0]),\n            np.array([0, 0, 0]),\n            np.array([4.4, 0, 0]),\n        ]\n        active_shift = np.array([0, 0.32, 0])\n        step_shift = np.array([0, -0.20, 0])\n\n        card_width = 3.8\n        card_height = 3.4\n\n        # Three blank card outlines, initially invisible so they can fade to faint.\n        rects = []\n        for center in centers:\n            rect = Rectangle(\n                width=card_width,\n                height=card_height,\n                stroke_color=GREY_B,\n                stroke_width=3,\n                fill_color=GREY_B,\n                fill_opacity=0.35,\n            )\n            rect.move_to(center)\n            rect.set_opacity(0)\n            rects.append(rect)\n\n        rect1, rect2, rect3 = rects\n        card_rects = VGroup(rect1, rect2, rect3)\n\n        # Icon 1: circled question mark.\n        q_circle = Circle(radius=0.55, color=YELLOW, stroke_width=5)\n        q_mark = Text(\"?\", font_size=48, color=YELLOW)\n        icon1 = VGroup(q_circle, q_mark)\n\n        label1 = Text(\n            \"Why filtering\\nis necessary.\",\n            font_size=30,\n            color=WHITE,\n            line_spacing=0.8,\n            t2c={\"necessary\": YELLOW},\n        )\n        label1.scale_to_fit_width(3.3)\n        label1.next_to(icon1, DOWN, buff=0.2)\n        content1 = VGroup(icon1, label1)\n        content1.move_to(centers[0] + active_shift)\n\n        # Icon 2: smooth wave overlaid with jagged noise.\n        smooth = VMobject()\n        xs_s = np.linspace(-1.1, 1.1, 100)\n        ys_s = 0.35 * np.sin(2 * PI * 1.2 * xs_s)\n        smooth.set_points_as_corners(\n            np.stack([xs_s, ys_s, np.zeros_like(xs_s)], axis=1)\n        )\n        smooth.set_stroke(GREEN, width=5)\n\n        jagged = VMobject()\n        jagged_pts = [\n            np.array([-1.1, 0.18, 0]),\n            np.array([-0.8, -0.30, 0]),\n            np.array([-0.45, 0.22, 0]),\n            np.array([-0.1, -0.28, 0]),\n            np.array([0.2, 0.32, 0]),\n            np.array([0.5, -0.22, 0]),\n            np.array([0.75, 0.36, 0]),\n            np.array([1.1, -0.12, 0]),\n        ]\n        jagged.set_points_as_corners(jagged_pts)\n        jagged.set_stroke(ORANGE, width=4)\n\n        icon2 = VGroup(smooth, jagged)\n        label2 = Text(\n            \"Signal vs. noise.\",\n            font_size=30,\n            color=WHITE,\n            t2c={\"noise\": ORANGE},\n        )\n        label2.scale_to_fit_width(3.3)\n        label2.next_to(icon2, DOWN, buff=0.2)\n        content2 = VGroup(icon2, label2)\n        content2.move_to(centers[1] + active_shift)\n\n        # Icon 3: waveform passing through a filter/funnel symbol.\n        funnel = Polygon(\n            np.array([-0.95, 0.95, 0]),\n            np.array([0.95, 0.95, 0]),\n            np.array([0.32, -0.95, 0]),\n            np.array([-0.32, -0.95, 0]),\n            stroke_color=TEAL,\n            stroke_width=5,\n            fill_color=TEAL,\n            fill_opacity=0.25,\n        )\n        xs_f = np.linspace(-0.75, 0.75, 80)\n        ys_f = 0.22 * np.sin(2 * PI * 1.6 * xs_f)\n        wave = VMobject()\n        wave.set_points_as_corners(\n            np.stack([xs_f, ys_f, np.zeros_like(xs_f)], axis=1)\n        )\n        wave.set_stroke(YELLOW, width=4)\n\n        icon3 = VGroup(funnel, wave)\n        label3 = Text(\n            \"Purpose of filtering\\nin neural processing.\",\n            font_size=30,\n            color=WHITE,\n            line_spacing=0.8,\n        )\n        label3.scale_to_fit_width(3.3)\n        label3.next_to(icon3, DOWN, buff=0.2)\n        content3 = VGroup(icon3, label3)\n        content3.move_to(centers[2] + active_shift)\n\n        # Beat 1: three faint, blank cards.\n        self.add(card_rects)\n        self.play(card_rects.animate.set_opacity(0.38), run_time=max(0.05, 0.90))\n        self.wait(max(0.05, 0.36))  # to 1.26\n        self.wait(max(0.05, 0.56))  # to 1.82\n\n        # Beat 2: first card brightens and gains icon + label.\n        self.play(\n            rect1.animate.set_opacity(1).move_to(centers[0] + active_shift),\n            run_time=max(0.05, 0.60),\n        )\n        self.play(FadeIn(content1, shift=UP * 0.15), run_time=max(0.05, 0.54))\n\n        # Beat 3: emphasize \"necessary\".\n        self.wait(max(0.05, 0.40))  # to 3.36\n        self.play(Indicate(label1, color=YELLOW, scale_factor=1.08), run_time=max(0.05, 1.00))\n        self.wait(max(0.05, 0.48))  # to 4.84\n\n        # Beat 4: second card brightens, first steps back.\n        self.wait(max(0.05, 0.56))  # to 5.40\n        self.play(\n            rect1.animate.set_opacity(0.55).move_to(centers[0] + step_shift),\n            content1.animate.set_opacity(0.55).move_to(centers[0] + step_shift),\n            rect2.animate.set_opacity(1).move_to(centers[1] + active_shift),\n            run_time=max(0.05, 0.98),\n        )\n        self.play(FadeIn(content2, shift=UP * 0.15), run_time=max(0.05, 1.00))\n\n        # Beat 5: emphasize unwanted noise.\n        self.wait(max(0.05, 0.46))  # to 7.84\n        self.play(Indicate(jagged, color=ORANGE, scale_factor=1.2), run_time=max(0.05, 0.60))\n        self.wait(max(0.05, 0.28))  # to 8.72\n\n        # Beat 6: third card brightens, first two step back.\n        self.wait(max(0.05, 0.52))  # to 9.24\n        self.play(\n            rect1.animate.set_opacity(0.45).move_to(centers[0] + step_shift),\n            content1.animate.set_opacity(0.45).move_to(centers[0] + step_shift),\n            rect2.animate.set_opacity(0.45).move_to(centers[1] + step_shift),\n            content2.animate.set_opacity(0.45).move_to(centers[1] + step_shift),\n            rect3.animate.set_opacity(1).move_to(centers[2] + active_shift),\n            run_time=max(0.05, 0.80),\n        )\n        self.play(FadeIn(content3, shift=UP * 0.15), run_time=max(0.05, 0.70))\n\n        # Beat 7: all three cards aligned, fully visible.\n        self.wait(max(0.05, 0.42))  # to 11.16\n        self.play(\n            rect1.animate.set_opacity(1).move_to(centers[0]),\n            content1.animate.set_opacity(1).move_to(centers[0]),\n            rect2.animate.set_opacity(1).move_to(centers[1]),\n            content2.animate.set_opacity(1).move_to(centers[1]),\n            rect3.animate.set_opacity(1).move_to(centers[2]),\n            content3.animate.set_opacity(1).move_to(centers[2]),\n            run_time=max(0.05, 1.20),\n        )\n        self.wait(max(0.05, 0.40))  # to 12.76\n\n        # Beat 8: smooth fade out.\n        self.play(\n            FadeOut(card_rects, content1, content2, content3),\n            run_time=max(0.05, 0.84),\n        )",
+    "video_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\NPS\\5-1-why-signals-are-filtered\\manim\\Scene1\\media\\videos\\Scene1\\480p15\\Scene1.mp4",
+    "render_attempts": 1,
+    "render_status": "rendered",
+    "last_feedback": null,
+    "composed_path": null
+  },
+  {
+    "id": 2,
+    "subtopic": "5.1.3 What is Signal Filtering?",
+    "narration": "So what exactly is signal filtering? Formally, it's the process of selectively removing unwanted frequency components from a recorded signal, while preserving the information that's relevant for analysis. An important point: filtering does not create new information. It improves the quality of the recorded signal by reducing components that are unlikely to contain useful physiological information. Consider an EEG recording. The recording contains the electrical activity generated by the brain, which is the signal we're interested in. But the same recording may also contain slow baseline drift, electrical interference from nearby equipment, muscle activity from the face or neck, and power-line interference. If all of these components remain in the recording, identifying meaningful brain activity becomes much more difficult. Filtering helps separate the signal of interest from these unwanted components. And filtering is a selective process. A properly designed filter removes only those components that are considered undesirable, while preserving the physiological information we need for analysis. The key definition: signal filtering is the process of preserving useful signal components while attenuating unwanted components.",
+    "animation_description": "A simple EEG trace appears, clean but slowly drifting away from baseline. Labels pop up beside artifacts: a slow undulating drift line, a periodic buzzing overlay from equipment, a sharp burst from muscle activity, and a steady power-line ripple. As each artifact is named, it flashes and is highlighted on the trace. The clean brain activity is faintly visible underneath all this. Then a filter boundary appears: the unwanted components fade out and are moved to a 'Removed' bin, while the now-clean brain activity is enlarged and highlighted in the center with the label 'Preserved signal'. A final definition text hovers at the bottom: 'Filtering = preserving useful signal, attenuating unwanted components.'",
+    "scene_type": "manim",
+    "audio_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\NPS\\5-1-why-signals-are-filtered\\audio\\scene_02.wav",
+    "timestamps": [
+      {
+        "word": "So",
+        "start": 0.0,
+        "end": 0.38
+      },
+      {
+        "word": "what",
+        "start": 0.38,
+        "end": 0.5
+      },
+      {
+        "word": "exactly",
+        "start": 0.5,
+        "end": 0.86
+      },
+      {
+        "word": "is",
+        "start": 0.86,
+        "end": 1.24
+      },
+      {
+        "word": "signal",
+        "start": 1.24,
+        "end": 1.52
+      },
+      {
+        "word": "filtering?",
+        "start": 1.52,
+        "end": 1.96
+      },
+      {
+        "word": "Formally,",
+        "start": 2.64,
+        "end": 3.14
+      },
+      {
+        "word": "it's",
+        "start": 3.38,
+        "end": 3.66
+      },
+      {
+        "word": "the",
+        "start": 3.66,
+        "end": 3.76
+      },
+      {
+        "word": "process",
+        "start": 3.76,
+        "end": 4.1
+      },
+      {
+        "word": "of",
+        "start": 4.1,
+        "end": 4.32
+      },
+      {
+        "word": "selectively",
+        "start": 4.32,
+        "end": 4.64
+      },
+      {
+        "word": "removing",
+        "start": 4.64,
+        "end": 5.34
+      },
+      {
+        "word": "unwanted",
+        "start": 5.34,
+        "end": 5.92
+      },
+      {
+        "word": "frequency",
+        "start": 5.92,
+        "end": 6.34
+      },
+      {
+        "word": "components",
+        "start": 6.34,
+        "end": 6.88
+      },
+      {
+        "word": "from",
+        "start": 6.88,
+        "end": 7.28
+      },
+      {
+        "word": "a",
+        "start": 7.28,
+        "end": 7.38
+      },
+      {
+        "word": "recorded",
+        "start": 7.38,
+        "end": 7.64
+      },
+      {
+        "word": "signal",
+        "start": 7.64,
+        "end": 8.16
+      },
+      {
+        "word": "while",
+        "start": 8.16,
+        "end": 8.74
+      },
+      {
+        "word": "preserving",
+        "start": 8.74,
+        "end": 9.12
+      },
+      {
+        "word": "the",
+        "start": 9.12,
+        "end": 9.42
+      },
+      {
+        "word": "information",
+        "start": 9.42,
+        "end": 9.72
+      },
+      {
+        "word": "that's",
+        "start": 9.72,
+        "end": 10.28
+      },
+      {
+        "word": "relevant",
+        "start": 10.28,
+        "end": 10.5
+      },
+      {
+        "word": "for",
+        "start": 10.5,
+        "end": 10.86
+      },
+      {
+        "word": "analysis.",
+        "start": 10.86,
+        "end": 11.14
+      },
+      {
+        "word": "An",
+        "start": 12.2,
+        "end": 12.22
+      },
+      {
+        "word": "important",
+        "start": 12.22,
+        "end": 12.44
+      },
+      {
+        "word": "point,",
+        "start": 12.44,
+        "end": 12.94
+      },
+      {
+        "word": "filtering",
+        "start": 13.38,
+        "end": 13.84
+      },
+      {
+        "word": "does",
+        "start": 13.84,
+        "end": 14.14
+      },
+      {
+        "word": "not",
+        "start": 14.14,
+        "end": 14.36
+      },
+      {
+        "word": "create",
+        "start": 14.36,
+        "end": 14.72
+      },
+      {
+        "word": "new",
+        "start": 14.72,
+        "end": 14.98
+      },
+      {
+        "word": "information.",
+        "start": 14.98,
+        "end": 15.36
+      },
+      {
+        "word": "It",
+        "start": 16.24,
+        "end": 16.34
+      },
+      {
+        "word": "improves",
+        "start": 16.34,
+        "end": 16.62
+      },
+      {
+        "word": "the",
+        "start": 16.62,
+        "end": 16.92
+      },
+      {
+        "word": "quality",
+        "start": 16.92,
+        "end": 17.28
+      },
+      {
+        "word": "of",
+        "start": 17.28,
+        "end": 17.48
+      },
+      {
+        "word": "the",
+        "start": 17.48,
+        "end": 17.58
+      },
+      {
+        "word": "recorded",
+        "start": 17.58,
+        "end": 17.88
+      },
+      {
+        "word": "signal",
+        "start": 17.88,
+        "end": 18.36
+      },
+      {
+        "word": "by",
+        "start": 18.36,
+        "end": 18.84
+      },
+      {
+        "word": "reducing",
+        "start": 18.84,
+        "end": 19.18
+      },
+      {
+        "word": "components",
+        "start": 19.18,
+        "end": 19.66
+      },
+      {
+        "word": "that",
+        "start": 19.66,
+        "end": 20.24
+      },
+      {
+        "word": "are",
+        "start": 20.24,
+        "end": 20.36
+      },
+      {
+        "word": "unlikely",
+        "start": 20.36,
+        "end": 20.8
+      },
+      {
+        "word": "to",
+        "start": 20.8,
+        "end": 21.22
+      },
+      {
+        "word": "contain",
+        "start": 21.22,
+        "end": 21.5
+      },
+      {
+        "word": "useful",
+        "start": 21.5,
+        "end": 22.06
+      },
+      {
+        "word": "physiological",
+        "start": 22.06,
+        "end": 22.62
+      },
+      {
+        "word": "information.",
+        "start": 22.62,
+        "end": 23.32
+      },
+      {
+        "word": "Consider",
+        "start": 24.26,
+        "end": 24.6
+      },
+      {
+        "word": "an",
+        "start": 24.6,
+        "end": 24.94
+      },
+      {
+        "word": "EEG",
+        "start": 24.94,
+        "end": 25.34
+      },
+      {
+        "word": "recording.",
+        "start": 25.34,
+        "end": 26.02
+      },
+      {
+        "word": "The",
+        "start": 26.02,
+        "end": 27.12
+      },
+      {
+        "word": "recording",
+        "start": 27.12,
+        "end": 27.46
+      },
+      {
+        "word": "contains",
+        "start": 27.46,
+        "end": 27.86
+      },
+      {
+        "word": "the",
+        "start": 27.86,
+        "end": 28.22
+      },
+      {
+        "word": "electrical",
+        "start": 28.22,
+        "end": 28.64
+      },
+      {
+        "word": "activity",
+        "start": 28.64,
+        "end": 29.14
+      },
+      {
+        "word": "generated",
+        "start": 29.14,
+        "end": 29.5
+      },
+      {
+        "word": "by",
+        "start": 29.5,
+        "end": 30.02
+      },
+      {
+        "word": "the",
+        "start": 30.02,
+        "end": 30.12
+      },
+      {
+        "word": "brain,",
+        "start": 30.12,
+        "end": 30.32
+      },
+      {
+        "word": "which",
+        "start": 30.86,
+        "end": 31.0
+      },
+      {
+        "word": "is",
+        "start": 31.0,
+        "end": 31.16
+      },
+      {
+        "word": "the",
+        "start": 31.16,
+        "end": 31.32
+      },
+      {
+        "word": "signal",
+        "start": 31.32,
+        "end": 31.66
+      },
+      {
+        "word": "we're",
+        "start": 31.66,
+        "end": 31.92
+      },
+      {
+        "word": "interested",
+        "start": 31.92,
+        "end": 32.14
+      },
+      {
+        "word": "in.",
+        "start": 32.14,
+        "end": 32.58
+      },
+      {
+        "word": "But",
+        "start": 33.18,
+        "end": 33.32
+      },
+      {
+        "word": "the",
+        "start": 33.32,
+        "end": 33.42
+      },
+      {
+        "word": "same",
+        "start": 33.42,
+        "end": 33.62
+      },
+      {
+        "word": "recording",
+        "start": 33.62,
+        "end": 34.02
+      },
+      {
+        "word": "may",
+        "start": 34.02,
+        "end": 34.36
+      },
+      {
+        "word": "also",
+        "start": 34.36,
+        "end": 34.6
+      },
+      {
+        "word": "contain",
+        "start": 34.6,
+        "end": 35.02
+      },
+      {
+        "word": "slow",
+        "start": 35.02,
+        "end": 35.44
+      },
+      {
+        "word": "baseline",
+        "start": 35.44,
+        "end": 35.92
+      },
+      {
+        "word": "drift,",
+        "start": 35.92,
+        "end": 36.32
+      },
+      {
+        "word": "electrical",
+        "start": 36.8,
+        "end": 37.3
+      },
+      {
+        "word": "interference",
+        "start": 37.3,
+        "end": 37.8
+      },
+      {
+        "word": "from",
+        "start": 37.8,
+        "end": 38.14
+      },
+      {
+        "word": "nearby",
+        "start": 38.14,
+        "end": 38.4
+      },
+      {
+        "word": "equipment,",
+        "start": 38.4,
+        "end": 38.92
+      },
+      {
+        "word": "muscle",
+        "start": 39.5,
+        "end": 39.68
+      },
+      {
+        "word": "activity",
+        "start": 39.68,
+        "end": 40.12
+      },
+      {
+        "word": "from",
+        "start": 40.12,
+        "end": 40.5
+      },
+      {
+        "word": "the",
+        "start": 40.5,
+        "end": 40.62
+      },
+      {
+        "word": "face",
+        "start": 40.62,
+        "end": 40.84
+      },
+      {
+        "word": "or",
+        "start": 40.84,
+        "end": 41.14
+      },
+      {
+        "word": "neck,",
+        "start": 41.14,
+        "end": 41.34
+      },
+      {
+        "word": "and",
+        "start": 41.76,
+        "end": 41.92
+      },
+      {
+        "word": "power",
+        "start": 41.92,
+        "end": 42.18
+      },
+      {
+        "word": "line",
+        "start": 42.18,
+        "end": 42.48
+      },
+      {
+        "word": "interference.",
+        "start": 42.48,
+        "end": 42.76
+      },
+      {
+        "word": "If",
+        "start": 43.76,
+        "end": 43.94
+      },
+      {
+        "word": "all",
+        "start": 43.94,
+        "end": 44.14
+      },
+      {
+        "word": "of",
+        "start": 44.14,
+        "end": 44.3
+      },
+      {
+        "word": "these",
+        "start": 44.3,
+        "end": 44.42
+      },
+      {
+        "word": "components",
+        "start": 44.42,
+        "end": 44.76
+      },
+      {
+        "word": "remain",
+        "start": 44.76,
+        "end": 45.26
+      },
+      {
+        "word": "in",
+        "start": 45.26,
+        "end": 45.54
+      },
+      {
+        "word": "the",
+        "start": 45.54,
+        "end": 45.6
+      },
+      {
+        "word": "recording,",
+        "start": 45.6,
+        "end": 45.92
+      },
+      {
+        "word": "identifying",
+        "start": 46.52,
+        "end": 46.8
+      },
+      {
+        "word": "meaningful",
+        "start": 46.8,
+        "end": 47.42
+      },
+      {
+        "word": "brain",
+        "start": 47.42,
+        "end": 47.92
+      },
+      {
+        "word": "activity",
+        "start": 47.92,
+        "end": 48.36
+      },
+      {
+        "word": "becomes",
+        "start": 48.36,
+        "end": 49.04
+      },
+      {
+        "word": "much",
+        "start": 49.04,
+        "end": 49.5
+      },
+      {
+        "word": "more",
+        "start": 49.5,
+        "end": 49.74
+      },
+      {
+        "word": "difficult.",
+        "start": 49.74,
+        "end": 50.12
+      },
+      {
+        "word": "Filtering",
+        "start": 50.9,
+        "end": 51.22
+      },
+      {
+        "word": "helps",
+        "start": 51.22,
+        "end": 51.52
+      },
+      {
+        "word": "separate",
+        "start": 51.52,
+        "end": 51.92
+      },
+      {
+        "word": "the",
+        "start": 51.92,
+        "end": 52.26
+      },
+      {
+        "word": "signal",
+        "start": 52.26,
+        "end": 52.52
+      },
+      {
+        "word": "of",
+        "start": 52.52,
+        "end": 52.72
+      },
+      {
+        "word": "interest",
+        "start": 52.72,
+        "end": 52.94
+      },
+      {
+        "word": "from",
+        "start": 52.94,
+        "end": 53.36
+      },
+      {
+        "word": "these",
+        "start": 53.36,
+        "end": 53.54
+      },
+      {
+        "word": "unwanted",
+        "start": 53.54,
+        "end": 53.96
+      },
+      {
+        "word": "components.",
+        "start": 53.96,
+        "end": 54.56
+      },
+      {
+        "word": "And",
+        "start": 54.56,
+        "end": 55.84
+      },
+      {
+        "word": "filtering",
+        "start": 55.84,
+        "end": 56.1
+      },
+      {
+        "word": "is",
+        "start": 56.1,
+        "end": 56.76
+      },
+      {
+        "word": "a",
+        "start": 56.76,
+        "end": 56.88
+      },
+      {
+        "word": "selective",
+        "start": 56.88,
+        "end": 57.22
+      },
+      {
+        "word": "process.",
+        "start": 57.22,
+        "end": 57.78
+      },
+      {
+        "word": "A",
+        "start": 58.62,
+        "end": 58.68
+      },
+      {
+        "word": "properly",
+        "start": 58.68,
+        "end": 58.96
+      },
+      {
+        "word": "designed",
+        "start": 58.96,
+        "end": 59.54
+      },
+      {
+        "word": "filter",
+        "start": 59.54,
+        "end": 60.1
+      },
+      {
+        "word": "removes",
+        "start": 60.1,
+        "end": 60.64
+      },
+      {
+        "word": "only",
+        "start": 60.64,
+        "end": 61.2
+      },
+      {
+        "word": "those",
+        "start": 61.2,
+        "end": 61.4
+      },
+      {
+        "word": "components",
+        "start": 61.4,
+        "end": 61.78
+      },
+      {
+        "word": "that",
+        "start": 61.78,
+        "end": 62.26
+      },
+      {
+        "word": "are",
+        "start": 62.26,
+        "end": 62.38
+      },
+      {
+        "word": "considered",
+        "start": 62.38,
+        "end": 62.8
+      },
+      {
+        "word": "undesirable,",
+        "start": 62.8,
+        "end": 63.34
+      },
+      {
+        "word": "while",
+        "start": 64.26,
+        "end": 64.38
+      },
+      {
+        "word": "preserving",
+        "start": 64.38,
+        "end": 64.74
+      },
+      {
+        "word": "the",
+        "start": 64.74,
+        "end": 65.1
+      },
+      {
+        "word": "physiological",
+        "start": 65.1,
+        "end": 65.56
+      },
+      {
+        "word": "information",
+        "start": 65.56,
+        "end": 66.2
+      },
+      {
+        "word": "we",
+        "start": 66.2,
+        "end": 66.8
+      },
+      {
+        "word": "need",
+        "start": 66.8,
+        "end": 67.0
+      },
+      {
+        "word": "for",
+        "start": 67.0,
+        "end": 67.34
+      },
+      {
+        "word": "analysis.",
+        "start": 67.34,
+        "end": 67.64
+      },
+      {
+        "word": "The",
+        "start": 68.84,
+        "end": 68.86
+      },
+      {
+        "word": "key",
+        "start": 68.86,
+        "end": 69.02
+      },
+      {
+        "word": "definition,",
+        "start": 69.02,
+        "end": 69.46
+      },
+      {
+        "word": "signal",
+        "start": 70.24,
+        "end": 70.5
+      },
+      {
+        "word": "filtering",
+        "start": 70.5,
+        "end": 71.02
+      },
+      {
+        "word": "is",
+        "start": 71.02,
+        "end": 71.44
+      },
+      {
+        "word": "the",
+        "start": 71.44,
+        "end": 71.58
+      },
+      {
+        "word": "process",
+        "start": 71.58,
+        "end": 71.94
+      },
+      {
+        "word": "of",
+        "start": 71.94,
+        "end": 72.24
+      },
+      {
+        "word": "preserving",
+        "start": 72.24,
+        "end": 72.72
+      },
+      {
+        "word": "useful",
+        "start": 72.72,
+        "end": 73.04
+      },
+      {
+        "word": "signal",
+        "start": 73.04,
+        "end": 73.56
+      },
+      {
+        "word": "components",
+        "start": 73.56,
+        "end": 73.94
+      },
+      {
+        "word": "while",
+        "start": 74.26,
+        "end": 74.68
+      },
+      {
+        "word": "attenuating",
+        "start": 74.68,
+        "end": 75.38
+      },
+      {
+        "word": "unwanted",
+        "start": 75.38,
+        "end": 75.78
+      },
+      {
+        "word": "components.",
+        "start": 75.78,
+        "end": 76.48
+      }
+    ],
+    "render_prompt": "1. **0.00-1.52** \u2014 A mostly clean EEG trace fades in across the screen, a thin line tracing gentle brainwave oscillations. The line is faintly visible, undulating with typical neural activity.\n\n2. **1.52-2.64** \u2014 The clean trace holds steady for a beat, establishing itself as the baseline reference. The line continues its gentle oscillation.\n\n3. **2.64-5.34** \u2014 A slow, undulating baseline drift begins to overlay the trace: a broad, sweeping wave that lifts the entire signal gradually up and down away from its center. The drift component appears as a semi-transparent slow-moving curve layered over the clean trace.\n\n4. **5.34-7.38** \u2014 The clean trace and drift continue, but now a periodic buzzing overlay fades in: rapid, regular high-frequency oscillations riding on top of the signal. The buzz component appears as a fine, fast jitter along the trace.\n\n5. **7.38-8.74** \u2014 A sharp burst of muscle activity appears: a brief cluster of large, jagged, high-amplitude spikes disrupting the trace. The muscle artifact jumps out visually as a rough burst.\n\n6. **8.74-10.86** \u2014 The full contaminated trace is now visible: clean brain activity buried under baseline drift, equipment buzz, muscle bursts. The clean signal remains faintly visible underneath all these artifacts.\n\n7. **10.86-12.20** \u2014 The contaminated trace holds on screen, all components layered together, showing how messy the recording has become. No new elements appear.\n\n8. **12.20-15.36** \u2014 The trace freezes or simply continues as a static visual while a label fades in below: \"Filtering does not create new information.\" The text appears crisp and centered.\n\n9. **15.36-16.24** \u2014 The label from beat 8 remains on screen, while the contaminated trace continues its motion. A brief pause before the next concept.\n\n10. **16.24-19.66** \u2014 The label fades out. The contaminated trace remains visible, but now a subtle highlighting begins: the unwanted components (drift, buzz, muscle burst) are slightly dimmed compared to the clean signal, visually separating them.\n\n11. **19.66-23.32** \u2014 A second label fades in below the trace: \"Removes components unlikely to contain useful physiological information.\" The trace continues, with the unwanted components visually distinct from the faint clean signal.\n\n12. **23.32-24.26** \u2014 The label fades away. The trace resets to showing all components equally mixed.\n\n13. **24.26-26.02** \u2014 The screen transitions to a fresh EEG trace. A title card appears: \"EEG Recording.\" The trace begins clean, then gradually accumulates artifacts.\n\n14. **26.02-30.32** \u2014 The clean brain activity component is isolated and highlighted: a smooth, rhythmic wave pattern labeled \"Brain activity\" appears prominently in front. The trace pulses gently to show this is the signal of interest.\n\n15. **30.32-30.86** \u2014 Brief pause. The brain activity component remains highlighted.\n\n16. **30.86-32.58** \u2014 The brain activity component pulses or glows gently, emphasizing it as \"the signal we're interested in.\"\n\n17. **33.18-35.44** \u2014 The slow baseline drift component is highlighted separately: the broad sweeping wave labeled \"Baseline drift\" flashes and brightens, isolating itself from the trace.\n\n18. **35.44-36.32** \u2014 The drift component continues highlighted, labeled clearly.\n\n19. **36.80-38.92** \u2014 The periodic equipment interference is highlighted: the rapid buzzing overlay labeled \"Electrical interference\" flashes and brightens, showing its regular high-frequency pattern.\n\n20. **38.92-39.50** \u2014 The equipment interference remains highlighted.\n\n21. **39.50-41.34** \u2014 The muscle activity burst is highlighted: the jagged high-amplitude spikes labeled \"Muscle activity\" flash and brighten, emphasizing their irregular, sharp nature.\n\n22. **41.34-41.76** \u2014 The muscle burst holds highlighted.\n\n23. **41.76-42.76** \u2014 The power-line interference is highlighted: a very regular, steady sine wave ripple labeled \"Power-line interference\" flashes and brightens, showing its consistent frequency.\n\n24. **42.76-43.76** \u2014 All four artifacts remain visible and labeled, each in its own highlight color, surrounding the faint clean brain activity still barely visible underneath.\n\n25. **43.76-45.92** \u2014 The full contaminated trace shows all components together. The clean brain signal is now very hard to distinguish beneath the drift, buzz, muscle burst, and power-line ripple.\n\n26. **45.92-46.52** \u2014 The trace visually becomes murkier or more cluttered, emphasizing how difficult it is to identify the brain activity.\n\n27. **46.52-48.36** \u2014 A label fades in: \"Difficult to identify brain activity.\" The contaminated trace continues, with the brain activity obscured.\n\n28. **48.36-50.12** \u2014 The label remains. The brain activity component is shown trying to peek through the noise but is clearly overwhelmed.\n\n29. **50.12-50.90** \u2014 The label fades out. A brief pause.\n\n30. **50.90-53.96** \u2014 A filter boundary line appears across the screen, dividing it into two sections. The unwanted components (drift, buzz, muscle burst, power-line ripple) begin to separate from the clean signal.\n\n31. **53.96-54.56** \u2014 The unwanted components fade out from the main trace and slide into a labeled bin marked \"Removed.\" Each artifact dims as it moves into the bin.\n\n32. **54.56-57.78** \u2014 The clean brain activity, now free of contamination, is enlarged and centered on the screen. It appears brighter and clearer than before. The label \"Preserved signal\" appears beside it.\n\n33. **57.78-58.62** \u2014 The preserved signal holds center stage, clean and distinct. The \"Removed\" bin sits off to the side with the faded artifacts inside.\n\n34. **58.62-63.34** \u2014 The clean signal remains enlarged. The \"Removed\" bin stays visible. A subtle visual emphasis shows that only some components were removed, not everything \u2014 the preserved signal is clearly intact.\n\n35. **63.34-64.26** \u2014 The visual holds: preserved signal prominent, removed artifacts in the bin.\n\n36. **64.26-67.64** \u2014 The clean signal pulses gently with the label \"Preserved signal\" reaffirmed. The \"Removed\" bin stays visible.\n\n37. **67.64-68.84** \u2014 The screen begins to settle. The enlarged clean signal remains centered.\n\n38. **68.84-71.44** \u2014 A definition text fades in at the bottom of the screen: \"Signal filtering = preserving useful signal components...\" The clean signal and \"Removed\" bin remain visible above.\n\n39. **71.44-73.94** \u2014 The definition text expands: \"Signal filtering = preserving useful signal components while attenuating unwanted components.\" The full text now sits at the bottom.\n\n40. **73.94-76.48** \u2014 The complete definition remains on screen. The clean signal pulses gently in the center, the \"Removed\" bin stays off to the side with the faded artifacts.\n\n41. **76.48-77.38** \u2014 Final hold: the full scene remains visible \u2014 preserved clean signal centered and highlighted, unwanted components in the \"Removed\" bin, and the definition text at the bottom. The scene holds until the end of the narration.",
+    "code": "ASSET_PATHS = {'heart': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\test_heart.svg', 'brain': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\brain_test.svg', 'stopwatch': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\stopwatch.svg', 'activity': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\activity.svg', 'soundwave': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\soundwave.svg', 'grid_matrix': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\grid-3x3-gap-fill.svg', 'bar_chart': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bar-chart.svg', 'graph_trend': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\graph-up-arrow.svg', 'cpu': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\cpu.svg', 'funnel': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\funnel.svg', 'table': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\table.svg', 'hospital': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hospital.svg', 'capsule': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\capsule.svg', 'clipboard_pulse': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\clipboard2-pulse.svg', 'hand': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hand-index-thumb.svg', 'broadcast': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\broadcast-pin.svg', 'gear': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\gear.svg', 'arrow_repeat': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\arrow-repeat.svg', 'lightbulb': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\lightbulb.svg', 'bell': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bell.svg', 'check_circle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\check-circle.svg', 'x_circle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\x-circle.svg', 'rulers': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\rulers.svg', 'puzzle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\puzzle.svg', 'fig_measurement_funnel': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_measurement_funnel.png', 'fig_mindmap_three_pillars': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_three_pillars.png', 'fig_mindmap_full': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_full.png'}\n\nfrom manim import *\nimport numpy as np\n\n\nclass Scene2(Scene):\n    def construct(self):\n        self.camera.background_color = \"#0F1116\"\n\n        # ---------- component functions ----------\n        def brain_y(x):\n            return 0.28 * np.sin(2.2 * x) + 0.12 * np.sin(5.0 * x + 1.0) + 0.06 * np.sin(9.0 * x)\n\n        def drift_y(x):\n            return 0.5 * np.sin(0.45 * x + 0.8) + 0.15 * np.sin(0.9 * x)\n\n        def elec_y(x):\n            return 0.10 * np.sin(22.0 * x) + 0.05 * np.sin(37.0 * x)\n\n        def muscle_y(x):\n            y = np.zeros_like(x)\n            centers = [-1.8, -1.0, -0.2, 0.6, 1.4]\n            amps = [0.6, -0.8, 0.9, -0.7, 0.6]\n            widths = [0.15, 0.12, 0.1, 0.13, 0.12]\n            for c, a, w in zip(centers, amps, widths):\n                y += a * np.exp(-((x - c) / w) ** 2)\n            return y\n\n        def power_y(x):\n            return 0.22 * np.sin(12.0 * x)\n\n        def trace_point(f, y_center=1.3, y_scale=1.0):\n            return lambda t: np.array([t, y_center + y_scale * f(t), 0])\n\n        def mini_trace_point(f, x_scale=0.45, y_scale=0.5):\n            return lambda t: np.array([t * x_scale, y_scale * f(t), 0])\n\n        # ---------- main trace components ----------\n        main_y = 1.3\n        brain_curve = ParametricFunction(\n            trace_point(brain_y),\n            t_range=[-6, 6, 0.01],\n            color=BLUE,\n            stroke_width=4,\n        )\n        drift_curve = ParametricFunction(\n            trace_point(drift_y),\n            t_range=[-6, 6, 0.01],\n            color=ORANGE,\n            stroke_width=4,\n        )\n        elec_curve = ParametricFunction(\n            trace_point(elec_y),\n            t_range=[-6, 6, 0.01],\n            color=PURPLE,\n            stroke_width=2,\n        )\n        muscle_curve = ParametricFunction(\n            trace_point(muscle_y),\n            t_range=[-6, 6, 0.01],\n            color=RED,\n            stroke_width=3,\n        )\n        power_curve = ParametricFunction(\n            trace_point(power_y),\n            t_range=[-6, 6, 0.01],\n            color=YELLOW,\n            stroke_width=2,\n        )\n        power_curve.set_opacity(0)\n\n        baseline = Line(LEFT * 6 + UP * main_y, RIGHT * 6 + UP * main_y, color=GREY, stroke_width=1).set_opacity(0.3)\n        self.add(baseline)\n\n        # Beat 1: 0.00-1.52\n        self.play(FadeIn(brain_curve), run_time=max(0.05, 1.52))\n\n        # Beat 2: 1.52-2.64\n        self.wait(max(0.05, 1.12))\n\n        # Beat 3: 2.64-5.34\n        self.play(FadeIn(drift_curve), run_time=max(0.05, 2.70))\n\n        # Beat 4: 5.34-7.38\n        self.play(FadeIn(elec_curve), run_time=max(0.05, 2.04))\n\n        # Beat 5: 7.38-8.74\n        self.play(FadeIn(muscle_curve), run_time=max(0.05, 1.36))\n\n        # Beat 6: 8.74-10.86\n        self.play(brain_curve.animate.set_opacity(0.9), run_time=max(0.05, 2.12))\n\n        # Beat 7: 10.86-12.20\n        self.wait(max(0.05, 1.34))\n\n        # Beat 8: 12.20-15.36\n        label1 = Text(\"Filtering does not create new information.\", color=WHITE, font_size=36).move_to(DOWN * 1.8)\n        self.play(FadeIn(label1), run_time=max(0.05, 3.16))\n\n        # Beat 9: 15.36-16.24\n        self.wait(max(0.05, 0.88))\n\n        # Beat 10: 16.24-19.66\n        self.play(FadeOut(label1), run_time=max(0.05, 1.0))\n        self.play(\n            drift_curve.animate.set_opacity(0.25),\n            elec_curve.animate.set_opacity(0.25),\n            muscle_curve.animate.set_opacity(0.25),\n            brain_curve.animate.set_opacity(1.0),\n            run_time=max(0.05, 2.42),\n        )\n\n        # Beat 11: 19.66-23.32\n        label2 = Text(\n            \"Removes components unlikely to contain useful physiological information.\",\n            color=WHITE,\n            font_size=32,\n        ).scale_to_fit_width(10).move_to(DOWN * 1.8)\n        self.play(FadeIn(label2), run_time=max(0.05, 3.66))\n\n        # Beat 12: 23.32-24.26\n        self.play(\n            FadeOut(label2),\n            drift_curve.animate.set_opacity(0.6),\n            elec_curve.animate.set_opacity(0.6),\n            muscle_curve.animate.set_opacity(0.6),\n            run_time=max(0.05, 0.94),\n        )\n\n        # Beat 13: 24.26-26.02\n        title = Text(\"EEG Recording\", color=WHITE, font_size=44).to_edge(UP, buff=0.3)\n        self.play(\n            FadeOut(drift_curve),\n            FadeOut(elec_curve),\n            FadeOut(muscle_curve),\n            FadeIn(title),\n            run_time=max(0.05, 1.76),\n        )\n\n        # Beat 14: 26.02-30.32\n        big_brain = ParametricFunction(\n            trace_point(brain_y, y_center=-0.5, y_scale=1.6),\n            t_range=[-6, 6, 0.01],\n            color=TEAL,\n            stroke_width=8,\n        )\n        brain_label = Text(\"Brain activity\", color=TEAL, font_size=38).next_to(big_brain, UP, buff=0.3)\n        self.play(\n            brain_curve.animate.set_opacity(0.25),\n            FadeIn(big_brain),\n            FadeIn(brain_label),\n            run_time=max(0.05, 4.30),\n        )\n\n        # Beat 15: 30.32-30.86\n        self.wait(max(0.05, 0.54))\n\n        # Beat 16: 30.86-32.58\n        self.play(Indicate(big_brain, scale_factor=1.1, color=TEAL), run_time=max(0.05, 1.72))\n\n        # gap 32.58-33.18\n        self.wait(max(0.05, 0.60))\n\n        # Beat 17: 33.18-35.44\n        big_drift = ParametricFunction(\n            trace_point(drift_y, y_center=-0.5, y_scale=1.6),\n            t_range=[-6, 6, 0.01],\n            color=ORANGE,\n            stroke_width=8,\n        )\n        drift_label = Text(\"Baseline drift\", color=ORANGE, font_size=38).next_to(big_drift, UP, buff=0.3)\n        self.play(FadeOut(big_brain), FadeOut(brain_label), run_time=max(0.05, 0.7))\n        self.play(FadeIn(big_drift), FadeIn(drift_label), run_time=max(0.05, 1.56))\n\n        # Beat 18: 35.44-36.32\n        self.wait(max(0.05, 0.88))\n\n        # gap 36.32-36.80\n        self.wait(max(0.05, 0.48))\n\n        # Beat 19: 36.80-38.92\n        big_elec = ParametricFunction(\n            trace_point(elec_y, y_center=-0.5, y_scale=2.0),\n            t_range=[-6, 6, 0.01],\n            color=PURPLE,\n            stroke_width=8,\n        )\n        elec_label = Text(\"Electrical interference\", color=PURPLE, font_size=36).next_to(big_elec, UP, buff=0.3)\n        self.play(FadeOut(big_drift), FadeOut(drift_label), run_time=max(0.05, 0.6))\n        self.play(FadeIn(big_elec), FadeIn(elec_label), run_time=max(0.05, 1.52))\n\n        # Beat 20: 38.92-39.50\n        self.wait(max(0.05, 0.58))\n\n        # Beat 21: 39.50-41.34\n        big_muscle = ParametricFunction(\n            trace_point(muscle_y, y_center=-0.5, y_scale=2.0),\n            t_range=[-6, 6, 0.01],\n            color=RED,\n            stroke_width=8,\n        )\n        muscle_label = Text(\"Muscle activity\", color=RED, font_size=36).next_to(big_muscle, UP, buff=0.3)\n        self.play(FadeOut(big_elec), FadeOut(elec_label), run_time=max(0.05, 0.6))\n        self.play(FadeIn(big_muscle), FadeIn(muscle_label), run_time=max(0.05, 1.24))\n\n        # Beat 22: 41.34-41.76\n        self.wait(max(0.05, 0.42))\n\n        # Beat 23: 41.76-42.76\n        big_power = ParametricFunction(\n            trace_point(power_y, y_center=-0.5, y_scale=2.0),\n            t_range=[-6, 6, 0.01],\n            color=YELLOW,\n            stroke_width=8,\n        )\n        power_label = Text(\"Power-line interference\", color=YELLOW, font_size=36).next_to(big_power, UP, buff=0.3)\n        self.play(FadeOut(big_muscle), FadeOut(muscle_label), run_time=max(0.05, 0.4))\n        self.play(FadeIn(big_power), FadeIn(power_label), run_time=max(0.05, 0.6))\n\n        # Beat 24: 42.76-43.76\n        artifacts_info = [\n            (drift_y, ORANGE, \"Baseline drift\"),\n            (elec_y, PURPLE, \"Electrical interference\"),\n            (muscle_y, RED, \"Muscle activity\"),\n            (power_y, YELLOW, \"Power-line interference\"),\n        ]\n        mini_cards = []\n        for func, color, label_text in artifacts_info:\n            mini_curve = ParametricFunction(\n                mini_trace_point(func),\n                t_range=(-2.5, 2.5, 0.05),\n                color=color,\n                stroke_width=5,\n            )\n            mini_label = Text(label_text, font_size=20, color=color).next_to(mini_curve, DOWN, buff=0.15)\n            mini_cards.append(VGroup(mini_curve, mini_label))\n        mini_artifact_row = VGroup(*mini_cards).arrange(RIGHT, buff=0.5).to_edge(DOWN, buff=0.35)\n\n        self.play(FadeOut(big_power), FadeOut(power_label), run_time=max(0.05, 0.35))\n        self.play(FadeIn(mini_artifact_row), run_time=max(0.05, 0.65))\n\n        # Beat 25: 43.76-45.92\n        self.play(\n            FadeIn(drift_curve),\n            FadeIn(elec_curve),\n            FadeIn(muscle_curve),\n            FadeIn(power_curve),\n            brain_curve.animate.set_opacity(0.3),\n            mini_artifact_row.animate.set_opacity(0.5),\n            run_time=max(0.05, 2.16),\n        )\n\n        # Beat 26: 45.92-46.52\n        self.play(\n            drift_curve.animate.set_opacity(0.7),\n            elec_curve.animate.set_opacity(0.7),\n            muscle_curve.animate.set_opacity(0.7),\n            power_curve.animate.set_opacity(0.7),\n            run_time=max(0.05, 0.60),\n        )\n\n        # Beat 27: 46.52-48.36\n        difficult_label = Text(\"Difficult to identify brain activity.\", color=WHITE, font_size=34).move_to(DOWN * 1.0)\n        self.play(FadeIn(difficult_label), run_time=max(0.05, 1.84))\n\n        # Beat 28: 48.36-50.12\n        self.play(Indicate(brain_curve, scale_factor=1.1, color=BLUE), run_time=max(0.05, 0.88))\n        self.play(brain_curve.animate.set_opacity(0.2), run_time=max(0.05, 0.88))\n\n        # Beat 29: 50.12-50.90\n        self.play(FadeOut(difficult_label), run_time=max(0.05, 0.78))\n\n        # Beat 30: 50.90-53.96\n        boundary = DashedLine(start=UP * 3.5, end=DOWN * 3.5, color=GREY, stroke_width=1.5)\n        self.play(FadeIn(boundary), run_time=max(0.05, 3.06))\n\n        # Beat 31: 53.96-54.56\n        bin_rect = Rectangle(width=2.2, height=1.6, color=GREY, fill_color=BLACK, fill_opacity=0.4, stroke_width=1.5)\n        bin_text = Text(\"Removed\", font_size=26, color=GREY).move_to(bin_rect.get_center())\n        removed_bin = VGroup(bin_rect, bin_text).move_to(RIGHT * 4.5 + DOWN * 1.2)\n\n        artifact_curves_main = VGroup(drift_curve, elec_curve, muscle_curve, power_curve)\n        self.play(\n            artifact_curves_main.animate.scale(0.15).move_to(removed_bin.get_center()).set_opacity(0.25),\n            FadeOut(mini_artifact_row),\n            FadeIn(removed_bin),\n            run_time=max(0.05, 0.60),\n        )\n\n        # Beat 32: 54.56-57.78\n        preserved_curve = ParametricFunction(\n            trace_point(brain_y, y_center=0, y_scale=1.8),\n            t_range=[-5.5, 5.5, 0.01],\n            color=TEAL,\n            stroke_width=7,\n        )\n        preserved_label = Text(\"Preserved signal\", color=TEAL, font_size=40).next_to(preserved_curve, DOWN, buff=0.5)\n        self.play(\n            FadeOut(brain_curve),\n            FadeIn(preserved_curve),\n            FadeIn(preserved_label),\n            run_time=max(0.05, 3.22),\n        )\n\n        # Beat 33: 57.78-58.62\n        self.wait(max(0.05, 0.84))\n\n        # Beat 34: 58.62-63.34\n        self.play(\n            preserved_curve.animate.scale(1.08),\n            preserved_label.animate.scale(1.05),\n            run_time=max(0.05, 2.36),\n        )\n        self.play(\n            preserved_curve.animate.scale(1 / 1.08),\n            preserved_label.animate.scale(1 / 1.05),\n            run_time=max(0.05, 2.36),\n        )\n\n        # Beat 35: 63.34-64.26\n        self.wait(max(0.05, 0.92))\n\n        # Beat 36: 64.26-67.64\n        self.play(Indicate(preserved_curve, scale_factor=1.05, color=TEAL), run_time=max(0.05, 3.38))\n\n        # Beat 37: 67.64-68.84\n        self.wait(max(0.05, 1.20))\n\n        # Beat 38: 68.84-71.44\n        def_text_partial = Text(\n            \"Signal filtering = preserving useful signal components...\",\n            color=WHITE,\n            font_size=28,\n        ).scale_to_fit_width(10).to_edge(DOWN, buff=0.4)\n        self.play(FadeIn(def_text_partial), run_time=max(0.05, 2.60))\n\n        # Beat 39: 71.44-73.94\n        def_text_full = Text(\n            \"Signal filtering = preserving useful signal components while attenuating unwanted components.\",\n            color=WHITE,\n            font_size=28,\n        ).scale_to_fit_width(10).to_edge(DOWN, buff=0.4)\n        self.play(ReplacementTransform(def_text_partial, def_text_full), run_time=max(0.05, 2.50))\n\n        # Beat 40: 73.94-76.48\n        self.play(Indicate(preserved_curve, scale_factor=1.05, color=TEAL), run_time=max(0.05, 2.54))\n\n        # Beat 41: 76.48-77.38\n        self.wait(max(0.05, 0.90))",
+    "video_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\NPS\\5-1-why-signals-are-filtered\\manim\\Scene2\\media\\videos\\Scene2\\1080p60\\Scene2.mp4",
+    "render_attempts": 1,
+    "render_status": "rendered",
+    "last_feedback": null,
+    "composed_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\NPS\\5-1-why-signals-are-filtered\\rendered_video\\scene_02_with_audio.mp4"
+  },
+  {
+    "id": 3,
+    "subtopic": "5.1.4 Why Do Neural Signals Need Filtering?",
+    "narration": "Why do neural signals need filtering in particular? Neural recordings are highly susceptible to contamination because biological signals are extremely small. Even minor electrical disturbances can produce voltage changes that are comparable to, or even larger than, the neural signal itself. Some common reasons for filtering include: removing slow baseline drift, reducing high-frequency electrical noise, eliminating power-line interference, improving the signal-to-noise ratio, and preparing signals for feature extraction and analysis. Filtering therefore serves as an essential preprocessing step before most signal-processing techniques are applied.",
+    "animation_description": "A visual comparison of scale: on the left, a tiny, barely visible neural signal trace, labeled 'Neural signal \u2014 microvolts'. On the right, much larger noise waveforms, labeled 'Disturbances', visibly dwarfing the small trace. Then a list appears as checklist items: 'Remove baseline drift', 'Reduce high-frequency noise', 'Eliminate power-line interference', 'Improve SNR', 'Prepare signals for feature extraction'. Each box is checked off in succession, and below appears a pipeline diagram: raw signal \u2192 filtering \u2192 clean signal \u2192 analysis.",
+    "scene_type": "manim",
+    "audio_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\NPS\\5-1-why-signals-are-filtered\\audio\\scene_03.wav",
+    "timestamps": [
+      {
+        "word": "Why",
+        "start": 0.0,
+        "end": 0.44
+      },
+      {
+        "word": "do",
+        "start": 0.44,
+        "end": 0.6
+      },
+      {
+        "word": "neural",
+        "start": 0.6,
+        "end": 0.78
+      },
+      {
+        "word": "signals",
+        "start": 0.78,
+        "end": 1.14
+      },
+      {
+        "word": "need",
+        "start": 1.14,
+        "end": 1.64
+      },
+      {
+        "word": "filtering",
+        "start": 1.64,
+        "end": 2.02
+      },
+      {
+        "word": "in",
+        "start": 2.02,
+        "end": 2.4
+      },
+      {
+        "word": "particular?",
+        "start": 2.4,
+        "end": 2.72
+      },
+      {
+        "word": "Neural",
+        "start": 3.68,
+        "end": 3.9
+      },
+      {
+        "word": "recordings",
+        "start": 3.9,
+        "end": 4.34
+      },
+      {
+        "word": "are",
+        "start": 4.34,
+        "end": 4.82
+      },
+      {
+        "word": "highly",
+        "start": 4.82,
+        "end": 5.14
+      },
+      {
+        "word": "susceptible",
+        "start": 5.14,
+        "end": 5.64
+      },
+      {
+        "word": "to",
+        "start": 5.64,
+        "end": 6.08
+      },
+      {
+        "word": "contamination",
+        "start": 6.08,
+        "end": 6.56
+      },
+      {
+        "word": "because",
+        "start": 7.1400000000000015,
+        "end": 7.54
+      },
+      {
+        "word": "biological",
+        "start": 7.54,
+        "end": 8.0
+      },
+      {
+        "word": "signals",
+        "start": 8.0,
+        "end": 8.68
+      },
+      {
+        "word": "are",
+        "start": 8.68,
+        "end": 9.1
+      },
+      {
+        "word": "extremely",
+        "start": 9.1,
+        "end": 9.54
+      },
+      {
+        "word": "small.",
+        "start": 9.54,
+        "end": 10.02
+      },
+      {
+        "word": "Even",
+        "start": 10.78,
+        "end": 11.04
+      },
+      {
+        "word": "minor",
+        "start": 11.04,
+        "end": 11.3
+      },
+      {
+        "word": "electrical",
+        "start": 11.3,
+        "end": 11.92
+      },
+      {
+        "word": "disturbances",
+        "start": 11.92,
+        "end": 12.42
+      },
+      {
+        "word": "can",
+        "start": 12.42,
+        "end": 13.12
+      },
+      {
+        "word": "produce",
+        "start": 13.12,
+        "end": 13.42
+      },
+      {
+        "word": "voltage",
+        "start": 13.42,
+        "end": 13.88
+      },
+      {
+        "word": "changes",
+        "start": 13.88,
+        "end": 14.4
+      },
+      {
+        "word": "that",
+        "start": 14.4,
+        "end": 14.76
+      },
+      {
+        "word": "are",
+        "start": 14.76,
+        "end": 14.84
+      },
+      {
+        "word": "comparable",
+        "start": 14.84,
+        "end": 15.18
+      },
+      {
+        "word": "to,",
+        "start": 15.18,
+        "end": 15.56
+      },
+      {
+        "word": "or",
+        "start": 16.0,
+        "end": 16.26
+      },
+      {
+        "word": "even",
+        "start": 16.26,
+        "end": 16.54
+      },
+      {
+        "word": "larger",
+        "start": 16.54,
+        "end": 16.8
+      },
+      {
+        "word": "than,",
+        "start": 16.8,
+        "end": 17.16
+      },
+      {
+        "word": "the",
+        "start": 17.54,
+        "end": 17.6
+      },
+      {
+        "word": "neural",
+        "start": 17.6,
+        "end": 17.86
+      },
+      {
+        "word": "signal",
+        "start": 17.86,
+        "end": 18.22
+      },
+      {
+        "word": "itself.",
+        "start": 18.22,
+        "end": 18.5
+      },
+      {
+        "word": "Some",
+        "start": 19.54,
+        "end": 19.78
+      },
+      {
+        "word": "common",
+        "start": 19.78,
+        "end": 20.06
+      },
+      {
+        "word": "reasons",
+        "start": 20.06,
+        "end": 20.5
+      },
+      {
+        "word": "for",
+        "start": 20.5,
+        "end": 20.82
+      },
+      {
+        "word": "filtering",
+        "start": 20.82,
+        "end": 21.16
+      },
+      {
+        "word": "include",
+        "start": 21.16,
+        "end": 21.62
+      },
+      {
+        "word": "removing",
+        "start": 21.62,
+        "end": 22.64
+      },
+      {
+        "word": "slow",
+        "start": 22.64,
+        "end": 23.12
+      },
+      {
+        "word": "baseline",
+        "start": 23.12,
+        "end": 23.76
+      },
+      {
+        "word": "drift,",
+        "start": 23.76,
+        "end": 24.04
+      },
+      {
+        "word": "reducing",
+        "start": 24.52,
+        "end": 24.84
+      },
+      {
+        "word": "high",
+        "start": 24.84,
+        "end": 25.26
+      },
+      {
+        "word": "frequency",
+        "start": 25.26,
+        "end": 25.6
+      },
+      {
+        "word": "electrical",
+        "start": 25.6,
+        "end": 26.0
+      },
+      {
+        "word": "noise,",
+        "start": 26.0,
+        "end": 26.62
+      },
+      {
+        "word": "eliminating",
+        "start": 26.62,
+        "end": 27.64
+      },
+      {
+        "word": "power",
+        "start": 27.64,
+        "end": 28.02
+      },
+      {
+        "word": "line",
+        "start": 28.02,
+        "end": 28.4
+      },
+      {
+        "word": "interference,",
+        "start": 28.4,
+        "end": 28.7
+      },
+      {
+        "word": "improving",
+        "start": 29.36,
+        "end": 29.88
+      },
+      {
+        "word": "the",
+        "start": 29.88,
+        "end": 30.1
+      },
+      {
+        "word": "signal",
+        "start": 30.1,
+        "end": 30.34
+      },
+      {
+        "word": "-to",
+        "start": 30.34,
+        "end": 30.54
+      },
+      {
+        "word": "-noise",
+        "start": 30.54,
+        "end": 30.74
+      },
+      {
+        "word": "ratio,",
+        "start": 30.74,
+        "end": 31.18
+      },
+      {
+        "word": "and",
+        "start": 31.66,
+        "end": 31.84
+      },
+      {
+        "word": "preparing",
+        "start": 31.84,
+        "end": 32.16
+      },
+      {
+        "word": "signals",
+        "start": 32.16,
+        "end": 32.54
+      },
+      {
+        "word": "for",
+        "start": 32.54,
+        "end": 32.98
+      },
+      {
+        "word": "feature",
+        "start": 32.98,
+        "end": 33.22
+      },
+      {
+        "word": "extraction",
+        "start": 33.22,
+        "end": 33.76
+      },
+      {
+        "word": "and",
+        "start": 33.76,
+        "end": 34.22
+      },
+      {
+        "word": "analysis.",
+        "start": 34.22,
+        "end": 34.52
+      },
+      {
+        "word": "Filtering,",
+        "start": 35.64,
+        "end": 35.96
+      },
+      {
+        "word": "therefore,",
+        "start": 35.98,
+        "end": 36.34
+      },
+      {
+        "word": "serves",
+        "start": 36.62,
+        "end": 36.82
+      },
+      {
+        "word": "as",
+        "start": 36.82,
+        "end": 37.2
+      },
+      {
+        "word": "an",
+        "start": 37.2,
+        "end": 37.32
+      },
+      {
+        "word": "essential",
+        "start": 37.32,
+        "end": 37.74
+      },
+      {
+        "word": "pre",
+        "start": 37.74,
+        "end": 37.98
+      },
+      {
+        "word": "-processing",
+        "start": 37.98,
+        "end": 38.38
+      },
+      {
+        "word": "step",
+        "start": 38.38,
+        "end": 38.86
+      },
+      {
+        "word": "before",
+        "start": 38.86,
+        "end": 39.42
+      },
+      {
+        "word": "most",
+        "start": 39.42,
+        "end": 39.7
+      },
+      {
+        "word": "signal",
+        "start": 39.7,
+        "end": 40.12
+      },
+      {
+        "word": "processing",
+        "start": 40.12,
+        "end": 40.62
+      },
+      {
+        "word": "techniques",
+        "start": 40.62,
+        "end": 41.12
+      },
+      {
+        "word": "are",
+        "start": 41.12,
+        "end": 41.52
+      },
+      {
+        "word": "applied.",
+        "start": 41.52,
+        "end": 41.76
+      }
+    ],
+    "render_prompt": "1. **0.00-2.72** \u2014 From the previous scene's hold (clean EEG trace, removed artifacts bin, definition text at bottom), the screen clears of the definition and artifacts bin. A transition begins: the clean EEG trace shrinks and moves to the left side of the screen, becoming a small, barely visible wavy line. As it settles, a label fades in beneath it: \"Neural signal \u2014 microvolts.\" The trace is deliberately tiny, thin, and low-amplitude against the empty right side.\n\n2. **3.68-6.56** \u2014 On the right side of the screen, large noise waveforms fade in: several big, jagged, high-amplitude waveforms with irregular spikes and broad sweeps, clearly towering over the small trace on the left. A label appears above them: \"Disturbances.\" The visual contrast is stark \u2014 the disturbances visibly dwarf the microvolt-scale neural signal. The small trace keeps its gentle oscillation, now looking even smaller in comparison.\n\n3. **7.14-10.02** \u2014 The comparison holds. The tiny neural signal on the left continues its nearly flat, small-amplitude wiggle. The large disturbances on the right continue their dramatic, irregular motion. The size difference is exaggerated on screen: the disturbances are several times taller than the neural signal, reinforcing that biological signals are extremely small.\n\n4. **10.78-13.88** \u2014 A visual emphasis begins: one of the disturbance waveforms briefly brightens and produces a visible voltage change spike, and the small neural signal emits a comparably sized pulse dimly beside it. The two pulses are drawn to the center of the screen briefly for a one-to-one comparison, showing they are similar in size. The label \"comparable\" is not required \u2014 the visual itself shows the disturbance spike and the neural signal pulse at roughly the same scale.\n\n5. **13.88-18.50** \u2014 The comparison visual pushes further: a disturbance waveform's amplitude swells larger and larger, overshooting the neural signal pulse entirely. The disturbance now visibly dwarfs the neural signal. The small trace's own pulse remains tiny by comparison. The two side-by-side waveform pulses hold this contrast for the viewer.\n\n6. **19.54-21.62** \u2014 The comparison visual fades. A clean title line appears at the top of the screen: \"Common reasons for filtering.\" Below it, blank space begins to clear for a checklist. Five empty checkbox rows appear, still unchecked, each with a text label on the right. The labels read vertically, one per row, in order: \"Remove baseline drift,\" \"Reduce high-frequency noise,\" \"Eliminate power-line interference,\" \"Improve SNR,\" \"Prepare signals for feature extraction.\"\n\n7. **21.62-24.04** \u2014 The first checkbox, next to \"Remove baseline drift,\" animates a checkmark appearing \u2014 the box fills or a bold check draws itself. The label brightens as it becomes checked. The remaining four boxes stay unchecked.\n\n8. **24.52-26.62** \u2014 The second checkbox, \"Reduce high-frequency noise,\" gets checked off in the same animated style \u2014 a checkmark draws in and the label brightens. Rows 1 and 2 are now checked; rows 3, 4, and 5 remain unchecked.\n\n9. **26.62-28.70** \u2014 The third checkbox, \"Eliminate power-line interference,\" is checked. Its label brightens. Three boxes checked, two remaining.\n\n10. **29.36-31.18** \u2014 The fourth checkbox, \"Improve SNR,\" is checked. Its label brightens. Four boxes checked, one remaining.\n\n11. **31.66-34.52** \u2014 The fifth checkbox, \"Prepare signals for feature extraction,\" is checked. Its label brightens. All five boxes are now checked. The title \"Common reasons for filtering\" remains at the top.\n\n12. **35.64-38.38** \u2014 The checklist visually compresses upward or fades slightly to make room, while below it a pipeline diagram fades in horizontally: a box labeled \"Raw signal\" with an arrow pointing right to a box labeled \"Filtering,\" with another arrow pointing right to a box labeled \"Clean signal,\" with a final arrow pointing right to a box labeled \"Analysis.\" The arrows connect the boxes in a left-to-right flow.\n\n13. **38.38-41.76** \u2014 The pipeline diagram highlights the \"Filtering\" box with a subtle glow, positioning it visually as the bridge between raw and clean. The arrow from \"Raw signal\" to \"Filtering\" brightens, then the arrow from \"Filtering\" to \"Clean signal\" brightens, and finally the arrow from \"Clean signal\" to \"Analysis\" brightens in sequence, showing the flow. The checklist remains visible above.\n\n14. **41.76-42.58** \u2014 Final hold: the pipeline diagram holds center screen, all four boxes connected left to right. The checklist with all five checked items remains visible above. The scene stays steady through the end of the narration.",
+    "code": "ASSET_PATHS = {'heart': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\test_heart.svg', 'brain': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\brain_test.svg', 'stopwatch': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\stopwatch.svg', 'activity': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\activity.svg', 'soundwave': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\soundwave.svg', 'grid_matrix': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\grid-3x3-gap-fill.svg', 'bar_chart': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bar-chart.svg', 'graph_trend': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\graph-up-arrow.svg', 'cpu': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\cpu.svg', 'funnel': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\funnel.svg', 'table': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\table.svg', 'hospital': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hospital.svg', 'capsule': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\capsule.svg', 'clipboard_pulse': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\clipboard2-pulse.svg', 'hand': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hand-index-thumb.svg', 'broadcast': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\broadcast-pin.svg', 'gear': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\gear.svg', 'arrow_repeat': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\arrow-repeat.svg', 'lightbulb': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\lightbulb.svg', 'bell': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bell.svg', 'check_circle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\check-circle.svg', 'x_circle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\x-circle.svg', 'rulers': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\rulers.svg', 'puzzle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\puzzle.svg', 'fig_measurement_funnel': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_measurement_funnel.png', 'fig_mindmap_three_pillars': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_three_pillars.png', 'fig_mindmap_full': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_full.png'}\n\nfrom manim import *\nimport numpy as np\n\n\nclass Scene3(Scene):\n    def construct(self):\n        self.camera.background_color = \"#0F1116\"\n\n        # ---------- helpers ----------\n        def brain_y(x):\n            return 0.28 * np.sin(2.2 * x) + 0.12 * np.sin(5.0 * x + 1.0) + 0.06 * np.sin(9.0 * x)\n\n        def pulse_y(t, amp):\n            return amp * np.exp(-0.5 * (t / 0.22) ** 2)\n\n        def make_noise_curve(color, y_offset, seed):\n            def f(t, seed=seed):\n                y = (0.85 + 0.25 * np.sin(seed * 3)) * np.sin(2.1 * t + seed)\n                y += 0.6 * np.sin(5.1 * t + seed * 2 + 1.0)\n                y += 0.32 * np.sin(10.3 * t + seed * 3 + 0.4)\n                centers = [-1.2, 0.0, 1.3]\n                amps = [1.8, -2.0, 1.5]\n                widths = [0.22, 0.26, 0.20]\n                for c, a, w in zip(centers, amps, widths):\n                    y += a * np.exp(-((t - c) / w) ** 2)\n                return y\n\n            return ParametricFunction(\n                lambda t: np.array([t, y_offset + f(t), 0]),\n                t_range=[-2.2, 2.2, 0.02],\n                color=color,\n                stroke_width=5,\n            )\n\n        # ---------- beat 1 starting setup ----------\n        clean_trace_full = ParametricFunction(\n            lambda t: np.array([t, 1.8 * brain_y(t), 0]),\n            t_range=[-5.0, 5.0, 0.01],\n            color=TEAL,\n            stroke_width=7,\n        )\n        preserved_label = Text(\"Preserved signal\", color=TEAL, font_size=30).next_to(clean_trace_full, DOWN, buff=0.5)\n        def_text = Text(\n            \"Signal filtering = preserving useful signal components while attenuating unwanted components.\",\n            color=WHITE,\n            font_size=28,\n        ).scale_to_fit_width(10).to_edge(DOWN, buff=0.4)\n\n        bin_rect = Rectangle(width=2.0, height=1.4, color=GREY, fill_color=BLACK, fill_opacity=0.4, stroke_width=1.5)\n        bin_text = Text(\"Removed\", font_size=24, color=GREY).move_to(bin_rect.get_center())\n        removed_bin = VGroup(bin_rect, bin_text).move_to(RIGHT * 4.5 + DOWN * 1.0)\n\n        self.add(clean_trace_full, preserved_label, def_text, removed_bin)\n\n        # Small left trace target\n        small_trace = ParametricFunction(\n            lambda t: np.array([t, 0.16 * np.sin(2.0 * t) + 0.08 * np.sin(4.5 * t + 0.8), 0]),\n            t_range=[-1.8, 1.8, 0.01],\n            color=TEAL,\n            stroke_width=2.2,\n        ).move_to(LEFT * 4.2 + UP * 0.5)\n        small_label = Text(\"Neural signal \u2014 microvolts\", color=WHITE, font_size=26).next_to(small_trace, DOWN, buff=0.35)\n\n        # Beat 1: 0.00-2.72\n        self.play(\n            FadeOut(def_text),\n            FadeOut(removed_bin),\n            FadeOut(preserved_label),\n            Transform(clean_trace_full, small_trace),\n            FadeIn(small_label),\n            run_time=max(0.05, 2.72),\n        )\n\n        # gap to beat 2\n        self.wait(max(0.05, 0.96))\n\n        # Beat 2: 3.68-6.56\n        d1 = make_noise_curve(ORANGE, 0.2, 0.0)\n        d2 = make_noise_curve(RED, -0.6, 1.3)\n        d3 = make_noise_curve(YELLOW, 0.8, 2.1)\n        disturbances = VGroup(d1, d2, d3).scale_to_fit_height(4.4).move_to(RIGHT * 3.1 + UP * 0.2)\n        disturbance_label = Text(\"Disturbances\", color=RED, font_size=40).next_to(disturbances, UP, buff=0.3)\n\n        self.play(FadeIn(disturbances), FadeIn(disturbance_label), run_time=max(0.05, 2.88))\n\n        # gap to beat 3\n        self.wait(max(0.05, 0.58))\n\n        # Beat 3: 7.14-10.02\n        self.play(\n            Wiggle(small_trace, scale_value=0.03),\n            Wiggle(disturbances, scale_value=0.05),\n            run_time=max(0.05, 2.88),\n        )\n\n        # gap to beat 4\n        self.wait(max(0.05, 0.76))\n\n        # Beat 4: 10.78-13.88\n        dist_pulse = ParametricFunction(\n            lambda t: np.array([t, pulse_y(t, 1.1), 0]),\n            t_range=[-0.8, 0.8, 0.01],\n            color=YELLOW,\n            stroke_width=8,\n        ).move_to(d1.get_center() + DOWN * 1.0)\n        neural_pulse = ParametricFunction(\n            lambda t: np.array([t, pulse_y(t, 1.1), 0]),\n            t_range=[-0.8, 0.8, 0.01],\n            color=TEAL,\n            stroke_width=8,\n        ).set_opacity(0.75).move_to(small_trace.get_center() + DOWN * 1.0)\n\n        self.play(d1.animate.set_color(YELLOW).set_stroke(width=8), run_time=max(0.05, 0.5))\n        self.play(GrowFromCenter(dist_pulse), GrowFromCenter(neural_pulse), run_time=max(0.05, 0.8))\n        self.play(\n            dist_pulse.animate.move_to(UP * 0.4 + RIGHT * 0.3),\n            neural_pulse.animate.move_to(UP * 0.4 + LEFT * 0.3),\n            run_time=max(0.05, 1.5),\n        )\n        self.wait(max(0.05, 0.3))\n\n        # Beat 5: 13.88-18.50\n        self.play(dist_pulse.animate.stretch(3.2, dim=1), run_time=max(0.05, 3.2))\n        self.wait(max(0.05, 1.42))\n\n        # gap to beat 6\n        self.wait(max(0.05, 1.04))\n\n        # Beat 6: 19.54-21.62\n        self.play(\n            FadeOut(small_trace),\n            FadeOut(small_label),\n            FadeOut(disturbances),\n            FadeOut(disturbance_label),\n            FadeOut(dist_pulse),\n            FadeOut(neural_pulse),\n            run_time=max(0.05, 0.8),\n        )\n\n        title = Text(\"Common reasons for filtering\", color=WHITE, font_size=48).to_edge(UP, buff=0.35)\n\n        checkbox_labels = [\n            \"Remove baseline drift\",\n            \"Reduce high-frequency noise\",\n            \"Eliminate power-line interference\",\n            \"Improve SNR\",\n            \"Prepare signals for feature extraction\",\n        ]\n        check_rows = []\n        checkmarks = []\n        for label_text in checkbox_labels:\n            box = Square(side_length=0.4, color=GREY_B, stroke_width=3)\n            label = Text(label_text, font_size=32, color=GREY_B)\n            row = VGroup(box, label).arrange(RIGHT, buff=0.35, aligned_edge=LEFT)\n            check = Text(\"\u2713\", color=GREEN, font_size=30).move_to(box.get_center()).set_opacity(0)\n            row.add(check)\n            check_rows.append(row)\n            checkmarks.append(check)\n        checklist = VGroup(*check_rows).arrange(DOWN, buff=0.32, aligned_edge=LEFT)\n        checklist.scale_to_fit_width(9).next_to(title, DOWN, buff=0.45)\n\n        self.play(FadeIn(title), FadeIn(checklist), run_time=max(0.05, 1.28))\n\n        # Beat 7: 21.62-24.04\n        self.play(\n            checkmarks[0].animate.set_opacity(1),\n            check_rows[0][1].animate.set_color(WHITE),\n            run_time=max(0.05, 2.0),\n        )\n        self.wait(max(0.05, 0.42))\n\n        # gap to beat 8\n        self.wait(max(0.05, 0.48))\n\n        # Beat 8: 24.52-26.62\n        self.play(\n            checkmarks[1].animate.set_opacity(1),\n            check_rows[1][1].animate.set_color(WHITE),\n            run_time=max(0.05, 1.7),\n        )\n        self.wait(max(0.05, 0.40))\n\n        # Beat 9: 26.62-28.70\n        self.play(\n            checkmarks[2].animate.set_opacity(1),\n            check_rows[2][1].animate.set_color(WHITE),\n            run_time=max(0.05, 1.6),\n        )\n        self.wait(max(0.05, 0.48))\n\n        # gap to beat 10\n        self.wait(max(0.05, 0.66))\n\n        # Beat 10: 29.36-31.18\n        self.play(\n            checkmarks[3].animate.set_opacity(1),\n            check_rows[3][1].animate.set_color(WHITE),\n            run_time=max(0.05, 1.4),\n        )\n        self.wait(max(0.05, 0.42))\n\n        # gap to beat 11\n        self.wait(max(0.05, 0.48))\n\n        # Beat 11: 31.66-34.52\n        self.play(\n            checkmarks[4].animate.set_opacity(1),\n            check_rows[4][1].animate.set_color(WHITE),\n            run_time=max(0.05, 2.2),\n        )\n        self.wait(max(0.05, 0.66))\n\n        # gap to beat 12\n        self.wait(max(0.05, 1.12))\n\n        # Beat 12: 35.64-38.38\n        raw_box = VGroup(\n            Rectangle(width=2.7, height=1.0, color=BLUE, fill_color=BLUE, fill_opacity=0.2, stroke_width=3),\n            Text(\"Raw signal\", color=WHITE, font_size=26),\n        )\n        filt_box = VGroup(\n            Rectangle(width=2.7, height=1.0, color=ORANGE, fill_color=ORANGE, fill_opacity=0.25, stroke_width=4),\n            Text(\"Filtering\", color=WHITE, font_size=26),\n        )\n        clean_box = VGroup(\n            Rectangle(width=2.7, height=1.0, color=GREEN, fill_color=GREEN, fill_opacity=0.2, stroke_width=3),\n            Text(\"Clean signal\", color=WHITE, font_size=26),\n        )\n        analysis_box = VGroup(\n            Rectangle(width=2.7, height=1.0, color=PURPLE, fill_color=PURPLE, fill_opacity=0.2, stroke_width=3),\n            Text(\"Analysis\", color=WHITE, font_size=26),\n        )\n\n        for box_group in (raw_box, filt_box, clean_box, analysis_box):\n            box_group[1].move_to(box_group[0].get_center())\n\n        boxes = VGroup(raw_box, filt_box, clean_box, analysis_box).arrange(RIGHT, buff=0.9)\n\n        arrow1 = Arrow(start=raw_box.get_right(), end=filt_box.get_left(), buff=0.25, color=GREY_B, stroke_width=4)\n        arrow2 = Arrow(start=filt_box.get_right(), end=clean_box.get_left(), buff=0.25, color=GREY_B, stroke_width=4)\n        arrow3 = Arrow(start=clean_box.get_right(), end=analysis_box.get_left(), buff=0.25, color=GREY_B, stroke_width=4)\n\n        pipeline = VGroup(raw_box, filt_box, clean_box, analysis_box, arrow1, arrow2, arrow3)\n        pipeline.scale_to_fit_width(11).move_to(DOWN * 2.1)\n\n        self.play(\n            checklist.animate.scale(0.72).next_to(title, DOWN, buff=0.35),\n            run_time=max(0.05, 1.0),\n        )\n        self.play(Write(pipeline), run_time=max(0.05, 1.74))\n\n        # Beat 13: 38.38-41.76\n        filter_glow = SurroundingRectangle(filt_box, color=ORANGE, buff=0.12, stroke_width=5)\n        filter_glow.set_fill(ORANGE, opacity=0.12)\n\n        self.play(\n            FadeIn(filter_glow),\n            arrow1.animate.set_color(YELLOW).set_stroke(width=6),\n            run_time=max(0.05, 0.9),\n        )\n        self.play(arrow2.animate.set_color(YELLOW).set_stroke(width=6), run_time=max(0.05, 0.8))\n        self.play(arrow3.animate.set_color(YELLOW).set_stroke(width=6), run_time=max(0.05, 0.8))\n        self.play(Wiggle(filter_glow, scale_value=0.03), run_time=max(0.05, 0.5))\n        self.wait(max(0.05, 0.38))\n\n        # Beat 14: 41.76-42.58\n        self.wait(max(0.05, 0.82))",
+    "video_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\NPS\\5-1-why-signals-are-filtered\\manim\\Scene3\\media\\videos\\Scene3\\1080p60\\Scene3.mp4",
+    "render_attempts": 1,
+    "render_status": "rendered",
+    "last_feedback": null,
+    "composed_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\NPS\\5-1-why-signals-are-filtered\\rendered_video\\scene_03_with_audio.mp4"
+  },
+  {
+    "id": 4,
+    "subtopic": "5.1.5 Signal Versus Noise",
+    "narration": "Before applying any filter, it's important to distinguish between two concepts. Signal is the physiological activity we want to analyse. Examples include brain activity in EEG, muscle activity in EMG, local field potentials, and neural spikes. Noise, on the other hand, refers to unwanted components that interfere with the signal of interest. Examples include electrical interference, motion artefacts, muscle artefacts in EEG, baseline drift, and power-line interference. The objective of filtering is not to remove everything except the desired waveform. Rather, the objective is to improve the visibility of the physiological signal while preserving its important characteristics.",
+    "animation_description": "The screen splits into two columns. The left column, titled 'Signal', turns green, and icons or small waveforms appear one by one: EEG brain activity, EMG muscle activity, local field potentials, a neural spike train. The right column, titled 'Noise', turns red, and shows: electrical interference lines, a motion-artifact wiggle, muscle-artifact burst, drifting baseline, power-line ripple. At the bottom, a concluding note appears: 'Goal: improve visibility of signal, preserve its characteristics'.",
+    "scene_type": "manim",
+    "audio_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\NPS\\5-1-why-signals-are-filtered\\audio\\scene_04.wav",
+    "timestamps": [
+      {
+        "word": "Before",
+        "start": 0.0,
+        "end": 0.48
+      },
+      {
+        "word": "applying",
+        "start": 0.48,
+        "end": 0.8
+      },
+      {
+        "word": "any",
+        "start": 0.8,
+        "end": 1.04
+      },
+      {
+        "word": "filter,",
+        "start": 1.04,
+        "end": 1.38
+      },
+      {
+        "word": "it's",
+        "start": 1.88,
+        "end": 2.06
+      },
+      {
+        "word": "important",
+        "start": 2.06,
+        "end": 2.44
+      },
+      {
+        "word": "to",
+        "start": 2.44,
+        "end": 2.62
+      },
+      {
+        "word": "distinguish",
+        "start": 2.62,
+        "end": 2.96
+      },
+      {
+        "word": "between",
+        "start": 2.96,
+        "end": 3.36
+      },
+      {
+        "word": "two",
+        "start": 3.36,
+        "end": 3.68
+      },
+      {
+        "word": "concepts.",
+        "start": 3.68,
+        "end": 4.18
+      },
+      {
+        "word": "Signal",
+        "start": 4.94,
+        "end": 5.18
+      },
+      {
+        "word": "is",
+        "start": 5.18,
+        "end": 5.54
+      },
+      {
+        "word": "the",
+        "start": 5.54,
+        "end": 5.68
+      },
+      {
+        "word": "physiological",
+        "start": 5.68,
+        "end": 6.06
+      },
+      {
+        "word": "activity",
+        "start": 6.06,
+        "end": 6.66
+      },
+      {
+        "word": "we",
+        "start": 6.66,
+        "end": 7.06
+      },
+      {
+        "word": "want",
+        "start": 7.06,
+        "end": 7.24
+      },
+      {
+        "word": "to",
+        "start": 7.24,
+        "end": 7.38
+      },
+      {
+        "word": "analyze.",
+        "start": 7.38,
+        "end": 7.68
+      },
+      {
+        "word": "Examples",
+        "start": 8.76,
+        "end": 8.76
+      },
+      {
+        "word": "include",
+        "start": 8.76,
+        "end": 9.3
+      },
+      {
+        "word": "brain",
+        "start": 9.3,
+        "end": 9.6
+      },
+      {
+        "word": "activity",
+        "start": 9.6,
+        "end": 9.94
+      },
+      {
+        "word": "in",
+        "start": 9.94,
+        "end": 10.32
+      },
+      {
+        "word": "EEG,",
+        "start": 10.32,
+        "end": 10.6
+      },
+      {
+        "word": "muscle",
+        "start": 11.36,
+        "end": 11.48
+      },
+      {
+        "word": "activity",
+        "start": 11.48,
+        "end": 11.86
+      },
+      {
+        "word": "in",
+        "start": 11.86,
+        "end": 12.26
+      },
+      {
+        "word": "EMG,",
+        "start": 12.26,
+        "end": 12.84
+      },
+      {
+        "word": "local",
+        "start": 13.32,
+        "end": 13.4
+      },
+      {
+        "word": "field",
+        "start": 13.4,
+        "end": 13.74
+      },
+      {
+        "word": "potentials,",
+        "start": 13.74,
+        "end": 14.44
+      },
+      {
+        "word": "and",
+        "start": 14.56,
+        "end": 14.6
+      },
+      {
+        "word": "neural",
+        "start": 14.6,
+        "end": 14.82
+      },
+      {
+        "word": "spikes.",
+        "start": 14.82,
+        "end": 15.12
+      },
+      {
+        "word": "Noise,",
+        "start": 16.18,
+        "end": 16.18
+      },
+      {
+        "word": "on",
+        "start": 16.32,
+        "end": 16.48
+      },
+      {
+        "word": "the",
+        "start": 16.48,
+        "end": 16.56
+      },
+      {
+        "word": "other",
+        "start": 16.56,
+        "end": 16.7
+      },
+      {
+        "word": "hand,",
+        "start": 16.7,
+        "end": 16.96
+      },
+      {
+        "word": "refers",
+        "start": 17.22,
+        "end": 17.46
+      },
+      {
+        "word": "to",
+        "start": 17.46,
+        "end": 17.74
+      },
+      {
+        "word": "unwanted",
+        "start": 17.74,
+        "end": 18.14
+      },
+      {
+        "word": "components",
+        "start": 18.14,
+        "end": 18.6
+      },
+      {
+        "word": "that",
+        "start": 18.6,
+        "end": 18.96
+      },
+      {
+        "word": "interfere",
+        "start": 18.96,
+        "end": 19.2
+      },
+      {
+        "word": "with",
+        "start": 19.2,
+        "end": 19.56
+      },
+      {
+        "word": "the",
+        "start": 19.56,
+        "end": 19.66
+      },
+      {
+        "word": "signal",
+        "start": 19.66,
+        "end": 19.94
+      },
+      {
+        "word": "of",
+        "start": 19.94,
+        "end": 20.14
+      },
+      {
+        "word": "interest.",
+        "start": 20.14,
+        "end": 20.36
+      },
+      {
+        "word": "Examples",
+        "start": 21.32,
+        "end": 21.5
+      },
+      {
+        "word": "include",
+        "start": 21.5,
+        "end": 22.14
+      },
+      {
+        "word": "electrical",
+        "start": 22.14,
+        "end": 22.4
+      },
+      {
+        "word": "interference,",
+        "start": 22.4,
+        "end": 22.94
+      },
+      {
+        "word": "motion",
+        "start": 23.66,
+        "end": 23.84
+      },
+      {
+        "word": "artifacts,",
+        "start": 23.84,
+        "end": 24.2
+      },
+      {
+        "word": "muscle",
+        "start": 24.86,
+        "end": 25.12
+      },
+      {
+        "word": "artifacts",
+        "start": 25.12,
+        "end": 25.58
+      },
+      {
+        "word": "in",
+        "start": 25.58,
+        "end": 25.98
+      },
+      {
+        "word": "EEG,",
+        "start": 25.98,
+        "end": 26.28
+      },
+      {
+        "word": "baseline",
+        "start": 27.24,
+        "end": 27.24
+      },
+      {
+        "word": "drift,",
+        "start": 27.24,
+        "end": 27.56
+      },
+      {
+        "word": "and",
+        "start": 27.98,
+        "end": 28.1
+      },
+      {
+        "word": "power",
+        "start": 28.1,
+        "end": 28.36
+      },
+      {
+        "word": "line",
+        "start": 28.36,
+        "end": 28.66
+      },
+      {
+        "word": "interference.",
+        "start": 28.66,
+        "end": 28.94
+      },
+      {
+        "word": "The",
+        "start": 29.78,
+        "end": 30.18
+      },
+      {
+        "word": "objective",
+        "start": 30.18,
+        "end": 30.5
+      },
+      {
+        "word": "of",
+        "start": 30.5,
+        "end": 30.78
+      },
+      {
+        "word": "filtering",
+        "start": 30.78,
+        "end": 31.18
+      },
+      {
+        "word": "is",
+        "start": 31.18,
+        "end": 31.68
+      },
+      {
+        "word": "not",
+        "start": 31.68,
+        "end": 31.9
+      },
+      {
+        "word": "to",
+        "start": 31.9,
+        "end": 32.12
+      },
+      {
+        "word": "remove",
+        "start": 32.12,
+        "end": 32.36
+      },
+      {
+        "word": "everything",
+        "start": 32.36,
+        "end": 33.06
+      },
+      {
+        "word": "except",
+        "start": 33.06,
+        "end": 33.54
+      },
+      {
+        "word": "the",
+        "start": 33.54,
+        "end": 33.82
+      },
+      {
+        "word": "desired",
+        "start": 33.82,
+        "end": 34.24
+      },
+      {
+        "word": "waveform.",
+        "start": 34.24,
+        "end": 34.92
+      },
+      {
+        "word": "Rather,",
+        "start": 35.6,
+        "end": 35.96
+      },
+      {
+        "word": "the",
+        "start": 36.36,
+        "end": 36.56
+      },
+      {
+        "word": "objective",
+        "start": 36.56,
+        "end": 36.9
+      },
+      {
+        "word": "is",
+        "start": 36.9,
+        "end": 37.32
+      },
+      {
+        "word": "to",
+        "start": 37.32,
+        "end": 37.48
+      },
+      {
+        "word": "improve",
+        "start": 37.48,
+        "end": 37.7
+      },
+      {
+        "word": "the",
+        "start": 37.7,
+        "end": 38.14
+      },
+      {
+        "word": "visibility",
+        "start": 38.14,
+        "end": 38.5
+      },
+      {
+        "word": "of",
+        "start": 38.5,
+        "end": 38.9
+      },
+      {
+        "word": "the",
+        "start": 38.9,
+        "end": 39.0
+      },
+      {
+        "word": "physiological",
+        "start": 39.0,
+        "end": 39.38
+      },
+      {
+        "word": "signal",
+        "start": 39.38,
+        "end": 40.02
+      },
+      {
+        "word": "while",
+        "start": 40.02,
+        "end": 40.66
+      },
+      {
+        "word": "preserving",
+        "start": 40.66,
+        "end": 41.06
+      },
+      {
+        "word": "its",
+        "start": 41.06,
+        "end": 41.48
+      },
+      {
+        "word": "important",
+        "start": 41.48,
+        "end": 41.84
+      },
+      {
+        "word": "characteristics.",
+        "start": 41.84,
+        "end": 42.5
+      }
+    ],
+    "render_prompt": "1. **0.00-3.68** \u2014 From the previous scene (pipeline diagram with \"Raw signal,\" \"Filtering,\" \"Clean signal,\" \"Analysis\" boxes and the checked five-item list above), the screen fades to a clean, neutral layout: a vertical divider draws down the center, splitting the screen into two equal columns. Both columns are empty, pale gray placeholders awaiting content. The pipelines and checklist are gone.\n\n2. **3.68-7.68** \u2014 The left column's header fades in at top: the word \"Signal\" in green. Simultaneously, the entire left column takes on a subtle green tint. The column holds, empty, as the definition phrase lands.\n\n3. **8.76-10.60** \u2014 Inside the left column, the first item appears: a small waveform icon with a brain-shaped outline above it, gently oscillating. A label reads \"Brain activity \u2014 EEG.\" It fades in as the narration names it.\n\n4. **11.36-12.84** \u2014 Second item in the left column: a burst-like waveform icon with a small labeled tag \"EMG,\" showing a signal visible during a muscle contraction. The label reads \"Muscle activity \u2014 EMG.\"\n\n5. **13.32-15.12** \u2014 Third and fourth items appear in the left column: a smooth low-frequency wave icon labeled \"Local field potentials,\" and a spiky vertical line train (multiple thin vertical tick marks, a neural spike train) labeled \"Neural spikes.\" All four items now sit stacked in the left column under the green \"Signal\" header.\n\n6. **16.18-20.36** \u2014 The right column's header fades in at top: the word \"Noise\" in red. Simultaneously, the entire right column takes on a subtle red tint. The left column's four items hold steady. The right column sits empty, awaiting its examples.\n\n7. **21.32-22.94** \u2014 First item in the right column: jagged, high-frequency electrical interference lines (dense, zigzag noise pattern), labeled \"Electrical interference.\"\n\n8. **23.66-26.28** \u2014 Second and third items appear in the right column: a slow wavy drift pattern labeled \"Motion artifacts,\" and a large, irregular burst waveform labeled \"Muscle artifacts in EEG.\"\n\n9. **27.24-28.94** \u2014 Fourth and fifth items appear in the right column: a gradually sloping, wandering baseline trace labeled \"Baseline drift,\" and a regular, sinusoidal ripple waveform at 50\u201360 Hz appearance labeled \"Power-line interference.\" Now both columns are full: green left column with four signal items, red right column with five noise items.\n\n10. **29.78-34.92** \u2014 The two-column layout holds. Both headers (\"Signal\" green, \"Noise\" red) remain bright. The items in each column are static, clearly separated. The visual stands as the conceptual contrast between the two categories.\n\n11. **35.60-42.50** \u2014 At the bottom of the screen, spanning both columns, a concluding note fades in: \"Goal: improve visibility of signal, preserve its characteristics.\" The full two-column layout remains visible above it, both columns and their items untouched.\n\n12. **42.50-43.50** \u2014 Final hold: the two-column comparison (green \"Signal\" on left, red \"Noise\" on right, all items visible) remains on screen with the bottom goal note. The scene stays steady through the end of the narration.",
+    "code": "ASSET_PATHS = {'heart': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\test_heart.svg', 'brain': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\brain_test.svg', 'stopwatch': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\stopwatch.svg', 'activity': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\activity.svg', 'soundwave': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\soundwave.svg', 'grid_matrix': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\grid-3x3-gap-fill.svg', 'bar_chart': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bar-chart.svg', 'graph_trend': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\graph-up-arrow.svg', 'cpu': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\cpu.svg', 'funnel': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\funnel.svg', 'table': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\table.svg', 'hospital': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hospital.svg', 'capsule': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\capsule.svg', 'clipboard_pulse': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\clipboard2-pulse.svg', 'hand': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hand-index-thumb.svg', 'broadcast': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\broadcast-pin.svg', 'gear': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\gear.svg', 'arrow_repeat': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\arrow-repeat.svg', 'lightbulb': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\lightbulb.svg', 'bell': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bell.svg', 'check_circle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\check-circle.svg', 'x_circle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\x-circle.svg', 'rulers': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\rulers.svg', 'puzzle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\puzzle.svg', 'fig_measurement_funnel': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_measurement_funnel.png', 'fig_mindmap_three_pillars': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_three_pillars.png', 'fig_mindmap_full': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_full.png'}\n\nfrom manim import *\nimport numpy as np\n\n\nASSET_PATHS = {\n    \"heart\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\test_heart.svg\",\n    \"brain\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\brain_test.svg\",\n    \"stopwatch\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\stopwatch.svg\",\n    \"activity\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\activity.svg\",\n    \"soundwave\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\soundwave.svg\",\n    \"grid_matrix\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\grid-3x3-gap-fill.svg\",\n    \"bar_chart\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bar-chart.svg\",\n    \"graph_trend\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\graph-up-arrow.svg\",\n    \"cpu\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\cpu.svg\",\n    \"funnel\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\funnel.svg\",\n    \"table\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\table.svg\",\n    \"hospital\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hospital.svg\",\n    \"capsule\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\capsule.svg\",\n    \"clipboard_pulse\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\clipboard2-pulse.svg\",\n    \"hand\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hand-index-thumb.svg\",\n    \"broadcast\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\broadcast-pin.svg\",\n    \"gear\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\gear.svg\",\n    \"arrow_repeat\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\arrow-repeat.svg\",\n    \"lightbulb\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\lightbulb.svg\",\n    \"bell\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bell.svg\",\n    \"check_circle\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\check-circle.svg\",\n    \"x_circle\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\x-circle.svg\",\n    \"rulers\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\rulers.svg\",\n    \"puzzle\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\puzzle.svg\",\n    \"fig_measurement_funnel\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_measurement_funnel.png\",\n    \"fig_mindmap_three_pillars\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_three_pillars.png\",\n    \"fig_mindmap_full\": \"C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_full.png\",\n}\n\n\nclass Scene4(Scene):\n    def construct(self):\n        self.camera.background_color = \"#0F1116\"\n\n        # ---------- helpers ----------\n        def make_wave(func, t_range, color, stroke_width=3):\n            return ParametricFunction(\n                lambda t: np.array([t, func(t), 0]),\n                t_range=t_range,\n                color=color,\n                stroke_width=stroke_width,\n            )\n\n        def normalize_visual(vis, width=1.4, height=0.5):\n            vis.scale_to_fit_width(width)\n            if vis.get_height() > height:\n                vis.scale_to_fit_height(height)\n            return vis\n\n        def make_row(visual, label_text):\n            label = Text(label_text, font_size=18, color=WHITE)\n            row = VGroup(visual, label).arrange(RIGHT, buff=0.25)\n            return row\n\n        # ---------- neutral two-column skeleton ----------\n        divider = Line(UP * 2.9, DOWN * 2.5, color=GREY_B, stroke_width=3)\n\n        left_bg = Rectangle(\n            width=6.2,\n            height=5.4,\n            color=GREY,\n            fill_color=GREY,\n            fill_opacity=0.06,\n            stroke_color=GREY,\n            stroke_opacity=0.35,\n            stroke_width=1,\n        ).move_to(LEFT * 3.3 + UP * 0.2)\n\n        right_bg = Rectangle(\n            width=6.2,\n            height=5.4,\n            color=GREY,\n            fill_color=GREY,\n            fill_opacity=0.06,\n            stroke_color=GREY,\n            stroke_opacity=0.35,\n            stroke_width=1,\n        ).move_to(RIGHT * 3.3 + UP * 0.2)\n\n        left_header = Text(\"Signal\", color=GREEN, font_size=48, weight=\"BOLD\").move_to(\n            LEFT * 3.3 + UP * 2.35\n        )\n        right_header = Text(\"Noise\", color=RED, font_size=48, weight=\"BOLD\").move_to(\n            RIGHT * 3.3 + UP * 2.35\n        )\n\n        # ---------- left column: Signal items ----------\n        brain_icon = (\n            SVGMobject(ASSET_PATHS[\"brain\"])\n            .set_color(GREEN)\n            .set_fill(GREEN, opacity=0.45)\n            .scale_to_fit_height(0.30)\n        )\n        brain_icon.scale_to_fit_width(0.32)\n\n        eeg_wave = normalize_visual(\n            make_wave(\n                lambda x: 0.28 * np.sin(3.2 * x) + 0.12 * np.sin(7.0 * x) + 0.06 * np.sin(12.0 * x),\n                [-0.8, 0.8, 0.01],\n                GREEN,\n            )\n        )\n        eeg_visual = VGroup(brain_icon, eeg_wave).arrange(DOWN, buff=0.03).scale_to_fit_width(1.3)\n\n        emg_wave = normalize_visual(\n            make_wave(\n                lambda x: 0.30 * np.exp(-0.5 * (x / 0.28) ** 2) * np.sin(22 * x),\n                [-0.8, 0.8, 0.01],\n                GREEN,\n            )\n        )\n        emg_tag = Text(\"EMG\", font_size=13, color=YELLOW).next_to(emg_wave, UP, buff=0.02)\n        emg_visual = VGroup(emg_wave, emg_tag).arrange(DOWN, buff=0.02)\n\n        lfp_wave = normalize_visual(\n            make_wave(\n                lambda x: 0.30 * np.sin(1.8 * x) + 0.08 * np.sin(3.6 * x),\n                [-0.8, 0.8, 0.01],\n                TEAL,\n            )\n        )\n        lfp_visual = lfp_wave\n\n        spike_positions = np.linspace(-0.65, 0.65, 5)\n        spike_lines = VGroup(\n            *[\n                Line(np.array([x, -0.18, 0]), np.array([x, 0.18, 0]), color=GREEN, stroke_width=2.5)\n                for x in spike_positions\n            ]\n        )\n        spike_visual = normalize_visual(spike_lines)\n\n        eeg_row = make_row(eeg_visual, \"Brain activity \u2014 EEG\")\n        emg_row = make_row(emg_visual, \"Muscle activity \u2014 EMG\")\n        lfp_row = make_row(lfp_visual, \"Local field potentials\")\n        spike_row = make_row(spike_visual, \"Neural spikes\")\n\n        left_rows = [eeg_row, emg_row, lfp_row, spike_row]\n        left_visuals = [eeg_visual, emg_visual, lfp_visual, spike_visual]\n\n        left_items = (\n            VGroup(*left_rows)\n            .arrange(DOWN, buff=0.45, aligned_edge=LEFT)\n            .next_to(left_header, DOWN, buff=0.35)\n        )\n\n        # ---------- right column: Noise items ----------\n        interference_wave = normalize_visual(\n            make_wave(\n                lambda x: 0.22 * np.sign(np.sin(15 * x)) + 0.04 * np.sin(40 * x),\n                [-0.9, 0.9, 0.005],\n                RED,\n            )\n        )\n        interference_visual = interference_wave\n\n        motion_wave = normalize_visual(\n            make_wave(\n                lambda x: 0.28 * np.sin(1.7 * x) + 0.10 * np.sin(4.3 * x),\n                [-0.9, 0.9, 0.01],\n                ORANGE,\n            )\n        )\n        motion_visual = motion_wave\n\n        muscle_artifact_wave = normalize_visual(\n            make_wave(\n                lambda x: 0.35 * np.exp(-0.5 * (x / 0.25) ** 2) * np.sin(30 * x)\n                + 0.15 * np.exp(-0.5 * ((x - 0.45) / 0.20) ** 2) * np.sin(45 * x),\n                [-0.9, 0.9, 0.01],\n                RED,\n            )\n        )\n        muscle_artifact_visual = muscle_artifact_wave\n\n        baseline_drift_wave = normalize_visual(\n            make_wave(\n                lambda x: 0.30 * np.tanh(1.4 * x) + 0.08 * np.sin(3.2 * x),\n                [-0.9, 0.9, 0.01],\n                PINK,\n            )\n        )\n        baseline_drift_visual = baseline_drift_wave\n\n        powerline_wave = normalize_visual(\n            make_wave(\n                lambda x: 0.24 * np.sin(36 * x),\n                [-0.9, 0.9, 0.005],\n                YELLOW,\n            )\n        )\n        powerline_visual = powerline_wave\n\n        interference_row = make_row(interference_visual, \"Electrical interference\")\n        motion_row = make_row(motion_visual, \"Motion artifacts\")\n        muscle_artifact_row = make_row(muscle_artifact_visual, \"Muscle artifacts in EEG\")\n        baseline_drift_row = make_row(baseline_drift_visual, \"Baseline drift\")\n        powerline_row = make_row(powerline_visual, \"Power-line interference\")\n\n        right_rows = [\n            interference_row,\n            motion_row,\n            muscle_artifact_row,\n            baseline_drift_row,\n            powerline_row,\n        ]\n        right_visuals = [\n            interference_visual,\n            motion_visual,\n            muscle_artifact_visual,\n            baseline_drift_visual,\n            powerline_visual,\n        ]\n\n        right_items = (\n            VGroup(*right_rows)\n            .arrange(DOWN, buff=0.45, aligned_edge=LEFT)\n            .next_to(right_header, DOWN, buff=0.35)\n        )\n\n        # ---------- bottom goal note ----------\n        goal_text = Text(\n            \"Goal: improve visibility of signal, preserve its characteristics.\",\n            font_size=26,\n            color=WHITE,\n            t2c={\"Goal:\": YELLOW},\n        ).scale_to_fit_width(11)\n\n        goal_bg = Rectangle(\n            width=goal_text.width + 1.2,\n            height=goal_text.height + 0.55,\n            color=YELLOW,\n            fill_color=BLACK,\n            fill_opacity=0.6,\n            stroke_width=1.5,\n        )\n        goal_text.move_to(goal_bg.get_center())\n        goal_note = VGroup(goal_bg, goal_text).move_to(DOWN * 3.1)\n\n        # ---------- timeline ----------\n        # Beat 1: 0.00-3.68\n        self.play(Create(divider), FadeIn(left_bg), FadeIn(right_bg), run_time=max(0.05, 2.0))\n        self.wait(max(0.05, 1.68))\n\n        # Beat 2: 3.68-7.68\n        self.play(\n            FadeIn(left_header),\n            left_bg.animate.set_fill(GREEN, opacity=0.12).set_stroke(GREEN, width=1.5, opacity=0.5),\n            run_time=max(0.05, 4.0),\n        )\n\n        # gap 7.68-8.76\n        self.wait(max(0.05, 1.08))\n\n        # Beat 3: 8.76-10.60\n        self.play(FadeIn(left_rows[0]), run_time=max(0.05, 0.8))\n        self.play(Wiggle(left_visuals[0], scale_value=0.04), run_time=max(0.05, 1.04))\n\n        # gap 10.60-11.36\n        self.wait(max(0.05, 0.76))\n\n        # Beat 4: 11.36-12.84\n        self.play(FadeIn(left_rows[1]), run_time=max(0.05, 1.48))\n\n        # gap 12.84-13.32\n        self.wait(max(0.05, 0.48))\n\n        # Beat 5: 13.32-15.12\n        self.play(FadeIn(left_rows[2]), FadeIn(left_rows[3]), run_time=max(0.05, 1.80))\n\n        # gap 15.12-16.18\n        self.wait(max(0.05, 1.06))\n\n        # Beat 6: 16.18-20.36\n        self.play(\n            FadeIn(right_header),\n            right_bg.animate.set_fill(RED, opacity=0.12).set_stroke(RED, width=1.5, opacity=0.5),\n            run_time=max(0.05, 4.18),\n        )\n\n        # gap 20.36-21.32\n        self.wait(max(0.05, 0.96))\n\n        # Beat 7: 21.32-22.94\n        self.play(FadeIn(right_rows[0]), run_time=max(0.05, 1.62))\n\n        # gap 22.94-23.66\n        self.wait(max(0.05, 0.72))\n\n        # Beat 8: 23.66-26.28\n        self.play(FadeIn(right_rows[1]), FadeIn(right_rows[2]), run_time=max(0.05, 2.62))\n\n        # gap 26.28-27.24\n        self.wait(max(0.05, 0.96))\n\n        # Beat 9: 27.24-28.94\n        self.play(FadeIn(right_rows[3]), FadeIn(right_rows[4]), run_time=max(0.05, 1.70))\n\n        # gap 28.94-29.78\n        self.wait(max(0.05, 0.84))\n\n        # Beat 10: 29.78-34.92\n        self.play(\n            Wiggle(left_header, scale_value=0.02),\n            Wiggle(right_header, scale_value=0.02),\n            run_time=max(0.05, 2.0),\n        )\n        self.wait(max(0.05, 3.14))\n\n        # gap 34.92-35.60\n        self.wait(max(0.05, 0.68))\n\n        # Beat 11: 35.60-42.50\n        self.play(FadeIn(goal_note), run_time=max(0.05, 2.0))\n        self.wait(max(0.05, 4.90))\n\n        # Beat 12: 42.50-43.50\n        self.wait(max(0.05, 1.00))",
+    "video_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\NPS\\5-1-why-signals-are-filtered\\manim\\Scene4\\media\\videos\\Scene4\\1080p60\\Scene4.mp4",
+    "render_attempts": 1,
+    "render_status": "rendered",
+    "last_feedback": null,
+    "composed_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\NPS\\5-1-why-signals-are-filtered\\rendered_video\\scene_04_with_audio.mp4"
+  },
+  {
+    "id": 5,
+    "subtopic": "5.1.6 Important Considerations",
+    "narration": "Filtering should always be performed carefully. A filter that is too aggressive may remove important physiological information along with the unwanted noise. Conversely, a filter that is too weak may fail to remove sufficient interference. So selecting an appropriate filter requires an understanding of both the signal being recorded and the type of unwanted components present in the recording. This is why different neural recording applications often use different filtering strategies.",
+    "animation_description": "A balance-scale metaphor appears, with two extreme icons: on the left, an overly aggressive filter icon that wipes out both noise and signal, leaving a flat meaningless line; on the right, an overly weak filter that leaves almost all interference in place. The scale tips back and forth, then converges to a balanced middle position labeled 'Appropriate filter'. Below appears a caption: 'Different applications \u2192 different filtering strategies.'",
+    "scene_type": "manim",
+    "audio_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\NPS\\5-1-why-signals-are-filtered\\audio\\scene_05.wav",
+    "timestamps": [
+      {
+        "word": "Filtering",
+        "start": 0.0,
+        "end": 0.64
+      },
+      {
+        "word": "should",
+        "start": 0.64,
+        "end": 0.86
+      },
+      {
+        "word": "always",
+        "start": 0.86,
+        "end": 1.22
+      },
+      {
+        "word": "be",
+        "start": 1.22,
+        "end": 1.42
+      },
+      {
+        "word": "performed",
+        "start": 1.42,
+        "end": 1.76
+      },
+      {
+        "word": "carefully.",
+        "start": 1.76,
+        "end": 2.12
+      },
+      {
+        "word": "A",
+        "start": 3.12,
+        "end": 3.14
+      },
+      {
+        "word": "filter",
+        "start": 3.14,
+        "end": 3.34
+      },
+      {
+        "word": "that",
+        "start": 3.34,
+        "end": 3.68
+      },
+      {
+        "word": "is",
+        "start": 3.68,
+        "end": 3.78
+      },
+      {
+        "word": "too",
+        "start": 3.78,
+        "end": 3.98
+      },
+      {
+        "word": "aggressive",
+        "start": 3.98,
+        "end": 4.36
+      },
+      {
+        "word": "may",
+        "start": 4.36,
+        "end": 5.0
+      },
+      {
+        "word": "remove",
+        "start": 5.0,
+        "end": 5.24
+      },
+      {
+        "word": "important",
+        "start": 5.24,
+        "end": 5.8
+      },
+      {
+        "word": "physiological",
+        "start": 5.8,
+        "end": 6.14
+      },
+      {
+        "word": "information",
+        "start": 6.14,
+        "end": 7.1
+      },
+      {
+        "word": "along",
+        "start": 7.1,
+        "end": 7.68
+      },
+      {
+        "word": "with",
+        "start": 7.68,
+        "end": 7.98
+      },
+      {
+        "word": "the",
+        "start": 7.98,
+        "end": 8.08
+      },
+      {
+        "word": "unwanted",
+        "start": 8.08,
+        "end": 8.3
+      },
+      {
+        "word": "noise.",
+        "start": 8.3,
+        "end": 8.82
+      },
+      {
+        "word": "Conversely,",
+        "start": 9.64,
+        "end": 9.92
+      },
+      {
+        "word": "a",
+        "start": 10.6,
+        "end": 10.78
+      },
+      {
+        "word": "filter",
+        "start": 10.78,
+        "end": 11.02
+      },
+      {
+        "word": "that",
+        "start": 11.02,
+        "end": 11.34
+      },
+      {
+        "word": "is",
+        "start": 11.34,
+        "end": 11.44
+      },
+      {
+        "word": "too",
+        "start": 11.44,
+        "end": 11.64
+      },
+      {
+        "word": "weak",
+        "start": 11.64,
+        "end": 11.92
+      },
+      {
+        "word": "may",
+        "start": 11.92,
+        "end": 12.3
+      },
+      {
+        "word": "fail",
+        "start": 12.3,
+        "end": 12.56
+      },
+      {
+        "word": "to",
+        "start": 12.56,
+        "end": 12.78
+      },
+      {
+        "word": "remove",
+        "start": 12.78,
+        "end": 13.04
+      },
+      {
+        "word": "sufficient",
+        "start": 13.04,
+        "end": 13.36
+      },
+      {
+        "word": "interference.",
+        "start": 13.36,
+        "end": 14.04
+      },
+      {
+        "word": "So",
+        "start": 15.1,
+        "end": 15.12
+      },
+      {
+        "word": "selecting",
+        "start": 15.12,
+        "end": 15.46
+      },
+      {
+        "word": "an",
+        "start": 15.46,
+        "end": 15.76
+      },
+      {
+        "word": "appropriate",
+        "start": 15.76,
+        "end": 16.08
+      },
+      {
+        "word": "filter",
+        "start": 16.08,
+        "end": 16.66
+      },
+      {
+        "word": "requires",
+        "start": 16.66,
+        "end": 17.26
+      },
+      {
+        "word": "an",
+        "start": 17.26,
+        "end": 17.64
+      },
+      {
+        "word": "understanding",
+        "start": 17.64,
+        "end": 18.12
+      },
+      {
+        "word": "of",
+        "start": 18.12,
+        "end": 18.46
+      },
+      {
+        "word": "both",
+        "start": 18.46,
+        "end": 18.66
+      },
+      {
+        "word": "the",
+        "start": 18.66,
+        "end": 18.88
+      },
+      {
+        "word": "signal",
+        "start": 18.88,
+        "end": 19.12
+      },
+      {
+        "word": "being",
+        "start": 19.12,
+        "end": 19.42
+      },
+      {
+        "word": "recorded",
+        "start": 19.42,
+        "end": 19.82
+      },
+      {
+        "word": "and",
+        "start": 19.82,
+        "end": 20.58
+      },
+      {
+        "word": "the",
+        "start": 20.58,
+        "end": 20.7
+      },
+      {
+        "word": "type",
+        "start": 20.7,
+        "end": 20.92
+      },
+      {
+        "word": "of",
+        "start": 20.92,
+        "end": 21.1
+      },
+      {
+        "word": "unwanted",
+        "start": 21.1,
+        "end": 21.5
+      },
+      {
+        "word": "components",
+        "start": 21.5,
+        "end": 22.0
+      },
+      {
+        "word": "present",
+        "start": 22.0,
+        "end": 22.56
+      },
+      {
+        "word": "in",
+        "start": 22.56,
+        "end": 22.96
+      },
+      {
+        "word": "the",
+        "start": 22.96,
+        "end": 23.04
+      },
+      {
+        "word": "recording.",
+        "start": 23.04,
+        "end": 23.34
+      },
+      {
+        "word": "This",
+        "start": 23.34,
+        "end": 24.44
+      },
+      {
+        "word": "is",
+        "start": 24.44,
+        "end": 24.84
+      },
+      {
+        "word": "why",
+        "start": 24.84,
+        "end": 25.06
+      },
+      {
+        "word": "different",
+        "start": 25.06,
+        "end": 25.32
+      },
+      {
+        "word": "neural",
+        "start": 25.32,
+        "end": 25.68
+      },
+      {
+        "word": "recording",
+        "start": 25.68,
+        "end": 26.22
+      },
+      {
+        "word": "applications",
+        "start": 26.22,
+        "end": 27.08
+      },
+      {
+        "word": "often",
+        "start": 27.08,
+        "end": 27.66
+      },
+      {
+        "word": "use",
+        "start": 27.66,
+        "end": 27.9
+      },
+      {
+        "word": "different",
+        "start": 27.9,
+        "end": 28.28
+      },
+      {
+        "word": "filtering",
+        "start": 28.28,
+        "end": 28.66
+      },
+      {
+        "word": "strategies.",
+        "start": 28.66,
+        "end": 29.18
+      }
+    ],
+    "render_prompt": "1. **0.00-2.12** \u2014 From the previous scene's two-column signal/noise layout, the screen transitions to a new visual: a large balance scale appears at the center of the screen, drawn in neutral gray. The central pivot and horizontal beam are clearly visible. Two empty pans hang from each end of the beam. The previous signal/noise columns fade out.\n\n2. **3.12-4.36** \u2014 On the left pan of the scale, a red warning-labeled icon appears: an aggressive filter symbol shown as a harsh flat line with a large red \"X\" over a wavy signal that has been visibly flattened and stripped of all its features. The flat line itself is gray and featureless, with a small label beneath reading \"Too aggressive.\" As this appears, the left pan visibly sinks downward \u2014 the scale tips sharply to the left.\n\n3. **4.36-8.82** \u2014 The left pan continues to rest heavily at the bottom. The right pan lifts high up as the left keeps tilting lower. Below the aggressive filter icon, the words \"Removes signal too\" fade in, highlighting the loss of meaningful information. The visual emphasizes the flattened, information-free line left behind.\n\n4. **9.64-11.92** \u2014 The scale begins to tip the opposite direction: the right pan now sinks downward. On the right pan, a new icon fades in \u2014 a dashed or faint filter symbol that is almost invisible, with a label beneath reading \"Too weak.\" The waveform shown still contains dense, jagged high-frequency interference lines along with the signal.\n\n5. **11.92-14.04** \u2014 The right pan rests heavily at the bottom. The left pan lifts up high. Below the weak filter icon, the words \"Interference remains\" fade in. The jagged noise lines continue to visibly overlay the waveform, showing that too much unwanted activity survives.\n\n6. **15.10-18.46** \u2014 The scale begins to settle from its extreme rightward tilt. The beam slowly returns toward horizontal, swaying gently as it balances. The two extreme labels (\"Too aggressive\" and \"Too weak\") begin to fade out from the pans.\n\n7. **18.46-23.34** \u2014 As the scale settles into a perfectly balanced, level position, a new central label appears directly above the pivot point: \"Appropriate filter\" in a calm blue. Both pans now hold moderate, visually balanced filter symbols \u2014 neither overly flat nor full of interference. The beam is steady and horizontal.\n\n8. **23.34-28.66** \u2014 The full balance-scale metaphor holds with the beam level and the \"Appropriate filter\" label bright. A caption fades in below the scale at the bottom of the screen: \"Different applications \u2192 different filtering strategies.\" The entire visual remains steady.\n\n9. **28.66-30.05** \u2014 Final hold: the balanced scale with \"Appropriate filter\" above it and the bottom caption \"Different applications \u2192 different filtering strategies\" remain on screen, static and clear, through the end of the narration.",
+    "code": "ASSET_PATHS = {'heart': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\test_heart.svg', 'brain': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\brain_test.svg', 'stopwatch': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\stopwatch.svg', 'activity': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\activity.svg', 'soundwave': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\soundwave.svg', 'grid_matrix': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\grid-3x3-gap-fill.svg', 'bar_chart': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bar-chart.svg', 'graph_trend': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\graph-up-arrow.svg', 'cpu': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\cpu.svg', 'funnel': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\funnel.svg', 'table': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\table.svg', 'hospital': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hospital.svg', 'capsule': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\capsule.svg', 'clipboard_pulse': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\clipboard2-pulse.svg', 'hand': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hand-index-thumb.svg', 'broadcast': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\broadcast-pin.svg', 'gear': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\gear.svg', 'arrow_repeat': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\arrow-repeat.svg', 'lightbulb': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\lightbulb.svg', 'bell': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bell.svg', 'check_circle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\check-circle.svg', 'x_circle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\x-circle.svg', 'rulers': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\rulers.svg', 'puzzle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\puzzle.svg', 'fig_measurement_funnel': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_measurement_funnel.png', 'fig_mindmap_three_pillars': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_three_pillars.png', 'fig_mindmap_full': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_full.png'}\n\nfrom manim import *\nimport numpy as np\n\n\nclass Scene5(Scene):\n    def construct(self):\n        self.camera.background_color = \"#0F1116\"\n\n        # ---------- tiny helper ----------\n        def make_wave(func, t_range, color, stroke_width=3, stroke_opacity=1):\n            return ParametricFunction(\n                lambda t: np.array([t, func(t), 0]),\n                t_range=t_range,\n                color=color,\n                stroke_width=stroke_width,\n                stroke_opacity=stroke_opacity,\n            )\n\n        def make_aggressive_icon():\n            base_wave = make_wave(\n                lambda x: 0.28 * np.sin(4 * x) + 0.10 * np.sin(7 * x),\n                [-0.7, 0.7, 0.01],\n                GREY_B,\n                stroke_width=2.5,\n                stroke_opacity=0.35,\n            )\n            flat_line = Line(LEFT * 0.65, RIGHT * 0.65, color=GREY_B, stroke_width=6)\n            red_x = VGroup(\n                Line(LEFT * 0.35 + UP * 0.35, RIGHT * 0.35 + DOWN * 0.35, color=RED, stroke_width=7),\n                Line(LEFT * 0.35 + DOWN * 0.35, RIGHT * 0.35 + UP * 0.35, color=RED, stroke_width=7),\n            )\n            icon = VGroup(base_wave, flat_line, red_x).scale_to_fit_width(1.0)\n            icon.set_opacity(0)\n            return icon\n\n        def make_weak_icon():\n            signal_wave = make_wave(\n                lambda x: 0.22 * np.sin(3.2 * x) + 0.08 * np.sin(6.0 * x),\n                [-0.7, 0.7, 0.01],\n                TEAL,\n                stroke_width=3,\n            )\n            noise_wave = make_wave(\n                lambda x: 0.14 * np.sign(np.sin(24 * x)),\n                [-0.7, 0.7, 0.005],\n                RED,\n                stroke_width=2,\n            )\n            dashed_filter = DashedLine(\n                LEFT * 0.6,\n                RIGHT * 0.6,\n                color=GREY,\n                stroke_width=2,\n                dash_length=0.08,\n                stroke_opacity=0.55,\n            )\n            icon = VGroup(signal_wave, noise_wave, dashed_filter).scale_to_fit_width(1.0)\n            icon.set_opacity(0)\n            return icon\n\n        def make_moderate_icon():\n            clean_wave = make_wave(\n                lambda x: 0.22 * np.sin(3.4 * x) + 0.06 * np.sin(6.8 * x),\n                [-0.7, 0.7, 0.01],\n                BLUE,\n                stroke_width=4,\n            )\n            icon = VGroup(clean_wave).scale_to_fit_width(1.0)\n            icon.set_opacity(0)\n            return icon\n\n        # ---------- previous scene visual ----------\n        prev_divider = Line(UP * 2.3, DOWN * 2.1, color=GREY_B, stroke_width=3)\n        prev_signal_title = Text(\"Signal\", font_size=32, color=GREEN, weight=\"BOLD\")\n        prev_signal_title.move_to(LEFT * 3.3 + UP * 1.5)\n        prev_noise_title = Text(\"Noise\", font_size=32, color=RED, weight=\"BOLD\")\n        prev_noise_title.move_to(RIGHT * 3.3 + UP * 1.5)\n        prev_signal_wave = make_wave(\n            lambda x: 0.25 * np.sin(3 * x) + 0.10 * np.sin(7 * x),\n            [-0.9, 0.9, 0.01],\n            GREEN,\n            stroke_width=3,\n        ).scale_to_fit_width(1.8)\n        prev_signal_wave.move_to(LEFT * 3.3 + DOWN * 0.2)\n        prev_noise_wave = make_wave(\n            lambda x: 0.18 * np.sign(np.sin(15 * x)) + 0.06 * np.sin(40 * x),\n            [-0.9, 0.9, 0.005],\n            RED,\n            stroke_width=3,\n        ).scale_to_fit_width(1.8)\n        prev_noise_wave.move_to(RIGHT * 3.3 + DOWN * 0.2)\n        prev_layout = VGroup(\n            prev_divider,\n            prev_signal_title,\n            prev_noise_title,\n            prev_signal_wave,\n            prev_noise_wave,\n        )\n        self.add(prev_layout)\n\n        # ---------- balance scale geometry ----------\n        PIVOT = np.array([0.0, 1.6, 0.0])\n        LEFT_END = np.array([-4.5, 0.0, 0.0])\n        RIGHT_END = np.array([4.5, 0.0, 0.0])\n\n        # static support\n        stand_line = Line(PIVOT, np.array([0, -2.3, 0]), color=GREY_B, stroke_width=8)\n        base_line = Line(np.array([-0.45, -2.35, 0]), np.array([0.45, -2.35, 0]), color=GREY_B, stroke_width=12)\n        pivot_dot = Dot(PIVOT, radius=0.09, color=GREY_B, fill_opacity=1)\n        static_scale = VGroup(stand_line, base_line, pivot_dot)\n\n        # moving beam + empty pans\n        beam_line = Line(LEFT_END, RIGHT_END, color=GREY_B, stroke_width=12)\n\n        left_string_l = Line(np.array([-4.5, 0, 0]), np.array([-5.0, -0.8, 0]), color=GREY_B, stroke_width=3)\n        left_string_r = Line(np.array([-4.5, 0, 0]), np.array([-4.0, -0.8, 0]), color=GREY_B, stroke_width=3)\n        left_bowl = Arc(\n            radius=0.5,\n            start_angle=PI,\n            angle=PI,\n            arc_center=np.array([-4.5, -0.8, 0]),\n            color=GREY_B,\n            stroke_width=3,\n        )\n        left_pan = VGroup(left_string_l, left_string_r, left_bowl)\n\n        right_string_l = Line(np.array([4.5, 0, 0]), np.array([5.0, -0.8, 0]), color=GREY_B, stroke_width=3)\n        right_string_r = Line(np.array([4.5, 0, 0]), np.array([4.0, -0.8, 0]), color=GREY_B, stroke_width=3)\n        right_bowl = Arc(\n            radius=0.5,\n            start_angle=0,\n            angle=PI,\n            arc_center=np.array([4.5, -0.8, 0]),\n            color=GREY_B,\n            stroke_width=3,\n        )\n        right_pan = VGroup(right_string_l, right_string_r, right_bowl)\n\n        beam_group = VGroup(beam_line, left_pan, right_pan)\n\n        # ---------- pan-attached icons and labels ----------\n        aggressive_icon = make_aggressive_icon()\n        aggressive_icon.move_to(np.array([-4.5, -0.25, 0]))\n        too_aggressive_label = Text(\"Too aggressive\", font_size=22, color=RED).set_opacity(0)\n        too_aggressive_label.move_to(np.array([-4.5, -1.55, 0]))\n        removes_signal_label = Text(\"Removes signal too\", font_size=22, color=RED).set_opacity(0)\n        removes_signal_label.move_to(np.array([-4.5, -2.0, 0]))\n\n        weak_icon = make_weak_icon()\n        weak_icon.move_to(np.array([4.5, -0.25, 0]))\n        too_weak_label = Text(\"Too weak\", font_size=22, color=ORANGE).set_opacity(0)\n        too_weak_label.move_to(np.array([4.5, -1.55, 0]))\n        interference_remains_label = Text(\"Interference remains\", font_size=22, color=ORANGE).set_opacity(0)\n        interference_remains_label.move_to(np.array([4.5, -2.0, 0]))\n\n        moderate_left_icon = make_moderate_icon()\n        moderate_left_icon.move_to(np.array([-4.5, -0.25, 0]))\n        moderate_right_icon = make_moderate_icon()\n        moderate_right_icon.move_to(np.array([4.5, -0.25, 0]))\n\n        beam_group.add(\n            aggressive_icon,\n            too_aggressive_label,\n            removes_signal_label,\n            weak_icon,\n            too_weak_label,\n            interference_remains_label,\n            moderate_left_icon,\n            moderate_right_icon,\n        )\n        beam_group.shift(PIVOT)\n\n        # ---------- balanced label and caption ----------\n        appropriate_label = Text(\"Appropriate filter\", font_size=44, color=BLUE, weight=\"BOLD\")\n        appropriate_label.move_to(PIVOT + UP * 1.5)\n\n        bottom_caption = Text(\n            \"Different applications \u2192 different filtering strategies.\",\n            font_size=30,\n            color=WHITE,\n            t2c={\"different filtering strategies\": BLUE},\n        ).scale_to_fit_width(11)\n        bottom_caption.move_to(DOWN * 3.0)\n\n        # ---------- exact beat durations ----------\n        beat1_dur = 2.12\n        gap1_dur = 1.00\n        beat2_dur = 1.24\n        beat3_dur = 4.46\n        gap2_dur = 0.82\n        beat4_dur = 2.28\n        beat5_dur = 2.12\n        gap3_dur = 1.06\n        beat6_dur = 3.36\n        beat7_dur = 4.88\n        beat8_dur = 5.32\n        beat9_dur = 1.39\n\n        # ---------- beat 1: transition to scale ----------\n        self.play(\n            FadeOut(prev_layout),\n            Create(static_scale),\n            Create(beam_group),\n            run_time=max(0.05, beat1_dur),\n        )\n        self.wait(max(0.05, gap1_dur))\n\n        # ---------- beat 2: aggressive filter sinks left pan ----------\n        self.play(\n            beam_group.animate.rotate(-0.24, about_point=PIVOT),\n            aggressive_icon.animate.set_opacity(1),\n            too_aggressive_label.animate.set_opacity(1),\n            run_time=max(0.05, beat2_dur),\n        )\n\n        # ---------- beat 3: loss of signal is called out ----------\n        self.play(FadeIn(removes_signal_label), run_time=max(0.05, 1.5))\n        self.play(Wiggle(aggressive_icon, scale_value=0.04), run_time=max(0.05, 1.0))\n        self.wait(max(0.05, beat3_dur - 2.5))\n\n        self.wait(max(0.05, gap2_dur))\n\n        # ---------- beat 4: weak filter sinks right pan ----------\n        self.play(\n            beam_group.animate.rotate(0.48, about_point=PIVOT),\n            weak_icon.animate.set_opacity(1),\n            too_weak_label.animate.set_opacity(1),\n            run_time=max(0.05, beat4_dur),\n        )\n\n        # ---------- beat 5: interference remains ----------\n        self.play(FadeIn(interference_remains_label), run_time=max(0.05, 1.0))\n        self.play(Wiggle(weak_icon, scale_value=0.04), run_time=max(0.05, 0.8))\n        self.wait(max(0.05, beat5_dur - 1.8))\n\n        self.wait(max(0.05, gap3_dur))\n\n        # ---------- beat 6: settle toward horizontal, fade extreme labels ----------\n        self.play(\n            beam_group.animate.rotate(-0.24, about_point=PIVOT),\n            FadeOut(too_aggressive_label),\n            FadeOut(removes_signal_label),\n            FadeOut(too_weak_label),\n            FadeOut(interference_remains_label),\n            run_time=max(0.05, beat6_dur),\n        )\n\n        # ---------- beat 7: balanced scale, moderate symbols, appropriate filter label ----------\n        self.play(\n            FadeOut(aggressive_icon),\n            FadeOut(weak_icon),\n            moderate_left_icon.animate.set_opacity(1),\n            moderate_right_icon.animate.set_opacity(1),\n            run_time=max(0.05, 2.0),\n        )\n        self.play(FadeIn(appropriate_label), run_time=max(0.05, 1.6))\n        self.wait(max(0.05, beat7_dur - 3.6))\n\n        # ---------- beat 8: bottom caption ----------\n        self.play(FadeIn(bottom_caption), run_time=max(0.05, 2.2))\n        self.wait(max(0.05, beat8_dur - 2.2))\n\n        # ---------- beat 9: final hold ----------\n        self.wait(max(0.05, beat9_dur))",
+    "video_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\NPS\\5-1-why-signals-are-filtered\\manim\\Scene5\\media\\videos\\Scene5\\1080p60\\Scene5.mp4",
+    "render_attempts": 1,
+    "render_status": "rendered",
+    "last_feedback": null,
+    "composed_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\NPS\\5-1-why-signals-are-filtered\\rendered_video\\scene_05_with_audio.mp4"
+  },
+  {
+    "id": 6,
+    "subtopic": "5.1.7 Summary and Transition to Section 5.2",
+    "narration": "In this section, we introduced the concept of signal filtering. We learned that neural recordings usually contain both useful physiological information and unwanted electrical components. Filtering improves signal quality by selectively reducing unwanted components while preserving the information relevant for analysis. Understanding why filtering is necessary provides the foundation for studying the different types of filters introduced in the following sections. Now that we understand why neural signals are filtered, the next question is: how does a filter decide which parts of the signal to keep and which parts to remove? To answer that, we begin with one of the simplest and most widely used filters in signal processing \u2014 the low-pass filter.",
+    "animation_description": "A clean summary slide appears: a raw noisy signal on the left, an arrow labeled 'Filtering', and a clean signal on the right, with the checklist points fading in below. The slide shrinks away, then a question mark appears with the text 'How does a filter decide what to keep?' The question mark transforms into an arrow pointing forward, and a new label appears: 'Next: The Low-pass Filter'.",
+    "scene_type": "manim",
+    "audio_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\NPS\\5-1-why-signals-are-filtered\\audio\\scene_06.wav",
+    "timestamps": [
+      {
+        "word": "In",
+        "start": 0.0,
+        "end": 0.4
+      },
+      {
+        "word": "this",
+        "start": 0.4,
+        "end": 0.52
+      },
+      {
+        "word": "section,",
+        "start": 0.52,
+        "end": 0.8
+      },
+      {
+        "word": "we",
+        "start": 1.26,
+        "end": 1.46
+      },
+      {
+        "word": "introduced",
+        "start": 1.46,
+        "end": 1.76
+      },
+      {
+        "word": "the",
+        "start": 1.76,
+        "end": 2.1
+      },
+      {
+        "word": "concept",
+        "start": 2.1,
+        "end": 2.52
+      },
+      {
+        "word": "of",
+        "start": 2.52,
+        "end": 2.74
+      },
+      {
+        "word": "signal",
+        "start": 2.74,
+        "end": 2.94
+      },
+      {
+        "word": "filtering.",
+        "start": 2.94,
+        "end": 3.44
+      },
+      {
+        "word": "We",
+        "start": 4.24,
+        "end": 4.36
+      },
+      {
+        "word": "learned",
+        "start": 4.36,
+        "end": 4.62
+      },
+      {
+        "word": "that",
+        "start": 4.62,
+        "end": 4.82
+      },
+      {
+        "word": "neural",
+        "start": 4.82,
+        "end": 5.08
+      },
+      {
+        "word": "recordings",
+        "start": 5.08,
+        "end": 5.62
+      },
+      {
+        "word": "usually",
+        "start": 5.62,
+        "end": 6.18
+      },
+      {
+        "word": "contain",
+        "start": 6.18,
+        "end": 6.62
+      },
+      {
+        "word": "both",
+        "start": 6.62,
+        "end": 7.0
+      },
+      {
+        "word": "useful",
+        "start": 7.0,
+        "end": 7.4
+      },
+      {
+        "word": "physiological",
+        "start": 7.4,
+        "end": 7.92
+      },
+      {
+        "word": "information",
+        "start": 7.92,
+        "end": 8.64
+      },
+      {
+        "word": "and",
+        "start": 8.64,
+        "end": 9.48
+      },
+      {
+        "word": "unwanted",
+        "start": 9.48,
+        "end": 9.94
+      },
+      {
+        "word": "electrical",
+        "start": 9.94,
+        "end": 10.6
+      },
+      {
+        "word": "components.",
+        "start": 10.6,
+        "end": 11.14
+      },
+      {
+        "word": "Filtering",
+        "start": 11.98,
+        "end": 12.34
+      },
+      {
+        "word": "improves",
+        "start": 12.34,
+        "end": 12.72
+      },
+      {
+        "word": "signal",
+        "start": 12.72,
+        "end": 13.16
+      },
+      {
+        "word": "quality",
+        "start": 13.16,
+        "end": 13.72
+      },
+      {
+        "word": "by",
+        "start": 13.72,
+        "end": 14.26
+      },
+      {
+        "word": "selectively",
+        "start": 14.26,
+        "end": 14.62
+      },
+      {
+        "word": "reducing",
+        "start": 14.62,
+        "end": 15.3
+      },
+      {
+        "word": "unwanted",
+        "start": 15.3,
+        "end": 15.8
+      },
+      {
+        "word": "components",
+        "start": 15.8,
+        "end": 16.3
+      },
+      {
+        "word": "while",
+        "start": 16.3,
+        "end": 17.12
+      },
+      {
+        "word": "preserving",
+        "start": 17.12,
+        "end": 17.46
+      },
+      {
+        "word": "the",
+        "start": 17.46,
+        "end": 17.76
+      },
+      {
+        "word": "information",
+        "start": 17.76,
+        "end": 18.3
+      },
+      {
+        "word": "relevant",
+        "start": 18.3,
+        "end": 18.54
+      },
+      {
+        "word": "for",
+        "start": 18.54,
+        "end": 19.02
+      },
+      {
+        "word": "analysis.",
+        "start": 19.02,
+        "end": 19.28
+      },
+      {
+        "word": "Understanding",
+        "start": 20.36,
+        "end": 20.62
+      },
+      {
+        "word": "why",
+        "start": 20.62,
+        "end": 21.16
+      },
+      {
+        "word": "filtering",
+        "start": 21.16,
+        "end": 21.54
+      },
+      {
+        "word": "is",
+        "start": 21.54,
+        "end": 21.9
+      },
+      {
+        "word": "necessary",
+        "start": 21.9,
+        "end": 22.42
+      },
+      {
+        "word": "provides",
+        "start": 22.42,
+        "end": 23.12
+      },
+      {
+        "word": "the",
+        "start": 23.12,
+        "end": 23.5
+      },
+      {
+        "word": "foundation",
+        "start": 23.5,
+        "end": 23.9
+      },
+      {
+        "word": "for",
+        "start": 23.9,
+        "end": 24.26
+      },
+      {
+        "word": "studying",
+        "start": 24.26,
+        "end": 24.58
+      },
+      {
+        "word": "the",
+        "start": 24.58,
+        "end": 24.82
+      },
+      {
+        "word": "different",
+        "start": 24.82,
+        "end": 25.06
+      },
+      {
+        "word": "types",
+        "start": 25.06,
+        "end": 25.3
+      },
+      {
+        "word": "of",
+        "start": 25.3,
+        "end": 25.54
+      },
+      {
+        "word": "filters",
+        "start": 25.54,
+        "end": 25.82
+      },
+      {
+        "word": "introduced",
+        "start": 25.82,
+        "end": 26.28
+      },
+      {
+        "word": "in",
+        "start": 26.28,
+        "end": 26.78
+      },
+      {
+        "word": "the",
+        "start": 26.78,
+        "end": 26.86
+      },
+      {
+        "word": "following",
+        "start": 26.86,
+        "end": 27.16
+      },
+      {
+        "word": "sections.",
+        "start": 27.16,
+        "end": 27.5
+      },
+      {
+        "word": "Now",
+        "start": 28.319999999999997,
+        "end": 28.86
+      },
+      {
+        "word": "that",
+        "start": 28.86,
+        "end": 29.08
+      },
+      {
+        "word": "we",
+        "start": 29.08,
+        "end": 29.2
+      },
+      {
+        "word": "understand",
+        "start": 29.2,
+        "end": 29.56
+      },
+      {
+        "word": "why",
+        "start": 29.56,
+        "end": 30.06
+      },
+      {
+        "word": "neural",
+        "start": 30.06,
+        "end": 30.3
+      },
+      {
+        "word": "signals",
+        "start": 30.3,
+        "end": 30.68
+      },
+      {
+        "word": "are",
+        "start": 30.68,
+        "end": 31.0
+      },
+      {
+        "word": "filtered,",
+        "start": 31.0,
+        "end": 31.24
+      },
+      {
+        "word": "the",
+        "start": 31.92,
+        "end": 31.98
+      },
+      {
+        "word": "next",
+        "start": 31.98,
+        "end": 32.1
+      },
+      {
+        "word": "question",
+        "start": 32.1,
+        "end": 32.6
+      },
+      {
+        "word": "is,",
+        "start": 32.6,
+        "end": 32.84
+      },
+      {
+        "word": "how",
+        "start": 33.34,
+        "end": 33.62
+      },
+      {
+        "word": "does",
+        "start": 33.62,
+        "end": 33.74
+      },
+      {
+        "word": "a",
+        "start": 33.74,
+        "end": 33.84
+      },
+      {
+        "word": "filter",
+        "start": 33.84,
+        "end": 34.16
+      },
+      {
+        "word": "decide",
+        "start": 34.16,
+        "end": 34.54
+      },
+      {
+        "word": "which",
+        "start": 34.54,
+        "end": 34.92
+      },
+      {
+        "word": "parts",
+        "start": 34.92,
+        "end": 35.16
+      },
+      {
+        "word": "of",
+        "start": 35.16,
+        "end": 35.36
+      },
+      {
+        "word": "the",
+        "start": 35.36,
+        "end": 35.44
+      },
+      {
+        "word": "signal",
+        "start": 35.44,
+        "end": 35.74
+      },
+      {
+        "word": "to",
+        "start": 35.74,
+        "end": 35.94
+      },
+      {
+        "word": "keep",
+        "start": 35.94,
+        "end": 36.16
+      },
+      {
+        "word": "and",
+        "start": 36.16,
+        "end": 36.48
+      },
+      {
+        "word": "which",
+        "start": 36.48,
+        "end": 36.62
+      },
+      {
+        "word": "parts",
+        "start": 36.62,
+        "end": 36.84
+      },
+      {
+        "word": "to",
+        "start": 36.84,
+        "end": 37.08
+      },
+      {
+        "word": "remove?",
+        "start": 37.08,
+        "end": 37.3
+      },
+      {
+        "word": "To",
+        "start": 38.1,
+        "end": 38.28
+      },
+      {
+        "word": "answer",
+        "start": 38.28,
+        "end": 38.48
+      },
+      {
+        "word": "that,",
+        "start": 38.48,
+        "end": 38.9
+      },
+      {
+        "word": "we",
+        "start": 39.16,
+        "end": 39.36
+      },
+      {
+        "word": "begin",
+        "start": 39.36,
+        "end": 39.66
+      },
+      {
+        "word": "with",
+        "start": 39.66,
+        "end": 39.96
+      },
+      {
+        "word": "one",
+        "start": 39.96,
+        "end": 40.14
+      },
+      {
+        "word": "of",
+        "start": 40.14,
+        "end": 40.24
+      },
+      {
+        "word": "the",
+        "start": 40.24,
+        "end": 40.34
+      },
+      {
+        "word": "simplest",
+        "start": 40.34,
+        "end": 40.74
+      },
+      {
+        "word": "and",
+        "start": 40.74,
+        "end": 41.16
+      },
+      {
+        "word": "most",
+        "start": 41.16,
+        "end": 41.38
+      },
+      {
+        "word": "widely",
+        "start": 41.38,
+        "end": 41.76
+      },
+      {
+        "word": "used",
+        "start": 41.76,
+        "end": 42.16
+      },
+      {
+        "word": "filters",
+        "start": 42.16,
+        "end": 42.64
+      },
+      {
+        "word": "in",
+        "start": 42.64,
+        "end": 42.94
+      },
+      {
+        "word": "signal",
+        "start": 42.94,
+        "end": 43.24
+      },
+      {
+        "word": "processing,",
+        "start": 43.24,
+        "end": 43.8
+      },
+      {
+        "word": "the",
+        "start": 44.44,
+        "end": 44.68
+      },
+      {
+        "word": "low",
+        "start": 44.68,
+        "end": 44.84
+      },
+      {
+        "word": "pass",
+        "start": 44.84,
+        "end": 45.1
+      },
+      {
+        "word": "filter.",
+        "start": 45.1,
+        "end": 45.54
+      }
+    ],
+    "render_prompt": "1. **0.00-1.26** \u2014 The previous scene's balanced scale visual fades out. A clean, empty summary slide background fades in \u2014 a soft white or light neutral canvas filling the screen.\n\n2. **1.26-3.44** \u2014 On the left side of the slide, a raw noisy signal waveform draws itself: a jagged, irregular oscillating line with visible high-frequency roughness and spiky interference overlaying a smoother underlying wave. It is labeled \"Raw signal\" beneath it.\n\n3. **4.24-11.14** \u2014 In the center of the slide, a bold horizontal arrow draws in, labeled \"Filtering\" above it. On the right side of the slide, a clean signal waveform appears: a smooth, regular oscillating sine-like line with no jagged noise, labeled \"Clean signal\" beneath it. The three elements \u2014 raw signal, arrow, clean signal \u2014 form a clear left-to-right flow diagram.\n\n4. **11.98-19.28** \u2014 Below the flow diagram, the first checklist point fades in with a small checkbox: \"Reduces unwanted components.\" The raw signal briefly highlights its jagged interference spikes as this text appears, then the highlight fades.\n\n5. **20.36-27.50** \u2014 A second checklist point fades in beneath the first: \"Preserves relevant information.\" The clean signal on the right briefly glows or highlights to draw attention, then the highlight fades. The full slide holds steady.\n\n6. **28.32-31.24** \u2014 The entire summary slide \u2014 raw signal, arrow, clean signal, and both checklist points \u2014 smoothly shrinks and fades away toward the center of the screen, as if receding into the background.\n\n7. **31.92-37.30** \u2014 A large question mark appears at the center of the screen, drawn in a bold, attention-grabbing color. Directly beneath it, the text fades in: \"How does a filter decide what to keep?\" The question mark and text hold steady.\n\n8. **38.10-43.80** \u2014 The question mark smoothly morphs into a forward-pointing arrow, as if rotating and extending to the right. The question text fades out. A new label fades in alongside the arrow: \"Next: The Low-pass Filter.\"\n\n9. **44.44-46.25** \u2014 Final hold: the forward-pointing arrow and the label \"Next: The Low-pass Filter\" remain on screen, static and clear, through the end of the narration.",
+    "code": "ASSET_PATHS = {'heart': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\test_heart.svg', 'brain': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\brain_test.svg', 'stopwatch': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\stopwatch.svg', 'activity': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\activity.svg', 'soundwave': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\soundwave.svg', 'grid_matrix': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\grid-3x3-gap-fill.svg', 'bar_chart': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bar-chart.svg', 'graph_trend': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\graph-up-arrow.svg', 'cpu': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\cpu.svg', 'funnel': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\funnel.svg', 'table': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\table.svg', 'hospital': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hospital.svg', 'capsule': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\capsule.svg', 'clipboard_pulse': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\clipboard2-pulse.svg', 'hand': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\hand-index-thumb.svg', 'broadcast': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\broadcast-pin.svg', 'gear': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\gear.svg', 'arrow_repeat': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\arrow-repeat.svg', 'lightbulb': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\lightbulb.svg', 'bell': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\bell.svg', 'check_circle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\check-circle.svg', 'x_circle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\x-circle.svg', 'rulers': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\rulers.svg', 'puzzle': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\puzzle.svg', 'fig_measurement_funnel': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_measurement_funnel.png', 'fig_mindmap_three_pillars': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_three_pillars.png', 'fig_mindmap_full': 'C:\\\\Users\\\\DELL\\\\Desktop\\\\neurogati_video_engine\\\\assets\\\\image\\\\fig_mindmap_full.png'}\n\nfrom manim import *\nimport numpy as np\n\n\nclass Scene6(Scene):\n    def construct(self):\n        self.camera.background_color = \"#0F1116\"\n\n        # ------------------------------------------------------------\n        # helper: parametric waveform\n        # ------------------------------------------------------------\n        def make_wave(func, color, stroke_width, use_smoothing=False):\n            return ParametricFunction(\n                lambda t: np.array([t, func(t), 0]),\n                t_range=[0, 4.0, 0.004],\n                color=color,\n                stroke_width=stroke_width,\n                use_smoothing=use_smoothing,\n            )\n\n        def raw_func(t):\n            base = 0.35 * np.sin(2 * np.pi * 1.0 * t + 0.4)\n            rough = 0.12 * np.sin(2 * np.pi * 6.0 * t)\n            rough2 = 0.05 * np.sin(2 * np.pi * 19 * t)\n            spike1 = 0.45 * np.exp(-((t - 0.80) / 0.03) ** 2)\n            spike2 = -0.50 * np.exp(-((t - 1.90) / 0.03) ** 2)\n            spike3 = 0.55 * np.exp(-((t - 3.10) / 0.03) ** 2)\n            return base + rough + rough2 + spike1 + spike2 + spike3\n\n        def clean_func(t):\n            return 0.38 * np.sin(2 * np.pi * 1.0 * t + 0.4) + 0.06 * np.sin(2 * np.pi * 2.0 * t)\n\n        # ------------------------------------------------------------\n        # previous scene's balanced scale visual\n        # ------------------------------------------------------------\n        prev_pivot = Dot(ORIGIN, radius=0.07, color=GREY_B, fill_opacity=1)\n        prev_stand = Line(ORIGIN, DOWN * 1.2, color=GREY_B, stroke_width=6)\n        prev_base = Line(LEFT * 0.4 + DOWN * 1.2, RIGHT * 0.4 + DOWN * 1.2, color=GREY_B, stroke_width=10)\n        prev_beam = Line(LEFT * 2.6, RIGHT * 2.6, color=GREY_B, stroke_width=7)\n        prev_left_support = Line(LEFT * 2.6, LEFT * 2.6 + DOWN * 0.35, color=GREY_B, stroke_width=3)\n        prev_right_support = Line(RIGHT * 2.6, RIGHT * 2.6 + DOWN * 0.35, color=GREY_B, stroke_width=3)\n        prev_left_pan = Arc(\n            radius=0.35,\n            start_angle=PI,\n            angle=PI,\n            arc_center=LEFT * 2.6 + DOWN * 0.35,\n            color=GREY_B,\n            stroke_width=3,\n        )\n        prev_right_pan = Arc(\n            radius=0.35,\n            start_angle=0,\n            angle=PI,\n            arc_center=RIGHT * 2.6 + DOWN * 0.35,\n            color=GREY_B,\n            stroke_width=3,\n        )\n        prev_label = Text(\"Appropriate filter\", font_size=32, color=BLUE, weight=\"BOLD\")\n        prev_label.move_to(UP * 0.8)\n\n        prev_scale = VGroup(\n            prev_stand,\n            prev_base,\n            prev_pivot,\n            prev_beam,\n            prev_left_support,\n            prev_right_support,\n            prev_left_pan,\n            prev_right_pan,\n            prev_label,\n        )\n        prev_scale.move_to(ORIGIN)\n        self.add(prev_scale)\n\n        # ------------------------------------------------------------\n        # clean empty summary canvas\n        # ------------------------------------------------------------\n        canvas = Rectangle(\n            width=14.2,\n            height=8.2,\n            fill_color=WHITE,\n            fill_opacity=0.07,\n            stroke_width=0,\n        )\n\n        # ------------------------------------------------------------\n        # exact beat durations / gaps\n        # ------------------------------------------------------------\n        d1 = 1.26\n        d2 = 2.18\n        gap2 = 0.80\n        d3 = 6.90\n        gap4 = 0.84\n        d4 = 7.30\n        gap5 = 1.08\n        d5 = 7.14\n        gap6 = 0.82\n        d6 = 2.92\n        gap7 = 0.68\n        d7 = 5.38\n        gap8 = 0.80\n        d8 = 5.70\n        gap9 = 0.64\n        d9 = 1.81\n\n        # ------------------------------------------------------------\n        # beat 1: previous scale fades out, summary canvas fades in\n        # ------------------------------------------------------------\n        self.play(\n            FadeOut(prev_scale),\n            FadeIn(canvas),\n            run_time=max(0.05, d1),\n        )\n\n        # ------------------------------------------------------------\n        # build left raw signal\n        # ------------------------------------------------------------\n        raw_wave = make_wave(raw_func, ORANGE, stroke_width=3, use_smoothing=False)\n        raw_wave.scale_to_fit_width(3.0)\n        raw_wave.move_to(LEFT * 4.2 + UP * 1.0)\n\n        raw_label = Text(\"Raw signal\", font_size=30, color=WHITE, weight=\"BOLD\")\n        raw_label.next_to(raw_wave, DOWN, buff=0.3)\n        raw_group = VGroup(raw_wave, raw_label)\n\n        # ------------------------------------------------------------\n        # build center filtering arrow\n        # ------------------------------------------------------------\n        filter_arrow = Arrow(\n            LEFT * 1.7,\n            RIGHT * 1.7,\n            color=YELLOW,\n            stroke_width=9,\n            buff=0,\n            max_tip_length_to_length_ratio=0.22,\n        )\n        filter_arrow.move_to(UP * 1.0)\n\n        filter_label = Text(\"Filtering\", font_size=34, color=YELLOW, weight=\"BOLD\")\n        filter_label.next_to(filter_arrow, UP, buff=0.35)\n        arrow_group = VGroup(filter_arrow, filter_label)\n\n        # ------------------------------------------------------------\n        # build right clean signal\n        # ------------------------------------------------------------\n        clean_wave = make_wave(clean_func, TEAL, stroke_width=4, use_smoothing=True)\n        clean_wave.scale_to_fit_width(3.0)\n        clean_wave.move_to(RIGHT * 4.2 + UP * 1.0)\n\n        clean_label = Text(\"Clean signal\", font_size=30, color=WHITE, weight=\"BOLD\")\n        clean_label.next_to(clean_wave, DOWN, buff=0.3)\n        clean_group = VGroup(clean_wave, clean_label)\n\n        flow_group = VGroup(raw_group, arrow_group, clean_group)\n\n        # ------------------------------------------------------------\n        # beat 2: raw signal draws itself\n        # ------------------------------------------------------------\n        self.play(\n            Create(raw_wave),\n            Write(raw_label),\n            run_time=max(0.05, d2),\n        )\n        self.wait(max(0.05, gap2))\n\n        # ------------------------------------------------------------\n        # beat 3: filtering arrow and clean signal appear\n        # ------------------------------------------------------------\n        self.play(Create(filter_arrow), Write(filter_label), run_time=max(0.05, 2.2))\n        self.play(Create(clean_wave), Write(clean_label), run_time=max(0.05, 2.5))\n        self.wait(max(0.05, d3 - 4.7))\n        self.wait(max(0.05, gap4))\n\n        # ------------------------------------------------------------\n        # checklist helpers\n        # ------------------------------------------------------------\n        def make_checkbox_point(label_text):\n            box = Square(\n                side_length=0.34,\n                color=GREEN,\n                stroke_width=3,\n                fill_color=GREEN,\n                fill_opacity=0.12,\n            )\n            check = VGroup(\n                Line(\n                    box.get_corner(DL) + np.array([0.07, 0.08, 0]),\n                    box.get_center() + np.array([-0.02, 0.05, 0]),\n                    color=GREEN,\n                    stroke_width=5,\n                ),\n                Line(\n                    box.get_center() + np.array([-0.02, 0.05, 0]),\n                    box.get_corner(UR) + np.array([-0.03, -0.07, 0]),\n                    color=GREEN,\n                    stroke_width=5,\n                ),\n            )\n            marker = VGroup(box, check)\n            label = Text(label_text, font_size=30, color=WHITE)\n            return VGroup(marker, label).arrange(RIGHT, buff=0.3)\n\n        checkbox1 = make_checkbox_point(\"Reduces unwanted components.\")\n        checkbox1.next_to(flow_group, DOWN, buff=0.7)\n\n        spike_props = [0.2, 0.475, 0.775]\n        spike_highlights = VGroup(*[\n            VGroup(\n                Circle(radius=0.18, color=PINK, stroke_width=3)\n                .set_fill(PINK, opacity=0.12)\n                .move_to(raw_wave.point_from_proportion(p)),\n                Dot(raw_wave.point_from_proportion(p), radius=0.07, color=PINK, fill_opacity=0.9),\n            )\n            for p in spike_props\n        ])\n\n        # ------------------------------------------------------------\n        # beat 4: first checklist point + raw spike highlight\n        # ------------------------------------------------------------\n        self.play(\n            FadeIn(checkbox1),\n            FadeIn(spike_highlights),\n            run_time=max(0.05, 2.5),\n        )\n        self.play(FadeOut(spike_highlights), run_time=max(0.05, 1.6))\n        self.wait(max(0.05, d4 - 4.1))\n        self.wait(max(0.05, gap5))\n\n        # ------------------------------------------------------------\n        # beat 5: second checklist point + clean signal highlight\n        # ------------------------------------------------------------\n        clean_highlight = SurroundingRectangle(\n            clean_wave,\n            color=TEAL,\n            buff=0.2,\n            stroke_width=5,\n        )\n        clean_highlight.set_fill(TEAL, opacity=0.15)\n\n        checkbox2 = make_checkbox_point(\"Preserves relevant information.\")\n        checkbox2.next_to(checkbox1, DOWN, buff=0.4)\n\n        self.play(\n            FadeIn(checkbox2),\n            FadeIn(clean_highlight),\n            run_time=max(0.05, 2.5),\n        )\n        self.play(FadeOut(clean_highlight), run_time=max(0.05, 1.6))\n        self.wait(max(0.05, d5 - 4.1))\n        self.wait(max(0.05, gap6))\n\n        # ------------------------------------------------------------\n        # beat 6: entire summary slide shrinks and fades toward center\n        # ------------------------------------------------------------\n        summary_group = VGroup(\n            canvas,\n            raw_group,\n            arrow_group,\n            clean_group,\n            checkbox1,\n            checkbox2,\n        )\n        self.play(\n            summary_group.animate.scale(0.04).move_to(ORIGIN).set_opacity(0),\n            run_time=max(0.05, d6),\n        )\n        self.wait(max(0.05, gap7))\n\n        # ------------------------------------------------------------\n        # beat 7: large question mark + question text\n        # ------------------------------------------------------------\n        question_mark = Text(\"?\", font_size=240, color=GOLD, weight=\"BOLD\")\n        question_mark.move_to(UP * 0.7)\n\n        question_text = Text(\n            \"How does a filter decide what to keep?\",\n            font_size=40,\n            color=WHITE,\n            weight=\"BOLD\",\n        )\n        question_text.scale_to_fit_width(10)\n        question_text.next_to(question_mark, DOWN, buff=0.5)\n\n        self.play(Write(question_mark), run_time=max(0.05, 2.0))\n        self.play(FadeIn(question_text), run_time=max(0.05, 2.0))\n        self.wait(max(0.05, d7 - 4.0))\n        self.wait(max(0.05, gap8))\n\n        # ------------------------------------------------------------\n        # beat 8: question mark morphs into forward arrow\n        # ------------------------------------------------------------\n        next_arrow = Arrow(\n            LEFT * 2.0,\n            RIGHT * 2.0,\n            color=GOLD,\n            stroke_width=10,\n            buff=0,\n            max_tip_length_to_length_ratio=0.22,\n        )\n        next_arrow.move_to(UP * 0.7)\n\n        next_label = Text(\n            \"Next: The Low-pass Filter.\",\n            font_size=40,\n            color=WHITE,\n            t2c={\"Low-pass Filter\": GOLD},\n        )\n        next_label.next_to(next_arrow, DOWN, buff=0.6)\n\n        self.play(\n            ReplacementTransform(question_mark, next_arrow),\n            FadeOut(question_text),\n            run_time=max(0.05, 3.0),\n        )\n        self.play(FadeIn(next_label), run_time=max(0.05, 2.7))\n        self.wait(max(0.05, gap9))\n\n        # ------------------------------------------------------------\n        # beat 9: final hold\n        # ------------------------------------------------------------\n        self.wait(max(0.05, d9))",
+    "video_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\NPS\\5-1-why-signals-are-filtered\\manim\\Scene6\\media\\videos\\Scene6\\1080p60\\Scene6.mp4",
+    "render_attempts": 2,
+    "render_status": "rendered",
+    "last_feedback": null,
+    "composed_path": "C:\\Users\\DELL\\Desktop\\neurogati_video_engine\\projects\\NPS\\5-1-why-signals-are-filtered\\rendered_video\\scene_06_with_audio.mp4"
+  }
+]

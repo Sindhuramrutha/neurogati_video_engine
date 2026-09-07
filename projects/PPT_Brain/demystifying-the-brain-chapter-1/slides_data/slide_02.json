@@ -1,0 +1,80 @@
+{
+  "index": 2,
+  "slide_width_emu": 14630400,
+  "slide_height_emu": 8229600,
+  "shapes": [
+    {
+      "shape_id": 2,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 0",
+      "manim_bbox": [
+        -7.111111,
+        -3.9999999375,
+        -1.7777777500000003,
+        3.9999999375
+      ]
+    },
+    {
+      "shape_id": 3,
+      "kind": "text",
+      "text": "Brain Ideas Through the Centuries",
+      "alt_text": "Text 0",
+      "manim_bbox": [
+        -1.0061339397569444,
+        1.3835646716840277,
+        6.339468161857639,
+        2.7615737878993056
+      ]
+    },
+    {
+      "shape_id": 4,
+      "kind": "text",
+      "text": "\"My hand moves because certain forces... are impressed on it by my brain. This nerve-force, stored in the brain, would probably be traceable... to chemical forces supplied to the brain by the blood.\"",
+      "alt_text": "Text 1",
+      "manim_bbox": [
+        -0.6754631954340278,
+        -0.25347233977430506,
+        6.339467189756944,
+        0.8048614630729167
+      ]
+    },
+    {
+      "shape_id": 5,
+      "kind": "text",
+      "text": "— Lewis Carroll, Sylvie and Bruno (1890)",
+      "alt_text": "Text 2",
+      "manim_bbox": [
+        -0.6754631954340278,
+        -0.8542830623784718,
+        6.339467189756944,
+        -0.5015048040624999
+      ]
+    },
+    {
+      "shape_id": 6,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 3",
+      "manim_bbox": [
+        -1.0061339397569444,
+        -1.1023145545659725,
+        -0.9765043105902782,
+        1.052893927361111
+      ]
+    },
+    {
+      "shape_id": 7,
+      "kind": "text",
+      "text": "The history of neuroscience is a fascinating journey of errors and breakthroughs. From ancient misconceptions to modern gene therapies, our understanding has evolved from viewing the heart as the seat of consciousness to mapping the complex electrical networks of the mind.",
+      "alt_text": "Text 4",
+      "manim_bbox": [
+        -1.0061339397569444,
+        -2.761458107916667,
+        6.339468161857639,
+        -1.3503470188541673
+      ]
+    }
+  ],
+  "notes_text": null
+}

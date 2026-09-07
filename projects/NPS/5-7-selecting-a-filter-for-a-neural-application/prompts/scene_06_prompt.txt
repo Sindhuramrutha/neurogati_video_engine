@@ -1,0 +1,19 @@
+1. 0.00-1.18: A frequency spectrum of a signal fades in, occupying the upper half of the frame. The spectrum contains a tall, narrow peak centered at exactly 50 Hz, with the horizontal axis labeled "Frequency (Hz)" and the 50 Hz mark clearly visible. The rest of the spectrum shows smaller scattered peaks at other frequencies. This replaces any icons or waveforms from the previous scene; the scene opens cleanly with this new spectrum.
+
+2. 1.18-2.10: A faint, translucent time-domain waveform appears in the lower half of the frame — the same signal shown in the spectrum above. The waveform is dominated by a prominent, regular 50 Hz sinusoidal hum that obscures any finer underlying oscillations. The label "Recording with interference" appears beside it.
+
+3. 2.54-3.54: As "power-line interference" is spoken, a dashed vertical line strikes through the 50 Hz peak in the spectrum and the text "50 Hz interference" appears next to it, then fades out. The 50 Hz peak pulses or flashes once to draw attention.
+
+4. 3.84-5.60: A notch filter transfer function curve overlays the frequency spectrum — a flat line at 0 dB across most frequencies, with a deep, sharp, narrow dip (notch) centered exactly at 50 Hz, dropping to near minus-infinity. The notch is highlighted in a contrasting color (e.g., red) so it stands out against the spectrum.
+
+5. 5.60-6.20: The overlaid notch filter curve and the original spectrum hold static for a beat, with the deep dip at 50 Hz clearly aligned beneath the tall interference peak.
+
+6. 6.94-8.54: The frequency spectrum updates: the tall narrow peak at 50 Hz shrinks down to the baseline noise level, leaving the rest of the spectrum unchanged. The notch filter overlay fades out, and the text "50 Hz removed" appears briefly near the now-flat region of the spectrum, then fades.
+
+7. 8.54-9.92: The time-domain waveform in the lower half transforms — the regular 50 Hz sinusoidal hum fades away, revealing a cleaner underlying neural signal with smaller, more irregular oscillations. The label below the waveform changes to "Filtered signal". The 50 Hz component visibly dissolves out of the trace.
+
+8. 10.40-11.32: A second, smaller notch fades in briefly on the spectrum overlay at 60 Hz — same deep narrow dip shape — then fades out, accompanied by the text "or 60 Hz" appearing beside it, then both disappear, leaving only the cleaned spectrum and waveform.
+
+9. 11.58-12.76: The text "50 Hz interference removed" flashes once in the center of the frame, over both the cleaned spectrum and the clean time-domain waveform, then fades out. The scene holds: upper half shows the frequency spectrum with no 50 Hz peak, lower half shows the clean neural signal.
+
+10. 12.76-13.68: The final cleaned spectrum and filtered waveform hold static for the remaining duration. No further changes.

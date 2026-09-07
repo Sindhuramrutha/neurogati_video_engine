@@ -1,0 +1,8 @@
+Subtopic: Summary and Transition to ERP
+Scene type: manim
+
+Narration:
+In this section, we introduced wavelet analysis, an adaptive time–frequency analysis technique designed to overcome the fixed-window limitation of the Short-Time Fourier Transform. We learned that wavelet analysis examines signals at multiple scales, providing good time resolution for rapid events and good frequency resolution for slower oscillations. This adaptability makes wavelet analysis particularly useful for analysing highly nonstationary neural signals, such as EEG recordings containing transient neural events. So far, we have focused on methods for analysing how neural activity changes over time and across different frequencies. However, many neuroscience experiments are designed around specific events, such as the presentation of a visual image, an auditory tone, or a button press. Rather than analysing continuous neural activity, researchers often wish to measure the brain's response to these events. One of the most widely used approaches for this purpose is the Event-Related Potential, or ERP, which we will explore in the next section.
+
+Animation description:
+A brief recap animation shows a neural signal with multiple wavelets of different sizes overlaid. Text appears: 'Adaptive time–frequency analysis' and 'Multi-resolution'. Then the scene transitions to a new visual: a timeline with a clear event marker. The event marker is a visual image, an audio icon, and a button press, one after another. A neural response waveform appears after each event, showing the brain's response. Text at the bottom: 'Next: Event-Related Potentials (ERP)'. The screen fades to the ERP theme.

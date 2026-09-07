@@ -1,0 +1,23 @@
+1. (0.00–1.50) From the previous scene's clean end state, the chain and caption fade out. A new six-box chain fades in as one complete unit, arranged left-to-right with thick arrows connecting them: "Biological Source" → "Electrode/Sensor" → "Amplifier" → "Filter" → "ADC" → "Computer". Narration: "Let's wrap up."
+
+2. (1.50–4.62) The full six-box chain remains centered on screen, steady and clean. A caption fades in above: "The neural signal acquisition chain". Narration: "In this section, we introduced the neural signal acquisition chain"
+
+3. (4.62–6.60) The camera slowly pans left-to-right across the chain, passing over each box in turn. As each box passes the center of the frame, it highlights briefly: Biological Source, Electrode/Sensor, Amplifier, Filter, ADC, Computer. Narration: "and examined each of its major components."
+
+4. (7.54–12.60) The camera pulls back to frame the entire chain again. A new caption appears above: "Every neural recording system follows the same workflow". The six boxes each pulse once in sequence, left to right, as if emphasizing the single shared path. Narration: "The most important point to remember is that every neural recording system follows the same fundamental workflow:"
+
+5. (12.60–14.20) A label appears beneath the first box, reading "Biological Source". The first box highlights. Narration: "biological source,"
+
+6. (14.54–15.38) A label appears beneath the second box, reading "Electrode or Sensor". The second box highlights. Narration: "electrode or sensor,"
+
+7. (15.90–16.28) A label appears beneath the third box, reading "Amplifier". The third box highlights. Narration: "amplifier,"
+
+8. (16.88–17.12) A label appears beneath the fourth box, reading "Filter". The fourth box highlights. Narration: "filter,"
+
+9. (17.72–19.52) A label appears beneath the fifth box, reading "Analog-to-Digital Converter", and beneath the sixth box, reading "Computer". The fifth and sixth boxes highlight in sequence. Narration: "analog to digital converter and computer."
+
+10. (20.44–25.58) Below the chain, four small labeled icons fade in, arranged in a row: "EEG", "EMG", "ECoG", and "MEG". Each icon is a small rounded rectangle with its label centered inside. Thin lines with upward-pointing arrowheads connect each icon upward to the same chain, all four lines meeting at the Electrode/Sensor box or at a single point on the chain between Electrode/Sensor and Amplifier. Narration: "Although the sensing technology may differ across EEG, EMG, ECoG or MEG,"
+
+11. (25.58–27.50) The four modality icons and their connecting lines remain visible beneath the chain. A caption fades in below, centered under the icons: "The acquisition process remains essentially the same". Narration: "the overall acquisition process remains essentially the same."
+
+12. (27.50–29.65) The entire six-box chain pulses once — all boxes briefly brighten together, then return to normal. The four modality icons with their upward-pointing lines, the chain, and the caption remain on screen. Narration: (silence)

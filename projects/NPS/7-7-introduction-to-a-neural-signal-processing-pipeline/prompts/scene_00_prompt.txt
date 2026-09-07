@@ -1,0 +1,49 @@
+1. **0.00–0.44**  
+   Open on a plain dark background, visually continuous with the previous scene. The screen is mostly empty, with only a faint, still outline where the pipeline diagram will appear, suggesting something is about to be assembled.
+
+2. **0.44–2.48**  
+   A simple vertical flow diagram fades in on the left side of the screen: four stacked rounded boxes, evenly spaced and connected by short vertical arrows, labeled from top to bottom **“Raw Signal”**, **“Preprocessing”**, **“Feature Extraction”**, and **“Interpretation or Classification”**. The boxes are initially dim and identical in color, like an unlit blueprint of a workflow.
+
+3. **2.48–3.86**  
+   The word **“stages”** in the narration is visually matched: the four pipeline boxes glow softly one after another from top to bottom in a single slow sweep, as if drawing attention to the individual stages being recalled from earlier in the course.
+
+4. **4.66–7.16**  
+   A small **sine wave icon** fades in to the right of the flow diagram, near the top, while the **“Raw Signal”** box brightens. The icon pulses gently to indicate neural signal generation. A second small icon — a **noisy signal trace with a small electrode symbol** — appears just below the sine wave as the narration names recording, still near the “Raw Signal” area.
+
+5. **7.72–9.44**  
+   The noise-and-electrode icon wobbles slightly and the noise trace within it thickens and becomes jagged, while **“Raw Signal”** dims slightly but remains lit, visually tying noise and artifacts to the recording stage rather than to later processing.
+
+6. **10.08–11.98**  
+   A **filter symbol** — a small horizontal line with a skewed waveform passing through it — fades in to the right of the diagram, aligned beside the **“Preprocessing”** box. The “Preprocessing” box brightens as the filter icon appears, matching the narration on filtering improving signal quality.
+
+7. **12.36–16.36**  
+   A **spectrogram icon** — a small rectangular heat map with a rainbow-like or grayscale color scale and labeled “time” on the horizontal axis and “frequency” on the vertical axis — appears beside the **“Feature Extraction”** box. The box brightens while the spectrogram icon pulses, tying time- and frequency-domain methods to feature extraction.
+
+8. **16.96–19.62**  
+   The pipeline diagram remains visible. The icons stay in place, but now each one shrinks slightly and recedes in brightness as the narration pivots from individual methods to the idea that many different recording modalities exist.
+
+9. **19.62–25.18**  
+   Small labels pop up one by one around the left side of the flow diagram, near the **“Raw Signal”** box: **“EEG”** at 19.62, **“ECoG”** around 21.36, **“EMG”** around 21.80, **“EOG”** around 22.72, **“Spikes”** around 23.42, **“LFP”** around 24.22, and **“MEG”** around 25.04. Each label appears as a small text chip with a thin outline, and each gives a brief glow when it pops in. The labels cluster around the top of the pipeline because these are recording modalities.
+
+10. **25.88–27.54**  
+    The cluster of modality labels gently rearranges into a loose arc around the upper-left side of the diagram, and all seven labels pulse once together as the narration says “different neuroscience applications.” The “Raw Signal” box brightens again to show that all these modalities feed into the start of the pipeline.
+
+11. **28.42–32.80**  
+    A subtle transition occurs: the icons and modality labels dim and move slightly outward, while the pipeline itself becomes the brightest element on screen. The four boxes begin to feel more connected, with the arrows between them thickening slightly, as the narration emphasizes that these methods are **not** used independently.
+
+12. **32.80–40.06**  
+    The pipeline diagram shifts into a more prominent centered-left position and all four boxes light up fully in sequence — “Raw Signal”, then “Preprocessing”, then “Feature Extraction”, then “Interpretation or Classification” — with an animated arrow traveling from the top box down through each stage to the bottom. A soft highlight travels along the arrows, visually carrying the viewer from a “raw recording” down to a “meaningful scientific or clinical result.”
+
+13. **40.92–47.84**  
+    The pipeline boxes light up **one at a time**, perfectly synchronized with the narration’s list:  
+    - At **42.48**, **“Raw Signal”** lights and holds.  
+    - At **43.72**, **“Preprocessing”** lights instead, while “Raw Signal” returns to medium brightness.  
+    - At **44.94**, **“Feature Extraction”** lights.  
+    - At **46.48**, **“Interpretation or Classification”** lights and stays bright through the end of the phrase.  
+    The connecting arrows between lit boxes glow to show the direction of flow.
+
+14. **49.18–55.40**  
+    The pipeline diagram shifts slightly right to balance the frame, and the previously shown icons and modality labels fade back in around it as smaller, quieter elements — the sine wave, noisy electrode trace, filter, spectrogram, and modality labels — arranged around the pipeline rather than distracting from it. Their reappearance visually “brings together” the major concepts from the course.
+
+15. **55.00–56.27**  
+    The entire flow diagram pulses softly two or three times — boxes, arrows, labels, and icons together — like a single unified workflow breathing in place. The pulse fades out just before the final timestamp, leaving the still diagram on screen at full gentle brightness.

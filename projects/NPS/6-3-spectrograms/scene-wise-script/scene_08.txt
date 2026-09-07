@@ -1,0 +1,8 @@
+Subtopic: Transition to Wavelet Analysis
+Scene type: manim
+
+Narration:
+The spectrogram represents a major improvement over conventional frequency analysis, because it shows both when and at what frequency neural activity occurs. But it still depends on the fixed analysis window used by the Short-Time Fourier Transform. This fixed window creates a compromise between time resolution and frequency resolution. Is there a method that can adapt its analysis to different types of neural activity? The answer is wavelet analysis, which we will introduce in the next section.
+
+Animation description:
+A spectrogram fades to a muted grey, with a fixed-size window overlay highlighted, emphasising the rigid window. A question mark appears in the centre of the screen. Text fades in: 'Can we adapt to different types of neural activity?' Then the text changes to 'Wavelet Analysis' with an arrow pointing to the next section, and the screen fades to black.

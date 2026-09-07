@@ -1,0 +1,8 @@
+Subtopic: Detecting and Isolating Spikes
+Scene type: manim
+
+Narration:
+Because spikes are small and brief, they can be difficult to distinguish from noise. An extracellular recording can contain neural spikes, background neural activity, electronic noise, thermal noise, and other physiological signals. One common approach is to separate the high-frequency spike component from slower activity. For example, a high-pass filter around 300 hertz can be used to isolate spike-related activity from the slower LFP component. Once spikes have been isolated, researchers can identify individual spike events.
+
+Animation description:
+Show a raw extracellular signal trace that looks messy, containing slow drifts, noise, and small sharp spikes. Overlay faint labels for the different components: spikes, background neural activity, electronic noise, thermal noise, and other physiological signals. Then illustrate a filter block labeled 'High-pass filter, 300 Hz' being applied to the signal. Animate the slow components fading away, leaving only the sharp spike waveforms. Label the output as 'isolated spike activity'. Highlight individual spike events being marked with dots or vertical lines.

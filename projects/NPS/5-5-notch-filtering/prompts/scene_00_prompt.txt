@@ -1,0 +1,21 @@
+1. 0.00: A horizontal frequency axis appears, labeled with tick marks at 0, 10, 20, … up to 100 Hz. A generic, continuous curve representing a typical power spectral density of a neural recording is drawn across the axis, fully opaque.
+
+2. 18.46: At the tick mark for 50 Hz, a label “50 Hz” fades in, and the tick mark gains a subtle glow.
+
+3. 23.34: A broad vertical shaded band begins sweeping outward from the 50 Hz tick mark, expanding horizontally.
+
+4. 24.50: The band has fully expanded, covering a frequency range roughly from 30 Hz to 70 Hz. The spectrum inside this band becomes dimmed (semi‑transparent), while the spectrum outside remains fully opaque.
+
+5. 27.72: The text “Not this — too much lost.” fades in near the shaded band, positioned above the axis.
+
+6. 31.12: The text “Not this — too much lost.” fades out. Simultaneously, the shaded band begins to contract horizontally, shrinking back toward the 50 Hz mark.
+
+7. 33.84: The band has contracted to a razor‑thin vertical sliver exactly at the 50 Hz tick mark. The spectrum outside the sliver begins to brighten back to its original opacity.
+
+8. 38.88: The spectrum is fully bright, with only the thin vertical sliver at 50 Hz remaining dark.
+
+9. 39.64: The thin sliver fades away completely.
+
+10. 40.72: The text “Notch filter — remove only the narrow band.” fades in centered below the frequency axis. The text remains on screen until the scene ends.
+
+11. 42.05: End of scene.

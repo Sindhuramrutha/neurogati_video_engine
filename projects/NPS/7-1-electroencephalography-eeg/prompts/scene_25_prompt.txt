@@ -1,0 +1,23 @@
+1. **0.00–4.52** — Fade in a horizontal pipeline diagram centered on screen: five rectangular blocks connected left-to-right by arrows. The blocks are labeled, left to right, exactly: "Signal Acquisition," "Preprocessing," "Feature Extraction," "Classification," "Device Control." All blocks are dimmed/neutral. Above the diagram, a title fades in: "EEG-Based BCI Processing Stages."
+
+2. **4.52–6.90** — As narration says "Step 1: Signal Acquisition," the first block "Signal Acquisition" lights up and enlarges slightly. Inside the block, a simple line drawing appears: a side-view head outline with small electrode dots on the scalp, connected by thin leads.
+
+3. **6.90–10.18** — As narration says "EEG electrodes record the electrical activity of the brain," the electrode dots on the head inside the first block pulse gently with small waveform traces emanating from each electrode. The head outline brightens. The other four blocks remain dimmed.
+
+4. **11.00–13.12** — As narration says "Step 2: Preprocessing," the first block returns to normal size (but stays lit), and the second block "Preprocessing" lights up and enlarges slightly.
+
+5. **13.12–17.60** — As narration says "Filtering and artefact removal reduce unwanted noise and improve signal quality," inside the Preprocessing block, two small icons appear: a simple filter icon (a horizontal line with a wavy convolution-like symbol, with the exact label "Filter" beneath) and an artefact-removal icon (a small jagged spike with an overlaid X, labeled exactly "Artifact Removal"). A noisy waveform enters the block from the left; after passing the two icons, the waveform exits on the right as a smooth clean sine-like trace.
+
+6. **18.38–20.86** — As narration says "Step 3: Feature Extraction," the second block returns to normal size (stays lit), and the third block "Feature Extraction" lights up and enlarges slightly.
+
+7. **20.86–23.98** — As narration says "Relevant characteristics of the EEG signal are extracted," the clean waveform from the Preprocessing block flows into the Feature Extraction block. Inside the block, several small markers (small circles, triangles, and bars) are plucked from the waveform and arranged in a row, indicating extracted characteristics.
+
+8. **25.02–32.96** — As narration enumerates the examples, four labeled mini-icons appear in sequence inside the Feature Extraction block: at 25.86, a small bar chart icon labeled exactly "Frequency-Band Power"; at 27.64, a waveform with a distinct positive peak labeled exactly "P300"; at 29.84, a time-frequency grid (small 2D plot with axes) labeled exactly "Time-Frequency Features"; at 32.04, a small topographic head with shaded regions labeled exactly "Spatial Features." Each mini-icon highlights as it is named.
+
+9. **33.66–36.10** — As narration says "Step 4: Classification," the third block returns to normal size (stays lit), and the fourth block "Classification" lights up and enlarges slightly.
+
+10. **36.10–41.32** — As narration says "Machine learning algorithms analyse the extracted features and identify the user's intended action," the feature markers from the Feature Extraction block flow into the Classification block. Inside the block, a simple machine-learning icon appears: a small branching diagram (a decision-tree style shape with one input splitting into multiple branches). The markers pass through this icon and converge into a single bold output arrow on the right side of the block, labeled exactly "Class Label."
+
+11. **42.24–44.76** — As narration says "Step 5: Device Control," the fourth block returns to normal size (stays lit), and the fifth block "Device Control" lights up and enlarges slightly.
+
+12. **44.76–49.67** — As narration says "The classified output is converted into commands that control an external device," the bold output arrow from the Classification block enters the Device Control block. Inside the block, a simple external device icon appears: a small rectangular screen with buttons beneath it, labeled exactly "External Device." The incoming arrow transforms into a command arrow (thicker, with a distinct color) that strikes the device icon, which pulses each time a command arrives. The full pipeline holds steadily with all five blocks lit and connected through the full 49.67-second duration.

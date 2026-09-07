@@ -1,0 +1,8 @@
+Subtopic: 5.2.3 What is a Low-Pass Filter?
+Scene type: manim
+
+Narration:
+So what is a low-pass filter? A low-pass filter allows low-frequency components of a signal to pass, while attenuating or removing high-frequency components above a selected cutoff frequency. The name itself explains how it works. The term low-pass means that low frequencies are allowed to pass through the filter, while higher frequencies are progressively reduced. To build some intuition, imagine a gate that lets only slow-moving vehicles through, while fast-moving vehicles are stopped. A low-pass filter behaves similarly. But instead of separating vehicles by speed, it separates signal components by frequency. Low-frequency components continue through with little or no change, while high-frequency components are attenuated.
+
+Animation description:
+Build on the previous visual. The gate from the introduction becomes a literal animated tollbooth gate on a road. Several slow-moving car icons with clear arrows approach the gate and pass through smoothly, labeled 'Low Frequency'. A few fast-moving car icons approach but the gate arm drops and blocks them, labeled 'High Frequency'. The visuals then morph into a signal representation: a smooth slow wave passes through the same gate unchanged in amplitude, while a rapid high-frequency wave is visibly reduced in amplitude on the far side of the gate.

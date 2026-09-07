@@ -1,0 +1,41 @@
+# Animation Brief: Section Recap — Four Applications, Shared Principles
+
+1. **0.00–2.44** — The previous scene's four-block pipeline ("Signal Acquisition," "Signal Processing," "Feature Extraction," "Classification") and the pattern-detection icon above it fade out gradually, leaving a clean dark background. As narration says "In this section, we explored one of the fastest-growing," a subtle warm title bar begins to appear at the top center of the screen, still empty.
+
+2. **2.44–5.88** — As narration says "applications of EEG: Brain-Computer Interfaces," the title fades in fully across the top center: exactly "Brain-Computer Interfaces." Below the title, three small icons appear in a horizontal row: a thought-to-device arrow, a brain outline, and a cursor or hand icon representing direct control. A small EEG waveform runs beneath the three icons, establishing the BCI focus.
+
+3. **6.64–10.82** — As narration says "We learned that EEG-based BCIs establish a direct communication pathway," the title and icons remain at the top. In the center, a simple diagram appears: a brain outline on the left, a double-headed arrow between, and a stylized external device (a generic screen outline with a cursor arrow) on the right. The arrow pulses, showing the bidirectional pathway between brain and device.
+
+4. **10.82–13.36** — As narration says "between the brain and external devices," labels appear under each element in the pathway diagram: "Brain" under the brain outline, "Direct Communication Pathway" under the double-headed arrow, and "External Device" under the device outline. The labels are small and clean.
+
+5. **13.36–18.50** — As narration says "by combining neural signal acquisition with signal processing, feature extraction, and machine learning," four small blocks appear below the pathway diagram in a row, each labeled in order as it is named: "Neural Signal Acquisition," "Signal Processing," "Feature Extraction," "Machine Learning." Lines connect the blocks in sequence, and small arrows show the flow. The blocks remain in place as they continue to be named, with each one brightening slightly as its label appears.
+
+6. **19.32–26.66** — As narration says "These systems have important applications in assistive communication, rehabilitation, prosthetic control, and neuroscience research," the pathway diagram and the four blocks remain visible but shift upward slightly to make room at the bottom of the screen. Four small application tags appear below the diagram as they are named: "Assistive Communication," "Rehabilitation," "Prosthetic Control," "Neuroscience Research." Each tag is a small rounded rectangle with a simple icon (a speech bubble, a walking figure, a prosthetic limb, a flask). The tags fade in one by one, each with a subtle pop as its corresponding narration phrase is spoken.
+
+7. **27.50–29.30** — As narration says "Let's recap this entire section," the entire BCI diagram (title, pathway, blocks, application tags) fades out smoothly. The screen becomes bare for a brief moment, signaling a fresh start for the recap. A faint grid outline appears in the background, dividing the screen into four equal quadrants.
+
+8. **30.30–34.94** — As narration says "We examined four major applications of EEG in neuroscience and clinical practice," the four-panel recap grid remains as empty placeholder frames. A small centered header fades in above the grid: "Four Major Applications." The grid lines are clearly visible but no panel content appears yet.
+
+9. **35.80–40.16** — As narration says "EEG is used to study brain states by analyzing changes in neural rhythms," the first panel (top-left) fills in: a panel bordered in a soft highlight color, with the label exactly "Brain States" at its top, a representative icon of a brain with several rhythm waveforms at different frequencies below the brain (alpha, beta, theta shapes overlaid), and a small annotated EEG waveform across the bottom of the panel showing modulating amplitude and frequency.
+
+10. **40.66–46.38** — As narration says "to perform sleep staging by identifying characteristic EEG patterns during different stages of sleep," the second panel (top-right) fills in: the label exactly "Sleep Staging," a representative icon of a crescent moon and a sleeping face, and a small EEG waveform showing the characteristic slow-wave pattern of deep sleep, followed by a brief spindle-like burst indicating a different sleep stage.
+
+11. **46.92–53.20** — As narration says "to detect and monitor epilepsy by identifying abnormal electrical activity associated with seizures," the third panel (bottom-left) fills in: the label exactly "Epilepsy," a representative icon of a lightning bolt over a brain outline, and a small EEG waveform showing a normal background rhythm that is suddenly interrupted by a sharp spike-and-wave discharge characteristic of seizure activity.
+
+12. **53.85–59.78** — As narration says "and to develop Brain-Computer Interfaces that translate brain activity into commands for external devices," the fourth panel (bottom-right) fills in: the label exactly "BCI," a representative icon of a brain outline with an arrow pointing to a small cursor on a screen, and a small EEG waveform that transitions into a control signal. All four panels are now populated. The grid reads clearly: Brain States, Sleep Staging, Epilepsy, BCI, each with its own icon and waveform.
+
+13. **60.92–63.32** — As narration says "Although these applications address different problems," the four panels hold steady. A subtle dividing line pulses briefly between the four panels to emphasize their distinctness, then settles. The panels remain fully visible.
+
+14. **63.82–68.78** — As narration says "they all rely on the same neural signal-processing principles introduced throughout this course," a horizontal band begins to form along the bottom of the screen below the grid. Five empty rectangular slots appear in a row across the band, each outlined and awaiting a label. The band spans the full width of the grid, sitting directly under all four panels.
+
+15. **69.34–70.32** — As narration says "including filtering," the first slot in the bottom band fills with the label exactly "Filtering," and a simple icon appears above the label: a jagged noisy waveform passing through a funnel and emerging as a smooth clean waveform.
+
+16. **70.78–71.58** — As narration says "spectral analysis," the second slot fills with the label exactly "Spectral Analysis," and its icon appears: a waveform with a frequency spectrum below it, showing peaks at distinct frequencies.
+
+17. **72.46–73.40** — As narration says "time-frequency analysis," the third slot fills with the label exactly "Time-Frequency Analysis," and its icon appears: a heatmap-like grid with frequency on one axis, time on the other, and color intensity representing power.
+
+18. **74.38–74.70** — As narration says "feature extraction," the fourth slot fills with the label exactly "Feature Extraction," and its icon appears: a waveform with several specific points highlighted (peaks, zero-crossings) being picked out by small brackets and extracted into a compact list.
+
+19. **75.52–76.00** — As narration says "and classification," the fifth slot fills with the label exactly "Classification," and its icon appears: several feature points entering a small branching decision tree or network that outputs a single labeled category. The bottom band is now complete: Filtering, Spectral Analysis, Time-Frequency Analysis, Feature Extraction, Classification, all in a row.
+
+20. **76.00–77.05** — As narration says "classification" completing, arrows appear connecting the shared technique band upward to all four panels simultaneously. Each of the five technique slots sends a thin arrow or connector line upward to each of the four panels, creating a visual web that emphasizes the shared principles across all four applications. The final scene holds: the four-panel grid above, the five-technique band below, and the connecting arrows between them all visible and steady through the end at 77.05 seconds.

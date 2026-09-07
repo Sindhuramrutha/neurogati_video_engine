@@ -1,0 +1,8 @@
+Subtopic: 7.1.1 Why is EEG So Widely Used?
+Scene type: manim
+
+Narration:
+Several characteristics make EEG one of the most valuable tools in neuroscience. First, EEG is non-invasive, meaning that electrodes are placed on the scalp without requiring surgery. Second, EEG provides excellent temporal resolution, allowing neural activity to be observed on the order of milliseconds. This makes it particularly useful for studying rapidly changing brain processes. Third, EEG systems are relatively affordable, portable, and suitable for long-duration recordings, enabling their use in hospitals, research laboratories, and even home-based monitoring systems. Finally, EEG records the ongoing electrical activity of the brain continuously, making it possible to study both spontaneous brain activity and responses to external events. These advantages explain why EEG has become one of the most commonly used neural recording techniques in both neuroscience research and clinical practice.
+
+Animation description:
+Four icons appear sequentially. First: a head outline with scalp electrodes and a no-scalpel symbol emphasizing non-invasiveness. Second: a millisecond timeline graphic showing milliseconds ticking by rapidly. Third: a dollar sign with a portable EEG headset and a house icon. Fourth: a continuous waveform with an event marker appearing. Each icon is highlighted as it is discussed.

@@ -1,0 +1,23 @@
+1. 0.00–0.58: Opens from the previous scene's two-column layout, which now fades out. In its place, a cross-section of skin appears: a horizontal layered band across the middle of the screen, labeled “skin” in small text. Below it, a textured region representing muscle tissue fills the lower half of the screen, with parallel running fiber lines indicating muscle fibers. The view settles as the word “Needle” is spoken.
+
+2. 0.58–1.64: A needle-shaped electrode, drawn as a long thin metallic shaft with a sharp pointed tip, enters from above the skin at the center-top of the screen. At “inserted directly,” the needle descends and pierces through the skin band, the tip passing below the skin surface into the muscle tissue region.
+
+3. 2.64–3.60: With the needle fully inserted, its tip is now positioned among the muscle fibers inside the muscle tissue. The muscle fibers run horizontally; the needle passes down vertically between them. The tip rests in clear contact with the fiber region. The scene holds through “biological tissue.”
+
+4. 4.40–5.60: The surface electrode from the previous scene, a small flat disc, fades in sitting on top of the skin surface, rendered in a faded, semi-transparent style to show it is a comparison reference. A subtle distance indicator appears between the surface electrode and the needle tip deep within the muscle, emphasizing the greater distance from the surface.
+
+5. 6.34–9.04: Small electrical pulses appear near the needle tip, drawn as brief flickering sparks or glints at the tip. From the tip, a continuous wire runs up along the needle shaft. The pulses travel upward along the wire as small moving points of light, from the tip toward the top of the needle. The label “signal source” appears near the tip region inside the muscle. The faded surface electrode remains on the skin above, untouched by the pulses.
+
+6. 9.94–12.48: The screen keeps the anatomical cross-section. A small clinical-style label fades in near the top or side reading “Clinical EMG” in clean text. The needle tip rests within one specific muscle fiber; that fiber is outlined or highlighted to distinguish it from surrounding fibers. The phrase “record the electrical activity of individual muscles” is visually carried by the highlighted fiber and the pulses at the needle tip.
+
+7. 13.90–16.00: The highlighted muscle fiber now shows its own faint internal electrical activity, rendered as small local fluctuations along its length. The needle tip sits at this fiber, its pulses synchronized with the fiber activity, reinforcing that the needle is recording from this individual muscle. The surface electrode remains faded and inactive by comparison.
+
+8. 17.34–18.82: The view zooms slightly toward the needle tip inside the muscle, emphasizing the position. The phrase “positioned inside the muscle” is supported by the tip clearly embedded between muscle fibers, with the label “muscle” visible on the surrounding tissue.
+
+9. 19.38–22.92: A comparison waveform panel fades in on one side. It shows two waveforms side by side: a taller, clearer waveform labeled “needle electrode” on one side, and a smaller, noisier waveform labeled “surface electrode” on the other. The needle waveform visibly has higher amplitude and cleaner peaks. The surface electrode on the skin above is also dimmed further, and an arrow or line connects it to the smaller waveform.
+
+10. 23.90–25.30: The waveform panel fades out. A red warning tint or subtle pulsing red glow appears around the needle insertion point on the skin, and a small label fades in reading “invasive” near the puncture site. The needle remains in place, the cross-section still visible.
+
+11. 26.02–26.84: The red glow around the puncture site remains. A small discomfort indicator, such as faint radiating lines or a subtle wincing icon near the insertion point, fades in softly. The muscle fibers around the tip may quiver very slightly. The needle, skin cross-section, and faded surface electrode remain in place as the narration concludes.
+
+12. 26.84–27.68: The full visual holds steady: needle electrode with tip inside muscle tissue, faded surface electrode on the skin, soft red tint at the puncture point, and faint discomfort marks. No new elements appear; the scene remains calm until the end at 27.68.

@@ -1,0 +1,8 @@
+Subtopic: What is Wavelet Analysis?
+Scene type: manim
+
+Narration:
+Wavelet analysis is a time–frequency analysis technique that analyses a signal using wavelets of different scales, allowing different time and frequency resolutions for different parts of the signal. Unlike the Fourier Transform, which represents a signal using sine and cosine waves, wavelet analysis represents a signal using short wave-like functions called wavelets. These wavelets can be stretched or compressed depending on the part of the signal being analysed. For slowly varying components, the wavelet becomes wider, providing better frequency resolution. For rapidly changing events, the wavelet becomes narrower, providing better time resolution. Because the analysing function changes its size, wavelet analysis can adapt more effectively to nonstationary neural signals. A wavelet is defined as a short-duration oscillatory function used to analyse signals at different scales.
+
+Animation description:
+A sine wave is shown at the top, labelled 'Fourier basis: sine wave', extending infinitely to the left and right. Below it, a wavelet appears: a short burst of oscillation that dies out to zero on both ends. This wavelet is shown first in a wide, stretched version, then in a compressed, narrow version. The wide wavelet is placed over a slow oscillation in a neural signal, and the narrow wavelet is placed over a fast transient. The wavelet changes size as it moves across the signal, and labels appear: 'Wide wavelet: better frequency resolution' and 'Narrow wavelet: better time resolution'.

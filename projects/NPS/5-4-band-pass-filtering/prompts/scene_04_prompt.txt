@@ -1,0 +1,35 @@
+1. **0.00–2.64**  
+   Top panel fades in, showing a raw EEG trace in grey. The signal visibly combines three behaviours: a slow baseline wandering up and down, a faster oscillatory brain‑wave component, and superimposed high‑frequency random jitter. The bottom panel area remains blank.
+
+2. **2.64–4.44**  
+   A soft highlight (e.g. a coloured underline or translucent band) sweeps along the slow‑varying component of the grey trace in the top panel, calling out the slow baseline drift.
+
+3. **4.94–5.50**  
+   The highlight moves to the intermediate‑speed oscillatory part of the grey trace, calling out the brain activity.
+
+4. **6.32–7.88**  
+   The highlight shifts to the fine, jagged high‑frequency jitter riding on the grey trace, calling out the electrical noise.
+
+5. **8.62–11.18**  
+   All highlights fade off, leaving the full unchanged raw EEG trace visible. The bottom panel remains empty.
+
+6. **11.80–13.34**  
+   A small spectrum‑inset appears between the two panels, labelled “Frequency (Hz)”. Two vertical dashed lines appear on the inset at 1 Hz and 40 Hz. The region between them fills with a soft translucent colour, labelled “1–40 Hz band.”
+
+7. **13.94–15.40**  
+   An arrow labelled “Band‑pass filter (1–40 Hz)” materialises, pointing from the top panel down toward the bottom panel.
+
+8. **15.40–19.02**  
+   The top grey trace cross‑fades smoothly into a cleaned trace in the bottom panel. The new trace is centred on zero, the slow wander is gone, the high‑frequency jitter is removed, and only the intermediate‑frequency brain oscillation remains. The arrow and inset stay visible.
+
+9. **20.22–25.60**  
+   The spectrum inset is brought to the foreground: the translucent band between 1 Hz and 40 Hz brightens or pulses briefly, and the regions below 1 Hz and above 40 Hz darken, reinforcing that the remaining signal energy lies inside the band.
+
+10. **26.98–30.48**  
+    The bottom panel glows or subtly brightens while the arrow label “Band‑pass filter (1–40 Hz)” is briefly underlined or highlighted, emphasising the filter as the cause of the clean waveform.
+
+11. **31.24–37.34**  
+    On the spectrum inset, the regions below 1 Hz and above 40 Hz are each marked with small “removed” indicators (e.g. desaturated colour and a light‑weight cross‑hatch), while the 1–40 Hz band stays vibrant. All three panels (raw EEG, spectrum inset, filtered EEG) remain on screen with the arrow connecting them.
+
+12. **37.34–38.15**  
+    Hold the final composition: raw EEG top panel, spectrum inset with highlighted passband, arrow, and clean filtered EEG bottom panel.

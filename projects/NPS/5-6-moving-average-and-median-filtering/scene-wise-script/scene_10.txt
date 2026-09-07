@@ -1,0 +1,8 @@
+Subtopic: 5.6.6 Applications in Neural Signal Processing
+Scene type: manim
+
+Narration:
+Both filters are widely used in preprocessing neural signals. Moving‑average filtering helps smooth EEG waveforms, estimate EMG envelopes, and reduce random fluctuations before feature extraction. Median filtering is used to remove impulsive recording artefacts, eliminate isolated electrical spikes, and clean signals before segmentation or classification.
+
+Animation description:
+Show a stylised EEG trace; apply a moving average to produce a smoothed version, label ‘EEG smoothing’. Then show an EMG trace with a spike artefact; apply a median filter and show the cleaned signal, label ‘Artefact removal’. Icons for ‘Feature extraction’ and ‘Classification’ appear next to each example.

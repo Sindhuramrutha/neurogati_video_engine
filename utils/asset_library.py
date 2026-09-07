@@ -79,3 +79,19 @@ def register_asset(key: str, file_path: Path, asset_type: str, description: str)
     )
     _save_manifest(manifest)
     return dest
+
+
+def unregister_asset(key: str) -> None:
+    """Removes one entry from the manifest and deletes its copied file, if present.
+
+    No-ops if the key isn't registered, so cleanup code (e.g. a `finally` block
+    around a temporarily-registered asset) can call this unconditionally.
+    """
+    manifest = _load_manifest()
+    entry = manifest.pop(key, None)
+    if entry is None:
+        return
+    path = LIBRARY_DIR / entry.path
+    if path.exists():
+        path.unlink()
+    _save_manifest(manifest)

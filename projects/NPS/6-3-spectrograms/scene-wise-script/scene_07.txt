@@ -1,0 +1,8 @@
+Subtopic: Important Note and Summary
+Scene type: manim
+
+Narration:
+It's important to remember that a spectrogram is not a new analysis technique. It is simply a visual representation of the Short-Time Fourier Transform. Understanding this relationship matters, because improvements in the underlying STFT directly affect the appearance of the spectrogram. To summarise, we introduced the spectrogram, one of the most widely used visualisation tools in time–frequency analysis. We learned that a spectrogram is generated from the Short-Time Fourier Transform and provides a graphical representation of how the frequency content of a signal changes over time. By displaying time, frequency, and signal intensity in a single figure, spectrograms allow us to visualise nonstationary neural signals much more effectively than a conventional frequency spectrum.
+
+Animation description:
+An STFT block diagram is shown at the top: signal waveform, windowing, Fourier transform, and spectra. Below it, the spectra node is connected by an arrow to a spectrogram image, with the label 'Spectrogram = visual representation of STFT'. The connection is emphasised with a glowing link. Then a summary panel appears with four bullet points: 'Generated from STFT', 'Graphical time–frequency representation', 'Displays time, frequency, intensity', 'Visualises nonstationary signals'. Each bullet fades in as the narration covers it.

@@ -1,0 +1,176 @@
+{
+  "index": 1,
+  "slide_width_emu": 14630400,
+  "slide_height_emu": 8229600,
+  "shapes": [
+    {
+      "shape_id": 2,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 0",
+      "manim_bbox": [
+        1.7777777499999994,
+        -3.9999999375,
+        7.111111,
+        3.9999999375
+      ]
+    },
+    {
+      "shape_id": 3,
+      "kind": "text",
+      "text": "Demystifying the Brain",
+      "alt_text": "Text 0",
+      "manim_bbox": [
+        -6.502083110225694,
+        2.976157239392361,
+        -1.8306707208854167,
+        3.5199075954340278
+      ]
+    },
+    {
+      "shape_id": 4,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 1",
+      "manim_bbox": [
+        -7.111111,
+        -4.000000909600693,
+        -2.6283571087326383,
+        2.976157239392361
+      ]
+    },
+    {
+      "shape_id": 5,
+      "kind": "text",
+      "text": "The human brain remains one of the most complex and fascinating frontiers of science. By bridging biological understanding with technological advancement, we are beginning to unlock the secrets of cognitive processing.",
+      "alt_text": "Text 1",
+      "manim_bbox": [
+        -2.4469903379687494,
+        1.1673617004340278,
+        1.1761582396180552,
+        2.558565139375
+      ]
+    },
+    {
+      "shape_id": 6,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 2",
+      "manim_bbox": [
+        -2.4469903379687494,
+        -1.0892359118229171,
+        1.1761582396180552,
+        0.9716438071180553
+      ]
+    },
+    {
+      "shape_id": 7,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 3",
+      "manim_bbox": [
+        -2.2656245393055556,
+        0.26828715435763906,
+        -1.7436336852083336,
+        0.7902780084548611
+      ]
+    },
+    {
+      "shape_id": 8,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 2",
+      "manim_bbox": [
+        -2.1221065090798614,
+        0.41192086456597243,
+        -1.8872683675173612,
+        0.6467590061284723
+      ]
+    },
+    {
+      "shape_id": 9,
+      "kind": "text",
+      "text": "Cognitive Complexity",
+      "alt_text": "Text 4",
+      "manim_bbox": [
+        -2.2656245393055556,
+        -0.1774307350520825,
+        -0.0874997556076389,
+        0.09432876298611115
+      ]
+    },
+    {
+      "shape_id": 10,
+      "kind": "text",
+      "text": "Understanding the segmented nature of thought processes.",
+      "alt_text": "Text 5",
+      "manim_bbox": [
+        -2.2656245393055556,
+        -0.9078710852604166,
+        0.9947924409548614,
+        -0.3513891264236113
+      ]
+    },
+    {
+      "shape_id": 11,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 6",
+      "manim_bbox": [
+        -2.4469903379687494,
+        -3.3240740221354175,
+        1.1761582396180552,
+        -1.263194303194445
+      ]
+    },
+    {
+      "shape_id": 12,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 7",
+      "manim_bbox": [
+        -2.2656245393055556,
+        -1.9665509559548608,
+        -1.7436336852083336,
+        -1.4445601018576397
+      ]
+    },
+    {
+      "shape_id": 13,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 3",
+      "manim_bbox": [
+        -2.1221065090798614,
+        -1.8229172457465275,
+        -1.8872683675173612,
+        -1.588079104184028
+      ]
+    },
+    {
+      "shape_id": 14,
+      "kind": "text",
+      "text": "Technological Integration",
+      "alt_text": "Text 8",
+      "manim_bbox": [
+        -2.2656245393055556,
+        -2.4122688453645837,
+        0.3256945608680555,
+        -2.1405093473263888
+      ]
+    },
+    {
+      "shape_id": 15,
+      "kind": "text",
+      "text": "How robotics and AI help model neural functions.",
+      "alt_text": "Text 9",
+      "manim_bbox": [
+        -2.2656245393055556,
+        -3.142709195572916,
+        0.9947924409548614,
+        -2.5862272367361117
+      ]
+    }
+  ],
+  "notes_text": null
+}

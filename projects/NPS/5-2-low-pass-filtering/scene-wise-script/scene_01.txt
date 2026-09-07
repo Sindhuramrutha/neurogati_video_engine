@@ -1,0 +1,8 @@
+Subtopic: 5.2.2 Learning Objectives
+Scene type: manim
+
+Narration:
+By the end of this section, you should be able to define a low-pass filter, explain its operating principle, describe the cutoff frequency, identify situations where low-pass filtering is useful, and understand both its advantages and its limitations.
+
+Animation description:
+Five concise objective badges fade in one after another in a vertical list: 'Define a low-pass filter', 'Explain its operating principle', 'Describe the cutoff frequency', 'Identify useful applications', and 'Understand advantages and limitations'. Each badge appears with a subtle checkmark icon and a brief slide-in motion, synchronized with the narration.

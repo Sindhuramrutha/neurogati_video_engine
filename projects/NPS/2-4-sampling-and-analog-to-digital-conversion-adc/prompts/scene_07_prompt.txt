@@ -1,0 +1,25 @@
+1. 0.00–1.60: Open on a clean recap title centered near the top: **Summary of Key Concepts**. Beneath it, a blank vertical list area. All six recap items are hidden.
+
+2. 1.60–6.54: Fade in the first recap item at the top of the list. It consists of a small inline icon of a smooth analogue waveform on the left, followed by the text **Analogue neural signals are converted into digital data**. As the narration says “the process of converting analog neural signals into digital data,” lightly pulse the waveform icon once.
+
+3. 6.54–8.92: Fade in the second recap item beneath the first. It has a small inline icon of a jagged binary-like digital number sequence (rows of ones and zeros), followed by the text **Neural signals are naturally analogue**. Keep both items visible. The first item remains steady.
+
+4. 8.92–11.96: Fade in the third recap item beneath the second. It has a small inline icon of a monitor or computer terminal, followed by the text **Computers require digital data for processing**. Fade each of the first three items in on beat with “computers require digital data for processing.”
+
+5. 11.96–16.02: Fade in the fourth recap item beneath the third. It has a small inline icon of uniformly spaced dots along a horizontal line, followed by the text **Sampling measures the analogue signal at regular time intervals**. As the narration names “regular time intervals,” briefly brighten the evenly spaced dots.
+
+6. 16.02–21.02: Fade in the fifth recap item beneath the fourth. It has a small inline icon of a frequency label — the numeral **Hz** with a short rising/falling frequency squiggle, followed by the text **Sampling frequency specifies how many samples are collected each second**. As the narration says “how many samples are collected each second,” pulse the Hz label once.
+
+7. 21.02–26.88: Fade in the sixth recap item beneath the fifth. It has a small inline icon of an ADC chip — a rectangular chip symbol with small pins on both sides, followed by the text **The analog-to-digital converter performs the conversion from analogue signals to digital numbers**. At “conversion,” highlight the chip icon briefly.
+
+8. 26.88–36.26: The sixth recap item remains. Now fade in an accuracy checkmark icon beneath or beside the sixth item — a green checkmark inside a small circle, followed by the text **Accurate sampling is essential**. As the narration says “every subsequent stage of digital signal processing depends on the quality of the digitised signal,” draw a thin dependency arrow from this accurate-sampling line down toward a small dim representation of downstream processing stages below the list.
+
+9. 36.26–45.12: Keep the full recap list visible with its six inline icons and the checkmark item. As the narration says “That completes the major stages of the neural signal acquisition chain,” fade in a subtle horizontal connector line across the bottom of the list, and label it **Signal Acquisition Chain** in small text. At “from detecting the biological signal to converting it into digital data,” briefly pulse the leftmost icon and the rightmost ADC chip in sequence.
+
+10. 45.12–48.78: Hold the recap list and chain label. As the narration says “But one final aspect remains equally important,” dim the recap list slightly while keeping it on screen, and fade in a bold question mark centered near the bottom with the text **One more essential aspect** beside it.
+
+11. 48.78–60.20: Transition the screen to a new simple graphic. Fade out the recap list and question mark entirely. In their place, show a stylised stick-figure person on the left, connected by a thin cable to a box labelled **Recording Equipment** on the right. The cable connects to the person's arm and to the equipment’s input port. As the narration says “electronic equipment connected to the human body,” display a prominent electrical safety symbol — a yellow triangle with a black lightning bolt — flashing clearly beside the connection point.
+
+12. 60.20–64.50: Keep the person-and-equipment graphic with the flashing safety symbol. Fade in the label **Electrical Safety and Isolation** centered near the bottom. As the narration says “electrical safety and isolation in neural signal acquisition,” brighten the label and pulse the safety symbol one final time.
+
+13. 64.50–69.28: Hold the final composition — stylised person, cables, recording equipment, electrical safety symbol, and the text **Next: Electrical Safety and Isolation** — visible through the end. Let the safety symbol settle to a steady glow as the scene concludes.

@@ -1,0 +1,8 @@
+Subtopic: 5.7.4 Choosing the Appropriate Filter – Median
+Scene type: manim
+
+Narration:
+Use a median filter when the recording contains isolated spikes or impulsive noise. Typical applications are removing impulsive artefacts, eliminating isolated recording spikes, and cleaning signals before further analysis.
+
+Animation description:
+A neural signal with occasional large, short spurious spikes (impulsive noise) is shown. A sliding window moves along; inside the window, the median value is highlighted and used as the output, effectively ignoring the outlier spikes. The cleaned signal is drawn below, with the spikes gone but the genuine waveform features preserved. A comparison with a moving-average filter is shown briefly: a moving-average on the same signal would produce a slightly distorted flattened spike instead of removing it outright.

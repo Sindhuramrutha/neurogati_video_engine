@@ -1,0 +1,49 @@
+1. **0.00–0.52** — A clean, dark background. The previous scene's pipeline fades away completely. Nothing appears yet. The screen is empty, establishing a fresh visual space.
+
+2. **0.52–2.78** — The text **“Three broad activities”** fades in at upper center in a bold weight, with the subtitle **“Recording · Decoding · Modulation”** fading in just beneath it in a lighter weight. The subtitle holds steady.
+
+3. **3.50–5.06** — Below the subtitle, three empty vertical column outlines fade in simultaneously from left to right, evenly spaced. Each column is a tall rectangle. No labels inside yet.
+
+4. **5.06–6.82** — The three columns fill with labels one at a time, top to bottom: the left column is labeled **“Recording”** and its outline glows warmly. The middle column is labeled **“Decoding”**. The right column is labeled **“Modulation”**. Each label fades in within its column as it is named.
+
+5. **7.80–12.54** — The **“Recording”** column enlarges to fill more of the screen, while the other two columns dim and shrink slightly. Inside the Recording column, a simplified nervous system diagram fades in: a simple brain outline at top, connected by a short spinal cord segment to lines branching outward representing nerves and physiological systems. Small animated dots pulse along these lines, indicating measured activity.
+
+6. **13.40–14.38** — Within the Recording column, four small icon groups begin to appear, one at a time in a vertical stack. The first icon group fades in at upper left: a simplified side-view scalp outline with electrode dots placed on it, with a small voltage-difference symbol beside it and the label **“EEG”** beneath.
+
+7. **14.38–15.48** — The second icon group fades in at upper right of the Recording column: a simple muscle shape (a short bundle of parallel lines with a slight bulge) with three electrode dots on its surface, and a small jagged electrical activity trace beside it. The label **“EMG”** fades in beneath.
+
+8. **15.48–15.88** — The third icon group fades in at lower left of the Recording column: a head outline surrounded by a curved ring of sensor dots, with a small magnetic field icon (a few concentric arc lines) beside it. The label **“MEG”** fades in beneath.
+
+9. **15.88–17.88** — The fourth icon group fades in at lower right of the Recording column: a small, straight implanted electrode shape — a thin line with small contact points along its length — inserted into a simplified brain tissue outline. The label **“Implanted electrodes”** fades in beneath. Each icon group in the column now has a small waveform being captured next to it, with oscillating traces drawing themselves.
+
+10. **18.80–20.20** — The Recording column dims and shrinks back to equal size with the other columns. The **“Decoding”** center column glows and enlarges.
+
+11. **21.24–25.48** — Inside the Decoding column, a neural waveform appears on the left side as a jagged, oscillating trace. An arrow points from this waveform to the right into a simplified computer icon, drawn as a rectangular monitor with a smaller processing unit (a small box with a few circuit lines) beneath it. The waveform slides into the computer icon, and the computer icon pulses as the waveform enters.
+
+12. **25.48–26.26** — The computer icon glows and a small processing symbol appears on its screen: three small dots connected by lines, suggesting computation. The label **“computational methods”** fades in beneath the computer icon.
+
+13. **26.26–33.02** — On the right side of the Decoding column, a small predicted command output appears from the computer. A small text box fades in containing the text **“move left”** in a clear, plain font. The arrow from the computer points to this text box. Below the text box, the label **“predicted command”** fades in. The waveform, arrow, computer, and command box hold steady, connected as a chain.
+
+14. **33.56–35.28** — The Decoding column dims and shrinks back. The **“Modulation”** right column glows and enlarges.
+
+15. **35.28–37.18** — Inside the Modulation column, a simplified head outline appears in profile. The head is static, no waveform is being drawn from it. The label **“observing”** flashes once above the head in a diagonal strikethrough style, then fades, indicating a contrast with the earlier columns.
+
+16. **37.64–39.54** — The head outline remains. A small arrow appears pointing toward the head from outside, accompanied by the word **“influence”** fading in. The arrow pulses, indicating an external input being directed at the neural tissue.
+
+17. **40.26–41.76** — A first stimulation icon fades in above the head: a TMS coil, drawn as a figure-eight shaped loop of wire held flat above the head outline. Concentric magnetic field arcs pulse downward from the coil toward the head, repeatedly expanding and contracting. The label **“Transcranial magnetic stimulation”** fades in beneath.
+
+18. **41.76–42.64** — The TMS icon remains. A second stimulation icon fades in below the head: a DBS electrode, drawn as a thin probe with small contact points at its tip, inserted into deep brain tissue. Small electrical pulses travel along the electrode: tiny bright dots moving downward toward the tip. The label **“Deep brain stimulation”** fades in beneath.
+
+19. **42.64–45.96** — A third smaller icon fades in at the lower right of the Modulation column: a simple generic stimulator — a small handheld wand with a circular tip, with a few small pulse waves emanating from it. The label **“Other stimulation approaches”** fades in beneath. All three icons hold steady.
+
+20. **46.86–49.48** — The three columns return to equal prominence. The labels **“Recording”**, **“Decoding”**, and **“Modulation”** remain visible in their respective columns. The subtitle **“Three broad activities”** remains above.
+
+21. **49.48–54.24** — The three columns slide closer together and their internal icons fade. A new combined system diagram forms: on the left, the recording waveform icon from the Recording column, now with a simplified nervous system outline above it. An arrow points from the waveform to a central processor icon (a small box with a circuit pattern on it, drawn as a rectangle with a few connecting lines). The processor icon pulses as the waveform enters. From the processor, an arrow points right to a small text box containing **“decision”**. Below or beside this, another arrow continues to the stimulation icon from the Modulation column, specifically the TMS coil and DBS electrode, drawn as small icons, with a third arrow pointing back toward the nervous system outline. The phrase **“record → process → decide → stimulate”** fades in below the diagram, with each word appearing in sequence matching the arrow flow.
+
+22. **55.22–57.40** — The combined system diagram holds. A curved arrow begins to draw from the stimulation icon, arcing around the outside of the diagram, back to the nervous system outline on the left. The curved arrow completes, forming a closed loop. The label **“closed-loop approach”** fades in near the center of the loop.
+
+23. **57.40–63.44** — The closed loop now rotates: small bright dots travel continuously around the entire loop, from nervous system → waveform → processor → decision → stimulation → back to nervous system. The loop pulses gently, showing sustained movement. The label **“closed-loop approach”** remains visible.
+
+24. **63.44–68.34** — The rotating dots slow slightly. Three small labels appear around the loop: **“sensing”** near the waveform and nervous system on the left, **“computation”** near the processor icon, and **“intervention”** near the stimulation icon. Each label fades in one at a time as its corresponding element is highlighted.
+
+25. **68.34–69.55** — The full closed-loop diagram holds steady with all labels: **“sensing”**, **“computation”**, and **“intervention”** visible. The rotating dots continue at a steady pace. The diagram settles at center, with **“closed-loop approach”** and the three activity labels forming a cohesive visual. The scene ends on this state, with the loop gently pulsing.

@@ -1,0 +1,35 @@
+1. 0.00–1.66: Hold the previous scene's final composition briefly, then fade to a clean slate showing only the title text **Sampling** centered at the top of the screen.
+
+2. 2.32–4.78: Fade in a simple coordinate plane occupying the lower half of the screen: a horizontal time axis and a vertical amplitude axis. Draw a smooth, continuous, gently wavy waveform across the plane — two or three soft peaks — labeled **analogue signal** to its left.
+
+3. 4.78–7.74: Along the time axis of the waveform, draw a series of vertical dashed lines at clearly equal spacing, rising from the axis upward through the waveform. Fade in the label **regular intervals** beneath the axis.
+
+4. 8.46–10.08: At the top of the waveform, intersect each dashed line with a small bold dot where the line crosses the wave. Each dot sits exactly on the waveform curve. Fade in the label **sample** beside one of the dots, then let it apply to all dots by briefly pulsing them all.
+
+5. 10.70–13.68: In a new panel directly above the waveform, show a bouncing ball — a simple solid circle — moving along a short horizontal path, bouncing off the ground with a realistic arc. The ball loops its bounce continuously.
+
+6. 14.80–17.76: Flash a bright photograph-style shutter effect over the bouncing ball at one-second intervals. Each flash leaves behind a small frozen snapshot frame of the ball in mid-bounce: a small thumbnail image placed in a row just below the ball's path. (In practice these can appear one by one as stills of the ball.)
+
+7. 17.76–19.94: Complete the row of six or seven snapshot frames below the bouncing ball, each showing the ball at a clearly different point in its arc. Fade in a small label beneath the row: **a series of individual images**.
+
+8. 20.70–23.24: Shift focus back to the lower waveform panel. Dim the upper bouncing-ball panel slightly. The dashed vertical lines pulse softly in sequence from left to right.
+
+9. 23.24–27.14: In the lower panel, animate the waveform slowly changing — its amplitude rising and falling and its peaks shifting continuously — while the dashed lines remain fixed in place at their equally spaced intervals. Highlight the continuous wiggling of the waveform with a soft glow.
+
+10. 27.80–30.38: One by one, draw a fresh dot at each intersection of the dashed line with the changing waveform, as if the system is "scanning" the signal left to right. The dots appear in sequence from the first time point to the last.
+
+11. 31.26–34.06: Hold on the dots. Pulse one representative dot with a small highlight ring and fade in a tiny label beside it reading **measurement at that instant**, then fade the label away and pulse all dots together briefly.
+
+12. 34.86–37.40: Below the time axis, fade in a small counter-style display showing rapidly increasing numbers beginning at zero, ticking upward continuously and quickly, suggesting an accumulating stream of samples. The dots along the waveform remain visible.
+
+13. 37.88–41.94: Keep the counter ticking upward. In a separate small panel to the side of the main waveform, show only the dots — the dashed lines and the underlying waveform fade out — and connect the dots with a thin smooth line. The result is a clean rendition of the original wave's shape formed purely from the sample dots. Label this mini-panel **digital representation**.
+
+14. 42.56–45.84: Fade back to the main lower waveform panel. Beneath it, add the label **EEG recording system** in small letters near the recording example that follows.
+
+15. 45.84–49.22: Fade in a bold numerical label above or near the waveform: **1000 samples per second**. Simultaneously, the counter beneath the axis accelerates dramatically and keeps climbing rapidly, with digits rolling over quickly.
+
+16. 49.66–55.10: The counter continues to tick upward, with digits cycling through the hundreds and thousands. Add a subtle visual countmark beside the number **1000** — a ring that fills or a small progress arc that pulses each time the count passes a thousand.
+
+17. 56.86–61.04: Bring the mini-panel from beat 13 back into prominence alongside the main waveform: the dots-only reconstruction is shown next to the full original waveform, with an arrow or equal sign between them. Fade in a label connecting the two: **EEG waveform in digital form**. The counter displays a final value with the number **1000** highlighted. Hold all elements on screen through the final hold.
+
+18. 61.04–61.73: Final hold on the full composition: the original waveform with its dots, the mini reconstruction panel, the **EEG recording system** label, the **1000 samples per second** label, and the active counter. All elements remain static and fully visible through the end.

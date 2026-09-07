@@ -1,0 +1,8 @@
+Subtopic: 5.1.6 Important Considerations
+Scene type: manim
+
+Narration:
+Filtering should always be performed carefully. A filter that is too aggressive may remove important physiological information along with the unwanted noise. Conversely, a filter that is too weak may fail to remove sufficient interference. So selecting an appropriate filter requires an understanding of both the signal being recorded and the type of unwanted components present in the recording. This is why different neural recording applications often use different filtering strategies.
+
+Animation description:
+A balance-scale metaphor appears, with two extreme icons: on the left, an overly aggressive filter icon that wipes out both noise and signal, leaving a flat meaningless line; on the right, an overly weak filter that leaves almost all interference in place. The scale tips back and forth, then converges to a balanced middle position labeled 'Appropriate filter'. Below appears a caption: 'Different applications → different filtering strategies.'

@@ -1,0 +1,14 @@
+[
+  {
+    "timestamp": 6.2,
+    "shape_id": 7,
+    "highlight": "box",
+    "reason": "narration begins discussing Leonardo da Vinci's anatomical drawings and ventricle attribution"
+  },
+  {
+    "timestamp": 20.64,
+    "shape_id": 9,
+    "highlight": "box",
+    "reason": "narration begins discussing Descartes' dualism and body-as-machine argument"
+  }
+]

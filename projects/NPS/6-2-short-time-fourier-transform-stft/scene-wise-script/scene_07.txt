@@ -1,0 +1,8 @@
+Subtopic: 6.2.5 How Does STFT Work? — Step 3 and Step 4
+Scene type: manim
+
+Narration:
+Step three: move the window. The window is shifted slightly along the signal. A new portion of the signal is selected. Step four: repeat the process. The Fourier Transform is computed again for the new window. Repeating this process across the entire recording produces a sequence of frequency spectra describing how the signal changes over time.
+
+Animation description:
+The window in the top waveform smoothly slides rightward by one step, labeled 'Step 3: Move window'. A new portion is highlighted. The spectrum plot on the right updates to a new frequency spectrum for the new window. This process repeats automatically two or three more times, with the sliding occurring faster each time. Finally, the set of all generated spectra aligns horizontally at the bottom, forming a sequence of spectra, with arrows indicating the sliding process.

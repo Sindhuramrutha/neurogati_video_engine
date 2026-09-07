@@ -1,0 +1,19 @@
+1. **0.00** — A single central 2D plot appears, displaying a continuous signal waveform. The signal shows a low baseline, then at one time index a sharp, instantaneous upward step (the sharp edge), and later a single tall, narrow spike (the impulsive noise). Both features are clearly visible.
+
+2. **2.04** — The spike begins to rapidly shrink vertically and disappears entirely, as if a median filter has removed it. The sharp step remains perfectly intact. Immediately after the spike vanishes, the screen smoothly splits into two side‑by‑side panels. The left panel shows the current spike‑free, sharp‑edged signal (median‑filtered result). The right panel shows a copy of the original unprocessed signal (with both the sharp edge and the spike).
+
+3. **5.38** — In the right panel, a moving‑average filter is applied to the original signal. Animate a smoothing operation over the trace: the sharp step transitions into a gentle ramp (blurring over a finite interval), while the spike is reduced in height and noticeably broadened, but remains visible. The left panel’s median‑filtered signal stays unchanged with its crisp step.
+
+4. **6.96** — A text annotation fades in beneath the panels: “Median filter (left) preserves sharp edges; Moving average (right) blurs them.” The text remains for the duration of the panels.
+
+5. **9.84** — The sharp step in the left panel glows and pulses briefly, calling attention to the fact that the median filter did not average it away.
+
+6. **11.64** — Both panels and the annotation fade out. A new single plot is shown center‑screen: a purely random high‑frequency noise signal. The trace is erratic, dense, continuously wiggling with no discernible step or isolated spike.
+
+7. **12.36** — The screen again splits into two panels. The left panel shows the original high‑frequency noise signal. The right panel shows the same signal after being passed through a median filter; the two waveforms are visually indistinguishable—both remain just as noisy and rapid.
+
+8. **14.00** — A label “High‑frequency noise” appears near the left panel’s noisy signal, labelling the input.
+
+9. **16.92** — A second label, “Prefers frequency‑domain filtering”, appears beneath the right panel’s (median‑filtered) noisy output, reinforcing that median filtering is not effective here.
+
+10. **21.28** — The noisy‑signal panels and both labels fade out. In their place, a small circular inset appears in the center of the screen. Inside it, a single isolated spike (identical in style to the one in beat 1) stands alone. A median‑filter operation is animated over it—the spike shrinks to zero and vanishes cleanly. Simultaneously, the words “isolated artifacts” fade in beside the inset and remain on screen until **24.73**.

@@ -1,0 +1,8 @@
+Subtopic: 5.5.7 Advantages and 5.5.8 Limitations — part 1
+Scene type: manim
+
+Narration:
+Notch filtering has clear advantages. It's, it's effective at removing narrow band interference, it keeps most of the useful physiological signal, it's simple to implement, and it's widely used. But there are catches. If you have genuine physiological information that happens to lie near the notch frequency, that information will be attenuated too. The notch filter doesn't know what's noise and what's signal within that band. Plus, it only removes that specific narrow frequency band. It's not going to help you with broadband noise or motion artifacts. So you should only use a notch filter when there's clear evidence of narrow band interference at a known frequency.
+
+Animation description:
+A balance scale appears. On the left pan, icons representing the advantages stack up: a narrow frequency slice being deleted cleanly, a preserved waveform, a simple block diagram. On the right pan, limitation icons appear: a small desired bump near the notch frequency being dimmed alongside the noise, then a broad band of noise sliding across untouched. The scale tilts to indicate advantages outweigh limitations when used appropriately. Text below reads, 'Use only when narrow band interference is evident.'

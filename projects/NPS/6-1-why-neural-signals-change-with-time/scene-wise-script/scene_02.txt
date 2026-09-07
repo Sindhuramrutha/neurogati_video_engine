@@ -1,0 +1,8 @@
+Subtopic: 6.1.3 What is a Stationary Signal?
+Scene type: manim
+
+Narration:
+Let's begin with a definition. A stationary signal is a signal whose statistical and spectral characteristics remain essentially constant over time. Imagine recording the continuous hum of an electrical generator operating under stable conditions. If you observe the signal for one second, five seconds, or even one minute, its overall characteristics remain largely unchanged. The average amplitude remains similar, the frequency content remains similar, and the statistical properties remain relatively constant. This type of signal is called stationary, because its behaviour does not change significantly with time. Many classical signal processing techniques were originally developed under this assumption.
+
+Animation description:
+A simple diagram of an electrical generator is drawn — a rounded body with a small turbine-like circle on one side — with a subtle constant vibration animation applied to it. Below the generator, a steady sinusoidal waveform is plotted and continuously scrolls from left to right, with constant amplitude and frequency. Three small time-window markers labeled '1 s', '5 s', and '1 min' appear above different segments of the waveform, and as each is highlighted, an inset box shows the same waveform shape, emphasising that the one-second, five-second, and one-minute windows all look the same. The definition 'Stationary: statistical and spectral characteristics essentially constant over time' appears in a highlighted box at the bottom and remains visible as the scene ends.

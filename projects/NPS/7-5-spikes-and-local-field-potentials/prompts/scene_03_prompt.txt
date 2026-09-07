@@ -1,0 +1,19 @@
+1. [0.00-4.14] A single continuous raw extracellular signal trace appears, filling most of the frame width. The trace is visibly messy: a slow wandering baseline drift, irregular high-frequency noise, and a few small sharp downward spikes poking through the noise. The trace scrolls slowly or remains static but clearly shows all these components mixed together. No labels yet.
+
+2. [4.98-7.48] A faint label "neural spikes" appears near one of the sharp downward deflections, with a thin connector line pointing to the spike. The label is soft and semi-transparent. As the narration says "neural spikes", the label brightens briefly.
+
+3. [8.00-9.12] A second faint label "background neural activity" appears pointing to the noisy baseline between spikes. The label pulses gently when named.
+
+4. [9.60-10.44] A third faint label "electronic noise" appears pointing to a high-frequency jittery section of the trace. It pulses when named.
+
+5. [10.88-11.40] A fourth faint label "thermal noise" appears pointing to a different noisy section of the baseline. The label pulses when named.
+
+6. [11.78-13.12] A fifth faint label "other physiological signals" appears pointing to the slow wandering drift of the baseline. The label pulses when named. The full trace now shows all five labels, each marking a distinct component.
+
+7. [13.94-18.48] The labels fade out. A rectangular filter block appears to the right of the trace, labeled "High-pass filter, 300 Hz". The label "300 Hz" is highlighted. The trace remains visible on the left. The narration describes separating high-frequency spike component from slower activity; as it does, a copy of the messy trace moves toward the filter block and begins to fade in preparation for entering.
+
+8. [19.22-27.12] The messy trace enters the filter block. Inside the filter block, the slow baseline drift and lower-frequency noise visibly fade away, leaving only the sharp spike waveforms. The output trace emerges from the right side of the filter block as a clean trace with a flat baseline and distinct, prominent spike events. The label "LFP component" appears under the faded slow part of the signal just before it disappears, and then fades out as well. The filter block pulses as the narration specifies "300 Hz".
+
+9. [27.12-30.16] The filter block fades out, leaving the output trace — the isolated spike activity. The label "isolated spike activity" appears above the trace. The clean trace shows only the sharp spike events on a flat baseline.
+
+10. [30.16-33.42] As the narration concludes, each individual spike in the clean trace is marked: a small dot appears at the peak or trough of each spike event, and a thin vertical line drops from each dot to the time axis below. The markers appear sequentially, one per spike. The final frame holds until the scene ends at 33.42 seconds.

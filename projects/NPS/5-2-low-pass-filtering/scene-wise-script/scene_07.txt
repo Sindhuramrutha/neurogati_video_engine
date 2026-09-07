@@ -1,0 +1,8 @@
+Subtopic: 5.2.8 Limitations
+Scene type: manim
+
+Narration:
+Although low-pass filtering is extremely useful, it must be applied carefully. If the cutoff frequency is selected too low, useful physiological information may also be removed. Excessive low-pass filtering can make the signal appear overly smooth, and it may distort rapidly changing neural events. Therefore, the cutoff frequency should always be chosen according to the characteristics of the signal being analyzed. Remember: a low-pass filter removes high-frequency components, not necessarily noise. If useful physiological information exists above the selected cutoff frequency, that information will also be attenuated. Filter selection should always be guided by the characteristics of the biological signal, rather than by convenience alone.
+
+Animation description:
+Show two signal versions: one that is moderately filtered and clearly retains important wave features, and one that is overly filtered, flattened, and missing a sharp peak. The sharp peak is highlighted in the first, but missing in the second, with a red arrow pointing to the missing location. A warning icon appears with the note 'Removes high-frequency components, not necessarily noise'. The visualization emphasizes the trade-off with animated comparisons.

@@ -1,0 +1,8 @@
+Subtopic: 6.2.4 Figure 6.2 — From window to time-frequency representation
+Scene type: manim
+
+Narration:
+Each window produces its own frequency spectrum. When these spectra are combined, they reveal how the frequency content changes throughout the recording. This simple idea transforms the Fourier Transform from a purely frequency-based analysis into a time-frequency analysis.
+
+Animation description:
+The main signal waveform remains at the top. Below it, a sequence of small spectrum plots appear one by one, each aligned under the corresponding window position. Each spectrum is a simple coordinate axes drawing showing peaks. Then these separate spectra merge into a compact 2D time-frequency representation: horizontal axis labeled 'time', vertical axis labeled 'frequency', with a time-varying lattice of spectral values shading in from left to right.

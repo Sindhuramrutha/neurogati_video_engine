@@ -1,0 +1,8 @@
+Subtopic: 7.7.2 Stage 1: Raw Neural Signal
+Scene type: manim
+
+Narration:
+Let's start with stage one: the raw neural signal. The raw signal is the neural recording obtained directly from the recording system before substantial processing or analysis. Depending on the application, the raw signal could be EEG, ECoG, EMG, EOG, spike recordings, LFP, or MEG. For example, an EEG system may record voltage continuously from multiple scalp electrodes. At this stage, the signal may contain both the neural activity we are interested in and unwanted components such as noise and physiological artifacts. Therefore, the raw recording is usually not ready for direct interpretation.
+
+Animation description:
+A simplified head diagram appears with several small electrodes placed on the scalp. Wires extend from the electrodes to a small recording device. Below the head, a plot appears showing multiple continuous voltage traces, one for each electrode channel. The traces are noisy and irregular. Some sections of the traces are highlighted in red as 'noise' and 'artifacts' labels appear with arrows pointing to specific distorted portions of the traces. The useful neural activity portions are highlighted in blue. The labels 'noise' and 'artifacts' pulse, and a warning symbol appears next to the recording indicating it is not ready for interpretation.

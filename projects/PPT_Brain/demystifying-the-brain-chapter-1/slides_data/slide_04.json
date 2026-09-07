@@ -1,0 +1,152 @@
+{
+  "index": 4,
+  "slide_width_emu": 14630400,
+  "slide_height_emu": 8229600,
+  "shapes": [
+    {
+      "shape_id": 2,
+      "kind": "text",
+      "text": "Galen: The Restorer of Anatomy",
+      "alt_text": "Text 0",
+      "manim_bbox": [
+        -6.410184598975695,
+        2.8234956300347225,
+        1.1105326938368068,
+        3.449305866197917
+      ]
+    },
+    {
+      "shape_id": 3,
+      "kind": "text",
+      "text": "Restricted by religious bans on human dissection, the Greek physician Galen studied animal cadavers to understand the brain. While he became a master of anatomy, his understanding of function remained flawed for centuries.",
+      "alt_text": "Text 1",
+      "manim_bbox": [
+        -6.410184598975695,
+        1.061458134479167,
+        -0.2443277885416668,
+        2.3429395959375
+      ]
+    },
+    {
+      "shape_id": 4,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 2",
+      "manim_bbox": [
+        -6.410184598975695,
+        -1.0828696243750002,
+        -0.2443277885416668,
+        0.8362272640798611
+      ]
+    },
+    {
+      "shape_id": 5,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 3",
+      "manim_bbox": [
+        -6.432406820850694,
+        -1.0828696243750002,
+        -6.343517933350695,
+        0.8362272640798611
+      ]
+    },
+    {
+      "shape_id": 6,
+      "kind": "text",
+      "text": "Anatomical Mastery",
+      "alt_text": "Text 4",
+      "manim_bbox": [
+        -6.121064354635417,
+        0.3009254351736108,
+        -3.6177077300000002,
+        0.6137727132638888
+      ]
+    },
+    {
+      "shape_id": 7,
+      "kind": "text",
+      "text": "Galen identified the ventricles, pia mater, and hemispheres. He distinguished between autonomous nerves (internal organs) and somatic nerves (voice and movement).",
+      "alt_text": "Text 5",
+      "manim_bbox": [
+        -6.121064354635417,
+        -0.8604170177604171,
+        -0.46678233935763824,
+        0.10069407833333344
+      ]
+    },
+    {
+      "shape_id": 8,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 6",
+      "manim_bbox": [
+        -6.410184598975695,
+        -3.2021988417708327,
+        -0.2443277885416668,
+        -1.2831019533159722
+      ]
+    },
+    {
+      "shape_id": 9,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 7",
+      "manim_bbox": [
+        -6.432406820850694,
+        -3.2021988417708327,
+        -6.343517933350695,
+        -1.2831019533159722
+      ]
+    },
+    {
+      "shape_id": 10,
+      "kind": "text",
+      "text": "Functional Errors",
+      "alt_text": "Text 8",
+      "manim_bbox": [
+        -6.121064354635417,
+        -1.818402810121528,
+        -3.6177077300000002,
+        -1.5055555320312504
+      ]
+    },
+    {
+      "shape_id": 11,
+      "kind": "text",
+      "text": "Lacking microscopic tools, he believed \"animal spirits\" or pneumata surged through nerves to produce movement, lodging in the ventricles when at rest.",
+      "alt_text": "Text 9",
+      "manim_bbox": [
+        -6.121064354635417,
+        -2.9797452630555554,
+        -0.46678233935763824,
+        -2.0186341669618058
+      ]
+    },
+    {
+      "shape_id": 12,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 0",
+      "manim_bbox": [
+        0.25173616793402775,
+        -2.7687498352256945,
+        4.5109953606423625,
+        2.297916752274306
+      ]
+    },
+    {
+      "shape_id": 13,
+      "kind": "text",
+      "text": "Fig 1.1: Greek physician Galen",
+      "alt_text": "Text 10",
+      "manim_bbox": [
+        0.25173616793402775,
+        -3.3143520430902775,
+        6.417592978368055,
+        -2.993981677725695
+      ]
+    }
+  ],
+  "notes_text": null
+}

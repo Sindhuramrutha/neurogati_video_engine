@@ -1,0 +1,8 @@
+Subtopic: 2.2.4 Surface Electrodes – Definition and Usage
+Scene type: manim
+
+Narration:
+Surface electrodes are electrodes placed directly on the skin without penetrating the body. Because they do not require surgery or needle insertion, they are classified as non-invasive electrodes. Surface electrodes are among the most commonly used recording electrodes in biomedical engineering. They are widely used for EEG, surface EMG, and ECG recordings because they are safe, inexpensive, and easy to apply. Before placing a surface electrode, the skin is often cleaned and a conductive gel is applied. The gel improves electrical contact between the electrode and the skin by reducing contact resistance, allowing cleaner recordings.
+
+Animation description:
+A cross-section of skin is shown. A flat disc electrode is lowered onto the skin surface. A transparent gel layer appears between the disc and the skin, shown as a lighter band. Small arrows indicate reduced resistance at the gel interface. Labels 'EEG', 'sEMG', and 'ECG' appear briefly next to the electrode to show its common applications. The electrode does not penetrate the skin.

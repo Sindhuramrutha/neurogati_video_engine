@@ -1,0 +1,19 @@
+1. **0.00–1.30** — The screen opens from the previous scene's summary card, which fades out completely. Two modest rectangular boxes fade in side by side in the upper portion of the screen: left box labeled **"Low-pass filter"** with a small upward arrow icon beneath its label, right box labeled **"High-pass filter"** with a small downward arrow icon beneath its label. The narration says "So far, we have studied two fundamental filters."
+
+2. **3.54–5.48** — The "Low-pass filter" box and its upward arrow brighten and pulse once gently. The narration says "A low-pass filter preserves low frequencies…"
+
+3. **6.14–8.22** — The "High-pass filter" box and its downward arrow brighten and pulse once gently, while the "Low-pass filter" box returns to its steady state. The narration says "…while a high-pass filter preserves high frequencies."
+
+4. **9.12–12.60** — Below the two boxes, a central frequency spectrum fades in: a horizontal axis labeled **"Frequency"** spanning from low on the left to high on the right, with the entire band filled in a neutral, uniform color. The two boxes remain visible above. The narration says "But many neural signals occupy only a specific range of frequencies."
+
+5. **13.52–14.20** — The spectrum holds steady with the full band visible. No new element appears yet. The narration says "In those situations…"
+
+6. **14.96–18.10** — From the left edge of the spectrum, a translucent gray region invades inward, covering the low-frequency end. Simultaneously, from the right edge, a second translucent gray region invades inward, covering the high-frequency end. The two gray regions stop partway, leaving only a central band of the original colored spectrum visible between them. The narration says "…we might want to remove both very low and very high frequencies…"
+
+7. **18.68–20.70** — The central band between the two gray regions becomes bold and pulses with a gentle periodic glow, its color deepening while the gray regions remain translucent and muted. The narration says "…while preserving only the frequencies of interest."
+
+8. **21.68–23.66** — Below the spectrum, a new box fades in — visibly larger than the two boxes above — labeled **"Band-pass filter"**, with a double-arrow icon beneath its label (a bundled pair of arrows, one pointing up and one pointing down, suggesting a band). Simultaneously, the original "Low-pass filter" and "High-pass filter" boxes fade back slightly, becoming more transparent and dimmer. The narration says "To do that, we use a bandpass filter…"
+
+9. **23.98–25.74** — The entire screen dims except the "Band-pass filter" box, which remains at full brightness and grows very slightly in emphasis. The spectrum and the two original boxes recede further into the background. The narration says "…and that will be the focus of the next section."
+
+10. **25.74–26.88** — With the dimmed background in place, a forward-pointing arrow animates in from the left of the "Band-pass filter" box, sliding rightward across the screen past the box, indicating transition. The text **"Next: Section 5.4"** appears briefly below the arrow and then the entire screen fades out smoothly over the final half-second.

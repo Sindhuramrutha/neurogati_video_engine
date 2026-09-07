@@ -1,0 +1,25 @@
+1. **0.00–2.00** — A spectrogram is already on screen from the previous scene: a two-dimensional rectangular intensity map with horizontal and vertical axes already faintly visible but unlabeled. The colour bar from the previous scene is present but dimmed. The spectrogram rests as the narration introduces the three main components.
+
+2. **2.84–4.08** — The horizontal axis brightens and a clean label "Time" fades in beneath it, centred under the horizontal axis. A subtle left-to-right arrow appears above the horizontal axis, pointing along its length. The vertical axis dims slightly so attention falls on the horizontal axis.
+
+3. **4.82–6.64** — A soft highlight follows the horizontal axis, and the arrow animates with a gentle sweep from left to right along the axis. As the narration says "represents time," an animated marker dot moves slowly from the left edge to the right edge of the spectrogram along the time axis, suggesting the passage of time.
+
+4. **7.04–11.32** — The arrow completes its left-to-right sweep and settles. The marker dot travels across the spectrogram's horizontal extent, tracing how the signal evolves throughout the recording. The label "Time" remains visible and the horizontal axis stays emphasised.
+
+5. **12.08–14.06** — The horizontal axis highlight and arrow fade out. The vertical axis brightens, and a label "Frequency (Hz)" fades in to the left of the vertical axis, rotated vertically. A subtle bottom-to-top arrow appears beside the vertical axis, pointing upward.
+
+6. **14.84–18.48** — The vertical axis arrow animates with a gentle sweep from bottom to top. The label "Frequency (Hz)" holds clearly. As the narration mentions Hertz, the unit text "(Hz)" within the label briefly pulses once, drawing a moment of attention.
+
+7. **19.06–21.70** — Near the bottom of the vertical axis, a small marker label "Low frequency" fades in, positioned at the lower end of the axis. The lower portion of the spectrogram's vertical axis is subtly highlighted as the narration describes low frequencies appearing near the bottom.
+
+8. **22.06–24.30** — Near the top of the vertical axis, a second marker label "High frequency" fades in, positioned at the upper end of the axis. The upper portion of the vertical axis is subtly highlighted. Both "Low frequency" and "High frequency" labels remain visible simultaneously for a moment.
+
+9. **24.86–26.60** — The vertical axis emphasis fades out, and the marker labels fade slightly to a resting state. The colour bar on the right side of the spectrogram brightens. A label "Colour intensity" fades in to the right of the colour bar, centred in height.
+
+10. **27.36–32.98** — The colour bar is now shown as a vertical gradient: dark blue at the bottom, transitioning upward through green and yellow to bright red at the top. As the narration says "strength" and "energy," specific regions of the spectrogram light up in warm colours (yellow and red) where frequency components are strong, while other regions dim to cool colours (dark blue) where they are weak.
+
+11. **33.62–37.34** — Near the bottom of the colour bar, a label "Weak" fades in. Near the top of the colour bar, a label "Strong" fades in. The colour bar gradient remains visible: dark blue at the "Weak" end, bright red at the "Strong" end. The warm-coloured regions of the spectrogram pulse slightly brighter as the narration describes stronger activity.
+
+12. **38.20–40.94** — The cool-coloured regions of the spectrogram dim further, and the warm-coloured regions settle to a steady brightness as the narration contrasts weaker activity. The full set of labels holds on screen: "Time," "Frequency (Hz)," "Low frequency," "High frequency," "Colour intensity," "Weak," and "Strong." The spectrogram, fully annotated with axes, labels, and colour bar, holds statically.
+
+13. **40.94–41.75** — Everything holds to the end of the scene: spectrogram with the time axis and label, frequency axis with low and high frequency markers, and the colour bar with its gradient and Weak/Strong labels. The scene ends in this fully annotated state.

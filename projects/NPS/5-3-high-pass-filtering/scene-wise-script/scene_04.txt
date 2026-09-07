@@ -1,0 +1,8 @@
+Subtopic: What is a High-Pass Filter? - Key Definition
+Scene type: manim
+
+Narration:
+So to state it as a key definition: a high-pass filter is a filter that preserves high-frequency components while attenuating low-frequency components below a selected cutoff frequency.
+
+Animation description:
+A clean text card. At the top, a badge labeled 'Key Definition' appears with a subtle highlight border. Below it, the definition reads: 'High-Pass Filter: A filter that preserves high-frequency components while attenuating low-frequency components below a selected cutoff frequency.' The words 'preserves high-frequency components' are colored green, while 'attenuating low-frequency components below a selected cutoff frequency' are colored red. A thin line underlines the words 'selected cutoff frequency' to emphasize that term.

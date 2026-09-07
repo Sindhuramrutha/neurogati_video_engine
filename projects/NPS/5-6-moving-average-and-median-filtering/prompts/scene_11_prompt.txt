@@ -1,0 +1,29 @@
+1. 0.00 — The split‑screen layout from the previous scene remains: left panel showing the smoothed EEG trace and “Feature extraction” icon, right panel showing the cleaned EMG trace and “Classification” icon. The labels “EEG smoothing” and “Artefact removal” are still present under their respective panels.
+
+2. 0.64 — Both traces gently freeze into a slightly dimmed, snapshot‑like state. The two icons shrink and fade out over 1 second. The background grid in both panels softens.
+
+3. 2.22 — The left panel brightens. The moving‑average rectangular window reappears at the left edge of the EEG trace and performs one complete slow pass across the waveform, tracing the smoothed thick curve behind it. The window fades out by 4.00, leaving the thick smoothed trace fully visible.
+
+4. 4.82 — A text annotation appears below the left panel, replacing the old label: “Averages neighbouring samples” in clean, small text.
+
+5. 5.88 — The high‑frequency ripple on the original thin EEG trace pulses briefly, then the thick smoothed trace is highlighted with a soft glow as the ripple fades in contrast. The text annotation remains steady.
+
+6. 7.40 — The glow on the thick trace intensifies subtly and a second annotation slides in below the first: “Produces a smoother signal”. Both annotations sit stacked under the left panel.
+
+7. 10.74 — The left panel dims slightly and the right panel brightens. The median‑filter rectangular window reappears, positioned directly over where the spike artefact was removed. The discrete sample points inside the window sort vertically from lowest to highest amplitude, the median value is highlighted, and the tall spike shrinks and disappears again, restoring the clean baseline. The window fades out by 12.20.
+
+8. 12.20 — A text annotation appears below the right panel, replacing the old label: “Uses median of neighbouring values” in clean, small text.
+
+9. 13.58 — A second annotation slides in below the first under the right panel: “Removes impulsive noise, preserves sharp features”. Both annotations sit stacked under the right panel. The cleaned trace pulses once to emphasise the spike‑free section.
+
+10. 17.18 — A sharp‑feature highlight appears on the right panel’s trace: a small sharp peak or edge away from the former spike location is briefly outlined with a contrasting colour and then released, demonstrating that the feature survived the filtering. The highlight fades by 18.34.
+
+11. 19.24 — Both panels brighten evenly, returning to equal visual weight. The four annotations (two under each panel) remain. A short dividing line remains between the panels.
+
+12. 19.72 — A soft pulse travels across both traces simultaneously, and a headline text fades in centered above the split‑screen: “Both improve signal quality”.
+
+13. 21.18 — The headline text shifts to: “But target different noise types”. The left panel’s trace briefly flickers with the random fluctuations, while the right panel’s trace briefly re‑exposes the ghost of the impulsive spike, then both return to clean versions, making the contrast explicit.
+
+14. 23.48 — All annotations below the panels fade out. A single centered message fades in below the split‑screen: “Choose based on your recording’s characteristics”. The split‑screen holds steady with both cleaned traces visible and the headline text still above.
+
+15. 25.00 — The entire frame (both panels, divider, headline, bottom message) holds static. A slow, subtle fade‑to‑black begins at 25.28, completing at 26.35 so the screen is fully black by the end.

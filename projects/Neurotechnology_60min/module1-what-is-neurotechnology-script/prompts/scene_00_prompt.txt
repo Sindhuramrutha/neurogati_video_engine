@@ -1,0 +1,37 @@
+1. **0.00–2.14** — A title card fades in centered on a dark background reading **“What is Neurotechnology?”** in large, clean type. It holds for the opening line, then fades out just after “neurotechnology” is spoken.
+
+2. **3.14–6.16** — The title card is gone. The screen is mostly empty, with only a faint, thin horizontal guide line near the center bottom. Nothing else appears — the visual stays quiet during “Let's start with a simple question: what actually is it?”
+
+3. **6.68–11.16** — A central node fades in at screen center, labeled **“Neurotechnology”**. It pulses gently once as it appears.
+
+4. **11.54–14.82** — Four surrounding nodes fade in one at a time around the central node, each connected by a glowing straight line to the center: **“Neuroscience”** (top left), **“Engineering”** (top right), **“Medicine”** (bottom right), and **“Computing”** (bottom left). The four labels appear in sync with the narrator naming each field.
+
+5. **15.74–20.48** — The camera slowly zooms in toward the central “Neurotechnology” node, making the four surrounding nodes drift slightly toward the frame edges. The center node brightens as the narration emphasizes that neurotechnology “involves technologies that interact with the nervous system.”
+
+6. **21.22–25.00** — The camera settles back slightly. A soft ripple animation runs from the central node outward along the glowing connections, ending with a brief highlight on the word “record” in a small floating text line below the diagram: **“record neural or physiological activity”** appears in plain text.
+
+7. **25.78–27.38** — The first floating text line fades and is replaced by a second line: **“process and interpret that activity”**, with a small looping animation on the central node suggesting data flowing through it.
+
+8. **28.10–30.44** — The second line fades. A third appears: **“influence how the nervous system functions”**, with the four surrounding nodes briefly glowing one after another as if receiving a signal.
+
+9. **30.62–33.16** — The third line fades. A fourth appears: **“restore functions that have been lost or impaired”**, and the camera zooms very slightly in again, with the word **“restore”** underlined.
+
+10. **34.08–42.12** — All floating text disappears. The diagram dims slightly, and the four surrounding nodes pulse briefly in sequence while the narration emphasizes that neurotechnology is **not** one particular machine and **not** one particular technique. A subtle shake passes across the central node on each “not.”
+
+11. **42.86–48.54** — The central diagram brightens again. A dotted circular path fades in around the central node, empty for now, suggesting space where multiple technologies will appear. The four original nodes stay in place.
+
+12. **49.78–52.30** — A small icon appears on the dotted orbit and begins circling the central node: a **scalp with electrodes** for EEG. The icon brightens as the label **“EEG”** appears beneath it. It continues orbiting slowly.
+
+13. **53.14–54.92** — As “records electrical activity from the scalp” is spoken, the EEG icon stops momentarily at the top of the orbit, and small electrical wave glyphs animate outward from the electrodes on the scalp.
+
+14. **54.92–60.32** — A second icon fades in on the orbit: a **brain slice** for MRI. The label **“MRI”** appears beneath it. It joins the EEG icon in slow orbit, with the brain slice showing faint internal structural lines.
+
+15. **60.80–64.60** — A third icon appears: a **functional heatmap brain** for fMRI, labeled **“fMRI”**. It pulses with moving colored heat patches while the narration contrasts structural MRI with functional activity.
+
+16. **65.84–70.82** — A fourth icon appears on the orbit: a **muscle with electrodes** for EMG, labeled **“EMG”**. The electrodes on the muscle flash with small activity ticks as the narration describes recording electrical activity from muscles.
+
+17. **71.64–76.66** — A fifth icon appears: a **brain connected to a robotic arm** for brain-computer interfaces, labeled **“BCI”** under the icon. The robotic arm gives one smooth reaching motion as the icon settles into orbit, illustrating generating commands for an external device.
+
+18. **77.70–85.08** — A sixth icon appears on the orbit: an **electrode implant delivering pulses** for deep brain stimulation, labeled **“DBS”**. The electrode tip pulses with small light bursts moving downward into a stylized neural tissue area, and the orbit path reverses direction slightly for this icon to visually contrast with the recording-based technologies.
+
+19. **85.94–92.05** — All six icons remain visible and continue orbiting the central node. A solid glowing ring fades in along the orbit path, connecting the icons around the center. The four original field nodes dim slightly. The central “Neurotechnology” node brightens and pulses once, as the narration closes with the promise to “connect these technologies rather than studying them as isolated topics.” The final frame holds all elements together.

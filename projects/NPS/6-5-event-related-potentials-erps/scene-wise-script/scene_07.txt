@@ -1,0 +1,8 @@
+Subtopic: Summary and Transition to Section 6.6
+Scene type: manim
+
+Narration:
+In this section, we introduced Event-Related Potentials as a method for studying the brain's response to specific events. We learned that ERP analysis focuses on short EEG segments surrounding repeated stimulus presentations and uses averaging to enhance the event-related response while reducing unrelated background activity. Because ERPs provide precise information about the timing of neural processing, they are widely used in neuroscience, psychology, clinical research, and brain–computer interface applications. Throughout this section, we assumed that the brain's response occurs at approximately the same time after every stimulus. But not all neural activity behaves in this way. Some neural responses occur at a consistent time relative to the stimulus, whereas others involve changes in oscillatory activity that are related to the event but are not precisely time-locked. Understanding the difference between these two types of neural responses is essential for interpreting EEG data. In the final section of this module, we will distinguish between time-locked neural activity and induced neural activity.
+
+Animation description:
+A brief recap shows a small icon of multiple EEG epochs averaging into a single ERP waveform. Then the screen transitions to two contrasting waveforms: on the left, a clear time-locked response with a consistent deflection after a stimulus marker; on the right, an oscillatory response where the phase varies across trials, showing no consistent deflection. The words 'Time-locked' and 'Induced' appear under each respectively, with 'Section 6.6' appearing at the end.

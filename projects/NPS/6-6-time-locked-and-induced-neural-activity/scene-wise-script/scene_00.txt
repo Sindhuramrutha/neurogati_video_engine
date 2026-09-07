@@ -1,0 +1,8 @@
+Subtopic: Introduction
+Scene type: manim
+
+Narration:
+In the previous section, we learned that Event-Related Potentials, or ERPs, are obtained by averaging EEG responses that are aligned to repeated presentations of the same stimulus. This averaging process works because certain neural responses occur at approximately the same time following every stimulus presentation. However, not every neural response behaves in this way. Some neural activities occur consistently at a fixed time after the event, while others vary in their timing from trial to trial. Although these responses are still related to the event, they are not precisely synchronized across repeated trials. This distinction gives rise to two important concepts in neural signal analysis: time-locked neural activity and induced neural activity. Understanding the difference between these two types of responses is essential for selecting appropriate analysis methods and correctly interpreting neural recordings.
+
+Animation description:
+A simple timeline is drawn horizontally across the screen. A vertical line marks t=0 labeled 'Stimulus'. Above the timeline, three identical sinusoidal bursts appear, each starting at exactly the same offset from t=0, showing consistent timing. Below the timeline, three similar bursts appear, but each starts at a slightly different offset from t=0. Labels 'Time-Locked' and 'Induced' fade in above and below the respective groups, establishing the two concepts visually.

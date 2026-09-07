@@ -1,0 +1,13 @@
+1. **0.00-2.92** — A blank, dark background. The narration title phrase "ERP analysis" fades in as small uppercase text near the top center of the screen, no other elements yet.
+
+2. **2.92-4.32** — The phrase "provides several important advantages" causes the title text to shift upward and slightly shrink, making room below. Four empty list slots fade in as horizontal lines, evenly spaced vertically, left-aligned under the title, with empty square checkbox outlines to the left of each line.
+
+3. **4.32-5.66** — Item 1 text "Excellent temporal resolution" types in to the right of the first checkbox. As the phrase completes, a checkmark draws inside the first checkbox with a quick stroke.
+
+4. **6.26-8.98** — Item 2 text "Direct measurement of stimulus-related neural activity" types in to the right of the second checkbox. As the phrase completes, a checkmark draws inside the second checkbox.
+
+5. **9.52-11.48** — Item 3 text "Widely used in cognitive neuroscience" types in to the right of the third checkbox. As the phrase completes, a checkmark draws inside the third checkbox.
+
+6. **12.14-14.48** — Item 4 text "Relatively simple experimental design" types in to the right of the fourth checkbox. As the phrase completes, a checkmark draws inside the fourth checkbox.
+
+7. **14.48-15.35** — All four items with their checkmarks sit fully visible, the completed list holds on screen. The title text "ERP analysis — provides several important advantages" remains at the top. No new motion except a very subtle final settle (list items lock into final position).

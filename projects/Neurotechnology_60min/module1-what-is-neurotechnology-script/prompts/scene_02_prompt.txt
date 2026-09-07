@@ -1,0 +1,29 @@
+1. **0.00–1.54** — A dark, minimal background. The text **“Let's build a working definition.”** fades in centered in the upper portion of the screen in a clean, neutral white. The rest of the screen is empty.
+
+2. **2.34–9.66** — Below that opening line, the full working definition fades in as a single centered block of text: **“Neurotechnology comprises technologies designed to interact with the nervous system to measure, interpret, influence, or restore neural function.”** The words **measure**, **interpret**, **influence**, and **restore** appear in the same base color as the rest of the sentence for now, but each is slightly bolder than the surrounding words so they read as key terms.
+
+3. **10.46–13.94** — The sentence from beat 2 remains on screen. The four key words — **measure**, **interpret**, **influence**, **restore** — gain a subtle pulsing glow that cycles among them in sequence, drawing the eye from one to the next as the narration says there are several important words. No other visual change yet.
+
+4. **14.70–15.18** — The word **measure** in the definition brightens and adopts a distinct color, say cyan. The other three key words remain at their previous brightness.
+
+5. **15.94–23.24** — As **measure** stays highlighted in cyan, a small visual expansion fades in to the right of the definition: a cluster of several small electrode tips and generic sensor icons arranged in a loose group. The sensor icons are simple, unlabeled geometric shapes — small rounded rectangles with a single probe-like line — and the electrodes are short vertical pins. The arrangement sits beside the word **measure**, with a faint cyan-tinged connector line from the highlighted word to the icon cluster. The icons remain static.
+
+6. **24.18–25.08** — The cyan highlight on **measure** fades to a duller state, and the word **interpret** brightens and adopts a second distinct color, say orange. The electrode/sensor cluster remains visible but dims slightly.
+
+7. **26.20–33.72** — As **interpret** stays highlighted in orange, a second visual expansion fades in to the right of the definition: a simple animated waveform on the left side of the expansion that morphs smoothly into a clean, meaningful symbol on the right — a checkmark inside a circle. The waveform is a smooth sine-like squiggle, and as it morphs, the squiggle's peaks flatten and resolve into the checkmark and enclosing circle. A faint orange connector line links the highlighted word **interpret** to this expansion.
+
+8. **34.62–35.36** — The orange highlight on **interpret** fades to a duller state, and the word **influence** brightens and adopts a third distinct color, say yellow. The interpret expansion dims, and the measure icons have now dimmed further toward the background.
+
+9. **36.36–44.54** — As **influence** stays highlighted in yellow, a third visual expansion fades in to the right of the definition: a simple side-view outline of a human head and brain, with a burst of short yellow pulses — small arrow-like strokes — traveling inward from the left side of the head toward the brain region. The pulses animate continuously, each one moving from outside the head to just inside the brain outline and then disappearing. A faint yellow connector line links the highlighted word **influence** to this expansion.
+
+10. **45.72–48.46** — The yellow highlight on **influence** fades to a duller state, and the word **restore** brightens and adopts a fourth distinct color, say green. The influence expansion dims, along with the earlier measure and interpret expansions.
+
+11. **49.38–56.48** — As **restore** stays highlighted in green, a fourth visual expansion fades in to the right of the definition: a simple silhouette of a seated person with a generic assistive device — a lightweight exoskeleton frame around one arm and a control panel shape beside the person's other hand. The person's arm moves slightly, raising and lowering in a slow, smooth loop, suggesting restored movement. A faint green connector line links the highlighted word **restore** to this expansion.
+
+12. **57.12–61.80** — All four key-word highlights fade to a uniform neutral brightness. The four expansions — electrodes/sensors, waveform-to-symbol, pulses entering a brain, and person with assistive device — shrink or fade backward together, and the definition text moves upward slightly to make room below. Three large question marks fade in centered in the lower third of the screen, spaced horizontally, all in the same neutral white.
+
+13. **62.48–64.92** — The three question marks resolve one by one, left to right. The first question mark morphs into the text: **“What part of the nervous system are we interacting with?”** The other two question marks remain as question marks for now.
+
+14. **65.48–68.06** — The second question mark morphs into the text: **“What information or effect are we trying to obtain?”** The first question remains visible above it, and the third question mark stays intact.
+
+15. **68.88–71.28** — The third question mark morphs into the text: **“What happens after that interaction?”** Now all three questions are displayed stacked vertically in the lower portion of the screen, in the same neutral white. The definition remains at the top in a slightly dimmed state, and the three questions hold steady with a subtle emphasis glow on each in turn as the narration ends. The final frame holds through 71.28.

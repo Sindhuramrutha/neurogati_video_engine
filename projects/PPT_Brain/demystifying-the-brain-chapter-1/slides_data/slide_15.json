@@ -1,0 +1,128 @@
+{
+  "index": 15,
+  "slide_width_emu": 14630400,
+  "slide_height_emu": 8229600,
+  "shapes": [
+    {
+      "shape_id": 2,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 0",
+      "manim_bbox": [
+        1.7777777499999994,
+        -3.9999999375,
+        7.111111,
+        3.9999999375
+      ]
+    },
+    {
+      "shape_id": 3,
+      "kind": "text",
+      "text": "Broca's Aphasia: The Struggle to Speak",
+      "alt_text": "Text 0",
+      "manim_bbox": [
+        -6.339467189756944,
+        1.6218751569270835,
+        1.0061349118576386,
+        2.999884273142361
+      ]
+    },
+    {
+      "shape_id": 4,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 1",
+      "manim_bbox": [
+        -6.339467189756944,
+        -0.7440973928645835,
+        1.0061349118576386,
+        1.2912034405034722
+      ]
+    },
+    {
+      "shape_id": 5,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 2",
+      "manim_bbox": [
+        -6.3690968189236115,
+        -0.7440973928645835,
+        -6.250578302256945,
+        1.2912034405034722
+      ]
+    },
+    {
+      "shape_id": 6,
+      "kind": "text",
+      "text": "Expressive Aphasia",
+      "alt_text": "Text 3",
+      "manim_bbox": [
+        -6.000462626180555,
+        0.6966433253645836,
+        -3.244328713767361,
+        1.041087764427083
+      ]
+    },
+    {
+      "shape_id": 7,
+      "kind": "text",
+      "text": "Discovered by Paul Broca, this condition involves difficulty forming complete sentences. Speech is non-fluent and effortful, often reduced to single content words like \"Son... university... smart.\"",
+      "alt_text": "Text 4",
+      "manim_bbox": [
+        -6.000462626180555,
+        -0.4939817167881948,
+        0.7560192357812499,
+        0.5643520860590279
+      ]
+    },
+    {
+      "shape_id": 8,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 5",
+      "manim_bbox": [
+        -6.339467189756944,
+        -2.999884273142361,
+        1.0061349118576386,
+        -0.9645834397743052
+      ]
+    },
+    {
+      "shape_id": 9,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 6",
+      "manim_bbox": [
+        -6.3690968189236115,
+        -2.999884273142361,
+        -6.250578302256945,
+        -0.9645834397743052
+      ]
+    },
+    {
+      "shape_id": 10,
+      "kind": "text",
+      "text": "Patient \"Tan\"",
+      "alt_text": "Text 7",
+      "manim_bbox": [
+        -6.000462626180555,
+        -1.5591435549131942,
+        -3.244328713767361,
+        -1.2146991158506948
+      ]
+    },
+    {
+      "shape_id": 11,
+      "kind": "text",
+      "text": "Broca's famous patient could only utter the sound \"Tan.\" Postmortem analysis revealed a lesion in the left hemisphere, identifying \"Broca's area\" as the center for speech production.",
+      "alt_text": "Text 8",
+      "manim_bbox": [
+        -6.000462626180555,
+        -2.749768597065973,
+        0.7560192357812499,
+        -1.6914347942187504
+      ]
+    }
+  ],
+  "notes_text": null
+}

@@ -1,0 +1,17 @@
+1. **0.00-2.12** — From the previous scene's two-column signal/noise layout, the screen transitions to a new visual: a large balance scale appears at the center of the screen, drawn in neutral gray. The central pivot and horizontal beam are clearly visible. Two empty pans hang from each end of the beam. The previous signal/noise columns fade out.
+
+2. **3.12-4.36** — On the left pan of the scale, a red warning-labeled icon appears: an aggressive filter symbol shown as a harsh flat line with a large red "X" over a wavy signal that has been visibly flattened and stripped of all its features. The flat line itself is gray and featureless, with a small label beneath reading "Too aggressive." As this appears, the left pan visibly sinks downward — the scale tips sharply to the left.
+
+3. **4.36-8.82** — The left pan continues to rest heavily at the bottom. The right pan lifts high up as the left keeps tilting lower. Below the aggressive filter icon, the words "Removes signal too" fade in, highlighting the loss of meaningful information. The visual emphasizes the flattened, information-free line left behind.
+
+4. **9.64-11.92** — The scale begins to tip the opposite direction: the right pan now sinks downward. On the right pan, a new icon fades in — a dashed or faint filter symbol that is almost invisible, with a label beneath reading "Too weak." The waveform shown still contains dense, jagged high-frequency interference lines along with the signal.
+
+5. **11.92-14.04** — The right pan rests heavily at the bottom. The left pan lifts up high. Below the weak filter icon, the words "Interference remains" fade in. The jagged noise lines continue to visibly overlay the waveform, showing that too much unwanted activity survives.
+
+6. **15.10-18.46** — The scale begins to settle from its extreme rightward tilt. The beam slowly returns toward horizontal, swaying gently as it balances. The two extreme labels ("Too aggressive" and "Too weak") begin to fade out from the pans.
+
+7. **18.46-23.34** — As the scale settles into a perfectly balanced, level position, a new central label appears directly above the pivot point: "Appropriate filter" in a calm blue. Both pans now hold moderate, visually balanced filter symbols — neither overly flat nor full of interference. The beam is steady and horizontal.
+
+8. **23.34-28.66** — The full balance-scale metaphor holds with the beam level and the "Appropriate filter" label bright. A caption fades in below the scale at the bottom of the screen: "Different applications → different filtering strategies." The entire visual remains steady.
+
+9. **28.66-30.05** — Final hold: the balanced scale with "Appropriate filter" above it and the bottom caption "Different applications → different filtering strategies" remain on screen, static and clear, through the end of the narration.

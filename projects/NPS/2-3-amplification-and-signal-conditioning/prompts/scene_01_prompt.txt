@@ -1,0 +1,13 @@
+1. **0.00–2.66** — Fade in from the previous scene's settled view (electrode, wire, highlighted "Amplification & Signal Conditioning" block, computer) to a clean title card. The prior visuals fade out smoothly; a centered heading appears in large text: "Learning Objectives." Below the heading, an empty list area waits for upcoming bullet points. The heading is plain, no decorations yet, minimal motion.
+
+2. **2.66–6.34** — At "explain why neural signals require amplification," the first bullet point slides in from the left below the heading: "Explain why neural signals require amplification." As the text settles, a checkmark icon to its left draws itself in a quick stroke, as if being written by an invisible pen. The checkmark completes as the narration reaches "amplification."
+
+3. **6.88–8.78** — A brief pause in new content at the gap between phrases. The card holds steady with the heading and first bullet point fully visible, checkmark drawn. The title card remains centered, minimal motion.
+
+4. **7.26–8.78** — At "describe the function of an amplifier," the second bullet point slides in below the first: "Describe the function of an amplifier." Its checkmark draws itself with the same quick stroke as the narration finishes the phrase. The first bullet point remains intact above it.
+
+5. **9.24–11.56** — At "understand the concept of signal conditioning," the third bullet point slides in below the second: "Understand the concept of signal conditioning." Its checkmark draws itself as the phrase completes. Previous bullets remain steady, unmodified.
+
+6. **12.38–14.76** — At "explain why amplification must occur," the fourth bullet point begins sliding in below the third: "Explain why amplification must occur before further signal processing." It enters in two parts — first "Explain why amplification must occur" appears, then the remainder "before further signal processing" follows slightly delayed, as the narration reaches those words.
+
+7. **14.76–17.27** — At "before further signal processing," the rest of the fourth bullet point finishes sliding in fully: "before further signal processing." Its checkmark draws itself in a final quick stroke. The complete card now shows the heading "Learning Objectives" with all four bullet points listed vertically, each preceded by a drawn checkmark. The title card holds steady and clean through the end of the scene at 17.27.

@@ -1,0 +1,8 @@
+Subtopic: Advantages
+Scene type: manim
+
+Narration:
+High-pass filtering comes with several important benefits. It reduces baseline drift. It suppresses slow movement artefacts. It improves baseline stability. It enhances the visibility of rapid physiological events. And it serves as an important preprocessing step before spike detection and EMG analysis.
+
+Animation description:
+A clean advantages card with the heading 'Advantages of high-pass filtering'. Five rows appear one by one, each with a green chevron or plus icon on the left and a short phrase: first 'Reduces baseline drift', then 'Suppresses slow movement artefacts', then 'Improves baseline stability', then 'Enhances the visibility of rapid physiological events', and finally 'Serves as an important preprocessing step before spike detection and EMG analysis'. Each row slides in from the left with a slight bounce and the icon pulses once when its text appears.

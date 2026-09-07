@@ -1,0 +1,19 @@
+1. **0.00–4.30** — On a clean background, a vertical checklist panel fades in, centered left-to-right. It holds one blank line at first — no items yet — with a faint header at the top reading "Safety Practices." The panel is empty and waiting as the narration introduces the idea of multiple protective measures.
+
+2. **4.30–8.36** — The header "Safety Practices" brightens. A subtitle beneath it fades in: "throughout the entire acquisition chain." A faint horizontal acquisition-chain diagram (five small boxes in a row: Participant, Electrodes, Isolation, Acquisition, Computer) appears as a ghosted strip behind or below the checklist, reinforcing the idea of a chain, then fades to a light backdrop while the checklist remains the main focus.
+
+3. **9.30–13.72** — The first checklist row slides in from the left: a shield icon on the left, the text "Electrically isolated recording equipment" beside it, and a green checkmark that draws itself next to the text. The row settles into the list and the checkmark completes with a small pop.
+
+4. **14.28–17.56** — The second checklist row slides in below the first: a magnifying-glass icon over a cable, the text "Inspect electrodes and connecting cables before every use," and a green checkmark that draws itself next to the text. The first row remains visible and checked above it.
+
+5. **18.16–21.24** — The third checklist row slides in below the second: a ground symbol icon, the text "Ensure proper grounding of the recording system," and a green checkmark that draws itself next to the text. The first two rows remain visible and checked above it.
+
+6. **22.08–25.32** — The fourth checklist row slides in below the third: a medical cross icon, the text "Equipment designed for biomedical applications," and a green checkmark that draws itself next to the text. The list now shows four rows, all checked except the fifth which has not yet appeared.
+
+7. **26.16–29.50** — The fifth checklist row slides in at the bottom of the list: a clipboard icon, the text "Follow established laboratory or clinical safety procedures," and a green checkmark that draws itself next to the text. All five rows are now visible, each with a green checkmark.
+
+8. **30.38–37.22** — The full checklist holds on screen. As the narration describes the combined effect, the five rows glow softly in sequence from top to bottom. Two small captions fade in beside the list: "reduces electrical hazards" and "supports reliable signal acquisition." The green checkmarks pulse gently once.
+
+9. **38.30–43.98** — The checklist dims slightly but remains visible. A larger, emphasized text appears centered near the top of the panel: "High-quality recordings" with a red slash or warning accent appearing over the phrase "at the expense of participant safety" as it fades in. The shield icon from the first row brightens and pulses.
+
+10. **44.78–50.83** — A banner slides up from the bottom of the screen, covering the lower portion of the checklist. It reads: "Participant safety is the first priority." A shield icon sits on the left end of the banner and pulses once as the narration says "first priority." The checklist rows fade back slightly so the banner is the visual focus. The frame holds on the banner with the shield icon gently glowing until the end of the clip.

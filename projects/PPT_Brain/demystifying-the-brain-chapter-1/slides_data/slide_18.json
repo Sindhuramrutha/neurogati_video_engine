@@ -1,0 +1,80 @@
+{
+  "index": 18,
+  "slide_width_emu": 14630400,
+  "slide_height_emu": 8229600,
+  "shapes": [
+    {
+      "shape_id": 2,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 0",
+      "manim_bbox": [
+        1.7777777499999994,
+        -3.9999999375,
+        7.111111,
+        3.9999999375
+      ]
+    },
+    {
+      "shape_id": 3,
+      "kind": "text",
+      "text": "Psychology: Measuring the Mind",
+      "alt_text": "Text 0",
+      "manim_bbox": [
+        -6.339467189756944,
+        1.379398248107639,
+        1.0061349118576386,
+        2.7574073643229164
+      ]
+    },
+    {
+      "shape_id": 4,
+      "kind": "text",
+      "text": "The Inner Life",
+      "alt_text": "Text 1",
+      "manim_bbox": [
+        -6.339467189756944,
+        0.4837960457118058,
+        -3.5833332773437503,
+        0.8282404847743057
+      ]
+    },
+    {
+      "shape_id": 5,
+      "kind": "text",
+      "text": "While neuroscience focuses on the concrete and measurable, psychology often tackles the larger questions of mental life: thoughts, emotions, and dreams. How do we learn? Why do we feel?",
+      "alt_text": "Text 2",
+      "manim_bbox": [
+        -6.339467189756944,
+        -1.853356634791667,
+        -2.9356478592534723,
+        0.2633099988020833
+      ]
+    },
+    {
+      "shape_id": 6,
+      "kind": "text",
+      "text": "The Scientific Stance",
+      "alt_text": "Text 3",
+      "manim_bbox": [
+        -2.390277983454861,
+        0.4837960457118058,
+        0.3658559289583332,
+        0.8282404847743057
+      ]
+    },
+    {
+      "shape_id": 7,
+      "kind": "text",
+      "text": "To make psychology scientifically rigorous, researchers turned to animal models. They focused on the simplest behaviors—responses to stimuli—that could be quantified, moving away from abstract concepts to measurable cause-and-effect relationships.",
+      "alt_text": "Text 4",
+      "manim_bbox": [
+        -2.390277983454861,
+        -2.558912179322917,
+        1.0135413470486112,
+        0.2633099988020833
+      ]
+    }
+  ],
+  "notes_text": null
+}

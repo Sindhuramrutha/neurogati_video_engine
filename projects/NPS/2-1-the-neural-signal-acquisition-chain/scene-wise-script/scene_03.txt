@@ -1,0 +1,8 @@
+Subtopic: 2.1.4 Components of the Acquisition Chain - Biological Source
+Scene type: manim
+
+Narration:
+Let's go through each component. First, the biological source. Every recording begins with a biological event occurring inside the body. Depending on the recording modality, that source could be the electrical activity of cortical neurons, muscle fibers, eye muscles, or individual neurons. And here's the obvious but important point: without this physiological activity, there is simply no signal to record.
+
+Animation description:
+Show a stylized human figure silhouette. Inside it, highlight four regions in sequence while each is named: a brain region with firing neuron icons for cortical neurons, an arm muscle with small lightning-like pulses for muscle fibers, an eye for eye muscles, and a zoomed-in inset showing a single neuron firing. Keep the figure as the central visual, and at the end fade everything except a blank body outline with the text 'no activity = no signal'.

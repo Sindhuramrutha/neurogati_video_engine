@@ -1,0 +1,59 @@
+1. **0.00-2.26** — The screen is clean, carrying forward the final frame of the previous scene but gradually fading everything out (previous heading, definition box). A new heading "Changes in Behaviour" fades in centered at the top. Below it, a simple stylised brain outline is drawn — just a smooth outline of a brain shape in neutral strokes — and it begins pulsing with a subtle glow. A small label "ongoing physiological activity" fades in beneath the brain outline.
+
+2. **2.26-2.80** — The brain outline continues pulsing. The label "ongoing physiological activity" remains beneath it. Brief pause before the next text begins.
+
+3. **2.80-6.88** — The brain outline's pulsing glow intensifies slightly as the narration says "Neural signals reflect ongoing physiological activity". The label "ongoing physiological activity" highlights briefly. A small waveform segment — a generic, unlabeled continuous oscillation — fades in beside the brain outline, suggesting the neural signal it generates. This waveform is smooth and moderate in amplitude and frequency, as placeholder.
+
+4. **6.88-7.54** — The brain outline continues pulsing. The waveform beside it scrolls gently. Brief pause.
+
+5. **7.54-12.16** — The brain outline's pulse rate becomes visibly more variable — sometimes faster, sometimes slower — suggesting continuous change. The waveform beside it correspondingly shifts its amplitude and frequency in real time. The label "ongoing physiological activity" remains visible.
+
+6. **12.16-12.58** — The brain outline and waveform continue, now displaying the variability established. Brief pause.
+
+7. **12.58-15.18** — The brain outline pulses steadily. The waveform beside it scrolls with its changing character. The label "ongoing physiological activity" remains. The word "naturally" in the narration is matched by the waveform's variability settling into a recurring irregularity.
+
+8. **15.18-16.02** — The brain outline and waveform remain. Brief pause, holding the current composition as the narration transitions.
+
+9. **16.02-18.08** — The screen now introduces a new element: a horizontal row of outline positions fades in below the brain, showing four empty slots aligned left to right across the lower portion of the screen. These slots are just faint rectangular placeholders, awaiting the behaviour icons. The heading "Changes in Behaviour" remains at top, the brain outline pulses above.
+
+10. **18.08-18.94** — The row of four empty slots remains. Brief pause.
+
+11. **18.94-19.76** — The first slot fills: a simple stick-figure icon seated on a chair fades in inside the leftmost slot. A label "Resting" fades in beneath that icon. The icon and label highlight briefly as the narration names "changes in behaviour".
+
+12. **19.76-20.34** — The first icon "Resting" and its label remain. Brief pause as the narration transitions.
+
+13. **20.34-21.34** — The brain outline's pulsing continues. The heading and existing elements remain. A brief moment of anticipation as the phrase "Neural activity" begins.
+
+14. **21.34-22.30** — The second slot fills: a simple stick-figure icon mid-stride (one leg forward, one leg back) fades in inside the second slot. A label "Walking" fades in beneath that icon. The icon and label highlight briefly.
+
+15. **22.30-23.36** — The third slot fills: a simple stick-figure icon with small speech lines (three short curved strokes) near its head fades in inside the third slot. A label "Speaking" fades in beneath that icon. The icon and label highlight briefly.
+
+16. **23.36-23.92** — All three filled icons remain: "Resting" (seated), "Walking" (mid-stride), "Speaking" (with speech lines). The fourth slot remains empty. Brief pause.
+
+17. **23.92-24.18** — The first icon "Resting" (seated figure) highlights as the narration says "resting". A small waveform segment fades in next to the "Resting" icon: a slow, large-amplitude, regular oscillation — low frequency, visibly smooth.
+
+18. **24.18-24.72** — The highlighting moves from the "Resting" icon to blank space as the narration transitions. The resting waveform remains visible.
+
+19. **24.72-24.98** — The second icon "Walking" (mid-stride) highlights as the narration says "walking". A small waveform segment fades in next to the "Walking" icon: a moderate-frequency, moderate-amplitude waveform, visibly faster and more variable than the resting waveform.
+
+20. **24.98-25.52** — The third icon "Speaking" (with speech lines) highlights as the narration says "speaking". A small waveform segment fades in next to the "Speaking" icon: a higher-frequency, lower-amplitude waveform with fine rapid oscillations.
+
+21. **25.52-25.86** — Brief pause. All three waveform segments remain visible next to their icons, each clearly different from the others in frequency and amplitude.
+
+22. **25.86-26.30** — The fourth slot begins to fill: a simple stick-figure icon at a desk (figure seated at a horizontal desk line, with a small object on the desk) fades in inside the fourth slot. A label "Performing a task" fades in beneath that icon. The icon and label highlight briefly.
+
+23. **26.30-26.76** — The fourth icon "Performing a task" (at desk) is fully visible. A small waveform segment fades in next to it: a complex, irregular waveform with mixed frequencies and irregular amplitude — visibly distinct from the other three.
+
+24. **26.76-27.22** — All four icons are now present with their waveform segments: "Resting" (seated, slow large waveform), "Walking" (mid-stride, moderate waveform), "Speaking" (speech lines, fine rapid waveform), "Performing a task" (at desk, complex irregular waveform). All labels are visible. The brain outline pulses above. Brief pause.
+
+25. **27.22-28.46** — The brain outline's pulsing becomes more pronounced. An arrow fades in, starting from the brain outline at the top and pointing down toward the row of icons, linking the "ongoing physiological activity" to the changing behaviours. The arrow is a simple curved guide with an arrowhead, drawn in a contrasting colour.
+
+26. **28.46-29.36** — The arrow pulses along its length as the narration says "As behaviour changes". The four waveform segments beside the icons highlight sequentially, one after another, to show the corresponding change in recorded signals. Each waveform brightens in turn, then returns to normal.
+
+27. **29.36-29.86** — The four waveform segments remain highlighted in sequence. The arrow between brain and icons holds steady.
+
+28. **29.86-30.62** — The label "ongoing physiological activity" beneath the brain outline highlights again. The brain outline's pulse synchronises with the changing waveform segments below.
+
+29. **30.62-31.50** — The heading "Changes in Behaviour" remains at top. The brain outline continues pulsing. All four icons with labels and waveform segments remain visible. The arrow connecting the brain to the behaviours remains. The waveform segments each brighten briefly one final time in sequence, emphasising that the recorded signal changes alongside behaviour.
+
+30. **31.50-32.23** — The final frame holds steady: heading "Changes in Behaviour" at top; the pulsing brain outline with "ongoing physiological activity" label below it; the arrow pointing down to the row of four stick-figure icons, each with its distinct label and waveform segment. The screen holds this composition until the scene ends at 32.23 seconds.

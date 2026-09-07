@@ -1,0 +1,21 @@
+1. [0.00-3.80] A single electrode tip appears at the left of the frame. Three neurons surround it, each a distinct color: red, blue, and green. Each neuron is drawn as a small neuron-like shape — soma with a few short dendrites — positioned near the electrode tip. The electrode tip points toward them. No labels yet.
+
+2. [4.60-5.88] A horizontal recorded trace appears beneath/behind the scene, stretching to the right from the electrode tip. It begins flat and empty. A faint label "recorded signal" appears above the trace.
+
+3. [6.14-8.54] The red neuron fires: a brief highlighted pulse travels down its structure, and a small red spike appears on the shared recorded trace. Then the blue neuron fires, producing a blue spike on the same trace with a noticeably different shape (different width or amplitude). The two colored spikes coexist on the one trace.
+
+4. [8.12-9.00] The green neuron fires, producing a third spike on the shared trace, also visibly different in shape. The trace now shows a messy combined signal: red, blue, and green spikes overlapping and intermingled along the shared trace, each in its corresponding color. The narration hits "mixed together" as the trace shows the overlapping mess.
+
+5. [9.84-12.22] The label "spike sorting" appears prominently above the scene. The messy shared trace still shows the colored overlapping spikes. The three neurons remain visible on the left. The concept is now named.
+
+6. [12.22-15.80] The messy trace scrolls across a detection line. A horizontal dashed threshold line appears across the trace. As the narration says "waveform shape", the trace separates into three smaller stacked rows below, each beginning to show a waveform template: the red row shows the red spike shape in isolation, blue shows the blue spike shape, green shows the green spike shape. The waveforms are visibly different shapes.
+
+7. [15.80-18.32] Individual spikes from the messy shared trace are now being assigned: as each spike crosses the detection threshold, it highlights, then a colored copy appears in the corresponding row below based on its waveform shape. The assignment is animated: the spike lifts from the shared trace and moves to the row matching its template.
+
+8. [18.90-22.60] The assignment continues and completes. Three separate firing patterns appear, one per neuron, each as a distinct spike train in its own row: red spikes only in the red row, blue spikes only in the blue row, green spikes only in the green row. The rows are labeled "neuron 1" (red), "neuron 2" (blue), "neuron 3" (green). The narration emphasizes "separately" as the three rows sit cleanly apart.
+
+9. [23.66-27.62] The frame expands or shifts to emphasize the overall pipeline: the raw messy shared trace on top, the three sorted spike trains below, with an arrow or connecting flow suggesting "signal processing" between the raw recording and the separated outputs. The label "signal processing" appears above the arrow.
+
+10. [27.92-30.98] The words "interpretable information" fade in below or beside the three sorted spike trains, as a final label near the output rows. The three clean spike trains pulse gently. The full view holds: raw messy trace, processing arrow, and three separated spike trains, with the label "interpretable information" underneath.
+
+11. [30.98-31.85] Final hold on the complete frame: electrode and three neurons on the left, raw messy trace at top, processing arrow, three sorted colored spike trains below, with labels "spike sorting", "signal processing", and "interpretable information". The scene fades out at 31.85.

@@ -1,0 +1,25 @@
+1. **0.00–3.74** — Three empty rectangular panel outlines are visible, arranged horizontally across the screen, dark and unfilled. A title text "Low-Pass Filters in Neuroscience" fades in centered above the panels. The panels remain blank while the narration introduces the general idea.
+
+2. **3.74–8.76** — A soft schematic waveform fades into the first panel only: a slow, smooth oscillation representing low-frequency physiological signal content. The waveform is gently highlighted. Text "Low Frequencies" appears below the first panel, then fades out. The other two panels remain empty.
+
+3. **9.80–11.00** — The first panel comes to full focus. It now displays a jagged EEG-like waveform: rapid high-frequency jitter superimposed on slower underlying waves. A label "EEG" fades in above the panel.
+
+4. **11.00–15.24** — An animation sweeps across the EEG waveform in the first panel, left to right. The rapid high-frequency jitter visibly diminishes as the sweep passes, leaving the slower underlying oscillation intact. A small rectangular block labeled "Low-Pass Filter" appears at the top edge of the panel during the sweep, then fades.
+
+5. **15.24–19.22** — The first panel now shows a clean, smoothed EEG waveform, the fast jitter gone. Text "Noise Reduced — Relevant EEG Frequencies Preserved" appears below the waveform. The label "EEG" remains above the panel.
+
+6. **20.34–23.30** — The second panel comes to focus. It displays a smooth, slow LFP waveform with sharp, narrow spike trains superimposed on it at intervals — tall, thin vertical deflections rising above and below the slower trace. A label "LFP" fades in above the panel.
+
+7. **23.30–26.12** — The smooth LFP component in the second panel is highlighted with a soft glow, while the superimposed spike trains are dimmed. An annotation "Lower-Frequency LFP Activity" points to the smooth trace. Text "Higher-Frequency Spike Activity" points to the spike deflections.
+
+8. **26.12–31.94** — An animation in the second panel shows the spike trains being removed: each sharp spike deflection shrinks and flattens in sequence, leaving only the smooth LFP oscillation. A small block labeled "Low-Pass Filter" appears at the top edge of the panel during this removal, then fades. The final waveform is clean and smooth.
+
+9. **32.98–35.16** — The third panel comes to focus. It displays a raw EMG signal: an oscillating waveform centered around zero, with both positive and negative excursions. A label "EMG" fades in above the panel.
+
+10. **35.16–37.64** — An animation in the third panel rectifies the EMG signal: the negative excursions flip upward to become positive, resulting in a series of positive pulses. All deflections now sit above the zero line. The panel label changes to "EMG — Rectified".
+
+11. **37.64–41.60** — A smoothing animation sweeps across the rectified EMG pulses, progressively replacing the jagged positive pulses with a smooth, slowly varying curve that traces the contour of the pulse peaks. A small block labeled "Low-Pass Filter" appears at the top edge of the panel during the sweep, then fades. The final curve is a smooth envelope.
+
+12. **41.60–44.76** — The smooth envelope curve in the third panel is highlighted with a soft glow. Text "EMG Envelope" appears above the panel. An annotation "Overall Level of Muscle Activation" fades in pointing to the envelope's general height and contour.
+
+13. **44.76–45.83** — All three panels are shown together: panel one with the clean EEG waveform, panel two with the smooth LFP trace (spikes removed), panel three with the smooth EMG envelope. Labels "EEG", "LFP", and "EMG Envelope" are above each panel. The scene holds on the complete three-panel layout to the full 45.83 seconds.

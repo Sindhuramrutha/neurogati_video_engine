@@ -1,0 +1,33 @@
+0.00–3.46: Continue visually from the previous scene's ending: keep the three waveform panels with sparse, medium, and dense sample dots visible, plus the bold takeaway text. Then fade that composition away and bring up the Figure 2.4-style flow diagram, mostly dim or neutral: on the far left, a smooth continuous analogue waveform on small axes; an arrow from it to a rectangular box labeled **Sampling**; an arrow from that to a chip-shaped component labeled **ADC**; an arrow from that to a sequence of discrete vertical bars or dots on the right, labeled **Digital Data**. As the narration says “component that actually does this conversion,” softly brighten the **ADC** box.
+
+3.46–6.24: Keep the full flow diagram visible. Pulse the **ADC** box as the narration names the **analog-to-digital converter**. Fade the text label **analog-to-digital converter (ADC)** just above the ADC box while the rest of the diagram stays steady.
+
+6.24–11.22: With the ADC box still prominent, fade in a short definition beneath the diagram: **converts an analog electrical signal into a sequence of digital numbers**. While the definition is on screen, lightly animate the left analogue waveform and the right digital bars/dots in order so the eye moves from analogue signal → Sampling box → ADC → Digital Data.
+
+11.22–12.00: Hold the definition line and diagram, letting the ADC box's highlight settle before the next idea.
+
+12.00–15.58: Fade the definition line out or dim it. Draw attention to the full path by highlighting, in sequence, the left waveform, the two arrows, and the right digital data. Fade in the phrase **bridge between the analog world and the digital world** beneath the diagram, positioned like a caption. During “analog world,” brighten the left waveform; during “digital world,” brighten the right digital data.
+
+15.58–16.18: Hold the bridge caption and highlighted diagram briefly.
+
+16.18–20.76: Dim the bridge caption. On the left side of the diagram, add a small label near the incoming arrow or waveform: **amplified and conditioned biological signal**. Animate the arrow from the waveform into the **Sampling** box as though the signal is entering the ADC path. Then brighten the ADC box with the phrase **enters the ADC** appearing briefly beneath it.
+
+20.76–21.74: Hold the diagram with the signal visibly entering the ADC.
+
+21.74–24.04: Fade out the entry label. Bring the **ADC** box front and center, larger or brighter than the rest of the diagram. Fade in two small numbered task labels inside or beside the ADC box: **1** and **2**, initially blank or placeholder-sized, while the narration says “The ADC performs two essential tasks.”
+
+24.04–24.86: Hold the two numbered task slots beside the ADC box.
+
+24.86–28.36: On the analogue waveform side, flash a set of evenly spaced dashed vertical lines crossing the waveform at regular intervals, sweeping or blinking in time as the narration says **samples the analog signal at regular time intervals**. Fill task slot **1** with the words **sample at regular intervals**.
+
+28.36–29.30: Hold the flashed sampling-lines moment, keeping task slot **1** visible.
+
+29.30–34.52: Now pulse the sample dots on the right side of the diagram. At each sample dot or bar, show a small numerical label fading in one after another — e.g., the dots each receive a numeric value as the narration says **converts each sample into a numerical value that can be processed by a computer**. Fill task slot **2** with the words **convert each sample to a number**.
+
+34.52–35.48: Hold the numbered sample dots and both completed task slots.
+
+35.48–40.76: Dim the task slots slightly. On the digital-data side, emphasize the sequence of numeric values, animating the numbers flowing or highlighting from left to right. Fade in the caption **digital representation of the original neural signal** beneath the digital data, with the words **neural signal** highlighted when spoken.
+
+40.76–41.52: Hold the digital representation caption and the right-side numbers.
+
+41.52–49.42: Dim the caption. Fade in a list of three short items near the right side of the diagram, each appearing in sequence: **modern digital storage**, **visualization**, **signal processing**. As each appears, briefly brighten the corresponding part of the right-side digital data or the diagram. Then fade all three items out and gently return the full flow diagram to its earlier emphasis on the **ADC** box as the centerpiece. Hold this final composition through 49.42.

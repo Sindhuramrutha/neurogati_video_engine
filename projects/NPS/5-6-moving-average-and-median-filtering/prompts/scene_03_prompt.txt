@@ -1,0 +1,15 @@
+1. [0.00–1.68] On a dark background, a clean time-series plot fades in with unlabeled horizontal and vertical axes. A single jagged light-blue waveform is drawn across the full width: a dense sequence of sample points connected by short line segments, with rapid random high-frequency fluctuations around the vertical center. No labels or captions yet.
+
+2. [1.68–3.60] A translucent vertical band appears around the first five consecutive sample points at the left end of the waveform. The five enclosed sample points brighten. The exact text label “Window size = 5” fades in immediately above the band. The band remains on screen until the sliding step later.
+
+3. [4.60–6.74] The band and highlight slide along the trace and settle around a later sample point that has a clear, small upward random spike relative to the samples immediately before and after it. That spiked sample is drawn as a larger bright dot with a ring; the rest of the original trace dims to keep attention on the spike. The “Window size = 5” label stays visible.
+
+4. [7.36–9.62] The five sample points inside the band remain highlighted. A horizontal dashed reference line appears at the vertical average of those five sample values. At the exact horizontal position of the spiked sample, a new dot appears on this average line. The original spike stays bright above the average line; the new dot sits much closer to the neighboring baseline, visually showing that averaging with neighbours reduces the spike’s influence.
+
+5. [10.46–11.86] The individual reference line and ring fade out, and the band becomes a sliding five-sample window that moves steadily from left to right across the whole waveform. As it moves, a new smooth orange trace is generated point by point; each new point appears at the center of the current window at the mean of the five samples inside it. The original light-blue trace remains visible throughout. By the end of this beat, the smooth trace spans the full width.
+
+6. [12.46–14.48] The sliding window fades out, leaving the completed smooth orange waveform overlaid on the original light-blue waveform. The original remains thin and faint; the smoothed trace is thicker and brighter, following the same overall shape but with visibly reduced rapid fluctuations. The label “Window size = 5” remains visible.
+
+7. [15.10–18.12] The overlaid waveforms hold steady. At 16.66, a small caption “Figure 5.6A” fades in below the plot. The label “Window size = 5” and both traces remain unchanged.
+
+8. [18.48–22.12] The original noisy light-blue trace fades further to a faint ghost, while the smoothed orange trace remains bright. At 20.52, a bright glow sweeps once from left to right along the smoothed trace, and the exact text “visibly less jagged” fades in beside it. The final frame holds on the bright smoothed trace, faint original trace, “Window size = 5” label, and “Figure 5.6A” caption until 22.12.

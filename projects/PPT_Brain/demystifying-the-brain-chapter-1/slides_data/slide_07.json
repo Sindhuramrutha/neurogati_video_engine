@@ -1,0 +1,164 @@
+{
+  "index": 7,
+  "slide_width_emu": 14630400,
+  "slide_height_emu": 8229600,
+  "shapes": [
+    {
+      "shape_id": 2,
+      "kind": "text",
+      "text": "Peering into the Microscopic World",
+      "alt_text": "Text 0",
+      "manim_bbox": [
+        -6.429398169201389,
+        2.8223378581076393,
+        1.4325225789583333,
+        3.430903027951389
+      ]
+    },
+    {
+      "shape_id": 3,
+      "kind": "text",
+      "text": "True insight into the brain required tools to see the invisible. The invention of the microscope revolutionized our understanding of biological tissue.",
+      "alt_text": "Text 1",
+      "manim_bbox": [
+        -6.429398169201389,
+        2.121296749201389,
+        6.429398169201389,
+        2.4328705753819446
+      ]
+    },
+    {
+      "shape_id": 4,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 0",
+      "manim_bbox": [
+        -2.4152774970138893,
+        -0.5613424623090282,
+        -0.07789345654513902,
+        1.776041578159722
+      ]
+    },
+    {
+      "shape_id": 5,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 1",
+      "manim_bbox": [
+        0.07789345654513902,
+        -0.5613424623090282,
+        2.4152774970138884,
+        1.776041578159722
+      ]
+    },
+    {
+      "shape_id": 6,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 2",
+      "manim_bbox": [
+        -6.429398169201389,
+        -1.6855321988020835,
+        -2.2729162666145832,
+        -1.490856397430556
+      ]
+    },
+    {
+      "shape_id": 7,
+      "kind": "text",
+      "text": "Robert Hooke (1665)",
+      "alt_text": "Text 3",
+      "manim_bbox": [
+        -6.234722367829861,
+        -2.1846057790277777,
+        -3.7999999406250002,
+        -1.880208000173612
+      ]
+    },
+    {
+      "shape_id": 8,
+      "kind": "text",
+      "text": "Published Micrographia, providing the first glimpses of the microstructure of the biological world.",
+      "alt_text": "Text 4",
+      "manim_bbox": [
+        -6.234722367829861,
+        -3.2361115465972228,
+        -2.467593040086806,
+        -2.3013890959548613
+      ]
+    },
+    {
+      "shape_id": 9,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 5",
+      "manim_bbox": [
+        -2.078240465243055,
+        -1.3934023307118055,
+        2.07824143734375,
+        -1.198726529340278
+      ]
+    },
+    {
+      "shape_id": 10,
+      "kind": "text",
+      "text": "Anton van Leeuwenhoek (1683)",
+      "alt_text": "Text 6",
+      "manim_bbox": [
+        -1.8835646638715282,
+        -1.892476883038194,
+        1.60300959875,
+        -1.588079104184028
+      ]
+    },
+    {
+      "shape_id": 11,
+      "kind": "text",
+      "text": "Observed \"animalcules\" (cells) and nerve fibers. However, early microscopes couldn't distinguish boundaries between nerve cells.",
+      "alt_text": "Text 7",
+      "manim_bbox": [
+        -1.8835646638715282,
+        -2.943981678506945,
+        1.883564663871529,
+        -2.0092592278645833
+      ]
+    },
+    {
+      "shape_id": 12,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 8",
+      "manim_bbox": [
+        2.272916266614584,
+        -1.1012734347222226,
+        6.429398169201389,
+        -0.9065976333506951
+      ]
+    },
+    {
+      "shape_id": 13,
+      "kind": "text",
+      "text": "The Syncitium Theory",
+      "alt_text": "Text 9",
+      "manim_bbox": [
+        2.467593040086805,
+        -1.6003470149479169,
+        4.919444853628472,
+        -1.2959492360937501
+      ]
+    },
+    {
+      "shape_id": 14,
+      "kind": "text",
+      "text": "Due to visual limitations, scientists initially believed the nervous system was a continuous, unbroken network like a mass of noodles.",
+      "alt_text": "Text 10",
+      "manim_bbox": [
+        2.467593040086805,
+        -2.963425636597222,
+        6.234722367829861,
+        -1.7171293597743054
+      ]
+    }
+  ],
+  "notes_text": null
+}

@@ -1,0 +1,8 @@
+Subtopic: Summary
+Scene type: manim
+
+Narration:
+So to summarize: we introduced the high-pass filter and its role in neural signal processing. A high-pass filter preserves high-frequency components while reducing frequencies below a selected cutoff frequency. It is commonly used to reduce baseline drift, suppress slow movement artefacts, and improve the visibility of rapidly changing neural activity. And like all filters, it must be configured carefully to avoid removing useful physiological information.
+
+Animation description:
+A summary card with the heading 'Summary: High-Pass Filter' at the top. The key points appear as bullet points, each with a small icon: first 'Preserves high-frequency components while reducing frequencies below a selected cutoff frequency' with a small waveform icon. Second 'Reduces baseline drift' with a small downward arrow icon. Third 'Suppresses slow movement artefacts' with a motion-wave icon. Fourth 'Improves visibility of rapidly changing neural activity' with a fast square-wave icon. Fifth 'Must be configured carefully to avoid removing useful physiological information' with a small warning triangle. Each item fades in sequentially and the final warning item gently pulses.

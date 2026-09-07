@@ -1,0 +1,31 @@
+1. **0.00–3.24** — From the previous scene's clean end (EEG waveform and spectrogram visible), the display fades smoothly into a dark background. As the narration states the general premise, a two-by-two grid of empty rounded-rectangle panels fades in, centred on screen. Each panel has a dim grey border and a blank dark interior. No labels or content yet.
+
+2. **3.24–6.92** — A subtle slow wave pattern ripples across the background behind the empty grid, suggesting continuous temporal variation. The four empty panels hold, waiting to be filled. No text yet.
+
+3. **7.68–10.28** — The top-left panel brightens slightly and its label fades in along the top edge of the panel: "EEG Analysis". Inside the panel, an empty small spectrogram area appears: a dark rectangle with a faint vertical axis (unlabeled) and a faint horizontal axis labelled "Time".
+
+4. **11.04–14.62** — Inside the top-left EEG panel, slow rhythmic horizontal bands begin to pulse within the small spectrogram: warm, low-saturation colour bands around the lower third of the vertical axis, fluctuating gently over time. The bands fade in and out with a slow rhythm, suggesting oscillatory changes.
+
+5. **14.88–16.68** — As "cognitive tasks" is named, the EEG panel shows the rhythmic bands accelerating briefly and shifting slightly upward in frequency, then settling. As "sleep" is named, the bands slow dramatically and the colour dims, showing a drowsy rhythm.
+
+6. **17.26–18.12** — As "sensory stimulation" is named, a brief, sharp brightening sweeps through the EEG panel's spectrogram bands, then returns to the baseline rhythmic pulsing. The label "EEG Analysis" remains clearly visible.
+
+7. **19.18–21.28** — The top-right panel brightens and its label fades in along the top edge: "EMG Analysis". Inside, a small spectrogram area appears, structured identically to the EEG one. Initially it shows a faint, low-energy baseline across all frequencies.
+
+8. **21.98–24.66** — Inside the EMG panel, a broad band of high-frequency energy (upper half of the vertical axis) begins to glow brighter and wider over time. The glow spreads across a wide frequency range, not narrow bands, suggesting broadband muscle activation.
+
+9. **24.66–26.12** — As "movement" is named, the EMG panel's broadband energy surges brightly and fills almost the full height of the spectrogram. As "fatigue" is named, the glow dims slightly, flickers, and becomes less steady, showing wavering activation. The label "EMG Analysis" holds.
+
+10. **26.90–28.80** — The bottom-left panel brightens and its label fades in along the top edge: "Brain–Computer Interfaces". Inside, a small spectrogram area appears, same layout as the others.
+
+11. **29.42–32.68** — Inside the BCI panel, a single specific narrow frequency band (a thin horizontal strip in the mid-range of the vertical axis) begins to glow and pulse rhythmically. Other frequencies stay dark, isolating this one band. The band pulses at a steady, controlled rhythm.
+
+12. **32.68–35.48** — The glowing band in the BCI panel is highlighted with a thin outline around it, drawing attention to the specific frequency range. A small arrow or bracket appears beside the band and a small label within the panel reads "Features". The band pulses once more, then freezes, showing the isolated rhythm captured for feature extraction.
+
+13. **36.62–38.00** — The bottom-right panel brightens and its label fades in along the top edge: "Event-Related Studies". Inside, a small spectrogram area appears.
+
+14. **38.40–41.42** — A vertical line drops onto the event-related spectrogram near the left portion of the time axis, labelled "Stimulus" in tiny text above it. Before the line, the spectrogram shows a quiet baseline: low, steady, faint energy. The vertical line itself is thin and bright, clearly marking the event.
+
+15. **41.42–44.06** — Immediately after the stimulus line, a brief burst of energy appears in the event-related panel's spectrogram: a compact bright blob localized in time right after the marker, spanning a moderate range of frequencies. The burst is sharp — it appears suddenly, then fades back to the baseline by the right edge of the panel.
+
+16. **44.06–45.58** — The full two-by-two grid holds, all four panels visible and labelled: "EEG Analysis" with slow rhythmic bands, "EMG Analysis" with broad high-frequency energy, "Brain–Computer Interfaces" with an isolated highlighted frequency band, and "Event-Related Studies" with the stimulus marker and brief post-marker burst. Each spectrogram pulses once, in sequence: EEG, then EMG, then BCI, then Event-Related. The grid settles evenly, all labels clear, and the scene ends on this complete stable view.

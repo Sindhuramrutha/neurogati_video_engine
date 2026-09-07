@@ -1,0 +1,8 @@
+Subtopic: Transition to Section 2.2
+Scene type: manim
+
+Narration:
+Now that we understand the overall acquisition process, the next logical step is to examine the component responsible for detecting the biological signal in the first place. In the next section, we'll discuss the different types of electrodes and sensors, how they operate, and the recording modalities in which they're used.
+
+Animation description:
+Show the full acquisition chain fading, and then isolate and enlarge the 'Electrode/Sensor' box, pulling it to the center of the screen. Apply a spotlight or glow effect to it. Draw an arrow pointing to the right with the text 'Next section: Electrodes and Sensors' appearing. Fade out other boxes.

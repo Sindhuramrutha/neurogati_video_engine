@@ -1,0 +1,8 @@
+Subtopic: 7.1.2 Role of Signal Processing in Brain-State Analysis
+Scene type: manim
+
+Narration:
+The raw EEG waveform alone does not always make these changes obvious. Signal processing techniques are therefore used to identify and quantify changes in neural activity. Some commonly used techniques include: band-pass filtering to isolate specific EEG frequency bands; spectral analysis to measure the power within each frequency band; spectrograms to visualise how brain rhythms change over time; and wavelet analysis to detect transient changes in oscillatory activity. These techniques allow researchers to move beyond visual inspection and objectively analyse changes in brain state.
+
+Animation description:
+A raw EEG waveform is shown and then transformed: first by band-pass filtering (waveform becomes smoother and frequency-specific), then by spectral analysis (a power spectrum plot appears), then by a spectrogram (a time-frequency heatmap appears), then by wavelet analysis (a time-frequency plot with scaled wavelets appears). Arrows connect each transformation.

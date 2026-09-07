@@ -1,0 +1,35 @@
+1. **0.00-1.48** — The heading "Sensory Stimulation" fades in centered at the top of the screen. Below it, nothing yet — empty space held for the icons that will appear. The scene opens clean, moving on from the previous behaviour icons.
+
+2. **1.48-2.22** — A brief pause as the narration says "stimulation." The heading "Sensory Stimulation" holds at top. The screen otherwise remains empty, anticipating the incoming icons.
+
+3. **2.22-3.52** — Pause between phrases. The heading remains. Nothing new appears.
+
+4. **3.52-3.88** — The first icon fades in along the top row: a simple eye outline, drawn in clean neutral strokes, positioned in the left third of the screen. Beneath it, the label "Visual" fades in.
+
+5. **3.88-4.78** — The eye icon with label "Visual" holds. The icon highlights briefly — a soft glow or brightening — as the narration says "auditory" is about to be named, the eye remains visible but its highlight dims.
+
+6. **4.78-5.10** — The second and third icons fade in: an ear outline in the center third with label "Auditory" beneath it, and a simple open-hand outline in the right third with label "Tactile" beneath it. The ear icon highlights briefly as "auditory" is named; then the hand icon highlights briefly as "tactile" is named.
+
+7. **5.10-5.72** — All three icons — eye ("Visual"), ear ("Auditory"), hand ("Tactile") — are fully visible in a row beneath the heading. As the narration says "stimuli," the three icons pulse softly in unison, a single gentle brightness swell, then return to normal.
+
+8. **5.72-6.32** — Beneath each icon, a baseline neural trace fades in: three separate horizontal scrolling waveform lines, one under each icon. Each is a smooth, regular, low-amplitude baseline oscillation — steady and repetitive, representing the resting neural signal. The three baselines are visually identical in character.
+
+9. **6.32-7.70** — As the narration says "transient neural responses," the eye icon ("Visual") highlights brightly. Its corresponding baseline trace shows a deflection: a single short, sharp upward spike appears at the left edge of the waveform, travels briefly along the scrolling trace, and then fades back to baseline. The spike is narrow and brief — a clear transient. The other two waveforms remain flat baseline.
+
+10. **7.70-8.68** — Brief pause. The eye icon's highlight dims. The waveforms all scroll gently at baseline. The visual transient spike has passed.
+
+11. **8.68-9.20** — As the narration says "These responses," the three baseline traces continue scrolling. The icons remain visible. Nothing new appears — holding the composition.
+
+12. **9.20-10.26** — The ear icon ("Auditory") highlights brightly. Its waveform shows a brief transient deflection — a short sharp bump, identical character to the visual one but on the auditory trace. It appears, scrolls, and fades back to baseline.
+
+13. **10.26-10.48** — The hand icon ("Tactile") now highlights brightly. Its waveform shows the transient deflection — a short sharp bump that appears and quickly fades back to baseline. The ear icon's highlight dims.
+
+14. **10.48-11.68** — As the narration says "short periods of time," the three waveform traces all scroll steadily. Each one intermittently, one at a time, shows a brief sharp deflection that fades quickly — eye waveform, then ear waveform, then hand waveform — each bump lasting only a moment before returning to baseline. The transients do not overlap; each is distinct and brief. The icons do not highlight during this; the focus is on the waveforms' brief bumps.
+
+15. **11.68-12.52** — The heading "Sensory Stimulation" holds. The three icons remain, their waveforms scrolling with occasional brief transient spikes, each short-lived. A subtle emphasis: as the narration says "therefore," the screen holds steady, no new element introduced.
+
+16. **12.52-14.46** — As the narration says "time-varying changes," all three waveforms scroll. The transient deflections become slightly more frequent — each trace still shows brief, flickering spikes that come and go, visually reinforcing that these constant short-duration responses are introducing variability into the otherwise steady baseline. The three icons pulse softly again.
+
+17. **14.46-15.20** — As the narration says "into the recording," a small highlighted note fades in near the bottom of the screen, below the waveforms. It reads "transient responses — short periods of time" in a contrasting box with a subtle glow. The note appears as the recording phrase completes.
+
+18. **15.20-16.05** — The final frame holds: heading "Sensory Stimulation" at top; three icons in a row (eye "Visual", ear "Auditory", hand "Tactile"); beneath each, a scrolling baseline with occasional brief transient spikes; the highlighted note "transient responses — short periods of time" glowing softly at the bottom. The composition holds steady until the scene ends at 16.05 seconds.

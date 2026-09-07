@@ -1,0 +1,39 @@
+1. **0.00-3.50** — The frame opens from the previous scene's final display: the waveform with highlighted "Alpha present (0–10 s)" first segment, dimmed other segments, and the spectrum below with the "Alpha" peak, clock icon, and question mark. As the narration says "So the question in neural signal analysis is no longer simply," the entire previous display fades out, leaving a clean, dark background. The screen is empty.
+
+2. **3.16-5.20** — As the narration says "which frequencies are present?" a text card fades in centered on screen, reading exactly: "Which frequencies are present?" The text is medium-sized, white or light on the dark background, presented as a question. No other elements appear.
+
+3. **5.76-7.42** — As the narration says "Instead, we ask," the first question card — "Which frequencies are present?" — is crossed out with a bold diagonal strike-through line drawn across it. The text itself dims to a muted gray. The word "Instead" could be suggested by the visual change, but no additional text is added.
+
+4. **7.42-9.60** — As the narration says "which frequencies are present, and when do they occur?" the crossed-out first card fades or slides away, and a second text card appears centered on screen, larger and more prominent than the first, reading exactly: "Which frequencies are present, and when do they occur?" The text is bright and highlighted, drawing attention. A small clock icon — a simple circle with two hands — is drawn next to this second question, positioned to the right of the text. The clock pulses gently once when the words "and when do they occur?" are spoken.
+
+5. **10.44-13.90** — As the narration says "This question motivates the development of time–frequency analysis," the second question card holds. The text "Time–Frequency Analysis" fades in beneath the question card, centered, in a slightly smaller but clear style. A forward-pointing arrow appears to the right or below the phrase, pointing onward to the right, suggesting progression to the next concept.
+
+6. **14.68-16.48** — As the narration says "which will be introduced in the next section," the question card and "Time–Frequency Analysis" label hold. The arrow points rightward. The clock icon next to the question remains visible. No new elements appear.
+
+7. **16.90-19.48** — As the narration says "To summarise what we've learned in this section," the question card, clock icon, "Time–Frequency Analysis" text, and arrow fade out. A summary panel fades in — a rectangular panel, centered, with a header reading "Summary" at the top. The panel is empty below the header.
+
+8. **19.48-22.62** — As the narration says "we introduced the concept of nonstationary neural signals," the first bullet point appears inside the summary panel, reading: "Nonstationary signals introduced". The bullet appears with a small dot or dash marker to its left.
+
+9. **23.28-26.92** — As the narration says "We learned that neural recordings are generally nonstationary," the second bullet point appears beneath the first, reading: "Neural recordings generally nonstationary". The first bullet remains visible.
+
+10. **26.92-31.08** — As the narration says "because brain activity changes continuously in response to behaviour," the third bullet point appears beneath the second, reading: "Causes: behaviour, sensory stimulation, cognitive processes, physiological state". The word "behaviour" is highlighted briefly within this bullet as it is spoken. The bullet text stretches across the panel width, with the causes listed in a space-separated or comma-separated format.
+
+11. **31.80-36.18** — As the narration continues "sensory stimulation, cognitive processes, and physiological state," the remaining cause words in the third bullet — "sensory stimulation", "cognitive processes", and "physiological state" — are each highlighted in turn, briefly, as they are spoken. The bullet remains fully visible. The highlights on each cause word fade after each word is spoken.
+
+12. **36.98-39.68** — As the narration says "Unlike stationary signals, nonstationary signals," the fourth bullet point appears beneath the third, reading: "Single spectrum insufficient". The text appears slightly emphasized, drawing contrast with the prior bullets. The three earlier bullets remain visible.
+
+13. **40.08-43.38** — As the narration says "cannot be fully described using a single frequency spectrum," the fourth bullet — "Single spectrum insufficient" — is highlighted with a soft glow or color change. The highlight persists while the phrase is spoken. No new text appears.
+
+14. **43.82-46.74** — As the narration says "because their frequency content changes over time," a brief visual annotation appears next to the fourth bullet: a small icon or inline emphasis, such as a small waveform symbol or a clock icon, appears beside "Single spectrum insufficient," then fades. The bullet then settles back to its standard appearance. No additional bullet text is added.
+
+15. **47.62-50.76** — As the narration says "Understanding this limitation prepares us for the next topic," the summary panel holds with all four bullets visible. The phrase "Next topic" appears at the bottom of the panel, in slightly smaller text, as a precursor heading. No other changes.
+
+16. **51.44-52.80** — As the narration says "the Short-Time Fourier Transform," text fades in beneath "Next topic" inside the panel, reading exactly: "Short-Time Fourier Transform". The text is bold and clear. The abbreviation "STFT" appears in parentheses after the full phrase, reading "Short-Time Fourier Transform (STFT)".
+
+17. **53.44-54.44** — As the narration says "or SDFT" (transcription artifact for "STFT"), the abbreviation "STFT" in the panel is highlighted briefly. The full phrase "Short-Time Fourier Transform" remains unchanged. No new elements appear.
+
+18. **54.90-57.48** — As the narration says "which extends conventional frequency analysis," the "Short-Time Fourier Transform (STFT)" text brightens. A small arrow or connector appears, linking the "STFT" text to a faint representation of the earlier spectrum concept — a small, simple frequency spectrum outline — suggesting extension beyond conventional frequency analysis.
+
+19. **57.86-61.42** — As the narration says "by incorporating information about both time and frequency," the words "time" and "frequency" within the phrase "Short-Time Fourier Transform" — or in a separate small annotation beneath the phrase — are briefly highlighted in sequence: "time" first, then "frequency". The highlight fades after each word is spoken. The arrow and the faint spectrum outline remain visible.
+
+20. **61.42-62.15** — The final frame holds until the scene ends at 62.15 seconds: the summary panel is visible with the header "Summary", the four bullet points — "Nonstationary signals introduced", "Neural recordings generally nonstationary", "Causes: behaviour, sensory stimulation, cognitive processes, physiological state", and "Single spectrum insufficient" — beneath it, the "Next topic" heading, and the full text "Short-Time Fourier Transform (STFT)" with the words "time" and "frequency" softly highlighted. The clock icon from earlier does not reappear. No further changes.

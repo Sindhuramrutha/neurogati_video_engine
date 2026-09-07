@@ -1,0 +1,8 @@
+Subtopic: 7.1.5 What is a Brain-Computer Interface?
+Scene type: manim
+
+Narration:
+A Brain-Computer Interface, or BCI, is a system that acquires brain signals, processes them, and converts them into commands that control an external device. Unlike traditional computer interfaces that rely on muscles for communication, such as using a keyboard, mouse, or touchscreen, a BCI uses brain activity directly. The system continuously records EEG signals, extracts meaningful information, interprets the user's intention, and translates that information into commands that operate an external device. For example, a user may imagine moving their left or right hand. Although no physical movement occurs, the corresponding changes in EEG activity can be detected and classified. The computer then converts these neural signals into control commands. In this way, EEG enables direct interaction between the user and the external system.
+
+Animation description:
+A definition box appears: 'BCI = system that acquires brain signals, processes them, and converts them into commands that control an external device.' A comparison panel shows traditional interface (hand on mouse/keyboard) versus BCI (brain directly controlling device). A user imagines moving left or right hand; EEG waveform changes; a classification block determines the intended action; the computer moves a cursor left or right.

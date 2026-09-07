@@ -1,0 +1,27 @@
+1. **0.00–3.50** — Scene opens from the previous closed-loop diagram, which fades out completely over the first 0.5 seconds. On a clean, dark background, a large horizontal bracket or divider line draws down the center of the screen, splitting it into two equal vertical panels. At the top of the left panel, the label **“Clinical”** fades in. At the top of the right panel, the label **“Consumer”** fades in. Both labels remain empty panel headers for now.
+
+2. **3.50–4.50** — The two labeled panels hold steady and empty. A subtle highlight pulse passes across the left **“Clinical”** panel to draw attention.
+
+3. **4.50–8.40** — Inside the **“Clinical”** panel, four icon slots fade in one at a time as they are named, arranged in a 2×2 grid. First, at the top-left: a hospital monitor icon — a rectangular patient monitor with a flatline trace and a small bright heartbeat spike, unlabeled. The grid positions for the remaining slots stay faintly outlined, empty.
+
+4. **8.40–12.48** — The remaining three **“Clinical”** panel icons appear, each in its grid slot. Top-right: the **EEG** icon from earlier scenes — simplified side-view scalp outline with electrode dots, lying on a padded medical bed, with a small voltage-difference symbol beside it, labeled **“Clinical EEG”**. Bottom-left: a neuroprosthetic hand icon — a mechanical hand with articulated fingers and small connection leads at the wrist, labeled **“Neuroprosthetic”**. Bottom-right: an implanted stimulator icon — a small rounded pulse-generator unit just under a simplified skin layer, with a thin lead wire running deeper, labeled **“Implanted stimulation”**. All four icons hold steady.
+
+5. **12.48–19.15** — The entire **“Clinical”** panel holds steady with its four icons. The **“Consumer”** panel remains empty. The **“Clinical”** panel does not pulse or animate during this time.
+
+6. **19.15–23.10** — Attention shifts to the **“Consumer”** panel. A highlight pulse passes across it. Inside the panel, the first consumer icon fades in: an app icon at the top of a 2×2 grid — a rounded-square mobile app button showing a simple leaf/heart logo, unlabeled.
+
+7. **23.10–27.96** — The remaining three **“Consumer”** panel icons appear one at a time in their grid slots. Top-right: a personal monitoring app icon — a rounded-square button with a simple waveform line and small heart-rate text reading **“72 bpm”**, unlabeled beyond the icon itself. Bottom-left: an interaction icon — two stylized hands with small glowing contact points on the fingertips, no label. Bottom-right: a gaming headset icon — a simple over-ear headset band with small electrode dots on the inner band, unlabeled. All four consumer icons hold steady.
+
+8. **27.96–33.90** — In the **“Consumer”** panel, a horizontal row of small, simplified wearable sensor icons fades in below the 2×2 grid: a smartwatch with a green LED glow on its underside, a small adhesive patch with two electrode dots, and a thin flexible band with light traces. All three are unlabeled, identical in size, and hold steady.
+
+9. **33.90–42.68** — A large warning triangle fades in at the center of the screen, overlapping the panel divider line. It is a bold yellow/orange triangle with an exclamation mark. Below it, the text **“Not equivalent”** fades in. From the **“Clinical”** panel, a faint arrow points toward the warning; from the **“Consumer”** panel, a matching faint arrow points toward the same warning symbol, as if the two panels are being compared. The two panels dim slightly behind the warning symbol.
+
+10. **42.68–49.00** — The warning triangle and **“Not equivalent”** text hold at center. A horizontal checklist bar fades in below the warning symbol, within the **“Clinical”** panel side: three small checkboxes, each checking off one by one as they are named — first checkbox labeled **“Reliability”**, checking at once; second checkbox labeled **“Safety”**, checking a moment later; third checkbox labeled **“Effectiveness”**, checking a moment after. Each checkmark is a bright green tick that appears with a small flash.
+
+11. **49.00–54.40** — The two-panel layout, warning symbol, and checklist hold steady. The labels **“Clinical”** and **“Consumer”** pulse once to re-emphasize the distinction. The warning triangle pulses subtly.
+
+12. **54.40–56.70** — The entire two-panel layout shrinks and slides upward to the top third of the screen, leaving the bottom two-thirds clear. In that lower area, below the panels, a raw signal trace fades in at the left: a jagged, noisy waveform with a small question mark hovering above it. The trace is unlabeled and has no axes.
+
+13. **56.70–62.40** — From the raw waveform on the left, a right-pointing arrow draws across the lower area toward the right. At the right end, a clean, validated signal trace fades in: a smoother, cleaner waveform with a bright green checkmark above it. Between the arrow and the validated trace, the text **“Validation required”** fades in. The arrow completes, and the **“Validation required”** label settles under the midpoint of the arrow.
+
+14. **62.40–63.30** — The full screen holds steady: two panels at top with **“Clinical”** and **“Consumer”** labels and icons, warning triangle with **“Not equivalent”** at center between them, and the lower arrow showing the raw waveform on the left transforming into the validated waveform on the right with **“Validation required”** labeled. The scene ends on this final layout.

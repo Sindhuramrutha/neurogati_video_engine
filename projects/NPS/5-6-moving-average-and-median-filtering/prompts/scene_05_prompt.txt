@@ -1,0 +1,17 @@
+1. [0.00–0.96] A single waveform plot fades in, centered on screen. The trace is light blue and mostly flat with small low‑amplitude noise, except for one sharp, tall, narrow spike near the middle. Axes are unlabeled. The spike is clearly distinct from the surrounding trace.
+
+2. [0.96–2.80] The exact text “Median Filter” fades in centered above the plot as the narration says “median filter.” The plot and trace hold, spike still prominent.
+
+3. [3.52–4.26] A translucent rectangular window, about 7 sample points wide, appears centered on the spike’s peak. Inside the window, the individual sample dots are highlighted as small white circles on the trace. The rest of the trace dims slightly.
+
+4. [4.90–7.64] The seven sample values inside the window are displayed as small white numbers stacked vertically next to each dot: for example, from left to right: 0.2, 0.3, 5.8, 0.1, 0.4, 0.3, 0.2. The window holds, and the numbers remain visible.
+
+5. [8.64–12.00] The seven numbers lift from the dots and rearrange themselves into a horizontal row sorted ascending left to right below the plot: 0.1, 0.2, 0.2, 0.3, 0.3, 0.4, 5.8. The animation shows each number sliding smoothly into its sorted position over about 2 seconds, finishing by 12.00.
+
+6. [12.54–13.42] The middle value in the sorted row — 0.3 — glows bright orange and enlarges slightly. A subtle bracket or underline appears beneath it. The other six values dim. The original window on the trace remains visible above.
+
+7. [14.22–17.64] Back on the waveform, the center sample inside the window (the spike peak) fades from its original value (5.8) to the median value (0.3). The spike visually collapses to match the surrounding low‑amplitude trace. The window and the sorted number row hold. Text “median” with a small arrow pointing to the replaced sample appears briefly, then fades.
+
+8. [17.64–19.88] All annotation elements — the window, the sorted number row, the text — fade out, leaving only the single waveform plot. The trace now has no spike; only low‑amplitude noise remains. The spike’s former location is briefly marked by a faint dashed circle that appears and then fades.
+
+9. [19.88–23.48] The exact text “Extreme values have very little influence on the median” fades in centered below the plot in two lines. The cleaned waveform and the text hold until 23.48.

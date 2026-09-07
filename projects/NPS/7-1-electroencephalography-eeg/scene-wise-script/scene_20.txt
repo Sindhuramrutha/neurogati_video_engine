@@ -1,0 +1,8 @@
+Subtopic: 7.1.4 Role of Signal Processing in Epilepsy Analysis
+Scene type: manim
+
+Narration:
+Raw EEG recordings often contain noise, eye movement artefacts, muscle activity, and other unwanted signals. Signal processing techniques help improve recording quality and assist in identifying abnormal neural activity. Some commonly used techniques include: filtering, which removes unwanted electrical interference while preserving clinically important EEG activity; time-domain analysis, where epileptic spikes and sharp waves can be detected by analysing changes in the EEG waveform over time; time-frequency analysis, where spectrograms and wavelet analysis allow clinicians and researchers to examine how seizure-related frequency components evolve before, during, and after a seizure, which is particularly useful because seizure activity changes dynamically over time; and automated detection, where modern signal-processing algorithms and machine learning methods can automatically identify abnormal EEG patterns and assist clinicians in seizure detection. Although these systems support clinical decision-making, they complement rather than replace expert interpretation.
+
+Animation description:
+A noisy EEG waveform with eye movement artefacts and muscle activity is shown. A filtering block removes the noise, leaving a cleaner signal. A time-domain analysis panel highlights a spike in the clean waveform. A time-frequency spectrogram shows frequency evolution before, during, and after a seizure. A machine learning block with an automatic detection alert appears, with a note 'complements expert interpretation'.

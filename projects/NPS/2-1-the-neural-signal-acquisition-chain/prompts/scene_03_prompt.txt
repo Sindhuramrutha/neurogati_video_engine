@@ -1,0 +1,21 @@
+1. (0.00–1.46) The prior scene's acquisition-chain diagram fades out. In its place, a stylized human figure silhouette fades in, centered, neutral gray outline against a dark background, facing forward, arms slightly away from the body. The figure remains undetailed except for its outline. Narration: "Let's go through each component."
+
+2. (2.56–3.84) Inside the silhouette, the head region brightens to a warm highlight. Small neuron icons — tiny circular cell bodies with branching dendrites and a short axon — fade in clustered within the highlighted head area. A label beneath the figure appears reading "Biological Source." Narration: "First, the biological source."
+
+3. (4.56–8.46) A subtle animated pulse moves through the highlighted head region, the neuron icons firing small bright flashes in sequence. A caption fades in below the label: "Every recording begins with a biological event occurring inside the body." Narration: "Every recording begins with a biological event occurring inside the body."
+
+4. (9.04–10.44) The head highlight dims slightly. The figure's overall outline now shows four prospective source regions as faint, unlabeled circles or outlines — one in the head, one on an arm, one at an eye, and one zoomed-in inset panel appearing to the right of the figure. They remain unpopulated, waiting to be filled. Narration: "Depending on the recording modality, that source could be..."
+
+5. (11.80–14.02) The head region re-highlights with the cortical neuron icons. Small activity flashes ripple through the neuron cluster. A label appears near the head: "Cortical neurons." Narration: "...the electrical activity of cortical neurons."
+
+6. (14.92–15.20) The head region dims to resting state. The arm region highlights, and inside the upper arm area small lightning-like pulses — short jagged lines — flash repeatedly along the muscle shape. A label appears near the arm: "Muscle fibers." Narration: "...muscle fibers."
+
+7. (15.80–16.24) The arm region dims. The eye region on the face highlights, with the eye contour brightening and small rapid pulse marks appearing around it. A label appears near the eye: "Eye muscles." Narration: "...eye muscles."
+
+8. (16.68–17.68) The eye region dims. The inset panel to the right of the figure expands and zooms to show a single large neuron in detail, with a labeled soma, dendrites, and axon. The neuron fires once, a bright spike traveling down the axon. A label appears beneath the inset: "Individual neurons." Narration: "...or individual neurons."
+
+9. (18.68–20.50) All four highlighted regions — head, arm, eye, and the inset neuron — are now visible simultaneously at lower resting brightness, each with its label. A caption fades in below the figure reading "Without this physiological activity, there is simply no signal to record." The figure remains centered. Narration: "And here's the obvious but important point."
+
+10. (21.30–22.86) The four regions and the inset panel fade out completely, one after another in quick succession, leaving only the blank gray silhouette outline. The labels clear away. The caption remains beneath the figure. Narration: "Without this physiological activity..."
+
+11. (23.30–25.80) The silhouette outline now appears hollow and dim. The caption below changes to bold text: "no activity = no signal." The figure and caption hold static through the end of the scene. Narration: "...there is simply no signal to record."

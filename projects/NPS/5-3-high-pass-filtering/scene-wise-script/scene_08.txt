@@ -1,0 +1,8 @@
+Subtopic: Applications in Neural Signal Processing: EMG
+Scene type: manim
+
+Narration:
+In EMG, the signals often contain low-frequency motion artefacts produced by body movement. High-pass filtering reduces these slow artefacts while preserving the higher-frequency components that are associated with muscle activity.
+
+Animation description:
+A stylized upper-arm bicep with a simplified electrode pair attached to the skin. A wire leads to a dynamic EMG waveform display on a small screen. Initially, the waveform shows low-frequency smooth wave artefacts with slower oscillations, sometimes obscuring the sharp high-frequency muscle spikes. When a high-pass filter box is activated, the low-frequency smooth components fade out, leaving the sharp, choppy bursts of muscle activity clearly visible. Labels fade in: 'motion artefact' above the low-frequency wave, and 'muscle activity' above the sharp components. The label 'EMG' sits at the top.

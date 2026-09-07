@@ -1,0 +1,8 @@
+Subtopic: 5.6.1 Introduction
+Scene type: manim
+
+Narration:
+In earlier sections we explored filters that change the frequency content of a signal, like low‑pass, high‑pass, and band‑pass filters. But not all filtering is done in the frequency domain. Some filters work directly on the signal waveform in the time domain, modifying it sample by sample. These time‑domain filters are simple to implement and very useful for reducing random fluctuations and impulsive noise. The two most widely used are the moving‑average filter and the median filter. Let’s see how they work, compare them, and understand when to use each.
+
+Animation description:
+Show a generic noisy waveform on screen with a ‘Time domain’ label. Next to it, briefly flash icons representing frequency‑domain filters (low‑pass, high‑pass, etc.) and then cross them out. Then highlight the waveform again and show two simplified filter icons: an averaging symbol and a sorting/median symbol with labels ‘Moving‑Average’ and ‘Median’. Fade to the next scene.

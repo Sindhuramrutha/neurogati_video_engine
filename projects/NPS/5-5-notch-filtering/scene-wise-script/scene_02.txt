@@ -1,0 +1,8 @@
+Subtopic: 5.5.4 Why is a Notch Filter Needed?
+Scene type: manim
+
+Narration:
+The biggest reason notch filters are everywhere in biomedical recording is the electrical power supply. Lab equipment, lights, power cables, they all radiate electromagnetic fields. Those fields couple into your recording electrodes and show up as power line interference. The frequency depends on the local grid: fifty hertz in many countries, sixty hertz in others. Because the interference sits at a single, well defined frequency, a notch filter centered right on that frequency can reduce it dramatically. Instead of stripping out a broad range, you remove only the narrow band where the electrical interference lives.
+
+Animation description:
+A simple diagram of a recording electrode near a stick figure, with wavy electromagnetic field lines radiating from a power outlet symbol toward the electrode. A frequency spectrum appears beside it. A tall, sharp red peak at 50 Hz towers above a low background curve. The scene zooms onto that peak as a transparent notch band descends over only that spike. The peak collapses while the rest of the spectrum remains unchanged.

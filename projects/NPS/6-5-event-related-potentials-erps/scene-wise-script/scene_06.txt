@@ -1,0 +1,8 @@
+Subtopic: Limitations
+Scene type: manim
+
+Narration:
+Although ERP analysis is a powerful technique, it also has several limitations. The most important limitation is that the event-related response is often much smaller than the ongoing EEG activity. For this reason, many repeated trials are usually required to obtain a reliable ERP waveform. In addition, ERP analysis assumes that the neural response occurs at approximately the same time following each presentation of the stimulus. If the timing of the response varies substantially between trials, averaging may reduce the visibility of the ERP. So an important note: an ERP is not obtained from a single EEG recording. It is typically obtained by averaging many EEG epochs that are aligned to the same experimental event. This averaging process is the key reason why ERPs can reveal neural responses that are difficult to observe in individual trials.
+
+Animation description:
+First, a single EEG trace is shown with a very small event-related response buried in large background activity, with the small response highlighted and shown to be tiny compared to the background. Then, two scenarios are shown side by side: on the left, multiple epochs where the response occurs at the same latency, and averaging produces a clear peak. On the right, multiple epochs where the response latency varies from trial to trial, and the averaged result shows a smeared or reduced peak. A final text overlay appears: 'ERP = average of many aligned EEG epochs'.

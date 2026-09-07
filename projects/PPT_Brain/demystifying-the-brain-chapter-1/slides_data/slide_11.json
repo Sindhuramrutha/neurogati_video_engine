@@ -1,0 +1,296 @@
+{
+  "index": 11,
+  "slide_width_emu": 14630400,
+  "slide_height_emu": 8229600,
+  "shapes": [
+    {
+      "shape_id": 2,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 0",
+      "manim_bbox": [
+        -7.111111,
+        -3.9999999375,
+        -1.7777777500000003,
+        3.9999999375
+      ]
+    },
+    {
+      "shape_id": 3,
+      "kind": "text",
+      "text": "Pharmacology: The Chemical Signal",
+      "alt_text": "Text 0",
+      "manim_bbox": [
+        -1.1740740557291671,
+        2.5802079892361114,
+        6.016435212690973,
+        3.1192125496875
+      ]
+    },
+    {
+      "shape_id": 4,
+      "kind": "text",
+      "text": "While neurons are electrical, they communicate chemically. This was proven by Otto Loewi in an experiment inspired by a dream.",
+      "alt_text": "Text 1",
+      "manim_bbox": [
+        -1.1740740557291671,
+        1.7696762628125002,
+        6.507407305729166,
+        2.321528106041667
+      ]
+    },
+    {
+      "shape_id": 5,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 2",
+      "manim_bbox": [
+        -0.980092334253472,
+        -3.1192125496875,
+        -0.9578701123784725,
+        1.5756945413368055
+      ]
+    },
+    {
+      "shape_id": 6,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 3",
+      "manim_bbox": [
+        -0.8082754807118055,
+        1.370601708923611,
+        -0.29091474222222224,
+        1.392823930798611
+      ]
+    },
+    {
+      "shape_id": 7,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 4",
+      "manim_bbox": [
+        -1.1741323817708338,
+        1.1876154184027778,
+        -0.7860532588368061,
+        1.5756945413368055
+      ]
+    },
+    {
+      "shape_id": 8,
+      "kind": "text",
+      "text": "1",
+      "alt_text": "Text 5",
+      "manim_bbox": [
+        -1.109490601892361,
+        1.2200223392534721,
+        -0.8508097465972222,
+        1.5434023283680554
+      ]
+    },
+    {
+      "shape_id": 9,
+      "kind": "text",
+      "text": "The Setup",
+      "alt_text": "Text 6",
+      "manim_bbox": [
+        -0.11759210470486092,
+        1.2469903567187504,
+        2.0384261371006938,
+        1.5164352830034722
+      ]
+    },
+    {
+      "shape_id": 10,
+      "kind": "text",
+      "text": "Loewi placed two living frog hearts in separate beakers. One heart had its vagus nerve intact.",
+      "alt_text": "Text 7",
+      "manim_bbox": [
+        -0.11759210470486092,
+        0.5916661713715277,
+        6.507408277829861,
+        1.1435180146006942
+      ]
+    },
+    {
+      "shape_id": 11,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 8",
+      "manim_bbox": [
+        -0.8082754807118055,
+        0.041666179965277994,
+        -0.29091474222222224,
+        0.06388840184027789
+      ]
+    },
+    {
+      "shape_id": 12,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 9",
+      "manim_bbox": [
+        -1.1741323817708338,
+        -0.14132011055555527,
+        -0.7860532588368061,
+        0.24675901237847242
+      ]
+    },
+    {
+      "shape_id": 13,
+      "kind": "text",
+      "text": "2",
+      "alt_text": "Text 10",
+      "manim_bbox": [
+        -1.109490601892361,
+        -0.1089122176041668,
+        -0.8508097465972222,
+        0.21446777151041685
+      ]
+    },
+    {
+      "shape_id": 14,
+      "kind": "text",
+      "text": "The Stimulus",
+      "alt_text": "Text 11",
+      "manim_bbox": [
+        -0.11759210470486092,
+        -0.08194517223958275,
+        2.0384261371006938,
+        0.18749975404513908
+      ]
+    },
+    {
+      "shape_id": 15,
+      "kind": "text",
+      "text": "He electrically stimulated the vagus nerve of the first heart, causing it to slow down.",
+      "alt_text": "Text 12",
+      "manim_bbox": [
+        -0.11759210470486092,
+        -0.4613424638715271,
+        6.507408277829861,
+        -0.18541654225694515
+      ]
+    },
+    {
+      "shape_id": 16,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 13",
+      "manim_bbox": [
+        -0.8082754807118055,
+        -1.011342455277778,
+        -0.29091474222222224,
+        -0.9891202334027778
+      ]
+    },
+    {
+      "shape_id": 17,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 14",
+      "manim_bbox": [
+        -1.1741323817708338,
+        -1.194328745798611,
+        -0.7860532588368061,
+        -0.8062496228645832
+      ]
+    },
+    {
+      "shape_id": 18,
+      "kind": "text",
+      "text": "3",
+      "alt_text": "Text 15",
+      "manim_bbox": [
+        -1.109490601892361,
+        -1.1619218249479166,
+        -0.8508097465972222,
+        -0.8385418358333334
+      ]
+    },
+    {
+      "shape_id": 19,
+      "kind": "text",
+      "text": "The Transfer",
+      "alt_text": "Text 16",
+      "manim_bbox": [
+        -0.11759210470486092,
+        -1.1349538074826384,
+        2.0384261371006938,
+        -0.8655088811979175
+      ]
+    },
+    {
+      "shape_id": 20,
+      "kind": "text",
+      "text": "He transferred liquid from the first beaker to the second. The second heart immediately slowed down.",
+      "alt_text": "Text 17",
+      "manim_bbox": [
+        -0.11759210470486092,
+        -1.7902779928298616,
+        6.507408277829861,
+        -1.238426149600694
+      ]
+    },
+    {
+      "shape_id": 21,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 18",
+      "manim_bbox": [
+        -0.8082754807118055,
+        -2.3402779842361117,
+        -0.29091474222222224,
+        -2.3180557623611113
+      ]
+    },
+    {
+      "shape_id": 22,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 19",
+      "manim_bbox": [
+        -1.1741323817708338,
+        -2.5232642747569445,
+        -0.7860532588368061,
+        -2.135185151822917
+      ]
+    },
+    {
+      "shape_id": 23,
+      "kind": "text",
+      "text": "4",
+      "alt_text": "Text 20",
+      "manim_bbox": [
+        -1.109490601892361,
+        -2.490856381805556,
+        -0.8508097465972222,
+        -2.167476392690973
+      ]
+    },
+    {
+      "shape_id": 24,
+      "kind": "text",
+      "text": "The Proof",
+      "alt_text": "Text 21",
+      "manim_bbox": [
+        -0.11759210470486092,
+        -2.463889336440973,
+        2.0384261371006938,
+        -2.19444441015625
+      ]
+    },
+    {
+      "shape_id": 25,
+      "kind": "text",
+      "text": "This proved the nerve released a chemical substance (neurotransmitter) to signal the heart.",
+      "alt_text": "Text 22",
+      "manim_bbox": [
+        -0.11759210470486092,
+        -3.1192125496875,
+        6.507408277829861,
+        -2.5673607064583335
+      ]
+    }
+  ],
+  "notes_text": null
+}

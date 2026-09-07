@@ -1,0 +1,8 @@
+Subtopic: 2.1.4 Components of the Acquisition Chain - Electrode or Sensor
+Scene type: manim
+
+Narration:
+Next comes the electrode or sensor. This is the device that detects the biological signal and transfers it to the recording system. Different techniques use different sensing devices. For example, EEG uses scalp electrodes placed on the head. EMG uses surface or needle electrodes. ECoG uses electrode grids placed directly on the cortical surface. And MEG uses specialized magnetic sensors. Now, their designs are quite different, but they all perform the same fundamental task: detecting physiological activity.
+
+Animation description:
+Animate four separate example panels appearing in sequence. Panel 1: a head outline with small circular electrodes placed on the scalp, labeled 'EEG: scalp electrodes'. Panel 2: an arm cross-section showing a surface electrode on the skin and a fine needle electrode inserted into muscle, labeled 'EMG: surface or needle electrodes'. Panel 3: a brain surface with a flat grid of rectangular electrode contacts lying on it, labeled 'ECoG: cortical grid'. Panel 4: a head surrounded by a helmet with small loop-shaped magnetic sensors, labeled 'MEG: magnetic sensors'. At the end, draw a unifying arrow under all four panels pointing to a single label 'detect physiological activity'.

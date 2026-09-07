@@ -1,0 +1,13 @@
+1. **0.00-2.06** — A blank background fades in. The heading "Learning Objectives" appears at the top center of the screen in bold, larger text, faded in completely by 1.48 seconds. The rest of the screen remains blank.
+
+2. **2.06-3.54** — The heading "Learning Objectives" holds steady at the top. No other content yet appears; the screen waits for the first bullet point.
+
+3. **3.54-6.06** — The first bullet point "Define stationary and nonstationary signals" fades in below the heading, left-aligned under it, as the narration says "define a stationary and a nonstationary signal." A small bullet marker (filled circle) appears to its left. The text appears in normal weight, dark against the background.
+
+4. **6.06-10.24** — The second bullet point "Explain why neural signals are nonstationary" fades in directly below the first bullet, with its own bullet marker, as the narration says "Explain why neural signals are generally nonstationary." The first bullet remains fully visible above it.
+
+5. **10.24-14.04** — The third bullet point "Identify causes of time-varying neural activity" fades in below the second bullet, with the same bullet marker style, synchronized with "Identify common causes of time-varying neural activity." The first two bullets remain visible.
+
+6. **14.04-19.16** — The fourth bullet point "Understand why specialised analysis is needed" fades in below the third bullet, with its own bullet marker, as the narration says "understand why time-varying signals require specialised analysis techniques." All four bullet points are now visible, forming a complete, evenly spaced list under the heading.
+
+7. **19.16-20.00** — The entire list — heading plus all four bullet points — holds on screen for a brief, steady moment. As the scene approaches its end, the list fades out smoothly to a blank background, reaching full fade-out at 20.00 seconds.

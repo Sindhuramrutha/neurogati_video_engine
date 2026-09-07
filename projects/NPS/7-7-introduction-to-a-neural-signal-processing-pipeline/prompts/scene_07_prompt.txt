@@ -1,0 +1,35 @@
+1. **0.00–1.58**  
+   From the previous scene's composition — the compact top-right application cards, the expanded Sleep staging vertical pipeline, and the goal text at the bottom — everything fades out and clears. A clean blank background remains. No visual content yet.
+
+2. **1.58–7.64**  
+   Center screen, a horizontal pipeline fades in: four rounded boxes connected left to right by horizontal arrows. The four box labels are, in order: **“Raw Signal”**, **“Preprocessing”**, **“Feature Extraction”**, and **“Interpretation or Classification”**. The boxes are evenly spaced across the middle of the screen, each with a soft neutral fill and a dark border. The arrows between them are simple horizontal connectors. The pipeline holds as the narrator describes transforming a raw recording into meaningful information.
+
+3. **7.64–9.26**  
+   The whole pipeline holds steady. A soft highlight sweeps across the four boxes from left to right once, subtly brightening each in sequence to reinforce that this is the basic pipeline structure.
+
+4. **9.26–10.78**  
+   The first box, **“Raw Signal”**, brightens with a blue-gray accent border and a subtle outward glow. The other three boxes dim partially. To the right of the **Raw Signal** box — or directly beneath it if space is tight — explanatory text fades in: **“neural activity + unwanted components”**. This text sits beside the box and holds.
+
+5. **11.28–12.50**  
+   The **Raw Signal** box and its explanatory text return to steady brightness. The second box, **“Preprocessing”**, brightens with a teal accent border and the same subtle glow. The other boxes dim partially. Its explanatory text fades in beside it: **“prepares signal for analysis”**. This text sits beside the **Preprocessing** box and holds.
+
+6. **12.50–15.14**  
+   The **Preprocessing** box and its text return to steady brightness. The third box, **“Feature Extraction”**, brightens with a green accent border and the same subtle glow. The other boxes dim partially. Its explanatory text fades in beside it: **“meaningful quantitative measurements”**. This text sits beside the **Feature Extraction** box and holds. At 13.70, the fourth box, **“Interpretation or Classification”**, also brightens with an orange accent border and the same subtle glow, while **Feature Extraction** stays bright. Its explanatory text fades in beside it: **“understand activity or assign category”**. Both the **Feature Extraction** and **Interpretation or Classification** boxes now show their explanatory text.
+
+7. **16.36–21.32**  
+   The **Raw Signal** box brightens again with its blue-gray accent border. A small raw waveform icon — a jagged blue-gray trace on a thin baseline — appears just above or inside the **Raw Signal** box. The explanatory text **“neural activity + unwanted components”** pulses once in emphasis. At 20.34, small orange-red zigzag marks overlay the blue-gray waveform icon, pulsing in to represent the unwanted components alongside the neural activity. The waveform with the unwanted components overlay holds through 21.32.
+
+8. **22.34–24.52**  
+   The **Raw Signal** box returns to steady brightness. The **Preprocessing** box brightens with its teal accent border. Its explanatory text **“prepares signal for analysis”** pulses once. A small icon — horizontal wavy lines being smoothed into a cleaner, flatter trace — appears near the **Preprocessing** box, showing the signal being prepared. The composition holds.
+
+9. **25.25–29.44**  
+   The **Preprocessing** box returns to steady brightness. The **Feature Extraction** box brightens with its green accent border. Its explanatory text **“meaningful quantitative measurements”** pulses once. A small icon appears near the **Feature Extraction** box: a compact bar chart with three small vertical bars of different heights next to a small numeric readout, representing quantitative measurements. The icon holds.
+
+10. **30.26–33.24**  
+    The **Feature Extraction** box returns to steady brightness. The **Interpretation or Classification** box brightens with its orange accent border. Its explanatory text **“understand activity or assign category”** pulses once. The box visually splits slightly into two halves, one labeled **“Interpretation”** and one **“Classification”**, connected by a thin internal vertical divider, while still being a single box in the pipeline. The composition holds.
+
+11. **33.78–38.96**  
+    The **Interpretation** half of the fourth box brightens and pulses first at 33.78, with the text **“understand neural activity”** appearing beneath it. Then at 34.60, the **Classification** half brightens and pulses, with the text **“assign to predefined categories or commands”** appearing beneath it. Both sub-parts remain visible, showing the two branches of the final stage.
+
+12. **40.02–44.73**  
+    The entire pipeline — all four boxes with their explanatory texts, icons, and arrows — returns to full steady brightness. Around the pipeline, four application icons fade in: a **brain** icon, a **muscle** icon, an **eye** icon, and a **computer** icon. Each icon sits in a different position around the pipeline — one above, one below, one to the left, one to the right. Each icon is connected to the pipeline by a dotted line extending from the icon to the center of the pipeline, converging near the **Raw Signal** box. The dotted lines pulse gently once as the narrator says **“same general framework”**, then all four icons and dotted lines hold steady. The complete composition — center pipeline with labels and explanatory texts, four application icons connected by dotted lines — holds through the end of the scene, reaching **44.73**.

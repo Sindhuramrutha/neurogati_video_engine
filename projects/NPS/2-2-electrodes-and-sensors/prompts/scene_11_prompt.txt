@@ -1,0 +1,15 @@
+1. 0.00–1.46: A mostly empty frame holds a faint, small version of the previous scene's acquisition-chain blocks at the bottom edge, dimmed. The words "Now let's bring this together" appear centered in plain text as the narration begins.
+
+2. 2.30–6.04: A comparison table fades in, centered. The column headers read: "Detection principle", "Location", "Invasiveness", "Signal quality". Three row labels appear from top to bottom: "EEG electrodes", "ECoG grids", "MEG sensors". All cells are empty placeholders (blank rectangles) at this point. As each sensor is named, its row label brightens: EEG electrodes at 3.30, ECoG grids at 4.66, MEG sensors at 5.52.
+
+3. 6.20–8.34: All three row labels remain bright. A colored overlay or bracket spans all three rows with a caption reading "same fundamental job", temporarily uniting the rows visually.
+
+4. 8.80–12.50: Each row fills in its first two cells one at a time, row by row. The "EEG electrodes" row receives: "Detection principle: Electrical voltage" and "Location: Scalp". The "ECoG grids" row receives: "Electrical voltage" and "Cortical surface". The "MEG sensors" row receives: "Magnetic fields" and "Just outside head". As the narration says "transferring it to the acquisition system", the dimmed acquisition-chain blocks at the bottom brighten, and a single arrow points from the table into the first block.
+
+5. 13.10–19.04: The "Invasiveness" and "Signal quality" columns fill in, row by row: EEG electrodes get "Non-invasive" and "Lower signal quality"; ECoG grids get "Invasive" and "Higher signal quality"; MEG sensors get "Non-invasive" and "Intermediate signal quality". The values appear as the narration names each attribute: locations and "different levels of invasiveness" highlighted first, then "different resulting signal quality" draws attention to the rightmost column.
+
+6. 19.90–23.72: The table shifts upward and shrinks slightly. Below it, a balance-beam graphic fades in: a horizontal beam on a central triangular fulcrum. Two hanging pans are attached at the beam's ends. The left pan holds a weight labeled "signal quality"; the right pan holds a weight labeled "spatial resolution". The beam is level at first, then tips gently left, then right, as the two weights are added.
+
+7. 24.10–28.26: Two more weights are added: "patient safety" to the left pan, and "invasiveness" to the right pan. The beam tips noticeably to the right as "invasiveness" is added. Small motion arrows on the beam indicate the tip direction. The table above remains visible but dimmed.
+
+8. 28.26–29.05: The balance-beam graphic holds steady: left pan holding "signal quality" and "patient safety", right pan holding "spatial resolution" and "invasiveness", tipped toward the right. The dimmed comparison table stays above. The frame remains on this layout until the scene ends at 29.05.

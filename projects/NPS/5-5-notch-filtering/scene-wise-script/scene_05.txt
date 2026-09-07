@@ -1,0 +1,8 @@
+Subtopic: 5.5.6 Applications in Neural Signal Processing — EMG, ECoG, LFP
+Scene type: manim
+
+Narration:
+Surface EMG recordings also pick up electrical interference from nearby equipment. A notch filter helps suppress that unwanted component while preserving most of the actual muscle activity. Even invasive recordings like ECoG and local field potentials, which generally have better signal quality, can still be affected by power line interference. In those cases, notch filtering is used as a standard part of the preprocessing pipeline to clean things up.
+
+Animation description:
+Three small panels appear side by side: a forearm with EMG electrodes, a brain surface with an ECoG grid, and a magnified local field potential trace. Each panel shows the raw trace with visible 50 Hz noise. A notch filter symbol sweeps across all three simultaneously, and each trace cleans up, the noise disappearing while the underlying physiological waveform remains.

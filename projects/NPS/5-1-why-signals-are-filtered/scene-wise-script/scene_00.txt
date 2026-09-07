@@ -1,0 +1,8 @@
+Subtopic: 5.1.1 Introduction
+Scene type: manim
+
+Narration:
+In an ideal world, every neural recording would contain only the physiological signal we want to study. Unfortunately, that's rarely the case. Whether we record EEG, EMG, ECoG, or microelectrode signals, the waveform we acquire usually contains not just the biological signal of interest, but also unwanted electrical activity from a whole range of sources. These unwanted components can come from electrical equipment, movement of the subject, muscle activity, poor electrode contact, or simply the surrounding environment. And if we don't remove these unwanted signals, they make interpretation difficult and reduce the accuracy of later analyses. That's why signal filtering is an essential step in neural signal processing.
+
+Animation description:
+A stylized neural recording trace appears on screen, a clean wiggling line reminiscent of brain activity. One by one, colored noise components fade in and distort the trace: a slow sinusoidal drift, a high-frequency buzz from equipment, a sharp spike from movement, a power-line frequency ripple. Each noise source is labeled. The clean trace becomes progressively messier until it's hard to see the original shape. A final overlay message appears: 'Filtering removes what we don't want.'

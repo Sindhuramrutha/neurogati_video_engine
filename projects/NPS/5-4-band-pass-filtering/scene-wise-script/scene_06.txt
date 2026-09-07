@@ -1,0 +1,8 @@
+Subtopic: 5.4.7 Advantages
+Scene type: manim
+
+Narration:
+Band‑pass filtering offers several important advantages. It removes both low‑frequency and high‑frequency interference, improves the signal‑to‑noise ratio, preserves only the frequency range relevant to the analysis, and is widely applicable across different neural recording modalities.
+
+Animation description:
+A clean slide with the title 'Advantages'. Four bullet points appear one by one with a tick mark: 'Removes low‑frequency and high‑frequency interference', 'Improves signal‑to‑noise ratio', 'Preserves only the relevant frequency range', 'Widely applicable across neural recording modalities'. Each bullet slides in from the left.

@@ -1,0 +1,8 @@
+Subtopic: 5.5.1 Introduction
+Scene type: manim
+
+Narration:
+So far, we've looked at low pass, high pass, and band pass filters that all remove fairly broad ranges of frequencies to clean up neural recordings. But what if the interference you're trying to get rid of doesn't spread across a wide range at all? The classic case is power line interference, that hum you get at 50 hertz in many countries, or 60 hertz in others. If you tried to cut out a whole chunk of the spectrum just to kill that one spike, you'd throw away a lot of real physiological data along with it. What you really want is a filter that removes only an extremely narrow band right around that frequency and leaves everything else alone. That filter is the notch filter.
+
+Animation description:
+A frequency axis appears horizontally, labeled from 0 to higher frequencies. First, a broad shaded region is swept out in the middle and removed to illustrate a band stop, with an annotation 'Not this — too much lost.' Then the shaded region contracts down to a razor thin vertical sliver at one tick mark labeled '50 Hz.' The rest of the spectrum brightens back up. The sliver fades away, and text appears: 'Notch filter — remove only the narrow band.'

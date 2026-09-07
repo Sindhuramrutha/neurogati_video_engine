@@ -1,0 +1,29 @@
+1. **0.00–3.00** — Scene opens from the previous scene's closed-loop diagram, which fades out completely, leaving a clean, dark background. The screen is empty, establishing a fresh visual space.
+
+2. **3.00–6.64** — At the left of the screen, a simplified device icon fades in: a plain rectangular box with a small antenna or connector protrusion on its right side, unlabeled. At the right of the screen, a simplified nervous system icon fades in: a brain outline at top connected to a short spinal cord segment with branching nerve lines, matching the layout used in the previous scene. Both icons hold steady, facing each other.
+
+3. **6.64–9.88** — A horizontal arrow fades in, pointing from the nervous system icon on the right toward the device icon on the left. The arrow is drawn as a solid line with a distinct arrowhead. The label **“reading”** fades in above the arrow. Small dots begin traveling along the arrow from the nervous system toward the device, indicating information flow.
+
+4. **9.88–15.84** — Two small icons fade in near the **“reading”** arrow. First, at the upper portion of the arrow: the **EEG** icon from the previous scene — a simplified side-view scalp outline with electrode dots and a small voltage-difference symbol beside it, labeled **“EEG”**. Second, at the lower portion: the **EMG** icon — a simple muscle shape with electrode dots and a small jagged trace, labeled **“EMG”**. Dots continue flowing from right to left. The icons hold steady.
+
+5. **15.84–16.68** — The **“reading”** arrow, its dots, and the EEG/EMG icons fade slightly to a dimmer state, forming a ghosted background reference. The nervous system and device icons remain at full brightness.
+
+6. **16.68–25.70** — A second horizontal arrow fades in below the first, pointing from the device icon on the left toward the nervous system icon on the right. This arrow is drawn in a visually distinct style, with a dashed or lighter line to distinguish it from the first arrow. The label **“influencing”** fades in above the second arrow. Small pulses travel along this arrow from left to right, representing energy moving toward the nervous system.
+
+7. **25.70–32.16** — Along the **“influencing”** arrow, two small icons fade in: the TMS coil icon (a figure-eight loop held above a head outline, with pulsing concentric arcs) labeled **“Transcranial magnetic stimulation”** at the upper portion, and the DBS electrode icon (a thin probe with contact points inserted into deep brain tissue, with small bright dots traveling downward) labeled **“Deep brain stimulation”** at the lower portion. The left-to-right pulses continue. Meanwhile, the **“reading”** arrow and its EEG/EMG icons fade out entirely.
+
+8. **32.16–36.02** — The two arrows and their associated icons hold steady at reduced scale, moving to the upper half of the screen. The nervous system icon and device icon remain visible at the sides. The screen settles into a balanced layout showing both directional arrows.
+
+9. **36.02–38.50** — The two arrows fade to dim. A horizontal formula fades in at center, replacing them: the chain **“Read → Understand → Act”**, with the three words in bold text connected by right-pointing arrows. Each word fades in in sequence: **“Read”** first, then **“Understand”**, then **“Act”**.
+
+10. **38.50–42.56** — The **“Read → Understand → Act”** formula holds. Below it, a second chain fades in: **“Measure → Decide → Stimulate”**, again with each word appearing sequentially — **“Measure”**, then **“Decide”**, then **“Stimulate”**. Both formulas remain visible together, aligned one above the other.
+
+11. **42.56–44.44** — The two formulas begin to fade out, item by item in reverse order. The nervous system icon on the right and device icon on the left return to full brightness, now positioned center-screen with space between them.
+
+12. **44.44–50.78** — The **“reading”** arrow reappears, pointing from the nervous system to the device. The **“influencing”** arrow reappears simultaneously below it, pointing from the device back to the nervous system. Both arrows now pulse with moving dots simultaneously in their respective directions. The device icon pulses when the dots from the nervous system enter it. A brief bright pulse passes through the device icon, then bright pulses travel along the **“influencing”** arrow toward the nervous system, which pulses when they arrive.
+
+13. **50.78–56.44** — A curved arrow begins drawing from the top of the nervous system icon, arcing upward and over the device icon, then curving back down to the bottom of the nervous system icon, enclosing the entire bilateral flow. The curved arrow completes, forming a closed loop around the nervous system, device, and both directional arrows. A continuous stream of bright dots now travels the full loop: nervous system → device → nervous system → back around via the curved arrow. The label **“closed-loop”** fades in at the center of the loop.
+
+14. **56.44–59.24** — The curved arrow loop tightens slightly around the device and nervous system icons. The two directional arrows within the loop become subtly highlighted: the **“reading”** arrow pulses with the word **“recording”** fading in nearby, and the **“influencing”** arrow pulses with the word **“neuromodulation”** fading in nearby. Both labels appear briefly, then settle into smaller text.
+
+15. **59.24–61.38** — The closed-loop diagram holds steady with all elements visible: the nervous system icon, device icon, both directional arrows with their labels, and the curved closed loop with continuous moving dots. The full loop pulses gently, indicating sustained motion. The labels **“recording”**, **“neuromodulation”**, and **“closed-loop”** remain visible. The scene ends on this state.

@@ -1,0 +1,13 @@
+1. **0.00–4.24** — From the previous scene's end state, the spectrogram image fades from its full-colour heatmap into a muted grey version. A fixed-size rectangular window overlay appears on the spectrogram, drawn with a bold highlight outline, with subtle corner brackets and a semi-transparent shaded interior. The overlay is locked in size and position — it does not stretch or reshape. The label "Fixed analysis window" fades in near the overlay.
+
+2. **4.24–8.10** — The window overlay remains fixed on the grey spectrogram while two highlighted regions pulse once each in sequence: a vertical band spanning the full frequency axis at one time position (labelled "when"), then a horizontal band spanning the full time axis at one frequency position (labelled "what frequency"). The labels "time" and "frequency" appear briefly next to their respective bands.
+
+3. **8.10–14.38** — The window overlay brightens and pulses more emphatically. The text "Fixed window" appears beneath it, then the words "Short-Time Fourier Transform" fade in to its right. The window's rigid edges glow to emphasise that the window itself is fixed and unchanging. The spectrogram remains muted grey behind it.
+
+4. **14.38–20.48** — The window splits conceptually into two axes drawn as thin guide lines extending downward from its edges: one labelled "Time resolution" and the other labelled "Frequency resolution". A constrained link between them is shown visually: as one axis stretches slightly outward, the other compresses inward, and they return to equal length. The fixed window remains between them, highlighting the trade-off. Both axes pulse in opposition when the narration says "compromise between time resolution and frequency resolution".
+
+5. **20.48–25.32** — The spectrogram, window overlay, and resolution axes fade to a dim background. In the centre of the screen, a large question mark fades in. Below it, text fades in: "Can we adapt to different types of neural activity?" The text is rendered as a single clean line centred under the question mark.
+
+6. **25.32–28.08** — The question mark and question text fade out smoothly. In their place, the text "Wavelet Analysis" fades in, large and centred, in a brighter colour.
+
+7. **28.08–31.32** — A thin arrow draws itself from the right edge of the "Wavelet Analysis" text, pointing rightward toward the edge of the screen, indicating continuation to the next section. The arrow pulses once gently, then the entire composition — "Wavelet Analysis" text and arrow — fades to black by 31.32 seconds.

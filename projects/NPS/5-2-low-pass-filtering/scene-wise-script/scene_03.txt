@@ -1,0 +1,8 @@
+Subtopic: 5.2.4 The Concept of Cutoff Frequency
+Scene type: manim
+
+Narration:
+A low-pass filter does not simply separate frequencies into two completely distinct groups. Instead, it is designed around a key parameter called the cutoff frequency. The cutoff frequency is the frequency above which signal components begin to be attenuated by the filter. Suppose a low-pass filter has a cutoff frequency of forty hertz. That means frequency components below forty hertz are allowed to pass with minimal attenuation. As the frequency increases beyond forty hertz, the filter gradually reduces the amplitude of those higher-frequency components. Crucially, the cutoff frequency is not an abrupt boundary where signals are suddenly removed. Instead, attenuation increases progressively beyond the cutoff.
+
+Animation description:
+Show a frequency response plot with frequency on the horizontal axis and gain or amplitude on the vertical axis. The curve is flat near one at low frequencies, labeled 'Passband', then gradually rolls off after the cutoff point labeled 'Cutoff Frequency (40 Hz)'. The region beyond the cutoff is shaded and labeled 'Attenuation Region'. An arrow highlights 40 Hz on the frequency axis where the curve begins to slope downward gracefully, with a subtle emphasis that there is no sharp cliff.

@@ -1,0 +1,15 @@
+1. 0.00 – A horizontal frequency axis appears, labeled "Frequency (Hz)" with tick marks from low to high. A band-pass filter curve (a trapezoid-like shape: low gain on the flanks, high gain in the middle) is drawn above the axis with its passband centered, set to a narrow width.
+
+2. 3.06 – As the narration says "critical," a waveform appears below the frequency axis. With the current narrow passband, the waveform looks overly smooth — its fine detail peaks and sharp transients are visibly missing. A text label fades in near the filter curve: "Cutoff choice is critical."
+
+3. 5.80 – The passband of the filter curve widens smoothly. The waveform below adjusts in real time: the fine details return, but low-level random noise (small jagged fluctuations) becomes visible riding on the signal.
+
+4. 11.34 – The screen splits into two panels side by side. Left panel: labeled "Ideal passband," the filter curve has a moderate width and the waveform below shows a clean signal — detail present, noise absent. Right panel: labeled "Too narrow or too wide," two sub-examples alternate. First, a filter curve that is very narrow with a waveform missing signal components (flattened peaks, lost oscillations). Then it shifts to a very wide filter curve with a waveform that preserves the signal but also retains visible noise.
+
+5. 16.08 – Both panels remain visible. A dashed box outline draws itself around the right panel, then a warning box appears centered below both panels containing the text: "Incorrect cutoff frequencies may remove useful information or preserve unwanted interference."
+
+6. 23.74 – The split screen and warning box remain unchanged, holding visually while the narration explains that a band-pass filter does not automatically improve every recording. No new elements appear; the warning box stays prominent.
+
+7. 36.38 – The warning box subtly pulses (a brief glow or scale-up) to re-emphasize its message as the narration repeats the consequence of incorrect cutoff frequencies.
+
+8. 43.45 – All elements remain static on screen: frequency axis, filter curve at the "Ideal passband" width, split panels, and warning box, holding until the scene ends.

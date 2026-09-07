@@ -1,0 +1,80 @@
+{
+  "index": 14,
+  "slide_width_emu": 14630400,
+  "slide_height_emu": 8229600,
+  "shapes": [
+    {
+      "shape_id": 2,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 0",
+      "manim_bbox": [
+        -7.111111,
+        -3.9999999375,
+        -1.7777777500000003,
+        3.9999999375
+      ]
+    },
+    {
+      "shape_id": 3,
+      "kind": "text",
+      "text": "Evidence for Localization",
+      "alt_text": "Text 0",
+      "manim_bbox": [
+        -1.0061339397569444,
+        1.7196762635937501,
+        5.4947923706423625,
+        2.408680821701389
+      ]
+    },
+    {
+      "shape_id": 4,
+      "kind": "text",
+      "text": "Hughlings Jackson's Seizures",
+      "alt_text": "Text 1",
+      "manim_bbox": [
+        -1.0061339397569444,
+        0.47962962213541704,
+        2.3976853907465285,
+        1.1685185002604168
+      ]
+    },
+    {
+      "shape_id": 5,
+      "kind": "text",
+      "text": "Jackson observed focal motor seizures spreading from extremities to the body. He inferred that specific brain regions control specific body movements, likening the spread of electrical activity to a forest fire.",
+      "alt_text": "Text 2",
+      "manim_bbox": [
+        -1.0061339397569444,
+        -2.2103013166840286,
+        2.3976853907465285,
+        0.25914357522569453
+      ]
+    },
+    {
+      "shape_id": 6,
+      "kind": "text",
+      "text": "Wilder Penfield's Maps",
+      "alt_text": "Text 3",
+      "manim_bbox": [
+        2.943055266545138,
+        0.8240740611979165,
+        5.887846704930555,
+        1.1685185002604168
+      ]
+    },
+    {
+      "shape_id": 7,
+      "kind": "text",
+      "text": "Decades later, Canadian neurosurgeon Wilder Penfield confirmed Jackson's theories through electrical stimulation experiments, creating precise maps of the motor cortex.",
+      "alt_text": "Text 4",
+      "manim_bbox": [
+        2.943055266545138,
+        -1.5130786193055554,
+        6.346874597048612,
+        0.6035880142881944
+      ]
+    }
+  ],
+  "notes_text": null
+}

@@ -1,0 +1,8 @@
+Subtopic: 7.7.9 Section Recap
+Scene type: manim
+
+Narration:
+The main lesson from this final section is that neural signal processing is a complete workflow, not a collection of isolated techniques. The filtering methods from Module 5, the time-frequency methods from Module 6, and the different neural recording modalities discussed in Module 7 can all become parts of one processing pipeline. By choosing appropriate preprocessing methods and extracting relevant features, we can transform a complex neural recording into information that can be interpreted, classified, or used to control a system.
+
+Animation description:
+Three module icons appear on the left side: a filter symbol labeled 'Filtering (Module 5)', a spectrogram labeled 'Time-Frequency (Module 6)', and a set of recording modality icons labeled 'Recording Modalities (Module 7)'. Arrows from all three flow into a single unified pipeline diagram on the right showing 'Raw Signal → Preprocessing → Feature Extraction → Interpretation / Classification'. The pipeline diagram pulses with unity. At the bottom, an animation shows a complex noisy waveform entering the pipeline on the left and emerging on the right as a clean, interpretable set of outputs: a label, a command icon, and an understanding symbol. The caption 'A complete workflow, not isolated techniques' appears and pulses.

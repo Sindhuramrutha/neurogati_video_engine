@@ -1,0 +1,8 @@
+Subtopic: 5.5.5 How Does a Notch Filter Affect a Signal?
+Scene type: manim
+
+Narration:
+Let's make this concrete with an EEG recording contaminated by 50 hertz power line noise. Before filtering, the recording contains both the neural signal and a strong electrical component at 50 hertz. When you apply a notch filter centered at 50 hertz, the narrow frequency band around 50 hertz is attenuated, while most of the remaining frequency components stay exactly as they were. The power line influence drops significantly, and the underlying neural signal becomes much easier to interpret, all without substantially altering frequencies outside that rejected band.
+
+Animation description:
+Two panels show an EEG trace with a prominent 50 Hz ripple riding on a slow wave. The left panel is labeled 'Before Notch Filter,' and the ripple is clearly visible. A filter icon slides between the panels, and the right panel labeled 'After Notch Filter' shows the same slow wave with the ripple flattened away. Meanwhile, below, a frequency spectrum appears with a spike at 50 Hz in the left panel, and that same spike is pulled down near the baseline in the right panel while neighboring frequencies remain at the same height.

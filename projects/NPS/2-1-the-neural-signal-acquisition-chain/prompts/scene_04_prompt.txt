@@ -1,0 +1,21 @@
+1. (0.00–1.86) The previous scene's hollow silhouette and "no activity = no signal" caption fade out. In their place, a plain dark background with four empty rectangular panel outlines arranged in a 2×2 grid, dim and unfilled, fades in. Narration: "Next comes the electrode or sensor."
+
+2. (2.74–7.36) A simple generic sensor shape — a small rectangular pad with a short wire leading off it — appears centered above the four empty panels. A label beneath it reads "Electrode / Sensor." The sensor emits a soft pulse traveling along the wire, representing signal transfer. A caption fades in: "Detects the biological signal and transfers it to the recording system." Narration: "This is the device that detects the biological signal and transfers it to the recording system."
+
+3. (8.00–10.02) The generic sensor shape fades out, and the label clears. The four panel outlines brighten sequentially, one after another in quick succession, as if each will soon be filled. The caption fades away. Narration: "Different techniques use different sensing devices."
+
+4. (10.94–14.38) Panel 1 (top-left) lights up and fills with a stylized head outline in profile. Small circular electrodes — simple filled circles — appear on the scalp at several points. A label appears beneath the panel: "EEG: scalp electrodes." Narration: "For example, EEG uses scalp electrodes placed on the head."
+
+5. (15.12–17.30) Panel 1 dims to resting state. Panel 2 (top-right) lights up, showing an arm cross-section — an oval representing the arm — with a surface electrode drawn as a small pad on the skin, and a fine needle electrode drawn as a thin line penetrating into the muscle interior. A label appears beneath: "EMG: surface or needle electrodes." Narration: "EMG uses surface or needle electrodes."
+
+6. (18.24–21.98) Panel 2 dims to resting state. Panel 3 (bottom-left) lights up, showing a brain surface — a curving cortical form — with a flat grid of small rectangular electrode contacts laid directly on it. A label appears beneath: "ECoG: cortical grid." Narration: "ECoG uses electrode grids placed directly on the cortical surface."
+
+7. (22.82–24.94) Panel 3 dims to resting state. Panel 4 (bottom-right) lights up, showing a head in profile surrounded by a helmet drawn with small loop-shaped magnetic sensors arranged around the inside. A label appears beneath: "MEG: magnetic sensors." Narration: "And MEG uses specialized magnetic sensors."
+
+8. (25.88–27.82) All four panels are now visible simultaneously at full brightness, each showing its specific sensor type with its label. The panels hold, allowing the viewer to compare the visibly different designs side by side. Narration: "Now their designs are quite different,"
+
+9. (28.44–30.82) A broad horizontal arrow appears beneath all four panels, drawn from left to right, pointing toward a single unified label at the bottom center that reads "detect physiological activity." The arrow passes under all four panels, visually gathering them into one common purpose. Narration: "but they all perform the same fundamental task."
+
+10. (31.58–33.16) The label "detect physiological activity" brightens, and the arrow pulses once from left to right. A final caption fades in beneath, reading "detecting physiological activity." Narration: "Detecting physiological activity."
+
+11. (33.16–34.05) The four panels, arrow, and unified label hold static through the end of the scene. Narration: (silence)

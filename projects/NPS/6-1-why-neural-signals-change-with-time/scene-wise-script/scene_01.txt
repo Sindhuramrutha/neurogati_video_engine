@@ -1,0 +1,8 @@
+Subtopic: 6.1.2 Learning Objectives
+Scene type: manim
+
+Narration:
+After completing this section, you should be able to: define a stationary and a nonstationary signal. Explain why neural signals are generally nonstationary. Identify common causes of time-varying neural activity. And understand why time-varying signals require specialised analysis techniques.
+
+Animation description:
+A title card appears with the heading 'Learning Objectives'. Four bullet-point lines fade in one by one in synchrony with the narration: 'Define stationary and nonstationary signals', 'Explain why neural signals are nonstationary', 'Identify causes of time-varying neural activity', 'Understand why specialised analysis is needed'. Each bullet point remains on screen after appearing, building a full list. Once all four points are shown, the list holds on screen for a brief moment before transitioning out.

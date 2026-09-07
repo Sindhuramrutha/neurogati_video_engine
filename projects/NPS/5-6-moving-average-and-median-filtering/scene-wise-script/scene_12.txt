@@ -1,0 +1,8 @@
+Subtopic: Transition to Section 5.7
+Scene type: manim
+
+Narration:
+Throughout this module we’ve explored several filtering methods, each with its own strengths. The natural next question is: how do you pick the right filter for a given neural recording? In the final section, we’ll learn how to select an appropriate filter for different neural signal processing tasks.
+
+Animation description:
+A question mark or ‘Which filter?’ text animates onto the screen. Then it fades and is replaced by ‘Section 5.7: Selecting Filters for Neural Applications’. The scene ends with a soft transition.

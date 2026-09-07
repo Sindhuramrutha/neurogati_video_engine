@@ -1,0 +1,8 @@
+Subtopic: 5.7.4 Choosing the Appropriate Filter – Band-Pass
+Scene type: manim
+
+Narration:
+Use a band-pass filter when the physiological signal of interest lives in a specific frequency range. Typical applications include EEG preprocessing, EMG preprocessing, local field potential analysis, and brain–computer interface applications.
+
+Animation description:
+Show a frequency axis with two cutoff markers defining a passband (green). A raw neural recording (e.g., an EEG trace with multiple frequency rhythms) is displayed. As the band-pass filter is applied, the signal refines to show only the component in the selected band (e.g., alpha oscillations). Icons for 'EEG preprocessing', 'EMG preprocessing', 'LFP analysis', and 'BCI' appear around the filtered waveform.

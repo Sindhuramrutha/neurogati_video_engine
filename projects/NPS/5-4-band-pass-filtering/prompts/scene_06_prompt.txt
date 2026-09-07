@@ -1,0 +1,6 @@
+1. 0.00 – A clean slide background appears with the title “Advantages” centered near the top in a clear, bold font.
+2. 4.34 – The first bullet point, “Removes low‑frequency and high‑frequency interference,” slides in from the left with a tick mark, stopping beneath the title.
+3. 8.30 – The second bullet point, “Improves signal‑to‑noise ratio,” slides in from the left with a tick mark, appearing below the first bullet.
+4. 10.88 – The third bullet point, “Preserves only the relevant frequency range,” slides in from the left with a tick mark, appearing below the second bullet.
+5. 14.84 – The fourth bullet point, “Widely applicable across neural recording modalities,” slides in from the left with a tick mark, appearing below the third bullet.
+6. 19.27 – The slide remains unchanged, all four bullet points visible, holding until the scene ends.

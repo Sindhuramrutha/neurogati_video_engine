@@ -1,0 +1,32 @@
+[
+  {
+    "timestamp": 2.14,
+    "shape_id": 4,
+    "highlight": "box",
+    "reason": "narration introduces the debate about where intelligence lives"
+  },
+  {
+    "timestamp": 8.38,
+    "shape_id": 6,
+    "highlight": "circle",
+    "reason": "narration begins discussing Hippocrates, a short name label"
+  },
+  {
+    "timestamp": 15.46,
+    "shape_id": 7,
+    "highlight": "box",
+    "reason": "narration explains Hippocrates' view on the brain as seat of intelligence"
+  },
+  {
+    "timestamp": 26.08,
+    "shape_id": 9,
+    "highlight": "circle",
+    "reason": "narration shifts to Aristotle, a short name label"
+  },
+  {
+    "timestamp": 31.18,
+    "shape_id": 10,
+    "highlight": "box",
+    "reason": "narration explains Aristotle's mistaken heart-centered view"
+  }
+]

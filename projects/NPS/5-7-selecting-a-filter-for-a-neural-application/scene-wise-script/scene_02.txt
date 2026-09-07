@@ -1,0 +1,8 @@
+Subtopic: 5.7.3 Principles of Filter Selection
+Scene type: manim
+
+Narration:
+Selecting a filter isn't simply about grabbing the most powerful option. The filter must remove the unwanted stuff while keeping the physiological information you need for analysis. Before you choose a filter, ask yourself: What signal am I recording? What kind of noise or interference is present? Which frequency components carry the useful physiological information? And which components should be removed? Only after answering these questions can you pick an appropriate filter. The key principle to remember is: choose the filter based on the signal, not based on the software.
+
+Animation description:
+A stylized recording setup appears: a microelectrode near a neuron, with a raw noisy trace displayed. Above, four questions pop up in sequence, each with an animated highlight on the trace: 'What signal?' (the underlying neural waveform briefly glows), 'What noise?' (a high-frequency fuzz or low-frequency drift is tinted differently), 'Which frequencies are useful?' (a frequency spectrum appears with a band highlighted), 'Which frequencies to remove?' (the noise band is struck through). Finally, the phrase 'Choose the filter based on the signal, not on the software' enlarges and moves to the center, with a checkmark icon.

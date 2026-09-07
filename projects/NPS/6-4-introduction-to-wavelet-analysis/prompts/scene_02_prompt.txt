@@ -1,0 +1,21 @@
+1. **0.00-2.52**: A sine wave fades in across the top third of the screen, extending off both left and right edges with no visible beginning or end. The wave oscillates with a single, constant frequency. Beneath it, a label fades in: 'Fourier basis: sine wave'. The wave and label hold.
+
+2. **2.52-5.46**: Below the sine wave, in the lower portion of the screen, a wavelet fades in — a short burst of oscillation consisting of a few visible cycles that rise in amplitude, then die out smoothly to zero on both ends. The wavelet is clearly finite in extent, unlike the infinite sine wave above it. No label yet.
+
+3. **5.46-7.68**: A label fades in beneath the wavelet: 'Wavelet'. The wavelet pulses gently once, emphasizing the short, localized oscillatory shape.
+
+4. **7.68-11.20**: To the right of the wavelet, three ghosted copies of the same wavelet fade in, each at a different horizontal scale: one wider than the original, one matching the original, one narrower. A label appears beneath them: 'Different scales'. The ghosted wavelets brighten sequentially as 'different scales' is said.
+
+5. **11.68-16.54**: The ghosted wavelet copies fade out. The original sine wave brightens. Next to it, a cosine wave (identical shape, phase-shifted by a quarter cycle) fades in, extending infinitely left and right like the sine. A label above them reads: 'Fourier Transform'. Both waves hold.
+
+6. **17.08-21.94**: The Fourier basis waves and their label fade out. The screen now shows only the single wavelet from earlier. Next to it, two more identical wavelets fade in, forming a row of three identical short oscillatory bursts. A label beneath reads: 'Wavelet Transform'. The wavelets pulse once together.
+
+7. **22.42-27.26**: The row of wavelets is replaced by a neural signal waveform across the center of the screen — a continuous trace with a slow, gentle oscillation in the left portion and a sharp, narrow transient spike near the right. A single wavelet appears over the slow oscillation on the left, initially at a medium width. The wavelet then stretches horizontally, becoming visibly wider. A label beneath reads: 'Wavelets can be stretched or compressed'. The stretching happens smoothly during the phrase.
+
+8. **28.14-33.72**: The wavelet over the slow oscillation settles at its wide scale. As the narration says 'slowly varying components' the slow oscillation is highlighted in blue. The wavelet becomes wider, now spanning several cycles of the slow oscillation. A label fades in next to the wide wavelet: 'Wide wavelet: better frequency resolution'. The label brightens when 'better frequency resolution' is said.
+
+9. **34.78-39.68**: The wide wavelet fades out from over the slow oscillation. A new wavelet appears over the sharp transient spike on the right side of the signal, initially at a medium width, then compresses horizontally until it is narrow and tightly wrapped around the spike. The spike is highlighted in red. A label fades in next to the narrow wavelet: 'Narrow wavelet: better time resolution'. The label brightens when 'better time resolution' is said.
+
+10. **40.82-48.04**: Both wavelets are shown simultaneously over the signal: the wide wavelet over the slow oscillation on the left, the narrow wavelet over the spike on the right. The two wavelets gently alternate in size — the wide one breathing slightly wider, the narrow one slightly narrower — while the signal remains fixed. A label beneath the signal reads: 'Adapting function size'. The scene holds.
+
+11. **48.96-55.88**: The wide and narrow wavelets fade out, leaving the single wavelet from the beginning, centered on screen. The wavelet is shown again as a short-duration oscillatory burst, fading to zero on both ends. A final label fades in beneath it: 'Short-duration oscillatory function'. At 54.46, the label brightens as 'different scales' is said, and the wavelet briefly stretches wider then compresses narrower once, demonstrating scale variation. The final frame holds until 55.88.

@@ -1,0 +1,25 @@
+1. **0.00–1.50** — A blank dark background. A single clean neural trace line fades in, centered horizontally: a smooth, gently wiggling waveform running left to right across the screen, with no labels yet. The line is a solid, calm color (e.g., soft green) and the wiggling is a simple physiologically plausible oscillation, faintly resembling brain activity.
+
+2. **1.50–5.84** — The clean trace continues wiggling on its own. As the narrator says "only the physiological signal we want to study," the trace remains the sole object on screen, with no overlays or distortions. A small label appears near the trace reading "physiological signal."
+
+3. **6.58–8.72** — On "Unfortunately," the trace's clean appearance is emphasized visually for a beat, then a subtle visual cue (like a brief dimming or hesitation in the line) signals that this ideal state is "rarely the case." No new noise components yet.
+
+4. **9.38–14.48** — Four small text labels appear one by one near the trace as each is named, perhaps above the trace in sequence: "EEG," "EMG," "ECoG," "microelectrode." They are simple tags, not yet distorting the trace, indicating these are all acquisition contexts where the same issue arises.
+
+5. **15.14–23.78** — The phrase "unwanted electrical activity" triggers the first visual shift: the trace begins to blur or thicken subtly, like contamination is starting. On the word "sources," small faint arrow-like annotations or dotted lines appear pointing toward the trace, but no specific noise components are rendered yet.
+
+6. **24.68–27.86** — A distinct colored noise component fades in over the trace and begins distorting it: a high-frequency buzz. Its color is distinguishable from the clean line (e.g., electric blue), and it overlays the trace as rapid, jagged oscillations riding on top of the original wave. A label near it reads "electrical equipment."
+
+7. **27.86–29.60** — A second colored noise component fades in: a sharp, abrupt spike or series of spike-like distortions from movement. It appears in another distinct color (e.g., red/orange). Its label reads "movement of subject." The trace now shows intermittent sharp jumps or jerks.
+
+8. **30.02–30.80** — A third component fades in: low-amplitude irregular muscle-activity noise, shown as a fast, uneven ripple in yet another color (e.g., purple). Its label reads "muscle activity."
+
+9. **31.42–32.68** — A fourth component fades in: a slow sinusoidal drift, shown as a gentle upward-downward undulation of the entire trace's baseline, in a distinct color (e.g., yellow). Its label reads "poor electrode contact." The trace's centerline slowly wanders up and down.
+
+10. **33.18–34.78** — A fifth component fades in: a regular power-line frequency ripple, shown as a uniform, fast sinusoidal wave at consistent frequency, in a final distinct color (e.g., cyan). Its label reads "surrounding environment." By now all five noise components are layered over the trace, each with its own label.
+
+11. **35.78–42.34** — The trace is now severely distorted: the original clean waveform is nearly impossible to distinguish beneath the combined high-frequency buzz, movement spikes, muscle ripples, baseline drift, and power-line ripple. The line is thick, jittery, and visually chaotic, with overlapping colored oscillations. The labels remain visible.
+
+12. **43.48–46.38** — On "That's why signal filtering," the chaotic trace is highlighted with a brief visual emphasis (e.g., a subtle outline or glow around the whole mess), and an overlay message begins to fade in, centered near the bottom of the screen.
+
+13. **46.38–48.35** — The overlay message is now fully visible, reading exactly: "Filtering removes what we don't want." The distorted trace remains visible behind or above the message. The message and the distorted trace stay on screen until the end of the scene at 48.35 seconds.

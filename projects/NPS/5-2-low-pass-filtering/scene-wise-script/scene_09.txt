@@ -1,0 +1,8 @@
+Subtopic: Transition to Section 5.3
+Scene type: manim
+
+Narration:
+The low-pass filter removes high-frequency components while preserving lower frequencies. But in some situations, the opposite is required. Certain recordings contain unwanted low-frequency components, such as baseline drift or slow movement artefacts, while the useful physiological information lies at higher frequencies. To address this problem, we use another fundamental filter: the high-pass filter.
+
+Animation description:
+The low-pass filter visual fades out, and a contrasting waveform appears with a slow, wandering baseline drift labeled 'Unwanted Low-Frequency Drift' and a faster, meaningful oscillation labeled 'Useful High-Frequency Signal'. The words 'High-Pass Filter' appear prominently, with an arrow indicating the next section. The visual transitions to a subtle preview of a high-pass filter characteristic curve.

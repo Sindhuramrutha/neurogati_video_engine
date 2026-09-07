@@ -1,0 +1,8 @@
+Subtopic: 2.3.8 Summary
+Scene type: manim
+
+Narration:
+In this section, we examined the role of amplification and signal conditioning in neural signal acquisition. Neural signals are extremely weak and therefore require amplification before further processing. Signal conditioning prepares the amplified signal for digitisation by reducing unwanted interference and ensuring that the signal entering the ADC is suitable for accurate digital conversion. Together, amplification and signal conditioning improve the reliability of the recorded signal and support accurate downstream analysis.
+
+Animation description:
+A summary panel with three key points appearing sequentially: 'Neural signals are extremely weak and require amplification before further processing', 'Signal conditioning prepares the amplified signal for digitisation by reducing unwanted interference', 'Together, amplification and signal conditioning improve recording reliability'. Alongside, show the acquisition chain diagram from earlier with the amplifier and signal conditioning blocks highlighted. A clean waveform at the end of the conditioning stage transitions into the digital domain, visually reinforcing the concepts discussed.

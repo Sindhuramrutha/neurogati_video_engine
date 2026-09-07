@@ -1,0 +1,8 @@
+Subtopic: 6.1.5 Why Are Neural Signals Nonstationary? — Cognitive Processes
+Scene type: manim
+
+Narration:
+A third factor is cognitive processes. Attention, memory, decision-making, and learning all involve dynamic patterns of neural activity. These cognitive processes evolve continuously and influence the recorded signal.
+
+Animation description:
+A stylised brain outline is shown with multiple small nodes connected by lines, representing dynamic neural activity patterns. Four labels fade in around the brain: 'Attention', 'Memory', 'Decision-making', 'Learning'. As each label appears, the connectivity pattern of the nodes smoothly rearranges itself, suggesting continuously evolving activity. Below the brain, a waveform is shown whose shape changes in real time as the connectivity pattern changes. The heading 'Cognitive Processes' remains visible at the top throughout.

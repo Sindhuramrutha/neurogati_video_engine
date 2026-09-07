@@ -1,0 +1,8 @@
+Subtopic: 2.4.1 Introduction
+Scene type: manim
+
+Narration:
+In the previous section, we saw how neural signals are amplified and conditioned before further processing. But at that stage, the signal is still analogue — it varies continuously with time. Here's the problem: computers cannot process continuous electrical signals directly. They need information represented as digital numbers. So the conversion from a continuous analogue signal to digital data is one of the most important steps in neural signal acquisition. It's what allows neural recordings to be stored, displayed, processed, and analysed using digital signal processing techniques. In this section, we'll learn how analogue neural signals are converted into digital data through sampling and analog-to-digital conversion.
+
+Animation description:
+A smooth, continuously varying waveform is drawn on screen, labelled 'Analogue Signal'. A stylised computer icon sits next to it, but with a red 'X' or crossed-out marker between them, indicating the computer cannot accept the analogue signal directly. The waveform then smoothly morphs into a staircase-like digital representation with numeric labels, and the computer icon lights up green, showing compatibility. Text labels appear: 'Store', 'Display', 'Process', 'Analyse' around the digital signal.

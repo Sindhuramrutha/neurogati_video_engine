@@ -1,0 +1,39 @@
+1. **0.00–3.90** — The screen is blank except for a soft EEG waveform slowly scrolling horizontally across the center, continuing the motif from the previous scene. As the narration says "most valuable tools in neuroscience," the words "Why EEG?" fade in above the waveform in clean, medium-weight text.
+
+2. **3.90–5.50** — The scrolling waveform fades out. Four empty icon slots arranged in a horizontal row fade in, evenly spaced, as faint rounded squares with thin outlines. The words "Why EEG?" remain at the top of the screen.
+
+3. **5.50–7.58** — The first icon slot brightens. Inside it, a head outline appears in profile view, showing small electrode dots placed across the scalp. The head icon is centered in the first slot; no other slots are bright.
+
+4. **7.58–11.82** — Next to the head outline, a large red circle with a diagonal slash appears — the universal "prohibited" symbol — and inside it a small surgical scalpel icon. As the narration says "without requiring surgery," the scalpel fades out, leaving only the slashed red circle, which pulses once and turns gray. The head with electrodes remains in the first slot.
+
+5. **11.82–12.74** — The first slot dims slightly and holds its position. The other three slots remain dark.
+
+6. **12.74–14.46** — The second icon slot brightens. Inside it, a horizontal timeline appears with tick marks at regular intervals, the earliest ticks on the left and later ticks on the right. The words "temporal resolution" fade in beneath the second slot in small text.
+
+7. **14.46–16.06** — The tick marks on the timeline begin flashing on and off rapidly from left to right, one after another. A small label "ms" appears near the left end of the timeline. The flashing sequence accelerates to emphasize fine time resolution.
+
+8. **16.06–19.74** — A magnifying glass icon sweeps over the timeline, enlarging two adjacent tick marks. Between them, a tiny burst-line annotation appears labeled "milliseconds." The timeline continues flashing beneath the magnifier.
+
+9. **19.74–24.86** — The magnifier and burst-line annotation fade out. The timeline shifts to a smooth continuous waveform in the same slot, oscillating rapidly. A small brain icon appears above the waveform, with the waveform line undulating in sync with pulsations of the brain icon, suggesting fast-changing neural processes. The second slot dims slightly at the end.
+
+10. **24.86–25.84** — The second slot holds. The first and second slots remain visible; the other two stay dark.
+
+11. **25.84–28.02** — The third icon slot brightens. A large dollar sign appears in the top half of the slot. Below it, the words "relatively affordable" fade in briefly, then fade out.
+
+12. **28.02–31.24** — The dollar sign shifts to the left side of the slot. Beside it, a compact portable EEG headset appears — a simplified headband with small electrodes and a small recording box connected by thin wires. A small clock icon appears next to the headset with a long-duration arrow circling it, suggesting extended recording time.
+
+13. **31.24–34.62** — The clock icon fades out. A small house icon appears in the bottom half of the third slot. The recording box from the headset is connected to the house icon by a thin line, suggesting home use. The words "portable" and "long-duration" appear in small text to the sides of the headset and clock area, then fade.
+
+14. **34.62–38.00** — Three small buildings fade in beside the house icon in a row: a hospital building with a cross on its front, a laboratory building with a flask symbol above it, and the house icon already present. All three glow briefly as the narration lists them. The third slot dims slightly at the end.
+
+15. **38.00–39.00** — The third slot holds. The second slot's waveform and the third slot's buildings remain static.
+
+16. **39.00–43.72** — The fourth icon slot brightens. A continuous EEG waveform appears inside — a long horizontal oscillating line that scrolls smoothly from left to right without any gaps or breaks. A small label "continuous recording" fades in below.
+
+17. **43.72–50.10** — A vertical event marker — a thin red line with a small flag at the top — appears briefly at one point along the scrolling waveform, then vanishes as the waveform continues scrolling. As the narration says "spontaneous brain activity and responses to external events," the waveform scrolls continuously for a moment with no markers, then another event marker flashes at a different position. A small label "spontaneous" fades in, then fades out, replaced by the label "event-related" near the marker.
+
+18. **50.10–53.04** — All four icon slots brighten simultaneously. The head with electrodes, the millisecond timeline, the portable EEG headset, and the continuous waveform all remain visible. The four slots lift slightly upward, and the words "Why EEG?" at the top of the screen change to "Advantages of EEG" in bold text.
+
+19. **53.04–58.16** — The words "most commonly used neural recording techniques" fade in beneath the four slots in medium text. The four icons pulse once in sequence from left to right. The screen holds this composition.
+
+20. **58.16–61.75** — A small EEG waveform appears at the bottom of the screen, scrolling continuously from left to right. The four icons and the title "Advantages of EEG" remain in place. The narration concludes, and the full composition holds until the final timestamp.

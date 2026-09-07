@@ -1,0 +1,33 @@
+1. **0.00–0.94** — A single continuous EEG trace fades in across the full width of the screen. The waveform oscillates with typical EEG-like fluctuations, centered vertically. No markers, labels, or icons yet.
+
+2. **0.94–2.42** — A vertical dashed line drops down onto the trace at a point near the middle of the screen, marking an event onset. The text “event” appears above the dashed line, then fades after a moment. The trace remains unchanged, with no highlighting yet.
+
+3. **2.42–4.24** — A subtle glowing band expands horizontally along the trace, covering a short window immediately before and after the event marker. The band highlights the waveform segment within it, while the rest of the trace (outside the window) dims to lower opacity. The words “electrical response” appear beneath the highlighted window.
+
+4. **4.24–5.70** — The highlighted window brightens slightly, drawing attention to the trace segment around the marker. A small vertical line inside the window stays aligned with the event marker. The words “time-locked” appear above the window near the marker and fade.
+
+5. **5.70–7.42** — Small icons fade in one at a time above the event marker in quick succession: an eye icon (visual), a speaker icon (auditory), a hand icon (tactile), and a figure icon (movement). The word “specific sensory, cognitive, or motor event” appears below the icons as they appear. The icons then fade out, leaving the marker and highlighted window.
+
+6. **8.28–12.40** — The highlighted window around the event remains visible. The rest of the trace outside the window dims further, emphasizing that only the segment around the event is of interest. The words “focuses on neural activity immediately before and after” appear at the bottom of the screen as the highlight pulses gently.
+
+7. **12.40–16.58** — The highlighted window expands slightly in brightness while the outside trace continues to fade. The event marker line glows briefly. The words “before and after a particular event” appear below the window, with “before” and “after” appearing on either side of the marker line.
+
+8. **17.30–19.84** — An eye icon appears above the event marker, then fades as it is replaced by a speaker icon, then a hand icon, then a figure icon, each appearing briefly above the marker in succession. Each icon is labeled with a small text caption beneath it as it appears: “visual image,” “auditory tone,” “tactile stimulus,” and “movement.”
+
+9. **20.50–22.76** — The speaker icon remains above the marker as the label “auditory tone” is visible beneath it. A small sinusoidal waveform appears briefly inside the highlighted window, representing the auditory event. The other icons fade away.
+
+10. **22.06–25.38** — The hand icon appears above the marker with the label “tactile stimulus,” then the figure icon with “movement” label, and the eye icon with “visual image.” The icons appear in sequence, each with its corresponding label beneath, then the speaker icon fades out. The waveform inside the highlighted window remains unchanged.
+
+11. **25.90–27.08** — A brain icon appears above the marker with the label “cognitive decision” beneath it, completing the set of event types. All icons fade out, leaving the marker line and the highlighted window with its event marker.
+
+12. **27.90–32.06** — The highlighted window begins to move: the waveform segment inside it stays in place, but the surrounding trace outside the window fades completely. The words “how the brain responds to that specific event” appear at the bottom of the screen. A small arrow appears from the text pointing to the highlighted window.
+
+13. **32.74–34.94** — A full-width rectangle with the word “entire recording” is overlaid across the whole trace, spanning the full width of the screen. The highlighted window remains bright, but the rest of the trace is dimmed and crosshatched inside the rectangle, visually separating it from the highlighted segment.
+
+14. **35.40–40.86** — A zoom-in occurs: the highlighted window around the event marker enlarges and is extracted, separating from the rest of the trace. The extracted segment appears as a standalone short waveform panel above the original trace, visually disconnected by a short vertical offset. The word “segments” appears beneath the extracted panel.
+
+15. **41.78–43.22** — The extracted waveform segment is duplicated several times, with multiple copies of the same short segment appearing in a row horizontally, all aligned to the same event marker line. The words “key definition” appear above the row of segments.
+
+16. **43.80–47.12** — The duplicated waveform segments fade into a single averaged waveform trace, which appears as a smooth, cleaner signal, still centered on the same event marker line. The text “averaged electrical response” appears beneath the averaged waveform.
+
+17. **47.12–51.05** — The averaged waveform remains on screen, with the event marker line still visible. The full text “Event-Related Potential” appears beneath the averaged trace, with “time-locked to a specific event” appearing in smaller text underneath. The scene holds with this final layout until 51.05 seconds.

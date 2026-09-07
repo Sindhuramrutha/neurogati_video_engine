@@ -1,0 +1,8 @@
+Subtopic: 5.4.3 What is a Band‑Pass Filter?
+Scene type: manim
+
+Narration:
+As the name suggests, a band‑pass filter allows only a specific band of frequencies to pass through. Unlike a low‑pass filter, which preserves everything below a cutoff, or a high‑pass filter, which preserves everything above, a band‑pass filter preserves only the frequencies lying between two selected cutoff frequencies. In other words, it combines the behaviour of a high‑pass and a low‑pass filter. The high‑pass component removes unwanted low‑frequency signals, while the low‑pass component removes unwanted high‑frequency signals. The result is a signal containing only the frequency range of interest. So we define a band‑pass filter as a filter that preserves frequencies within a specified range while attenuating frequencies outside that range.
+
+Animation description:
+Show a frequency axis with three filter curves appearing one after another: first a low‑pass curve with a cutoff arrow, then a high‑pass curve with a cutoff arrow, and finally a band‑pass curve that is the combination. Animate the band‑pass curve by taking the overlapping region of the low‑pass and high‑pass. Add highlighted labels: 'Low‑pass component', 'High‑pass component', and 'Band‑pass output'. Then slide in a definition box: 'Band‑Pass Filter: preserves frequencies within a specified range, attenuates frequencies outside that range.'

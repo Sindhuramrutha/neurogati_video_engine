@@ -1,0 +1,152 @@
+{
+  "index": 20,
+  "slide_width_emu": 14630400,
+  "slide_height_emu": 8229600,
+  "shapes": [
+    {
+      "shape_id": 2,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 0",
+      "manim_bbox": [
+        -7.111111,
+        -3.9999999375,
+        -1.7777777500000003,
+        3.9999999375
+      ]
+    },
+    {
+      "shape_id": 3,
+      "kind": "text",
+      "text": "Behaviorism: The \"Black Box\" Approach",
+      "alt_text": "Text 0",
+      "manim_bbox": [
+        -1.075116149236111,
+        2.0326382495659723,
+        6.408448427135416,
+        3.287499705607639
+      ]
+    },
+    {
+      "shape_id": 4,
+      "kind": "text",
+      "text": "Inspired by Pavlov, Behaviorists like B.F. Skinner and Edward Thorndike rejected subjective mental states like \"insight\" or \"intelligence.\"",
+      "alt_text": "Text 1",
+      "manim_bbox": [
+        -1.075116149236111,
+        1.088888871875,
+        6.408448427135416,
+        1.7314814544270831
+      ]
+    },
+    {
+      "shape_id": 5,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 2",
+      "manim_bbox": [
+        -1.075116149236111,
+        -1.5937503396354167,
+        2.5663186145138885,
+        0.8630786294618056
+      ]
+    },
+    {
+      "shape_id": 6,
+      "kind": "text",
+      "text": "Radical Behaviorism",
+      "alt_text": "Text 3",
+      "manim_bbox": [
+        -0.8670136930729173,
+        0.34120442744791646,
+        1.642823926892361,
+        0.6549771453993056
+      ]
+    },
+    {
+      "shape_id": 7,
+      "kind": "text",
+      "text": "Skinner viewed the organism as a \"black box.\" He focused solely on inputs (stimuli) and outputs (responses), ignoring internal physiological processes.",
+      "alt_text": "Text 4",
+      "manim_bbox": [
+        -0.8670136930729173,
+        -1.3856488555729163,
+        2.3582181025520823,
+        0.2208330868576387
+      ]
+    },
+    {
+      "shape_id": 8,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 5",
+      "manim_bbox": [
+        2.767013663385417,
+        -1.5937503396354167,
+        6.408448427135416,
+        0.8630786294618056
+      ]
+    },
+    {
+      "shape_id": 9,
+      "kind": "text",
+      "text": "Operant Conditioning",
+      "alt_text": "Text 6",
+      "manim_bbox": [
+        2.9751161195486118,
+        0.34120442744791646,
+        5.531829407100694,
+        0.6549771453993056
+      ]
+    },
+    {
+      "shape_id": 10,
+      "kind": "text",
+      "text": "Animals evolve behaviors to maximize positive reinforcement (rewards) and minimize negative reinforcement (punishment).",
+      "alt_text": "Text 7",
+      "manim_bbox": [
+        2.9751161195486118,
+        -1.0643520782465279,
+        6.200347915173611,
+        0.2208330868576387
+      ]
+    },
+    {
+      "shape_id": 11,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 8",
+      "manim_bbox": [
+        -1.075116149236111,
+        -3.287384025625,
+        6.408448427135416,
+        -1.7944444164062503
+      ]
+    },
+    {
+      "shape_id": 12,
+      "kind": "text",
+      "text": "Thorndike's Laws",
+      "alt_text": "Text 9",
+      "manim_bbox": [
+        -0.8670136930729173,
+        -2.316318618420139,
+        1.642823926892361,
+        -2.00254590046875
+      ]
+    },
+    {
+      "shape_id": 13,
+      "kind": "text",
+      "text": "Learning is governed by the \"Law of Effect\"—responses are strengthened by their consequences and repetition.",
+      "alt_text": "Text 10",
+      "manim_bbox": [
+        -0.8670136930729173,
+        -3.0792825415625,
+        6.200346943072916,
+        -2.4366899590104163
+      ]
+    }
+  ],
+  "notes_text": null
+}

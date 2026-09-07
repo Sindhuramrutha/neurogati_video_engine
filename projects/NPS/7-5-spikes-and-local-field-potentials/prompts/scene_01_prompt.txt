@@ -1,0 +1,27 @@
+1. [0.00-2.44] A single neuron fills the center of the frame: a large cell body with several branching dendrites extending upward and outward, and a long axon extending downward with a slight rightward curve. The neuron is drawn in a neutral outline style, unlabeled.
+
+2. [2.44-7.46] The neuron remains centered. A small circular badge appears at the upper right of the neuron labeled "neural spike". The label "brief electrical signal" fades in beneath it, then the badge begins to pulse gently once.
+
+3. [7.46-11.50] The neuron remains. A subtle glow appears at the cell body, then a brief bright flash sweeps once along the axon from the cell body downward to the axon terminal, suggesting a firing event. The label "firing of a neuron" replaces the previous sublabel beneath the "neural spike" badge.
+
+4. [11.50-14.40] The neuron holds. A small cluster of incoming signal arrows (three or four small V-shaped marks) approaches the dendrites from the upper left, glowing faintly, representing excitatory input arriving at the neuron.
+
+5. [14.40-20.20] The neuron holds. A horizontal dashed line appears across the neuron's membrane region labeled "firing threshold". A small membrane-potential meter (a small vertical bar with a moving indicator) appears beside the neuron. The indicator rises steadily as the input arrows continue, reaches the threshold line, then crosses it.
+
+6. [20.20-23.58] The neuron holds; the threshold line and meter fade out. The text "measuring an action potential" appears at the bottom of the frame as a caption.
+
+7. [23.58-25.94] A sharp, thin intracellular electrode descends from the top of the frame and penetrates the neuron's cell body. The electrode tip comes to rest clearly inside the cytoplasm. The neuron's membrane is drawn with a slight double-line to suggest the membrane boundary.
+
+8. [25.94-32.30] To the right of the neuron, a voltage trace panel appears, labeled "intracellular recording". A large action potential waveform begins to draw: it rises sharply from a flat baseline at −70 mV to a tall peak at about +30 mV (a full 100 mV swing), then falls back down and briefly undershoots before returning to baseline. The waveform is large and clear, dominating the trace panel. A vertical scale bar labeled "100 mV" appears beside the trace.
+
+9. [32.30-34.66] The intracellular electrode retracts upward and fades out. The trace panel dims and shifts to the right side of the frame.
+
+10. [34.66-38.02] A separate extracellular electrode descends from the top of the frame and comes to rest just outside the neuron's cell body, its tip hovering approximately one cell-body width away from the membrane. The neuron redraws its double-line membrane clearly.
+
+11. [38.02-41.94] The neuron fires an action potential again: a bright wave of color travels down the axon from the cell body to the axon terminal. Simultaneously, a faint, soft electric field halo (a diffuse glow shaped like concentric rings) expands outward from the firing neuron and reaches the extracellular electrode tip.
+
+12. [41.94-44.48] A second trace panel appears on the right, labeled "extracellular recording". A much smaller waveform begins to draw as the neuron fires: a brief, low-amplitude deflection from baseline, barely a fraction of the intracellular trace's height, with a subtle inverted shape compared to the intracellular waveform. The smaller deflection is labeled "spike" at the right end of its trace.
+
+13. [44.48-46.94] The intracellular trace from earlier fades back in beside the extracellular trace for a direct side-by-side comparison. The intracellular waveform shows the re-drawn large 100 mV action potential on the left, and the extracellular waveform shows the small "spike" deflection on the right. A small arrow or bracket marks the dramatic difference in amplitude between the two traces. The label "spike" pulses once over the extracellular trace.
+
+14. [46.94-47.70] The side-by-side comparison holds: the neuron remains on the left, the two traces on the right, the extracellular waveform labeled "spike". Everything is static except the small "spike" label, which pulses once more softly as the scene ends.

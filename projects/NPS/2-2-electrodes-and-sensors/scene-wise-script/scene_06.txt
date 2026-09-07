@@ -1,0 +1,8 @@
+Subtopic: 2.2.5 Microelectrodes
+Scene type: manim
+
+Narration:
+Microelectrodes are extremely small electrodes designed for recording neural activity at the cellular level. They are capable of recording action potentials from individual neurons or very small groups of neurons. These electrodes are widely used in neuroscience research, neurophysiology, and brain–computer interface studies where high spatial resolution is required. Because microelectrodes penetrate neural tissue, they require surgical implantation and are therefore highly invasive.
+
+Animation description:
+A zoomed-in view of neural tissue is shown. A very thin microelectrode is seen penetrating into the tissue, its tip positioned adjacent to a single neuron. The neuron fires an action potential, shown as a characteristic spike waveform trace next to it. The microelectrode tip is exaggerated in scale to show its extremely small size relative to the neuron. Labels 'neuroscience research', 'neurophysiology', and 'BCI studies' appear to the side. The electrode is shown being surgically implanted in a stylized representation.

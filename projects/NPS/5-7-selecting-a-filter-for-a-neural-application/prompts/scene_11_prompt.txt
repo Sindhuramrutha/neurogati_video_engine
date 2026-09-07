@@ -1,0 +1,12 @@
+1. 0.00 — The screen is clear except for the banner from the previous scene reading "Goal: preserve physiological information, not just smoothness" with a green checkmark, centered near the bottom.
+2. 0.48 — The banner fades out smoothly. Four icons fade in around a loose orbital arrangement: a brain with a small electrical waveform inside it, a jagged noise waveform, a bar-chart-like frequency spectrum, and a dartboard with an arrow embedded in the bullseye.
+3. 1.62 — The icons begin a slow circular orbit around the center of the screen, each tracing a wide path while rotating gently.
+4. 3.48 — The orbit tightens, and the four icons drift into a horizontal row, spacing themselves evenly. The motion pauses with them aligned.
+5. 5.98 — The brain/waveform icon shifts to the leftmost position in the row, enlarges slightly, and a label reading "Signal" fades in beneath it.
+6. 7.68 — The jagged noise icon slides to the second position, enlarges slightly, and a label reading "Interference" fades in beneath it.
+7. 10.46 — The frequency spectrum icon slides to the third position, enlarges slightly, and a label reading "Frequency range" fades in beneath it.
+8. 13.50 — The dartboard icon slides to the fourth (rightmost) position, enlarges slightly, and a label reading "Analysis objective" fades in beneath it.
+9. 15.46 — All four icons remain in place, equally emphasized, as the labels stay visible beneath each icon.
+10. 19.94 — The four icons and labels shrink and reposition toward the bottom half of the screen, forming a horizontal reference row. Above them, centered, a large graphic of a filter block fades in with multiple input lines on the left and one selected output line on the right. Around it, several smaller, dimmed filter blocks labeled "Low-pass", "High-pass", "Notch", and "Band-pass" appear, with only one glowing or highlighted to indicate the selected filter.
+11. 23.18 — The highlighted filter shifts slightly, as if cycling to a different one, then snaps back to the originally highlighted filter. The icons below brighten in sequence — Signal, Interference, Frequency range, Analysis objective — reinforcing the connection to the selection.
+12. 25.02 — All elements hold their positions and remain static until the scene ends at 25.85.

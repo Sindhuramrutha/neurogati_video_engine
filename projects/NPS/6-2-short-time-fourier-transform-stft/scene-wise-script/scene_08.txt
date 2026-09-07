@@ -1,0 +1,8 @@
+Subtopic: 6.2.6 Window Size and the Time–Frequency Trade-off — Small and Large Windows
+Scene type: manim
+
+Narration:
+One of the most important concepts in STFT is the window size. The size of the analysis window determines how the signal is examined. A smaller window provides better time resolution, because it can detect rapid changes in the signal. However, it contains fewer data points, reducing frequency resolution. A larger window contains more data points, and therefore provides better frequency resolution. However, it cannot localise rapid changes in time as accurately.
+
+Animation description:
+Two separate panels, each showing the same short signal segment containing a brief high-frequency burst plus a sustained lower-frequency oscillation. The left panel shows a narrow window sliding quickly and precisely around the burst's location, with the burst's onset sharply localized; beneath it, a smeared-out frequency spectrum appears, representing poor frequency resolution. The right panel shows a wide window covering both the burst and the surrounding signal, producing a sharp, well-defined frequency spectrum below; but a fuzzy band around the burst indicates uncertainty in time localization. Text labels 'Small window: good time, poor frequency' and 'Large window: good frequency, poor time' appear at the bottom of each panel.

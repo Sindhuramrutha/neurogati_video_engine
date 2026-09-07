@@ -1,0 +1,74 @@
+1. **0.00–1.80**  
+   The clean blue EEG trace from the previous scene remains on screen but shifts to the top-left area, occupying roughly the left third of the screen. The six processing boxes, side panel, and all labels from the previous scene fade out. A subtle horizontal divider line appears on the right two-thirds of the screen, now empty space.
+
+2. **1.80–3.04**  
+   The clean trace pulses gently once. A large question mark appears just to the right of the trace, faint and outlined, then fades slightly to remain as a light background cue. The word **“Extract?”** appears near the question mark in muted text.
+
+3. **3.04–5.64**  
+   A series of small empty white cards fades in to the right of the clean trace, arranged in a vertical column of five outlined rectangles. Each card is completely blank. A downward arrow from the trace points toward the column of cards, indicating information will flow from the waveform into these cards.
+
+4. **5.64–7.42**  
+   A title label **“Feature Extraction”** fades in above the clean trace in bold text. The clean trace brightens slightly and the arrow from the trace to the cards becomes more prominent, solid rather than dashed.
+
+5. **7.42–9.90**  
+   The clean trace subtly transforms: it is now overlaid with faint grid lines and appears ready to be measured. Small measurement markers — thin vertical and horizontal guide lines — begin to appear alongside the trace, framing the waveform in preparation for quantification. The five empty cards remain blank.
+
+6. **9.90–12.52**  
+   The letters **“x =”** appear next to the trace, followed by a blinking cursor, suggesting conversion into numerical form. The trace's waveform path now has light dotted lines indicating where measurements will be taken. The label **“Quantitative measurements”** appears at the top of the card column.
+
+7. **12.52–16.28**  
+   The **“x =”** text and measurement grid fade out. The label **“Quantitative measurements”** remains. A subheading appears above the card column: **“Depends on application”** in italic text. The clean EEG trace at top-left now has a small EEG badge label beneath it.
+
+8. **16.28–19.46**  
+   The first card fills with a label **“Signal Amplitude”**. On the clean EEG trace, two horizontal dashed lines appear — one at the highest peak, one at the lowest trough — with a vertical double-headed arrow between them labeled **“peak-to-peak”**. The measurement overlay highlights the trace's vertical extent.
+
+9. **19.46–21.62**  
+   The second card fills with **“Frequency-Band Power”**. Next to it, a small horizontal bar chart appears with five bars of differing heights, labeled left to right: **“delta”**, **“theta”**, **“alpha”**, **“beta”**, **“gamma”**. The bars are distinct colors, each bar representing its named frequency band.
+
+10. **21.62–23.92**  
+    The third card fills with **“Spectral Characteristics”**. A power spectrum curve appears near the card — a smooth line with a prominent peak, plotted on axes labeled **“Frequency”** (horizontal) and **“Power”** (vertical), showing the distribution of power across frequencies.
+
+11. **23.92–25.38**  
+    The fourth card fills with **“Time-Frequency Features”**. A spectrogram image appears near the card — a two-dimensional grid with time on the horizontal axis and frequency on the vertical axis, colored regions showing power levels that vary across both dimensions, with a color scale bar labeled **“Power”** on the side.
+
+12. **25.38–26.34**  
+    The fifth card fills with **“Event-Related Responses”**. A small averaged waveform appears next to it — a smooth deflection with one clear positive peak, embedded with thin vertical lines at several points along the time axis. A small label **“event”** appears beneath the initial time point.
+
+13. **26.34–27.64**  
+    The EEG section dims slightly. The clean EEG trace and its five filled cards remain visible but recede. The entire right portion of the screen clears. A new horizontal divider separates the upper EEG area from the new spike recording area. A spike train appears on the right side: a horizontal timeline with many short vertical tick marks, clustered at irregular intervals, representing individual spikes.
+
+14. **26.34–28.80**  
+    Within the spike area, a magnified view appears showing several individual spike waveforms — sharp, narrow deflections that rise and fall quickly, each with a characteristic pointed shape. Each spike waveform is distinct and clearly outlined, showing their waveform morphology.
+
+15. **28.80–30.74**  
+    Four new feature cards appear in a horizontal row beneath the spike train, all empty. The first card fills with **“Spike Count”**. A counter appears near the spike train showing tally marks, counting each spike in the train one by one until all spikes are counted.
+
+16. **30.74–31.86**  
+    The second card fills with **“Firing Rate”**. Near the spike train, a horizontal axis appears with tick marks representing time bins. Above each bin, the number of spikes is plotted as bars, showing how many spikes occur per unit time. A label **“spikes/sec”** appears on the vertical axis.
+
+17. **31.86–32.80**  
+    The third card fills with **“Spike Timing”**. The spike train is divided into intervals with vertical dashed reference lines. Each spike is marked with a precise timestamp label indicating its exact time of occurrence, with the exact times shown as numeric values along the horizontal axis.
+
+18. **32.80–35.34**  
+    The fourth card fills with **“Spike Waveform Characteristics”**. The magnified spike waveforms are highlighted. Measurements appear on a single spike: a vertical dashed line marking the peak amplitude, a horizontal arrow marking the waveform width, and a shaded region marking the area under the curve. Small labels **“amplitude”**, **“width”** identify the measurements.
+
+19. **35.34–40.12**  
+    The entire screen clears except for a subtle divider. At the bottom third of the screen, an EMG trace appears: a rapidly oscillating waveform with varying amplitude, showing bursts of dense activity separated by quieter periods. The trace is labeled **“EMG”** beneath it.
+
+20. **36.44–39.06**  
+    Two feature cards appear to the right of the EMG trace: first card fills with **“Strength”**, showing vertical bars above the EMG trace that rise and fall with the amplitude of the signal's envelope, a superimposed line tracing the peaks of the envelope. The second card fills with **“Temporal Characteristics”**, and a timing measurement overlay appears on the EMG trace marking the duration of each muscle activity burst with horizontal arrows and time labels, plus the intervals between bursts.
+
+21. **40.12–41.10**  
+    All three sections — EEG, spike, EMG — are now visible simultaneously: EEG trace with five feature cards at top-left, spike train with four feature cards at right, EMG trace with two feature cards at bottom. Each section is separated by subtle grid lines forming a three-region layout. A brief pulse of the dividers re-orients the viewer to the whole layout.
+
+22. **41.10–45.40**  
+    The entire layout shrinks slightly to make room at the bottom. A large bold statement fades in at the bottom of the screen: **“Raw waveform → Relevant measurable features”** with an arrow between “Raw waveform” and “Relevant measurable features”. The clean EEG trace gently pulses as “Raw waveform” is displayed, then the five EEG feature cards glow sequentially as “Relevant measurable features” is displayed. The statement's arrow animates: a dot travels across the arrow from left to right.
+
+23. **45.40–46.92**  
+    The bottom statement remains prominent and bright. The three-region layout dims, with the statement taking visual dominance. The arrow in the statement completes its animation and the entire statement text holds steady, glowing slightly.
+
+24. **46.92–52.10**  
+    A clean blue EEG trace appears in miniature next to the bottom statement. It slowly transforms: the waveform collapses piece by piece into a compact row of simple numeric values — a few small labeled boxes showing representative numbers — demonstrating the reduction from complex signal to analysable information. The bottom statement remains visible and bright.
+
+25. **52.10–52.90**  
+    The full composition settles: the bottom statement **“Raw waveform → Relevant measurable features”** pulses once, then all elements hold at steady brightness. The miniature trace and row of numbers remain in view. The scene holds to the end of the clip.

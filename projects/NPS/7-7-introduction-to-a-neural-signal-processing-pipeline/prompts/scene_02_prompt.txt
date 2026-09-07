@@ -1,0 +1,98 @@
+1. **0.00–1.66**  
+   The noisy multi-channel trace plot from the previous scene remains on screen, but all traces except one central representative trace fade out. The remaining raw trace — jagged, with baseline drift and a large spike artifact — moves to the top third of the screen. Head diagram, electrodes, wires, and recording device from the previous scene fade away.
+
+2. **1.66–2.38**  
+   Below the raw trace, a horizontal row of six small empty outlined boxes fades in, evenly spaced. The boxes are unlabeled, dark outlines only, waiting to be activated.
+
+3. **2.38–2.92**  
+   A large title label **“Preprocessing”** appears above the raw trace in clean text, and the raw trace brightens slightly to establish it as the starting signal.
+
+4. **2.92–4.22**  
+   The first box in the row lights up and fills with the label **“Filtering”** — box background tinted, text white. The other five boxes remain empty outlines.
+
+5. **4.22–6.24**  
+   The raw trace shows a thin semi-transparent overlay of a high-frequency periodic waveform on top of the jagged signal, visually separable from the underlying trace. A downward arrow appears pointing from the raw trace toward an empty area just below, suggesting preparation for transformation.
+
+6. **6.24–7.18**  
+   The raw trace briefly lifts slightly and then settles back, with a faint dashed outline marking the region that will be processed. The scene communicates preparation for further analysis without changing the trace yet.
+
+7. **8.14–8.92**  
+   A horizontal pair of contrasting mini-labels fades in below the trace area: **“Cleaner”** (left, in a muted gray) and **“Clean”** (right, also muted gray). Neither is highlighted yet — establishing the not-just-cleaner framing.
+
+8. **8.92–10.68**  
+   The **“Cleaner”** label flashes once with a subtle red “✗” overlay at the start of the beat, then the red ✗ fades out. A faint dotted line crosses through “Cleaner,” signaling that merely making it look cleaner is not the goal.
+
+9. **11.44–12.54**  
+   Above the processing boxes, a new label fades in: **“Goal: Reduce unwanted components”** in bold text. The **“Cleaner”** grayed label fades out entirely.
+
+10. **12.54–13.42**  
+    The **“Reduce”** portion of the goal label glows, and the raw trace's high-frequency interference overlay brightens and pulses once, identifying it as an unwanted component targeted for reduction.
+
+11. **13.42–14.96**  
+    A new label fades in beside the goal: **“Preserve neural information”**. The underlying smooth neural waveform portion of the raw trace — the slowly undulating component beneath the noise and spike — is highlighted with a soft blue outline along its path, identified and preserved visually.
+
+12. **14.96–16.98**  
+    The blue neural waveform outline pulses once, and a small icon — a magnifying glass over the neural waveform — fades in near the trace, reinforcing that the neural information relevant to research questions is retained.
+
+13. **17.82–18.36**  
+    The **“Goal”** label dims. The row of processing boxes brightens, and the empty five boxes plus the first active **“Filtering”** box expand slightly upward, becoming the focal point for the coming list of six operations.
+
+14. **18.36–19.62**  
+    The **“Filtering”** box glows and rises slightly. Simultaneously, the high-frequency interference overlay on the raw trace visibly separates and dims, then fades away completely, leaving the trace slightly cleaner with the spike and drift still present.
+
+15. **19.62–21.06**  
+    The second box fills and lights up with the label **“Artifact Detection”**. On the trace, a red circular highlight appears around the large triangular spike (eye-blink artifact), with a small magnifier icon and the label **“Artifact”** pointing to it.
+
+16. **21.06–22.32**  
+    The third box fills and lights up with the label **“Artifact Removal”**. The red highlight around the spike pulses twice, then the spike's triangular deflection shrinks and flattens — the artifact disappears, leaving a small gap in the trace that smoothly fills with the underlying neural waveform.
+
+17. **22.32–23.92**  
+    The fourth box fills and lights up with the label **“Signal Segmentation”**. Vertical dashed lines fade in, dividing the cleaned trace into four adjacent segments of roughly equal length, each segment slightly separated and labeled **“Segment 1”**, **“Segment 2”**, **“Segment 3”**, **“Segment 4”** in small text below.
+
+18. **23.92–25.04**  
+    The fifth box fills and lights up with the label **“Baseline Correction”**. The trace, currently showing a slow upward drift, visibly tilts and flattens: the overall trend line rotates downward until it aligns with a horizontal dashed reference line positioned at zero.
+
+19. **25.04–26.46**  
+    The sixth and final box fills and lights up with the label **“Normalization”**. The trace's vertical amplitude subtly scales — the peak-to-peak waveform amplitudes become more uniform while retaining the exact neural wave shape.
+
+20. **26.46–27.34**  
+    All six boxes glow together in a brief sequential pulse, left to right. The processed trace — now smooth, clean, flat baseline, segmented — sits below the raw trace for comparison, with the raw trace dimmed slightly at the top of the screen.
+
+21. **27.34–29.44**  
+    A vertical side panel fades in along the right side of the screen containing four stacked miniature waveform cards, each with a small label: **“Power-line Interference”**, **“Eye-blink Artifact”**, **“Muscle Activity”**, **“Baseline Drift”**. Each card shows its respective generic waveform: a periodic sine-like oscillation, a large triangular spike, rapid irregular fluctuations, and a slow upward trend.
+
+22. **29.44–31.20**  
+    The **“Power-line Interference”** card brightens, and a copy of its periodic waveform floats from the card over to the raw trace, briefly overlaying it, then shrinks and dissolves as the filtering effect is re-applied. The card dims and is struck through with a soft fade.
+
+23. **31.20–32.68**  
+    The **“Eye-blink Artifact”** card brightens. A copy of the triangular spike floats from the card to the raw trace, overlays the existing spike, then flattens and disappears as artifact removal is applied. The card dims and strikes through.
+
+24. **32.68–34.08**  
+    The **“Muscle Activity”** card brightens. A copy of rapid irregular fluctuations floats to the raw trace and overlays the jagged components, then fades as filtering removes the high-frequency noise. The card dims and strikes through.
+
+25. **34.08–35.26**  
+    The **“Baseline Drift”** card brightens. A copy of the slow upward trend floats to the raw trace and overlays the drift, then rotates until flat as baseline correction is applied. The card dims and strikes through.
+
+26. **35.26–36.18**  
+    All four side-panel cards now carry a subtle red ✗ overlay, struck through and dimmed. The raw trace at top has all four unwanted components extracted visually, leaving only the clean neural waveform, now in blue, centered below it.
+
+27. **36.18–39.32**  
+    The clean blue trace shifts to the center of the screen and expands slightly to become the primary focal element. The raw dimmed trace fades out. The six processing boxes, now all lit, compress into a compact horizontal strip labeled **“Preprocessing Pipeline”** beneath the clean trace.
+
+28. **39.32–40.34**  
+    The scene holds: clean blue neural waveform with flat baseline, high-frequency noise removed, spike removed, drift corrected, alongside the six active processing boxes and the four struck-through artifact cards in the side panel. A soft connected path briefly illuminates between each processing box and its effect on the trace.
+
+29. **40.34–43.60**  
+    The **“Filtering”** box and the **“Power-line Interference”** card glow together. A small circular icon — a magnifying glass over a waveform — appears near the clean trace to signal connection to earlier course modules. The label **“Earlier Modules”** fades in at the bottom center in muted text.
+
+30. **43.60–44.46**  
+    The **“Filtering”** box pulses, and the power-line interference card briefly un-strikes and re-strikes, recalling the earlier filtering concept. The clean trace's high-frequency noise component flickers once, then settles.
+
+31. **44.46–45.14**  
+    The **“Eye-blink Artifact”** and **“Muscle Activity”** cards glow together. The labels **“Artifacts”** appears beneath the side panel in bold, and the earlier artifacts module connection is reinforced with a subtle linking arrow from the card to the cleaned trace.
+
+32. **45.14–46.40**  
+    A final label fades in beneath the clean trace: **“Signal Cleaning”** in bold. The magnifying-glass icon enlarges and briefly sweeps across the clean neural waveform, leaving a soft highlight along its path. All elements hold steady.
+
+33. **46.40–47.17**  
+    The full composition — clean blue trace, six processing boxes, four struck-through artifact cards, the **“Signal Cleaning”** label, and the **“Earlier Modules”** reference — settles at steady brightness. The clean trace pulses gently once, then the scene holds to the end of the clip.

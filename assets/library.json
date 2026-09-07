@@ -133,5 +133,45 @@
     "path": "image/fig_mindmap_full.png",
     "asset_type": "image",
     "description": "Composite PNG (matplotlib layout + Bootstrap Icons, MIT licensed) -- the complete 5-node mind map, all nodes lit. Use for Part 7's expansion and the closing full reveal via ImageMobject(ASSET_PATHS['fig_mindmap_full'])."
+  },
+  "eeg_device": {
+    "path": "image/eeg.svg",
+    "asset_type": "image",
+    "description": "A monitor displaying an EEG brain-wave trace, representing electroencephalography recording equipment. Source: IconPark Outline (Apache 2.0), via Iconify."
+  },
+  "mri_scan": {
+    "path": "image/mri.svg",
+    "asset_type": "image",
+    "description": "An MRI imaging display/scan icon, representing magnetic resonance imaging. Source: Medical Icons (MIT), via Iconify."
+  },
+  "robotic_arm": {
+    "path": "image/robotic_arm.svg",
+    "asset_type": "image",
+    "description": "A robotic/prosthetic arm with an articulated gripper, representing neuroprosthetic or robotic limb control. Source: Siemens Industrial Experience Icons (MIT), via Iconify."
+  },
+  "electrode_pads": {
+    "path": "image/electrodes.svg",
+    "asset_type": "image",
+    "description": "A pair of overlapping electrode pads, representing EEG/EMG surface electrodes. Source: Remix Icon (Apache 2.0), via Iconify."
+  },
+  "wheelchair": {
+    "path": "image/wheelchair.svg",
+    "asset_type": "image",
+    "description": "A person using a wheelchair, representing assistive mobility devices/rehabilitation. Source: Health Icons (MIT), via Iconify."
+  },
+  "xray_scan": {
+    "path": "image/xray.svg",
+    "asset_type": "image",
+    "description": "A skeletal X-ray-style figure, representing medical imaging (X-ray/CT). Source: Health Icons (MIT), via Iconify."
+  },
+  "smartwatch": {
+    "path": "image/smartwatch.svg",
+    "asset_type": "image",
+    "description": "A smartwatch paired with a connected device screen, representing consumer wearable neurotechnology. Source: Material Design Icons (Apache 2.0), via Iconify."
+  },
+  "nerve_cell": {
+    "path": "image/nerve.svg",
+    "asset_type": "image",
+    "description": "A branching nerve/neuron cell shape, representing peripheral nerve or neural pathways. Source: Health Icons (MIT), via Iconify."
   }
 }

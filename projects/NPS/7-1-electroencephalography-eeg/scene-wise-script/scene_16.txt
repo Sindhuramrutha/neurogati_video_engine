@@ -1,0 +1,8 @@
+Subtopic: 7.1.3 Summary and Transition to Epilepsy
+Scene type: manim
+
+Narration:
+In this section, we explored one of the most important clinical applications of EEG: sleep staging. We learned that sleep consists of multiple stages, each characterized by distinct patterns of neural activity. By applying signal processing techniques such as filtering, spectral analysis, and spectrogram analysis, EEG recordings can be used to identify these stages, assess sleep quality, and support the diagnosis of sleep disorders. Sleep staging demonstrates how EEG can be used to study normal brain function. However, EEG is equally valuable for detecting abnormal neural activity. One of its most important clinical applications is the diagnosis and monitoring of epilepsy, where characteristic electrical discharges provide crucial information for patient evaluation and treatment planning. In the next section, we will examine how EEG is used in epilepsy diagnosis and monitoring.
+
+Animation description:
+A summary of sleep staging fades into a scene with a sudden, sharp abnormal spike in the EEG waveform. The waveform transitions from smooth and rhythmic to jagged and irregular. The title 'Epilepsy' appears. A lightning bolt or sharp spike icon emphasizes the abnormal electrical discharge.

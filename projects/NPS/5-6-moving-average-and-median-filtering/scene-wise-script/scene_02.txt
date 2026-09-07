@@ -1,0 +1,8 @@
+Subtopic: 5.6.3 Moving‑Average Filter – Definition and Principle
+Scene type: manim
+
+Narration:
+The moving‑average filter is a time‑domain filter that smooths a signal by replacing each sample with the average of its surrounding neighbours. Instead of thinking about frequencies, it looks at the raw waveform. For every sample, the filter picks a small window of samples around it, computes their average, and replaces the original value with that average. This operation is repeated across the entire signal. Rapid, random fluctuations get averaged out, while slower trends remain.
+
+Animation description:
+Show a discrete, noisy waveform as a series of dots connected by a faint line. Highlight a sliding window of fixed size (e.g. 5 points) around a sample. Inside the window, show the sum and division to compute the average. Place the computed average as a new dot on the evolving smoothed curve. Repeat sliding window step‑by‑step across the whole signal, building a visibly smoother waveform.

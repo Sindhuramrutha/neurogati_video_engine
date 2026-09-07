@@ -1,0 +1,116 @@
+{
+  "index": 9,
+  "slide_width_emu": 14630400,
+  "slide_height_emu": 8229600,
+  "shapes": [
+    {
+      "shape_id": 2,
+      "kind": "text",
+      "text": "Electrophysiology: The Spark of Life",
+      "alt_text": "Text 0",
+      "manim_bbox": [
+        -6.339467189756944,
+        2.6090278585243056,
+        2.94201414670139,
+        3.2980324166319446
+      ]
+    },
+    {
+      "shape_id": 3,
+      "kind": "text",
+      "text": "By the 18th century, science began to realize that life was not just chemical, but electrical.",
+      "alt_text": "Text 1",
+      "manim_bbox": [
+        -6.339467189756944,
+        1.815277506388889,
+        6.339468161857639,
+        2.168055764704861
+      ]
+    },
+    {
+      "shape_id": 4,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 0",
+      "manim_bbox": [
+        -6.339467189756944,
+        -3.049884272361111,
+        -0.26898123425347187,
+        1.3192125778125
+      ]
+    },
+    {
+      "shape_id": 5,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 1",
+      "manim_bbox": [
+        0.27638864154513865,
+        -0.7450238048263884,
+        1.3788188760937503,
+        1.3192125778125
+      ]
+    },
+    {
+      "shape_id": 6,
+      "kind": "text",
+      "text": "Luigi Galvani (1771)",
+      "alt_text": "Text 2",
+      "manim_bbox": [
+        1.5993058951041652,
+        0.754282091840278,
+        4.355439807517361,
+        1.0987265309027778
+      ]
+    },
+    {
+      "shape_id": 7,
+      "kind": "text",
+      "text": "Discovered that a dead frog's leg kicked when touched by an electric spark. He believed in a special \"animal electricity.\"",
+      "alt_text": "Text 3",
+      "manim_bbox": [
+        1.5993058951041652,
+        -0.5245377579166668,
+        6.346875569149305,
+        0.5337960449305554
+      ]
+    },
+    {
+      "shape_id": 8,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 2",
+      "manim_bbox": [
+        0.27638864154513865,
+        -2.809259215364584,
+        1.3788188760937503,
+        -0.7450228327256951
+      ]
+    },
+    {
+      "shape_id": 9,
+      "kind": "text",
+      "text": "Alessandro Volta",
+      "alt_text": "Text 4",
+      "manim_bbox": [
+        1.5993058951041652,
+        -1.3099533186979162,
+        4.355439807517361,
+        -0.9655088796354168
+      ]
+    },
+    {
+      "shape_id": 10,
+      "kind": "text",
+      "text": "Invented the battery (Voltaic pile) and proved that the electricity in muscles was the same as that in non-living electrochemical cells.",
+      "alt_text": "Text 5",
+      "manim_bbox": [
+        1.5993058951041652,
+        -2.5887731684548614,
+        6.346875569149305,
+        -1.5304393656076396
+      ]
+    }
+  ],
+  "notes_text": null
+}

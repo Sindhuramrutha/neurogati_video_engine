@@ -1,0 +1,23 @@
+1. 0.00-4.42: The previous scene's summary graphic fades out. A blank background fades in. The narration's opening phrase "In this module, we explored the analysis of nonstationary neural signals" is accompanied by a single bullet point fading in at the top-center of the screen: "Nonstationary neural signals". The bullet highlights with a soft colored outline as it appears.
+
+2. 4.42-7.32: The first bullet remains on screen but dims slightly. A second bullet point fades in directly beneath it: "STFT: time and frequency information". The second bullet highlights while the first remains dimmed.
+
+3. 7.32-10.66: The second bullet dims to match the first. A third bullet point fades in beneath the stack: "Spectrogram: visualizes STFT output". The third bullet highlights.
+
+4. 11.84-16.60: The screen now shows three bullet points stacked vertically: "Nonstationary neural signals", "STFT: time and frequency information", and "Spectrogram: visualizes STFT output". The first bullet re-highlights as the narration begins "neural signals are generally nonstationary because their characteristics change over time". The animation description's scroll begins here: the bullet list scrolls gently upward so the first bullet sits near the top third of the screen, making room for additional bullets below.
+
+5. 16.60-18.94: The first bullet dims. The second bullet highlights as the narration reaches "The Short-Time Fourier Transform extends Fourier analysis by providing both time and frequency information". The list scrolls upward slightly to keep the active bullet centered.
+
+6. 19.68-25.84: The second bullet dims. The third bullet highlights as the narration says "A spectrogram visualizes the output of the STFT, showing how frequency content changes throughout a recording". The list continues scrolling upward gradually, keeping the active bullet in view.
+
+7. 25.84-33.10: The third bullet dims. A fourth bullet point fades in at the bottom of the visible list: "Wavelet analysis: multiple scales". The fourth bullet highlights as the narration continues "Wavelet analysis overcomes the fixed-window limitation of the STFT by using multiple analysis scales". The list scrolls to bring this bullet toward center.
+
+8. 33.10-40.26: The fourth bullet dims. A fifth bullet point fades in beneath the list: "ERPs: time-locked averaging". The fifth bullet highlights as the narration says "Event-Related Potentials measure neural responses that are time-locked to specific events through averaging across repeated trials". The list scrolls upward to accommodate this bullet.
+
+9. 40.26-48.16: The fifth bullet dims. A sixth and final bullet point fades in at the bottom of the list: "Time-locked vs induced responses". The sixth bullet highlights as the narration delivers "neural responses can be classified as time-locked or induced, each requiring different analysis approaches".
+
+10. 48.16-55.30: All six bullets remain visible on screen, now unhighlighted and equal in emphasis: "Nonstationary neural signals", "STFT: time and frequency information", "Spectrogram: visualizes STFT output", "Wavelet analysis: multiple scales", "ERPs: time-locked averaging", "Time-locked vs induced responses". The list continues a slow, gentle scroll so all six are visible together.
+
+11. 55.30-61.66: The scrolling stops. All six bullets settle into a centered vertical stack on screen. The list as a whole subtly brightens. A soft pulse passes over the entire stack as the narration says "Together, these concepts provide a strong foundation for analyzing dynamic neural activity".
+
+12. 61.66-68.35: The six bullets remain centered and steady. A forward-pointing arrow fades in below the stack, centered horizontally, as the narration concludes "and prepare us for more advanced topics in neural signal processing and neuroscience applications". The arrow pulses gently once. The full screen remains on this final state until the narration ends.

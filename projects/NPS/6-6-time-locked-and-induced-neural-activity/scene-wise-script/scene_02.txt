@@ -1,0 +1,8 @@
+Subtopic: Induced Neural Activity
+Scene type: manim
+
+Narration:
+Now consider a different situation. Induced neural activity refers to event-related changes in brain activity that do not occur at exactly the same time across repeated trials. Suppose a participant performs a mental imagery task. The task consistently changes brain activity, but the exact timing of these changes varies slightly from one trial to another. One response may begin after 250 milliseconds. Another may begin after 320 milliseconds. A third may begin after 280 milliseconds. Although all of these responses are related to the same task, they are not perfectly synchronized in time. If these trials are averaged in the same way as an ERP, much of the induced activity will cancel out because its timing differs across trials. Therefore, induced neural activity is usually studied using time-frequency analysis, such as spectrograms or wavelet analysis, rather than simple averaging.
+
+Animation description:
+Multiple EEG epochs are shown stacked, aligned to a vertical stimulus onset line. Each epoch shows a response emerging at a different latency: one at 250 ms, another at 320 ms, another at 280 ms. The peaks are highlighted with small markers showing the varying latencies. Then an averaging panel appears: as the epochs are averaged, the late responses partially cancel out, leaving a smaller and more smeared deflection. A label appears saying 'Averaging reduces induced activity'. Next to it, a small spectrogram appears with a time-frequency heatmap, labeled 'Time-frequency analysis', showing that frequency power changes are visible there despite the timing jitter.

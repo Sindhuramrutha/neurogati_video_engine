@@ -1,0 +1,81 @@
+1. **0.00-1.52** — A mostly clean EEG trace fades in across the screen, a thin line tracing gentle brainwave oscillations. The line is faintly visible, undulating with typical neural activity.
+
+2. **1.52-2.64** — The clean trace holds steady for a beat, establishing itself as the baseline reference. The line continues its gentle oscillation.
+
+3. **2.64-5.34** — A slow, undulating baseline drift begins to overlay the trace: a broad, sweeping wave that lifts the entire signal gradually up and down away from its center. The drift component appears as a semi-transparent slow-moving curve layered over the clean trace.
+
+4. **5.34-7.38** — The clean trace and drift continue, but now a periodic buzzing overlay fades in: rapid, regular high-frequency oscillations riding on top of the signal. The buzz component appears as a fine, fast jitter along the trace.
+
+5. **7.38-8.74** — A sharp burst of muscle activity appears: a brief cluster of large, jagged, high-amplitude spikes disrupting the trace. The muscle artifact jumps out visually as a rough burst.
+
+6. **8.74-10.86** — The full contaminated trace is now visible: clean brain activity buried under baseline drift, equipment buzz, muscle bursts. The clean signal remains faintly visible underneath all these artifacts.
+
+7. **10.86-12.20** — The contaminated trace holds on screen, all components layered together, showing how messy the recording has become. No new elements appear.
+
+8. **12.20-15.36** — The trace freezes or simply continues as a static visual while a label fades in below: "Filtering does not create new information." The text appears crisp and centered.
+
+9. **15.36-16.24** — The label from beat 8 remains on screen, while the contaminated trace continues its motion. A brief pause before the next concept.
+
+10. **16.24-19.66** — The label fades out. The contaminated trace remains visible, but now a subtle highlighting begins: the unwanted components (drift, buzz, muscle burst) are slightly dimmed compared to the clean signal, visually separating them.
+
+11. **19.66-23.32** — A second label fades in below the trace: "Removes components unlikely to contain useful physiological information." The trace continues, with the unwanted components visually distinct from the faint clean signal.
+
+12. **23.32-24.26** — The label fades away. The trace resets to showing all components equally mixed.
+
+13. **24.26-26.02** — The screen transitions to a fresh EEG trace. A title card appears: "EEG Recording." The trace begins clean, then gradually accumulates artifacts.
+
+14. **26.02-30.32** — The clean brain activity component is isolated and highlighted: a smooth, rhythmic wave pattern labeled "Brain activity" appears prominently in front. The trace pulses gently to show this is the signal of interest.
+
+15. **30.32-30.86** — Brief pause. The brain activity component remains highlighted.
+
+16. **30.86-32.58** — The brain activity component pulses or glows gently, emphasizing it as "the signal we're interested in."
+
+17. **33.18-35.44** — The slow baseline drift component is highlighted separately: the broad sweeping wave labeled "Baseline drift" flashes and brightens, isolating itself from the trace.
+
+18. **35.44-36.32** — The drift component continues highlighted, labeled clearly.
+
+19. **36.80-38.92** — The periodic equipment interference is highlighted: the rapid buzzing overlay labeled "Electrical interference" flashes and brightens, showing its regular high-frequency pattern.
+
+20. **38.92-39.50** — The equipment interference remains highlighted.
+
+21. **39.50-41.34** — The muscle activity burst is highlighted: the jagged high-amplitude spikes labeled "Muscle activity" flash and brighten, emphasizing their irregular, sharp nature.
+
+22. **41.34-41.76** — The muscle burst holds highlighted.
+
+23. **41.76-42.76** — The power-line interference is highlighted: a very regular, steady sine wave ripple labeled "Power-line interference" flashes and brightens, showing its consistent frequency.
+
+24. **42.76-43.76** — All four artifacts remain visible and labeled, each in its own highlight color, surrounding the faint clean brain activity still barely visible underneath.
+
+25. **43.76-45.92** — The full contaminated trace shows all components together. The clean brain signal is now very hard to distinguish beneath the drift, buzz, muscle burst, and power-line ripple.
+
+26. **45.92-46.52** — The trace visually becomes murkier or more cluttered, emphasizing how difficult it is to identify the brain activity.
+
+27. **46.52-48.36** — A label fades in: "Difficult to identify brain activity." The contaminated trace continues, with the brain activity obscured.
+
+28. **48.36-50.12** — The label remains. The brain activity component is shown trying to peek through the noise but is clearly overwhelmed.
+
+29. **50.12-50.90** — The label fades out. A brief pause.
+
+30. **50.90-53.96** — A filter boundary line appears across the screen, dividing it into two sections. The unwanted components (drift, buzz, muscle burst, power-line ripple) begin to separate from the clean signal.
+
+31. **53.96-54.56** — The unwanted components fade out from the main trace and slide into a labeled bin marked "Removed." Each artifact dims as it moves into the bin.
+
+32. **54.56-57.78** — The clean brain activity, now free of contamination, is enlarged and centered on the screen. It appears brighter and clearer than before. The label "Preserved signal" appears beside it.
+
+33. **57.78-58.62** — The preserved signal holds center stage, clean and distinct. The "Removed" bin sits off to the side with the faded artifacts inside.
+
+34. **58.62-63.34** — The clean signal remains enlarged. The "Removed" bin stays visible. A subtle visual emphasis shows that only some components were removed, not everything — the preserved signal is clearly intact.
+
+35. **63.34-64.26** — The visual holds: preserved signal prominent, removed artifacts in the bin.
+
+36. **64.26-67.64** — The clean signal pulses gently with the label "Preserved signal" reaffirmed. The "Removed" bin stays visible.
+
+37. **67.64-68.84** — The screen begins to settle. The enlarged clean signal remains centered.
+
+38. **68.84-71.44** — A definition text fades in at the bottom of the screen: "Signal filtering = preserving useful signal components..." The clean signal and "Removed" bin remain visible above.
+
+39. **71.44-73.94** — The definition text expands: "Signal filtering = preserving useful signal components while attenuating unwanted components." The full text now sits at the bottom.
+
+40. **73.94-76.48** — The complete definition remains on screen. The clean signal pulses gently in the center, the "Removed" bin stays off to the side with the faded artifacts.
+
+41. **76.48-77.38** — Final hold: the full scene remains visible — preserved clean signal centered and highlighted, unwanted components in the "Removed" bin, and the definition text at the bottom. The scene holds until the end of the narration.

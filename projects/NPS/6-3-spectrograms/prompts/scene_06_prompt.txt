@@ -1,0 +1,23 @@
+1. **0.00–2.56** — From the previous scene's end (the four-panel grid of EEG, EMG, BCI, and Event-Related spectrograms visible and settled), the grid fades out smoothly, leaving the dark background. On the left half of the screen, the first checklist item fades in: the text "Simultaneously display time and frequency information" appears in white, with a dim grey horizontal line next to it where the check mark will go. No check mark yet.
+
+2. **3.38–6.42** — A green check mark draws itself into the empty slot next to the first checklist item with a quick, clean stroke-animation. The check mark lands with a small bright flash, then settles. The first item now reads as complete.
+
+3. **7.10–9.94** — A second checklist item fades in below the first: "Make nonstationary signals easier to interpret". Its check mark slot is empty at first. After the text is fully visible, the green check mark draws itself in the same way.
+
+4. **10.58–14.18** — A third checklist item fades in below the previous two: "Provide an intuitive visual representation of STFT results". Its check mark draws in green. The narration says "SDFT" but the on-screen text reads "STFT" (the standard abbreviation for Short-Time Fourier Transform). The three items and their green check marks are all clearly visible.
+
+5. **14.90–17.14** — A fourth checklist item fades in below the others: "Help identify transient neural events". Its green check mark draws in. All four checklist items are now stacked on the left side of the screen, each with a completed green check mark.
+
+6. **17.86–23.64** — The four-item checklist on the left dims slightly and shifts a bit leftward to make room on the right. On the right half of the screen, two empty rectangular panels fade in, arranged side by side, with a small gap between them. Both panels have dark interiors and dim grey borders. No content inside them yet.
+
+7. **24.18–27.68** — Above or below the two empty panels, a heading fades in: "Window size" in small white text. The panels remain empty, waiting. The left-side checklist stays visible but quiet.
+
+8. **27.68–30.72** — The left panel on the right side begins to fill with a spectrogram. A label along its top edge fades in: "Small window: good time resolution, poor frequency resolution". Inside the panel, the spectrogram appears with sharp, clearly defined vertical transitions along the time axis — energy starts and stops abruptly. The frequency bands, however, are blurred and smeared vertically: the horizontal bands are wide, soft-edged, and poorly localized in frequency.
+
+9. **31.46–33.18** — The narration reiterates the trade-off for the small window. In the small-window panel, the vertical transitions sharpen further — the burst edges become starkly crisp — while the horizontal frequency bands blur even more, smearing across the vertical axis. The label text remains.
+
+10. **33.98–36.54** — The right panel on the right side begins to fill with its own spectrogram. A label fades in along its top edge: "Large window: poor time resolution, good frequency resolution". Inside, the spectrogram shows the opposite pattern: crisp, thin, sharply defined horizontal frequency bands, but the time-axis transitions are blurred and smeared horizontally — energy fades in and out gradually rather than with sharp edges.
+
+11. **36.98–38.44** — The large-window panel's horizontal frequency bands sharpen further into fine, distinct, well-separated lines, while its time transitions blur even more, spreading energy broadly along the horizontal time axis. The contrast between the two panels is now stark and clear.
+
+12. **39.42–47.42** — Both spectrogram panels remain visible side by side, with the small-window panel showing crisp time transitions and smeared frequency bands, and the large-window panel showing smeared time transitions and crisp frequency bands. Their labels hold. The left-side checklist of four advantages stays in place, slightly dimmed. A final line of text fades in at the bottom centre, below the two panels: "Every spectrogram reflects a time–frequency trade-off". This text stays visible as the scene draws to a close. The two panels each pulse softly once, in sequence — small window first, then large window — to emphasize the comparison, then settle evenly and hold through the end of the narration.

@@ -1,0 +1,27 @@
+1. [0.00-2.00] A simple stylized side-view head outline fades in, centered. A single idealized EEG electrode (a small circular metal disc) appears on the scalp at the top of the head, clearly touching the head outline. The interior of the head remains blank.
+
+2. [2.00-5.50] A broad, smooth undulating waveform pattern fills the interior of the head outline beneath the electrode, slowly propagating across the whole brain area. The label "EEG: large-scale activity" fades in beside the electrode.
+
+3. [5.50-7.00] The camera begins a slow zoom toward the electrode contact point, gradually filling the frame with the head's edge. The label "EEG: large-scale activity" dims and eventually leaves the frame.
+
+4. [7.00-11.20] The view cross-fades into a cross-section of neural tissue: multiple loosely neuron-shaped cell bodies and branching dendrites. The large-scale wave pattern fades out. The EEG electrode and head outline are gone. This establishes the smaller spatial context visually.
+
+5. [11.20-14.50] The cross-section holds. A slight brightness pulse sweeps across the tissue once, from left to right, to signal coordinated large-scale activity receding from view, leaving the tissue at rest.
+
+6. [14.50-18.20] A thin, sharpened vertical electrode descends into view from the top edge and penetrates directly into the center of the neural tissue cross-section. The electrode tip comes to rest inside the tissue, with several neuron bodies visible around its tip and along its shaft.
+
+7. [18.20-22.00] Beside the electrode — to the right of the tissue — a vertical signal trace panel appears. The electrode is still in place. The panel remains blank for a moment while the electrode remains steady inside the tissue.
+
+8. [22.00-25.20] Two distinct waveform labels fade in beside the empty trace panel: "Spike" in the upper half and "LFP" in the lower half. The panel now shows two vertically separated trace regions with those labels.
+
+9. [25.20-29.00] A rapid spiky waveform begins drawing across the top trace region, labeled "Spike": tall, thin, sharp peaks repeating at high frequency. A slower, smooth undulating waveform simultaneously begins drawing across the bottom trace region, labeled "LFP": a low-amplitude wave that rises and falls over a much longer cycle.
+
+10. [29.00-33.30] Both waveforms continue tracing. The two labels dim slightly but remain visible.
+
+11. [33.30-37.40] A single neuron near the electrode tip is highlighted — its cell body and the small section of membrane closest to the tip glow in a single bright color (e.g., yellow). The upper "Spike" trace continues its rapid sharp peaks, and a new sharp peak on that trace appears each time the highlighted neuron fires.
+
+12. [37.40-45.10] The highlight on the single neuron fades out. Instead, a surrounding population of neurons near the electrode tip — roughly 15 to 25 cell bodies within a radius of about twice the electrode tip length — glow together in a diffuse soft color (e.g., soft blue), pulsing in synchronized waves. The lower "LFP" trace continues, and its undulations coincide with those synchronized population pulses.
+
+13. [45.10-51.80] Both waveforms remain visible side by side — "Spike" on top, "LFP" below — and now the tissue cross-section shrinks to occupy the left half of the frame while the two labeled traces stand clearly beside it. The single-neuron highlight and the population glow alternate once more in quick succession as the traces continue.
+
+14. [51.80-56.77] A final composition: the tissue cross-section remains left; the two traces remain right; the labels "Spike" and "LFP" are fully prominent. A new caption fades in beneath both: "Complementary views". Everything holds static except the two waveforms, which continue drawing slowly until the scene ends.

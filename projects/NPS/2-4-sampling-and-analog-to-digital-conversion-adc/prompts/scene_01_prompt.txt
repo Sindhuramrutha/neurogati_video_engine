@@ -1,0 +1,13 @@
+1. 0.00–1.30: Open on a mostly empty canvas. Fade in a short title line at the top centre: **Learning Objectives**. Keep it small and clean.
+
+2. 1.84–6.38: Fade in the first bullet point below the title: a small waveform icon (two simple line drawings side by side — one smooth continuous curve, one staircase-like digital step line) followed by the text **differentiate between analog and digital signals**. The icon and text appear together as one bullet.
+
+3. 6.72–8.36: Fade in the second bullet point directly beneath the first: a dot-grid icon (a small 3×3 array of filled dots) followed by the text **explain the concept of sampling**.
+
+4. 8.98–10.20: Fade in the third bullet point directly beneath the second: a frequency icon (a small horizontal axis with evenly spaced vertical tick marks rising from it) followed by the text **define sampling frequency**.
+
+5. 11.00–13.48: Fade in the fourth bullet point directly beneath the third: a chip icon (a small black rectangle with metal pins extending from its left and right sides) followed by the text **describe the role of an analog-to-digital converter**.
+
+6. 14.36–18.82: Fade in the fifth bullet point directly beneath the fourth: a checkmark icon (a bold green checkmark) followed by the text **understand why proper sampling is important for accurate neural signal recording**.
+
+7. 18.82–19.62: Hold the full final composition steady: the **Learning Objectives** title at top, all five bullet points with their icons listed vertically beneath it, evenly spaced, all fully visible through the end of the narration.

@@ -1,0 +1,104 @@
+{
+  "index": 16,
+  "slide_width_emu": 14630400,
+  "slide_height_emu": 8229600,
+  "shapes": [
+    {
+      "shape_id": 2,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 0",
+      "manim_bbox": [
+        1.7777777499999994,
+        -3.9999999375,
+        7.111111,
+        3.9999999375
+      ]
+    },
+    {
+      "shape_id": 3,
+      "kind": "text",
+      "text": "Wernicke's Aphasia: Fluent but Meaningless",
+      "alt_text": "Text 0",
+      "manim_bbox": [
+        -6.339467189756944,
+        1.7748847783333335,
+        1.0061349118576386,
+        3.1528938945486114
+      ]
+    },
+    {
+      "shape_id": 4,
+      "kind": "text",
+      "text": "Carl Wernicke identified a contrary disorder where speech remains fluent but lacks meaning—often described as \"word salad.\"",
+      "alt_text": "Text 1",
+      "manim_bbox": [
+        -6.339467189756944,
+        0.7386575173784724,
+        1.0061349118576386,
+        1.4442130619097227
+      ]
+    },
+    {
+      "shape_id": 5,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 1",
+      "manim_bbox": [
+        -6.339467189756944,
+        -0.5677087497569442,
+        1.0061349118576386,
+        0.4906250530902776
+      ]
+    },
+    {
+      "shape_id": 6,
+      "kind": "text",
+      "text": "\"I answered the breakfast while I watched the telephone.\"",
+      "alt_text": "Text 2",
+      "manim_bbox": [
+        -6.118981142847223,
+        -0.0826392521354169,
+        0.785648864947917,
+        0.270139006180556
+      ]
+    },
+    {
+      "shape_id": 7,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 2",
+      "manim_bbox": [
+        -6.339467189756944,
+        -2.1993058857291663,
+        1.0061349118576386,
+        -0.7881947966666667
+      ]
+    },
+    {
+      "shape_id": 8,
+      "kind": "text",
+      "text": "Patients are often unaware of their deficit, unlike Broca's patients who painfully recognize their struggle.",
+      "alt_text": "Text 3",
+      "manim_bbox": [
+        -6.118981142847223,
+        -1.714236388107639,
+        0.785648864947917,
+        -1.0086808435763892
+      ]
+    },
+    {
+      "shape_id": 9,
+      "kind": "text",
+      "text": "This \"receptive aphasia\" is linked to damage in the inferior parietal area of the left hemisphere, now known as Wernicke's area.",
+      "alt_text": "Text 4",
+      "manim_bbox": [
+        -6.339467189756944,
+        -3.152893894548611,
+        1.0061349118576386,
+        -2.447338350017361
+      ]
+    }
+  ],
+  "notes_text": null
+}

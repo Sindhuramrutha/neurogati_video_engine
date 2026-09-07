@@ -1,0 +1,116 @@
+{
+  "index": 13,
+  "slide_width_emu": 14630400,
+  "slide_height_emu": 8229600,
+  "shapes": [
+    {
+      "shape_id": 2,
+      "kind": "picture",
+      "text": null,
+      "alt_text": "Image 0",
+      "manim_bbox": [
+        -7.111111,
+        1.7179400917534724,
+        7.111111,
+        3.9999999375
+      ]
+    },
+    {
+      "shape_id": 3,
+      "kind": "text",
+      "text": "Mapping the Mind: Two Rival Theories",
+      "alt_text": "Text 0",
+      "manim_bbox": [
+        -6.4722221210937505,
+        0.35393505814236104,
+        1.5506940556770834,
+        0.9245367795659725
+      ]
+    },
+    {
+      "shape_id": 4,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 1",
+      "manim_bbox": [
+        -6.4722221210937505,
+        -1.5854165203819441,
+        6.47222212109375,
+        -1.5631942985069447
+      ]
+    },
+    {
+      "shape_id": 5,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 2",
+      "manim_bbox": [
+        -6.4722221210937505,
+        -1.5631942985069447,
+        -0.1141207331249996,
+        0.08009234831597212
+      ]
+    },
+    {
+      "shape_id": 6,
+      "kind": "text",
+      "text": "Localization View",
+      "alt_text": "Text 3",
+      "manim_bbox": [
+        -4.434258703923611,
+        -0.3951385181770837,
+        -2.1521988581770835,
+        -0.10983765746527752
+      ]
+    },
+    {
+      "shape_id": 7,
+      "kind": "text",
+      "text": "Proposed that specific brain structures operate as sites for specific functions. Phrenology was an early, extreme (and unscientific) example of this, believing bumps on the skull correlated to personality traits.",
+      "alt_text": "Text 4",
+      "manim_bbox": [
+        -6.282291143211806,
+        -1.380671700017361,
+        -0.3040507389062501,
+        -0.5046301077951387
+      ]
+    },
+    {
+      "shape_id": 8,
+      "kind": "other",
+      "text": null,
+      "alt_text": "Shape 5",
+      "manim_bbox": [
+        0.11400505314236131,
+        -3.228703167204861,
+        6.47222212109375,
+        -1.5854165203819441
+      ]
+    },
+    {
+      "shape_id": 9,
+      "kind": "text",
+      "text": "Aggregate Field View",
+      "alt_text": "Text 6",
+      "manim_bbox": [
+        2.1474540346874997,
+        -2.053240951684028,
+        4.438773139548611,
+        -1.767940090972223
+      ]
+    },
+    {
+      "shape_id": 10,
+      "kind": "text",
+      "text": "Claimed all brain structures contribute to all behaviors. Pierre Flourens supported this by damaging animal brains and noting that behavioral changes depended on the *extent* of damage, not the location.",
+      "alt_text": "Text 7",
+      "manim_bbox": [
+        0.30393505892361183,
+        -3.0387731614236104,
+        6.282291143211805,
+        -2.162731569201388
+      ]
+    }
+  ],
+  "notes_text": null
+}

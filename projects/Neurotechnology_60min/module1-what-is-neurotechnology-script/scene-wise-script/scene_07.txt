@@ -1,0 +1,8 @@
+Subtopic: Clinical vs. Consumer Neurotechnology
+Scene type: manim
+
+Narration:
+Neurotechnology can also be distinguished by its intended application. Clinical neurotechnology is used for purposes such as diagnosis, monitoring, treatment, rehabilitation, and restoration of function. Clinical EEG, neuroprosthetic systems, and implanted stimulation technologies are examples. Consumer neurotechnology is generally aimed at applications such as wellness, personal monitoring, interaction, gaming, or other non-clinical uses. Wearable neural or physiological sensors may be used in these settings. It's important not to assume that a consumer device and a clinical system provide equivalent information simply because they use similar terminology. Clinical applications require appropriate evidence for reliability, safety, and effectiveness. This distinction also highlights a central challenge in neurotechnology: a signal may be measurable, but converting that measurement into a reliable and useful application requires careful validation.
+
+Animation description:
+Two panels side by side: 'Clinical' and 'Consumer'. In the Clinical panel, icons appear: a hospital monitor, an EEG in a medical setting, a neuroprosthetic hand, an implanted stimulator. In the Consumer panel: a smartwatch-style wearable, a gaming headset, a wellness app icon. A warning symbol appears between the two panels with text 'Not equivalent' when the narration addresses the difference. Below, a transformation is shown: a raw measurable signal with a question mark, then an arrow to a validated application with a checkmark, labeled 'validation required'.

@@ -1,0 +1,55 @@
+1. **0.00-0.34** — The heading "Physiological State" fades in at the top center of the screen. Below it, a horizontal timeline fades in: a single horizontal line spanning most of the screen width, centered vertically in the upper-middle area. The timeline is divided into four equal-length segments by three short vertical tick marks. No labels or waveform yet.
+
+2. **0.34-1.02** — The heading "Physiological State" holds. As the narration says "fourth factor," the word "fourth" is emphasized visually: the heading pulses softly once — a brief gentle brightening — then returns to normal. The empty timeline remains steady.
+
+3. **1.02-1.66** — Pause. The heading and empty timeline hold. Nothing new appears.
+
+4. **1.66-2.40** — As the narration says "physiological state," four segment labels fade in beneath the timeline, each centered under its own segment: "Sleep stage" under the first segment, "Alertness" under the second, "Fatigue" under the third, and "Emotional state" under the fourth. All four labels appear simultaneously, evenly spaced.
+
+5. **2.40-3.44** — The heading, timeline, and all four labels hold. A brief pause. No new elements appear.
+
+6. **3.44-3.98** — As the narration says "Changes in sleep stage," a soft highlight — a translucent rounded rectangle or glow — moves onto the first segment of the timeline, covering the "Sleep stage" label area. Simultaneously, a single continuous waveform fades in below the timeline, centered between the timeline and the bottom of the screen. The waveform's initial shape is slow and smooth: large-amplitude, low-frequency oscillations, long rolling waves.
+
+7. **3.98-4.44** — The highlight remains on the "Sleep stage" segment. The waveform below continues displaying slow, large-amplitude waves — deep, rolling undulations that change slowly over time. The heading and labels hold.
+
+8. **4.44-4.94** — Pause. The highlight holds on "Sleep stage." The waveform continues its slow, large-amplitude oscillations. No new elements appear.
+
+9. **4.94-5.36** — As the narration says "alertness," the highlight slides smoothly from the "Sleep stage" segment to the second segment, settling over "Alertness." As the highlight moves, the waveform below transitions visibly: the slow large waves compress and speed up, becoming faster, smaller-amplitude oscillations — a more rapid, higher-frequency trace with noticeably reduced wave height.
+
+10. **5.36-5.72** — The highlight holds on "Alertness." The waveform continues displaying fast, small-amplitude oscillations — quick, shallow waves. The heading, timeline, and labels remain steady.
+
+11. **5.72-6.00** — As the narration says "fatigue," the highlight slides smoothly from "Alertness" to the third segment, settling over "Fatigue." The waveform below transitions again: the oscillations flatten dramatically, producing a low-amplitude, almost flat trace — minimal variation, with only subtle shallow undulations, the flattest waveform shown so far.
+
+12. **6.00-6.54** — The highlight holds on "Fatigue." The waveform below continues the flattened, reduced-amplitude trace — a nearly flat line with only gentle, subdued bumps. No new elements appear.
+
+13. **6.54-6.88** — As the narration says "or emotional," the highlight slides smoothly from "Fatigue" to the fourth segment, settling over "Emotional state." The waveform below transitions again: the trace becomes irregular and variable — oscillations of uneven amplitude and frequency, no clear repeating pattern, with a visibly erratic, unpredictable shape.
+
+14. **6.88-7.50** — The highlight holds on "Emotional state." The waveform below continues its irregular, variable oscillations — uneven peaks and troughs of varying height and spacing. The heading, timeline, and all four labels remain steady.
+
+15. **7.50-8.48** — As the narration says "also modify neural activity," the waveform below increases slightly in visual emphasis — the stroke brightens or thickens gently, drawing the viewer's attention to the changing signal. The waveform continues its current irregular pattern under the "Emotional state" highlight, but now with a subtle added prominence.
+
+16. **8.48-9.42** — The emphasis on the waveform holds. The waveform continues its irregular, variable oscillations. A brief pause as the narration says "neural activity." The highlight remains on "Emotional state."
+
+17. **9.42-10.16** — As the narration says "over time," the waveform below continues shifting in real time — its irregular oscillations flowing continuously, the shape evolving as time passes. The highlight remains on "Emotional state." No new elements appear.
+
+18. **10.16-10.98** — Pause. The heading, timeline, labels, highlight on "Emotional state," and the irregular waveform all hold. The waveform continues its continuous, variable motion.
+
+19. **10.98-11.28** — As the narration says "Consequently," the waveform below brightens slightly, becoming the focal point of the screen. The highlight on "Emotional state" dims slightly, de-emphasized, so the waveform itself now draws the viewer's attention.
+
+20. **11.28-12.32** — The waveform remains the visual focus. Its irregular oscillations continue. The highlight on "Emotional state" stays dimmed. A brief pause.
+
+21. **12.32-12.74** — As the narration says "recordings obtained," three small vertical dividing lines fade in along the waveform, splitting it into four visually distinct sections. Each section spans roughly one quarter of the waveform's horizontal extent, visually corresponding to the four timeline segments above: the first section shows slow large waves, the second faster smaller waves, the third a flattened trace, and the fourth irregular variable waves. The four sections now appear simultaneously, not as a single changing waveform but as a comparative display of four different signal characteristics.
+
+22. **12.74-13.28** — The four-section waveform holds. The highlight has faded out entirely, so no segment is emphasized above the others. The three dividing lines remain visible. All four labels under the timeline remain steady.
+
+23. **13.28-13.96** — As the narration says "different physiological states," the four timeline labels — "Sleep stage," "Alertness," "Fatigue," "Emotional state" — pulse softly in sequence, left to right: each label brightens briefly in turn, one after the other, drawing attention to the four distinct states. Each pulse corresponds to its matching waveform section below.
+
+24. **13.96-14.74** — The sequential label pulse finishes. As the narration says "states," all four waveform sections brighten slightly in unison, emphasizing that these are four different signal patterns. The heading "Physiological State" at top holds steady.
+
+25. **14.74-15.50** — As the narration says "exhibit different signal," the four waveform sections are briefly outlined or highlighted — a soft glow traces along the outer edge of each section, visually distinguishing the slow large waves, fast small waves, flattened trace, and irregular waves from one another. The glow is gentle, not overpowering.
+
+26. **15.50-16.24** — The glow on the four waveform sections holds. The heading "Physiological State," the timeline with its four labelled segments, and the four-section comparative waveform all remain visible. No new elements appear.
+
+27. **16.24-16.86** — As the narration says "characteristics," the four waveform sections each pulse softly one final time in unison — a gentle brightness swell across all four sections simultaneously — then return to normal. The labels beneath the timeline remain steady.
+
+28. **16.86-17.85** — The final frame holds until the scene ends at 17.85 seconds: heading "Physiological State" at top center; horizontal timeline with four labelled segments — "Sleep stage," "Alertness," "Fatigue," "Emotional state" — with no highlight active; below, the continuous waveform divided into four sections by three vertical lines, each section displaying its distinct signal characteristic: slow large waves, fast small waves, flattened low-amplitude trace, and irregular variable waves. The composition holds steady until the scene closes.

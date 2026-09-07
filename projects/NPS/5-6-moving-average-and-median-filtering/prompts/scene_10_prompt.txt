@@ -1,0 +1,21 @@
+1. 0.00 — The screen splits vertically into two equal panels with a thin dividing line. The left panel shows a stylised EEG trace: a continuous multi‑cycle waveform with a 5–15 Hz oscillatory shape, moderate amplitude, drawn on a light grid. The right panel shows an EMG‑like trace: a dense high‑frequency random noise trace (thin, erratic) with one tall narrow isolated spike artefact near the middle. No labels yet.
+
+2. 2.02 — The left panel’s EEG trace remains visible. A moving‑average rectangular window appears at the left edge of the EEG trace, then slides smoothly from left to right across the entire waveform. As it moves, a second trace is drawn over the EEG as a thicker solid line: the smoothed output. The high‑frequency ripple is visibly reduced on the thick trace, while the underlying slow oscillation is preserved. By 3.40 the window finishes its pass and fades away.
+
+3. 4.10 — A label “EEG smoothing” fades in below the left panel. A circular icon reading “Feature extraction” appears in the bottom‑right corner of the left panel and remains.
+
+4. 5.72 — The left panel’s smoothed EEG trace is subtly highlighted with a soft glow, then returns to its normal appearance by 6.56. No new elements.
+
+5. 7.98 — The right panel’s EMG trace is subtly highlighted during the word “EMG”. Then a dashed horizontal envelope line appears above and below the dense noise, visually indicating the envelope of the signal. The envelope lines then fade out by 9.64.
+
+6. 10.34 — The random high‑frequency fluctuations on the right panel’s trace are momentarily highlighted with a flickering effect, then settle by 11.30.
+
+7. 12.08 — The “Feature extraction” icon in the left panel pulses gently once. Then a second circular icon reading “Classification” appears in the bottom‑right corner of the right panel, greyed out but present. Both icons remain.
+
+8. 14.20 — In the right panel, a median filter rectangular window appears, positioned directly over the isolated spike artefact and its surrounding baseline samples. Inside the window, the trace portion is shown as discrete sample points. These points lift and rearrange vertically from lowest to highest amplitude. The middle value is highlighted as the median output; the extreme value corresponding to the tall spike is discarded. The spike shrinks and disappears, leaving only the smooth baseline at that location. By 15.82 the spike is fully removed. The median window fades away.
+
+9. 16.50 — The cleaned trace on the right panel is highlighted: the spike is gone, and a faint ghost of the original noisy trace remains visible underneath. A label “Artefact removal” fades in below the right panel.
+
+10. 20.08 — The right panel’s cleaned trace pulses gently as the spike gap is briefly re‑highlighted. Then the “Classification” icon in the right panel fills with colour and pulses once by 20.80.
+
+11. 22.78 — Both panels hold steady: left panel showing the smoothed EEG trace and “Feature extraction” icon; right panel showing the cleaned EMG trace and “Classification” icon. The full split‑screen layout remains on screen through 24.73.

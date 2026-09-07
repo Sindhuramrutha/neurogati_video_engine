@@ -1,0 +1,8 @@
+Subtopic: 7.1.4 Summary and Transition to BCIs
+Scene type: manim
+
+Narration:
+In this section, we examined one of the most important clinical applications of EEG: the diagnosis and monitoring of epilepsy. We learned that epilepsy is associated with abnormal electrical activity in the brain, which can often be detected using EEG. Signal processing techniques such as filtering, time-domain analysis, time-frequency analysis, and automated detection methods improve the identification and interpretation of seizure-related activity. Together, these techniques support diagnosis, treatment planning, long-term monitoring, and epilepsy research. So far, we have explored how EEG helps us understand normal brain function through brain-state analysis and sleep staging, and how it supports the diagnosis of neurological disorders such as epilepsy. EEG is also used in a very different and rapidly growing field. Instead of simply observing brain activity, researchers can use EEG signals to control external devices such as computers, wheelchairs, robotic arms, and communication systems. This technology is known as the Brain-Computer Interface, or BCI, and it will be the focus of the next section.
+
+Animation description:
+A summary of epilepsy diagnosis fades into a new scene. An EEG waveform arrow points from a brain to external devices: a computer, a wheelchair, a robotic arm, and a communication system. The title 'Brain-Computer Interface (BCI)' appears prominently. The arrow represents the direct control of devices by brain activity.

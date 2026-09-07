@@ -1,0 +1,13 @@
+1. 0.00 — The previous scene’s split screen fades out. A single waveform appears centered on screen, drawn on a horizontal time axis and vertical amplitude axis, combining the visual styles from the previous scene: a dense high-frequency random noise trace (thin, erratic) with one tall narrow isolated spike near the middle of the trace. No labels yet.
+
+2. 1.70 — A moving‑average rectangular window appears over a segment at the left edge of the waveform, matching the visual style of the previous scene's moving‑average window.
+
+3. 2.12 — The moving‑average window slides smoothly from left to right across the entire waveform. As it moves, a second trace is drawn over the waveform as a thicker solid line: the moving‑average output. The dense random noise flattens significantly on this smoothed trace, but the isolated spike remains prominent, roughly unchanged in height. By 4.32 the window finishes its full pass.
+
+4. 5.32 — The moving‑average window fades away. A median filter rectangular window appears, positioned directly over the persistent isolated spike and its surrounding baseline samples, matching the previous scene's median window style.
+
+5. 5.92 — Inside the median window, the trace portion is shown as discrete sample points. These sample points lift and rearrange vertically from lowest to highest amplitude. The middle value is highlighted as the median output; the extreme value corresponding to the tall spike is discarded. The spike shrinks and disappears, leaving only the smooth baseline at that location. By 7.54 the spike is fully removed.
+
+6. 8.16 — The median window fades away. The final clean waveform is highlighted: the thick smoothed trace now shows both the reduced random noise (from the moving‑average pass) and the removed spike (from the median pass). The original faint noisy waveform remains visible underneath. The text "Complementary, not competing" fades in below the waveform and remains for the rest of the scene.
+
+7. 11.06 — No new visual changes. The final frame — clean highlighted trace over faint original, with the "Complementary, not competing" text — holds steady through to 18.82.

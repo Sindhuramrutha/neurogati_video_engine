@@ -1,0 +1,68 @@
+1. **0.00–2.18**  
+   From the previous scene's ending layout, the bottom statement and miniature trace fade out. The screen clears to show two empty rectangular panels side by side, each filling roughly half the screen width, separated by a thin vertical divider. Both panels are blank with subtle dashed borders. The left panel gets a centered title label **“Interpretation”** at its top. The right panel gets a centered title label **“Classification”** at its top.
+
+2. **2.18–4.56**  
+   A large question mark appears in the center of the screen between the two panels, pulsing gently. It is overlaid with the text **“what do features mean?”** in muted type beneath the question mark. Both panel titles remain visible but idle. The question mark holds through the narration of “what those features mean.”
+
+3. **4.56–6.80**  
+   The question mark shrinks and splits into two smaller question marks, one drifting into each panel. The left question mark settles above the center of the left panel, and the right question mark settles above the center of the right panel. The two question marks pulse once in alternation, left then right, as “two broad possibilities” is spoken. The panel titles **“Interpretation”** and **“Classification”** brighten.
+
+4. **6.80–7.56**  
+   The left panel's border glows and its interior brightens. The left panel title **“Interpretation”** enlarges slightly and becomes bold. The right panel dims and its question mark fades. The visual focus is entirely on the left panel.
+
+5. **7.56–9.34**  
+   Inside the left panel, a blue EEG waveform fades in at the top — an oscillating trace with irregular amplitude, matching the style of the previous scene's clean EEG trace. A small label **“EEG”** appears beneath the waveform. An arrow extends downward from the waveform to the center of the panel, pointing to a blank placeholder area.
+
+6. **9.34–13.04**  
+   The EEG waveform in the left panel pulses gently to indicate activity. The arrow from the waveform brightens and becomes solid. The blank area at the bottom of the left panel remains empty, with faint placeholder text **“meaning of activity”** in muted italic appearing briefly, indicating that the goal is understanding rather than output labels.
+
+7. **13.04–13.94**  
+   The left panel's placeholder text fades out. The EEG waveform and arrow remain. The panel's lower area clears further, preparing for the frequency analysis visual.
+
+8. **13.94–16.62**  
+   Beneath the EEG waveform in the left panel, a frequency spectrum plot fades in: a pair of labeled axes — horizontal **“Frequency”**, vertical **“Power”** — with a smooth curve showing power distribution across frequency bands. The curve has several low bumps in low and high frequency regions and one prominent peak in the middle, labeled **“alpha”**. The arrow from the EEG waveform now points directly at this spectrum. The label **“frequency analysis”** appears above the spectrum in small bold text.
+
+9. **16.62–19.24**  
+   The alpha peak in the spectrum expands slightly and brightens, with a highlight ring or glow around it. A vertical dashed line descends from the peak to the frequency axis, labeled **“increased alpha power”**. The rest of the spectrum dims to keep visual focus on the alpha peak. The EEG waveform above remains visible and pulses in sync with the alpha peak brightening.
+
+10. **19.24–21.66**  
+    The alpha peak continues to glow. From the spectrum, a new arrow extends rightward or upward, pointing toward a small brain icon that fades in at the bottom or upper-right of the left panel — a simple outline of a brain with subtle internal shading. The brain icon pulses gently. A thought bubble extends from the brain, containing the single word **“Understanding”** in bold text. The visual chain is now: EEG waveform → spectrum → alpha peak → brain icon with “Understanding”.
+
+11. **21.66–26.18**  
+    The left panel holds the complete interpretation chain: EEG waveform, frequency spectrum with highlighted alpha peak, brain icon with thought bubble saying **“Understanding”**. A large **“✗”** cross symbol fades in over the lower half of the left panel, but not blocking the visual elements — it is positioned to the left side of the panel, nearly transparent, with the label **“not predefined class”** appearing beneath it in muted italic. This indicates interpretation is not about assigning a category.
+
+12. **26.18–29.10**  
+    The cross symbol in the left panel fades to a lighter but still visible state. The brain icon and thought bubble **“Understanding”** brighten, with the thought bubble expanding slightly and the word pulsing once. Small pulsing dots or ripples emanate from the brain icon outward, suggesting insight into neural activity. The left panel's complete chain remains visible and steady.
+
+13. **29.10–31.46**  
+    The left panel dims slowly. The right panel brightens, its border glowing. The right panel's question mark fades out. The right panel title **“Classification”** enlarges slightly and becomes bold. All visual attention shifts to the right panel.
+
+14. **31.46–33.46**  
+    Inside the right panel, a blue EEG waveform fades in at the top, identical in style to the left panel's waveform. A small label **“EEG”** appears beneath it. From the waveform, a horizontal or downward flow of processing boxes begins to appear: first a box labeled **“Preprocessing”**, then a gap, then a box labeled **“Feature Extraction”**. Each box fades in sequentially as the narration names the stages.
+
+15. **33.46–37.52**  
+    A third box appears after **“Feature Extraction”** — labeled **“Classifier”** — but this box is larger and drawn with a distinct style. The three boxes now form a pipeline: **“Preprocessing”** → **“Feature Extraction”** → **“Classifier”**. Arrows connect the boxes in sequence. A question mark appears inside or next to the **“Classifier”** box, indicating the signal will be assigned to a category.
+
+16. **37.52–38.30**  
+    The right panel's pipeline holds steady. The **“Classifier”** box pulses gently, and a small question mark inside it remains visible. The EEG waveform at the top of the right panel pulses once to indicate readiness.
+
+17. **38.30–44.66**  
+    The **“Classifier”** box's question mark fades out. Three output slots appear beneath the classifier box, connected by branching arrows from the classifier: three labeled category slots arranged horizontally. The labels fade in one by one as each is named: first **“Wake”**, then **“NREM Sleep”**, then **“REM Sleep”**. Each label appears in its own outlined rectangle. The arrows from the classifier branch to each slot.
+
+18. **44.66–48.12**  
+    A segment of the EEG waveform in the right panel is highlighted — a portion of the waveform becomes enclosed in a soft bracket or highlight, labeled **“segment”**. The highlight sweeps across the waveform, indicating that a specific segment is being classified.
+
+19. **48.12–51.30**  
+    The highlighted EEG segment animates along the pipeline: a small ghost copy of the segment travels from the waveform through the **“Preprocessing”** box, then the **“Feature Extraction”** box, then the **“Classifier”** box. When it reaches the classifier, the three output slots pulse in sequence: first **“Wake”** brightens, then dims as **“NREM Sleep”** brightens, then dims as **“REM Sleep”** brightens. The label **“machine-learning model”** appears briefly above the classifier box in small italic text. The final state shows **“REM Sleep”** as the brightest output, while the other two remain dimmer but visible.
+
+20. **51.30–52.04**  
+    The three sleep-stage labels hold steady with **“REM Sleep”** highlighted. A small checkmark appears next to the selected label. The right panel dims partially, preparing for the BCI example.
+
+21. **52.04–54.54**  
+    Below the two main panels, a new horizontal BCI example area fades in, spanning most of the screen width. At the left of this area, a miniature neural activity trace appears — a compact, stylized train of spiky waveforms labeled **“Neural activity”**. An arrow extends from this trace to the right, pointing toward a small classifier icon: a simple decision tree symbol with a few branching nodes or a small three-layer neural network icon.
+
+22. **54.54–57.20**  
+    From the BCI classifier icon, three output command labels appear sequentially, arranged horizontally: **“Move left”**, **“Move right”**, and **“Select”**. Each label appears in its own outlined rectangle, connected by arrows from the classifier icon. The labels appear one by one, each brightening as its name is spoken. Arrows from the classifier branch to each command label. The neural activity trace at the left pulses periodically to show ongoing input.
+
+23. **57.20–58.10**  
+    The full composition holds: the left panel showing the interpretation chain (EEG → spectrum → alpha peak → brain icon with **“Understanding”**), the right panel showing the classification pipeline (EEG → Preprocessing → Feature Extraction → Classifier → Wake / NREM Sleep / REM Sleep with REM highlighted), and the BCI example below (Neural activity → classifier icon → Move left / Move right / Select). All elements remain at steady brightness. A final subtle pulse travels through the whole layout — from the left panel's brain icon, through the right panel's classifier, to the BCI command labels — tying the three visual examples together. The scene holds to the end of the clip at 58.10.

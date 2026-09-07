@@ -1,0 +1,8 @@
+Subtopic: 2.1.5 Putting the Components Together
+Scene type: manim
+
+Narration:
+Now, here's the crucial insight. The acquisition chain should not be viewed as a collection of independent devices. It functions as an integrated system, where each stage prepares the signal for the next. A poor electrode contact cannot be corrected by a better amplifier. Similarly, incorrect sampling cannot be compensated for during later analysis. You can't fix a bad acquisition with good processing. So successful neural signal processing always begins with careful signal acquisition.
+
+Animation description:
+Show the full chain as six connected boxes. Animate a signal pulse traveling left-to-right through each stage, with each box briefly highlighting as the pulse passes. Then demonstrate two failure scenarios: In the first, the electrode box shakes or shows a loose connection, and the amplifier and all downstream boxes show slight glitch artifacts even though the amplifier box itself is drawn larger and labeled 'better amplifier'. In the second, the ADC box shows irregular sampling intervals, and the computer box shows a distorted waveform with a red X. End with a caption: 'Careful acquisition comes first.'

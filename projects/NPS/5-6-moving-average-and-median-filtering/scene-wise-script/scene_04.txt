@@ -1,0 +1,8 @@
+Subtopic: 5.6.3 Moving‑Average Filter – Advantages and Limitations
+Scene type: manim
+
+Narration:
+The moving‑average filter is simple, easy to implement, and it does a good job reducing random high‑frequency fluctuations. However, it also smooths the signal. If you make the averaging window too large, sharp physiological events like spikes or fast transitions can get blurred or even distorted. So the window size must be chosen carefully.
+
+Animation description:
+Split screen: left side shows a signal with a sharp, narrow peak; apply a moderate‑sized moving average window and show the peak slightly smoothed but still present. Right side shows the same peak but with a very wide averaging window; the peak is heavily blurred and almost disappears. Text appears: ‘Window size matters’.

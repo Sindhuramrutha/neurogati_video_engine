@@ -1,0 +1,31 @@
+1. **0.00–1.10** — Open on a blank, dark background. Centred about two-thirds of the way up the screen, a simple continuous signal waveform fades in: a smooth, irregular wavy line running horizontally, drawn in a neutral pale blue-grey. It stays static and unlabelled, serving as the reference signal.
+
+2. **1.10–3.60** — A clean text label “Short-Time Fourier Transform” fades in below the waveform, centred, in a legible sans-serif font. Immediately beneath it, the abbreviation “STFT” appears in a slightly lighter tone, then both settle and remain on screen.
+
+3. **3.60–7.00** — The waveform now highlights itself, and from a single point on the wave a short vertical bracket appears to its left, enclosing a small segment of the signal. The bracket moves left-to-right along the waveform in short, equal steps, pausing briefly at each position to mark one short analysis window. Where each window is marked, a faint vertical divider line briefly flashes on the wave to show the segmentation.
+
+4. **7.00–10.30** — Each time the bracket pauses on the waveform, a small faintly outlined rectangular “window” pulses around the enclosed segment, then fades. The windows visibly overlap: each new bracket position starts before the previous one has fully ended, and the overlapping region of the wave is briefly drawn slightly brighter to reinforce the “short, overlapping windows” idea.
+
+5. **10.30–13.10** — The bracket and window indicators vanish. A separate, traditional-style Fourier transform symbol appears at the lower left: the letters “FT” inside a small rounded rectangular badge, with a short horizontal line extending from it to a simple amplitude-versus-frequency curve. A short accompanying text “conventional FT: frequencies present overall” fades in next to it. The badge and curve are dimmed, and no time axis is shown, so the impression is of a single summary spectrum rather than a run of spectra.
+
+6. **13.10–16.10** — The “FT” badge shrinks or slides aside, and the main waveform is brought back to full prominence. A second small badge reading “STFT” appears near the waveform, then two thin axis ticks appear beneath a representative cut-out of the wave: one labelled “time” horizontally, the other labelled “frequency” vertically. The two labels gently highlight one after another as the narration mentions “both time and frequency”.
+
+7. **16.10–20.20** — A short animation plays on the main waveform: the shape of the wave visibly changes in place over a few seconds — its dominant wiggle slows, then accelerates, then develops a second superimposed faster wiggle. The point is literal and concrete: the signal’s characteristics change over time, shown by the moving waveform itself. During this animation, the two labels “time” and “frequency” both glow softly to reinforce that the STFT captures where in time each frequency content occurs.
+
+8. **20.20–26.90** — The changing waveform freezes. A brief yellow-tinted warning flash occurs at the bottom of the screen. The words “A practical problem” fade in near the waveform, in a simple text label, deliberately emphasised for a beat before the next visual arrives.
+
+9. **26.90–32.50** — The main waveform is moved to the upper third of the screen and scaled down slightly. Below it, the first small frequency spectrum plot appears: a compact, narrow, rectangular graph with frequency on its vertical axis and magnitude on its horizontal axis. It is tinted a cool blue. A thin vertical connector from one point on the waveform points down to this first spectrum, indicating “this window produced this spectrum.”
+
+10. **32.50–37.40** — Additional small spectrum plots appear one at a time, each tied to the next window position along the waveform. Each new spectrum is tinted a slightly different colour from the previous one — blue, teal, green, yellow-green, amber, orange, red — and slides in beside the earlier spectra left-to-right. They become more tightly packed as the narration says “hundreds or even thousands of windows.” The number of visible spectra grows from a few to a very large crowded block of many dozens, densely overlapping horizontally so the display becomes visually cluttered and hard to read.
+
+11. **37.40–40.80** — The row of spectra is now extremely crowded. All continuing spectra are shown at reduced width. Several of them jitter slightly to suggest unease. A large question mark fades in to the right of the crowded stack, pulsing once. Just beneath it, the caption “how do we read this?” appears in a plain text label.
+
+12. **40.80–45.20** — The question mark and caption fade out. A clean highlight rectangle is drawn around the entire array of coloured spectra, using a thin white outline with soft rounded corners. The spectra remain inside, pulsing gently as if waiting to be interpreted.
+
+13. **45.20–49.30** — The highlight rectangle tightens smoothly, and the many individually coloured spectra now merge together. The transition is continuous: the separate thin spectra slide into one another, their colours blending into a single continuous density image rather than separate objects. During this blend, the individual vertical spectrum edges disappear, and the display becomes smooth.
+
+14. **49.30–52.30** — The merged visual resolves into a conventional spectrogram: a single two-dimensional rectangular image. Its vertical axis is labelled “frequency”, running upward from low to high. Its horizontal axis is labelled “time”, running left to right. A thin colour scale bar appears at the right, representing magnitude from weak to strong, using a continuous gradient. The spectrogram shows the same changing waveform from earlier, now expressed as bright patches that shift upward and downward over time.
+
+15. **52.30–53.10** — A single clean word “Spectrogram” fades in directly beneath the 2D image, centred, in a clear serif or sans-serif font, slightly larger than a subtitle but smaller than a title.
+
+16. **53.10–54.35** — The spectrogram remains on screen in its final state: labelled axes, colour magnitude bar, and the caption “Spectrogram” beneath it. No new elements are added. The image rests statically, with only the caption and the spectrogram’s own bright regions giving the closing frame its emphasis, reaching the full 54.35-second duration.

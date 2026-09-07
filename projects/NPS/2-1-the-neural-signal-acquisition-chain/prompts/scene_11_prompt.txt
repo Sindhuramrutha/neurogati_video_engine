@@ -1,0 +1,17 @@
+1. (0.00–2.30) From the previous scene's end state — the six-box acquisition chain with the four modality icons below and the caption "The acquisition process remains essentially the same" — everything fades out except the chain itself, leaving the six-box chain centered. Narration: "Now that we understand the overall acquisition"
+
+2. (2.30–3.64) The chain holds steady on screen. The camera begins a gentle zoom toward the second box, "Electrode/Sensor", while the other five boxes dim slightly. Narration: "process,"
+
+3. (3.64–6.00) The five dimmed boxes recede and fade away completely, leaving only the "Electrode/Sensor" box. The box slides to the center of the screen and enlarges to roughly 2.5× its original size. A soft spotlight or glow effect settles on it, making it clearly the focal point of the frame. Narration: "the next logical step is to examine the component"
+
+4. (6.00–9.06) The enlarged "Electrode/Sensor" box remains centered with the glow effect. A subtle pulse animation runs through the box, as if to emphasize that this specific component is the one responsible for picking up the signal at the very beginning of the chain. Narration: "responsible for detecting the biological signal"
+
+5. (9.06–10.90) The box continues to glow. A rightward-pointing arrow fades in to the right of the box, extending from near its right edge toward the right side of the screen. The arrowhead is clean and prominent. Narration: "in the first place."
+
+6. (10.90–13.96) At the end of the arrow, text fades in reading "Next section: Electrodes and Sensors". The text sits to the right of the arrowhead, aligned vertically with the box. The box, arrow, and text form a single line: box → arrow → label. Narration: "In the next section, we'll discuss the different types of electrodes and sensors,"
+
+7. (13.96–16.24) The scene holds: enlarged "Electrode/Sensor" box on the left, glowing, with the arrow and the "Next section: Electrodes and Sensors" label on the right. The arrow pulses once gently, drawing the eye toward the upcoming topic. Narration: "how they operate,"
+
+8. (16.24–18.92) The same composition remains. A brief, subtle brightening of the "Next section: Electrodes and Sensors" text occurs, then returns to normal, as if confirming the destination. Narration: "and the recording modalities in which they're used."
+
+9. (18.92–19.65) All elements — the glowing box, the arrow, and the label — hold their positions on screen, stable and clean, for the final moment. Narration: (silence)

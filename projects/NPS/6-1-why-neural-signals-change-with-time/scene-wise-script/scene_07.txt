@@ -1,0 +1,8 @@
+Subtopic: 6.1.5 Why Are Neural Signals Nonstationary? — Physiological State
+Scene type: manim
+
+Narration:
+A fourth factor is physiological state. Changes in sleep stage, alertness, fatigue, or emotional state also modify neural activity over time. Consequently, recordings obtained during different physiological states exhibit different signal characteristics.
+
+Animation description:
+A horizontal timeline is drawn, divided into separate labelled segments: 'Sleep stage', 'Alertness', 'Fatigue', 'Emotional state'. Below the timeline, a single continuous waveform is shown, and as the highlight moves from one segment label to the next, the waveform changes visibly — slower, larger waves under 'Sleep stage', faster smaller waves under 'Alertness', a flattened reduced-amplitude trace under 'Fatigue', and irregular variable waves under 'Emotional state'. The heading 'Physiological State' remains at the top throughout.

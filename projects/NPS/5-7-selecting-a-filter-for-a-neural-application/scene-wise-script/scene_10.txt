@@ -1,0 +1,8 @@
+Subtopic: 5.7.6 Common Mistakes During Filter Selection
+Scene type: manim
+
+Narration:
+Picking the wrong filter can degrade your signal. Common mistakes include: applying filters without first identifying the noise source, choosing cutoff frequencies that accidentally remove useful physiological information, over-filtering to the point of distorting waveforms, using a notch filter when there's no power-line interference present, and assuming one filter is suitable for every recording. Filtering should always be done with a clear objective. The goal is not to produce the smoothest possible waveform; it's to preserve the information that matters for your analysis while reducing unwanted interference.
+
+Animation description:
+A list of five mistakes appears vertically, each accompanied by a red cross icon. As each mistake is spoken, its text slides in from the left and a corresponding visual 'before/after' example plays alongside: e.g., for 'over-filtering', show a raw signal, then an excessively smoothed, distorted version, then a correctly filtered version. For 'notch filter without interference', show a clean spectrum with an unnecessary notch applied, creating a gap. After all mistakes, a banner with 'Goal: preserve physiological information, not just smoothness' scrolls into view, with a green checkmark.

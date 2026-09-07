@@ -1,0 +1,15 @@
+1. (0.00–3.02) Centered on screen: a empty checklist panel fades in, showing a header labeled "Learning Objectives" and three rows beneath it, each row consisting of a small empty square followed by a blank line. All three empty squares and blank lines are visible but unfilled. Narration introduces that by the end of this section you should be able to do three things.
+
+2. (3.02–4.02) The panel remains static; the first row's empty square highlights gently, signaling the first item is about to be introduced. Narration pauses before "First."
+
+3. (4.02–7.02) The first blank line fills in with the text "Define what the neural signal acquisition chain is" as the narration names it. As the text completes, the first square's checkmark fills in (either simultaneously with the text completion or immediately after). The first row now reads: [✓] Define what the neural signal acquisition chain is.
+
+4. (7.02–7.80) The completed first row remains; the second row's empty square highlights gently. Narration pauses before "Second."
+
+5. (7.80–9.74) The second blank line fills in with the text "Identify its major components" as the narration names it. As the text completes, the second square's checkmark fills in. The second row now reads: [✓] Identify its major components.
+
+6. (9.74–10.72) The first two completed rows remain; the third row's empty square highlights gently. Narration pauses before "And third."
+
+7. (10.72–12.96) The third blank line fills in with the text "Explain the function of each stage" as the narration names it. As the text completes, the third square's checkmark fills in. The third row now reads: [✓] Explain the function of each stage.
+
+8. (12.96–15.72) The full checklist panel is now complete: header "Learning Objectives" with all three rows filled and checked. The panel pulses once softly as a unit. Narration states these are the goals for this section. The panel remains visible through the end of the scene.

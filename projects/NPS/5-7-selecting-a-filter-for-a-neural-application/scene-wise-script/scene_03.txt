@@ -1,0 +1,8 @@
+Subtopic: 5.7.4 Choosing the Appropriate Filter – Low-Pass
+Scene type: manim
+
+Narration:
+Use a low-pass filter when your goal is to remove unwanted high-frequency noise while keeping slower physiological activity intact. Typical applications include reducing high-frequency noise in EEG, smoothing physiological waveforms, and extracting the EMG envelope after rectification.
+
+Animation description:
+Show a frequency axis from 0 Hz upward. A shaded green passband covers the low-frequency region, and a red stopband appears above a cutoff marker. Next to the axis, an EEG signal contaminated with high-frequency fuzz is displayed; as the low-pass filter is applied, the fuzz disappears and the smooth EEG trace remains. Then a second mini-scene: a rectified EMG signal with a jagged outline, and a smooth envelope curve drawn over it using a low-pass filter effect. Text labels 'EEG', 'EMG envelope' appear.

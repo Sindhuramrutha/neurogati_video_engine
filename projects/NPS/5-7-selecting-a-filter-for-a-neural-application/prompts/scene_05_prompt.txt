@@ -1,0 +1,17 @@
+1. 0.00-1.40: On a blank background, an empty horizontal frequency axis appears, labeled "Frequency (Hz)" at the right end, with a few evenly spaced numeric tick marks (e.g., 0, 10, 20, 30, 40, 50). Two vertical draggable-looking cutoff markers appear simultaneously — one near the lower end and one a few steps to its right — and the band of the axis between them fills with a translucent green tint, forming a passband.
+
+2. 1.40-2.20: Above the frequency axis, a raw neural recording fades in — a single continuous EEG-like trace spanning the full width of the axis and time, visibly jagged and multi-rhythmic, with a mix of fast and slow oscillations. The trace is initially labeled "Raw signal" near its left end.
+
+3. 2.20-2.92: Subtly, as the phrase "lives in a specific frequency range" is spoken, the green passband brightens or pulses once, directing attention to the selected segment of the axis while the raw trace remains unchanged above it.
+
+4. 3.40-5.76: The raw waveform begins to transform in place: the fast, jagged components fade away while a smoother, rhythmic oscillation at the passband frequency remains, becoming clearly visible as an alpha-like sinusoidal wave. A new label "Filtered signal" fades in near the filtered trace, and the old "Raw signal" label fades out. The green passband stays highlighted throughout the transformation.
+
+5. 6.36-9.10: As the first application is spoken, an icon appears to the upper-left of the filtered waveform — a stylized brain outline with a small electrode cap and the text "EEG preprocessing" beneath it. The icon appears as if sliding in from outside the frame and settles into place beside the waveform.
+
+6. 9.80-10.92: A second, distinct icon slides in beside the first — a stylized forearm with electrode dots over the muscle belly and the text "EMG preprocessing" beneath it.
+
+7. 11.64-13.06: A third icon slides in — a simplified probe or electrode tip near a cross-section of layered cortical tissue, labeled "LFP analysis", joining the row of icons.
+
+8. 13.72-15.44: A fourth and final icon slides in — a brain outline with curved arrows feeding into a small computer monitor silhouette, labeled "BCI", completing the row. All four icons now surround the filtered waveform, with the frequency axis and green passband still visible at the bottom of the frame.
+
+9. 15.44-16.95: The full composition — filtered alpha-like oscillation, green-highlighted passband on the frequency axis, and the four application icons — holds static for the remaining duration, with no further changes.

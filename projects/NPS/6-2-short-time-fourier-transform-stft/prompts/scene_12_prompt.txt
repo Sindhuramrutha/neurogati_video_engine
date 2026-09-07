@@ -1,0 +1,23 @@
+1. **0.00–4.38** — A warning-card layout fades in, containing the title “Limitations” at the top. Inside the card, an animated signal appears: a slow, smooth low-frequency oscillation with a single very brief transient spike superimposed near its center.
+
+2. **4.38–6.40** — A fixed rectangular window drawn as a shaded vertical band appears over the signal, positioned around the slow oscillation’s peaks. The window is sized wide enough to cover several cycles of the slow oscillation; the card’s tone shifts slightly to suggest imperfection, and the word “Limitations” remains visible.
+
+3. **7.04–8.84** — The fixed window becomes the visual focus, its edges highlighted. The animation shows two attempts side by side: the same fixed window applied first to the slow oscillation and then to the transient spike. The window remains the same width in both, making clear it is a single fixed window.
+
+4. **9.28–12.10** — Where the window covers the slow oscillation, the viewer sees clear, well-resolved oscillation cycles inside the window, labeled “High frequency resolution.” The transient region remains outside the window’s useful temporal detail, blurred and smeared across the window width.
+
+5. **12.10–14.20** — The visualization contrasts this with what high time resolution would require: a narrow window drawn around the transient spike is shown as a dashed outline, fading in and out, while the wide fixed window remains solid. Text “High time resolution” appears near the dashed narrow window, then fades; the wide window’s inability to be both narrow and wide at once is made visually explicit.
+
+6. **15.10–17.38** — The animation zooms in on the transient spike as seen through the wide fixed window. The spike now appears smeared in time, with a blurred timestamp marker running horizontally beneath it, its digits unreadable, emphasizing that time localization is lost.
+
+7. **17.38–19.04** — A label “Neural signals” fades in near the top of the zoomed region. The smeared spike and the slow oscillation are shown as features of this single neural signal being analyzed.
+
+8. **19.04–21.24** — The view pulls back slightly to show both components of the neural signal together: the slow oscillation drawn as a smooth undulating baseline, with the blurred, smeared transient spike still visible. A label “Slow oscillations” points to the smooth baseline.
+
+9. **21.24–22.70** — The same fixed window is highlighted again as it tries to capture the rapid transient. A label “Rapid transient events” points to the smeared spike. The window visibly cannot sharpen the spike, emphasizing the limitation for neural signals containing both features.
+
+10. **23.60–25.74** — A new region fades in to the right of the warning card: a simplified diagram of a wavelet. The wavelet appears as a small, localized wave packet — a short burst of oscillation that rises and falls within a compact time interval, unlike the fixed window’s unbroken extent.
+
+11. **25.74–27.28** — The text “Wavelet analysis” fades in beside the wavelet diagram. The wavelet is shown moving over the signal, stretching and compressing slightly to match first the slow oscillation and then the transient spike.
+
+12. **27.28–29.57** — The wavelet diagram remains on screen, with the wavelet settling on the transient spike and producing a sharp, well-localized feature. The warning card’s “Limitations” title stays visible, and the phrase “Wavelet analysis” is fully displayed as the scene holds to the end.

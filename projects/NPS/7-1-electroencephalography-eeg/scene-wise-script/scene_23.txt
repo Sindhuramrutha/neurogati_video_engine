@@ -1,0 +1,8 @@
+Subtopic: 7.1.5 Introduction to BCIs
+Scene type: manim
+
+Narration:
+So far, we have explored how EEG is used to observe and understand brain activity in applications such as brain-state monitoring, sleep staging, and epilepsy diagnosis. In these applications, EEG serves as a tool for measuring neural activity. However, EEG can also be used in a very different way. Instead of simply recording brain activity, EEG signals can be translated into commands that allow a person to interact with external devices. This technology is known as a Brain-Computer Interface, or BCI. A Brain-Computer Interface establishes a direct communication pathway between the brain and an external system, enabling users to control computers, wheelchairs, robotic devices, or communication systems using their brain activity.
+
+Animation description:
+A scene shows the brain with EEG electrodes connected to an external device (computer screen with cursor). The arrow from brain to device is emphasized as a 'direct communication pathway'. Icons for controlled devices appear: computer, wheelchair, robotic arm, communication system.
