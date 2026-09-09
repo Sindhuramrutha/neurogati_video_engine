@@ -1,0 +1,34 @@
+# --- generated project data ------------------------------------------------
+#
+# Everything under projects/ is produced by running the pipeline: uploaded
+# source documents, stage artifacts, renders, logs. It is local to whoever ran
+# it and must not enter the repository.
+#
+# An earlier version of this file listed `projects/*/chapters/*/audio/` and
+# similar — a layout the code never used. The patterns silently matched nothing,
+# so a demo project (including an uploaded PDF) was staged for commit. Ignoring
+# the whole directory and keeping one placeholder is both simpler and immune to
+# the layout changing again.
+projects/*
+!projects/.gitkeep
+
+# derived index — rebuildable from files (ADR 0005)
+.index/
+
+# --- python ----------------------------------------------------------------
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# --- node ------------------------------------------------------------------
+node_modules/
+
+# --- secrets ---------------------------------------------------------------
+.env
+
+# --- stray clones ----------------------------------------------------------
+# A nested git repository committed as a directory becomes a broken gitlink
+# that nobody can check out. Ignored so it cannot be staged by accident.
+acedemic-explainer-video-pipeline/

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Explainer Pipeline</title>
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9"/>
+        <path d="M14 3v5h5"/>
+        <path d="M13 14.5l5-3-5-3v6z" fill="currentColor" stroke="none"/>
+      </svg>
+    </span>
+    Explainer <span class="brand-sub">Pipeline</span>
+  </div>
+
+  <select class="project-select" id="project-select" aria-label="Select project"></select>
+  <button class="btn" id="new-project-button">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    New project
+  </button>
+
+  <div class="spacer"></div>
+  <button class="btn" id="toggle-drawer-button">Agent</button>
+</div>
+
+<div class="shell">
+  <nav class="sidebar" id="sidebar" aria-label="Pipeline stages"></nav>
+
+  <main class="main" id="main">
+    <div class="main-inner" id="main-inner"></div>
+  </main>
+</div>
+
+<aside class="drawer" id="drawer" aria-label="Agent">
+  <div class="drawer-head">
+    <b>Agent</b>
+    <div class="spacer"></div>
+    <button class="btn-icon" id="close-drawer-button" aria-label="Close">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="drawer-log" id="drawer-log">
+    <div class="msg muted">
+      Acts on instructions about plan modification or approach, with the current
+      project and stage as context.
+      <br><br><b>Not wired to a model yet</b> — the surface exists so stages have
+      somewhere to send feedback.
+    </div>
+  </div>
+  <div class="drawer-composer">
+    <input id="drawer-input" placeholder="e.g. make scene 3 slower" aria-label="Message the agent">
+    <button class="btn btn-accent" id="drawer-send-button">Send</button>
+  </div>
+</aside>
+
+<script type="module" src="/static/app.js"></script>
+</body>
+</html>
