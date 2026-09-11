@@ -41,6 +41,15 @@ export async function renderExtractionStage(stage, navigateToStage, renderAgentS
     return;
   }
 
+  // Loaded here rather than lazily on the tab, so the run bar can say what
+  // actually exists instead of claiming the stage is unimplemented.
+  let extraction = { documents: [], warnings: [], is_empty: true, audit: {} };
+  try {
+    extraction = await requestJsonFromApi(projectApiPath("/extraction"));
+  } catch (extractionFailure) {
+    console.error("extraction load failed", extractionFailure);
+  }
+
   const selected = selectedSourceNames(sources);
   if (!applicationState.previewFileName && sources.length) {
     applicationState.previewFileName = sources[0].name;
@@ -62,10 +71,10 @@ export async function renderExtractionStage(stage, navigateToStage, renderAgentS
       <div class="workbench">
         ${renderFilePanel(sources, selected)}
         ${renderOptionsPanel(settings)}
-        ${renderPreviewPanel(sources)}
+        ${renderPreviewPanel(sources, extraction)}
       </div>
 
-      ${renderRunBar(selected.size, sources.length)}
+      ${renderRunBar(selected.size, sources.length, extraction)}
       ${renderFooterNav(stage)}
     </div>`;
 
@@ -143,7 +152,45 @@ function renderOptionsPanel(settings) {
     </div>`;
 }
 
-function renderPreviewPanel(sources) {
+/** Blocks carry the heading they sit under, so extracted text reads back with
+ *  its structure rather than as a wall of paragraphs. */
+function renderExtractedBlocks(extraction) {
+  const previewName = applicationState.previewFileName;
+  const parsed = extraction.documents.find(d => d.file_name === previewName)
+    ?? extraction.documents[0];
+
+  if (!parsed) {
+    return `<div class="preview-empty">
+      ${icon(ICON.doc, 34, 1.4)}
+      <p>Nothing extracted yet.<br>Run the stage to parse your documents.</p>
+    </div>`;
+  }
+
+  const rows = parsed.blocks.slice(0, 400).map(block => {
+    if (block.kind === "heading") {
+      return `<div class="x-block x-heading" style="--depth:${block.level}">${
+        escapeHtml(block.text)}</div>`;
+    }
+    if (block.kind === "table") {
+      return `<pre class="x-block x-table">${escapeHtml(block.text)}</pre>`;
+    }
+    if (block.kind === "list_item") {
+      return `<div class="x-block x-list">${escapeHtml(block.text)}</div>`;
+    }
+    return `<div class="x-block">${escapeHtml(block.text)}</div>`;
+  }).join("");
+
+  const truncated = parsed.blocks.length > 400
+    ? `<p class="muted" style="font-size:11.5px">showing the first 400 of ${
+        parsed.blocks.length} blocks</p>`
+    : "";
+
+  return `<div class="x-doc">
+    <div class="x-doc-head">${escapeHtml(parsed.file_name)} &middot; ${
+      parsed.blocks.length} blocks</div>${rows}${truncated}</div>`;
+}
+
+function renderPreviewPanel(sources, extraction) {
   const previewFile = sources.find(file => file.name === applicationState.previewFileName);
   const isPreviewTab = applicationState.previewTab === "preview";
 
@@ -158,38 +205,51 @@ function renderPreviewPanel(sources) {
         <span class="mono muted">${previewFile ? escapeHtml(previewFile.name) : "—"}</span>
       </div>
 
-      <div class="preview-stage">
-        <div class="preview-empty">
-          ${icon(ICON.doc, 34, 1.4)}
-          <p>${isPreviewTab
-            ? "Document rendering is not built yet. This pane will show the selected page."
-            : "Nothing extracted yet. Run the stage to see its text output here."}</p>
-        </div>
+      <div class="preview-stage${isPreviewTab ? "" : " scrolls"}">
+        ${isPreviewTab
+          ? `<div class="preview-empty">
+               ${icon(ICON.doc, 34, 1.4)}
+               <p>Document rendering is not built yet.<br>
+                  Switch to <b>Extracted text</b> to see what was parsed.</p>
+             </div>`
+          : renderExtractedBlocks(extraction)}
       </div>
     </div>`;
 }
 
-function renderRunBar(selectedCount, totalCount) {
+function renderRunBar(selectedCount, totalCount, extraction) {
   const canRun = selectedCount > 0;
+  const hasExtracted = !extraction.is_empty;
   const disabledReason = totalCount === 0
     ? "Add a source file first"
     : "Select at least one file";
 
+  const summary = hasExtracted
+    ? `${extraction.audit.document_count} document(s) - ${extraction.audit.block_count} blocks`
+      + ` - ${extraction.total_word_count} words (~${
+          extraction.estimated_narration_minutes} min narrated)`
+    : `${selectedCount} of ${totalCount} file(s) selected.`;
+
   return `
-    <div class="run-bar ${canRun ? "ready" : "blocked"}">
-      <span class="run-icon">${icon(canRun ? ICON.check : ICON.alert, 17, canRun ? 2.4 : 2)}</span>
+    <div class="run-bar ${canRun || hasExtracted ? "ready" : "blocked"}">
+      <span class="run-icon">${icon(canRun || hasExtracted ? ICON.check : ICON.alert, 17,
+                                    canRun || hasExtracted ? 2.4 : 2)}</span>
       <span class="run-text">
-        <b>${canRun ? "Ready to extract" : "Nothing selected"}</b>
-        <span>${canRun
-          ? `${selectedCount} of ${totalCount} file(s) selected. Extraction is not implemented yet.`
+        <b>${hasExtracted ? "Extracted" : canRun ? "Ready to extract" : "Nothing selected"}</b>
+        <span>${canRun || hasExtracted
+          ? escapeHtml(summary)
           : escapeHtml(disabledReason) + "."}</span>
       </span>
+      ${extraction.warnings?.length
+        ? `<span class="stage-chip unrouted">${escapeHtml(extraction.warnings[0])}</span>`
+        : ""}
       <button class="btn btn-accent" id="run-extraction-button" ${canRun ? "" : "disabled"}
-              title="${canRun ? "Not implemented yet" : escapeHtml(disabledReason)}">
-        Extract content
+              title="${canRun ? "Parse every source document" : escapeHtml(disabledReason)}">
+        ${hasExtracted ? "Re-extract" : "Extract content"}
       </button>
     </div>`;
 }
+
 
 function renderFooterNav(stage) {
   const { stageDefinitions } = applicationState;
@@ -249,6 +309,11 @@ function wireExtractionStage(stage, sources, navigateToStage, renderAgentStage) 
 
   select("#add-more-files-button").onclick = () => navigateToStage("inputs");
 
+  const runButton = select("#run-extraction-button");
+  if (runButton && !runButton.disabled) {
+    runButton.onclick = () => runExtraction(runButton, rerender);
+  }
+
   // The AGENT.md is the real "settings" for this stage: it governs behaviour.
   select("#extraction-agent-button").onclick = () => renderAgentStage(stage);
 
@@ -305,5 +370,40 @@ async function persistOption(stage, optionKey, newValue, rerender) {
     showStageNotice("bad", `Could not save that setting — ${saveFailure.message}`);
   } finally {
     applicationState.isSavingSettings = false;
+  }
+}
+
+
+/** Parse every source document, then show what came out.
+ *
+ *  Extraction runs synchronously server-side and takes real time on a large PDF,
+ *  so the button says what it is doing rather than going inert: a control that
+ *  looks frozen is indistinguishable from one that is broken.
+ */
+async function runExtraction(button, rerender) {
+  const originalLabel = button.textContent;
+  button.disabled = true;
+  button.textContent = "Extracting...";
+
+  try {
+    const result = await requestJsonFromApi(
+      projectApiPath("/extraction/run"), { method: "POST" });
+
+    // Land on the tab that shows the result. Running a stage and seeing no
+    // visible change is the most confusing possible outcome.
+    applicationState.previewTab = "text";
+    await rerender();
+
+    showStageNotice(
+      result.warnings.length ? "warn" : "ok",
+      result.warnings.length
+        ? result.warnings.join(" - ")
+        : `Extracted ${result.total_word_count} words from ${
+            result.audit.document_count} document(s).`);
+  } catch (runFailure) {
+    console.error("extraction run failed", runFailure);
+    button.disabled = false;
+    button.textContent = originalLabel;
+    showStageNotice("bad", `Extraction failed - ${runFailure.message}`);
   }
 }

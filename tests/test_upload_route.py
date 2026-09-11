@@ -164,3 +164,38 @@ def test_delete_cannot_traverse_outside_the_sources_directory(
     for hostile in ["..%2Fproject.json", "..%5Cproject.json", "%2E%2E%2Fproject.json"]:
         client.delete(f"/api/projects/{slug}/sources/{hostile}")
         assert victim.exists(), f"{hostile} deleted a file outside sources/"
+
+
+def test_two_files_under_one_field_name_do_not_vanish_silently(
+    client_with_temporary_projects_directory,
+):
+    """Reproduced with `curl -F files=@a -F files=@b`.
+
+    Repeating a field name collapses the parts into a single entry that is not a
+    file, so the route stored nothing, rejected nothing, and returned 201. The
+    caller saw no error and no result -- the worst of both, and exactly the
+    silent-write-loss class this project keeps closing.
+
+    The contract asserted here is the outcome, not the wording: either the files
+    are stored, or the request fails. Silent success is the bug.
+    """
+    client = client_with_temporary_projects_directory
+    slug = _create_project(client, name="One Field Name")
+
+    response = client.post(
+        f"/api/projects/{slug}/sources",
+        files=[
+            ("files", ("a.md", b"# first", "text/markdown")),
+            ("files", ("b.md", b"# second", "text/markdown")),
+        ],
+    )
+
+    if response.status_code >= 400:
+        return  # refused outright, which is an acceptable outcome
+
+    payload = response.json()
+    stored = payload["accepted"] + payload["rejected"]
+    assert stored, (
+        "the upload reported neither an accepted nor a rejected file, so the "
+        "caller cannot tell that nothing was saved"
+    )

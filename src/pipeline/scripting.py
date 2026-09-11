@@ -175,7 +175,7 @@ class Script(BaseModel):
 
     def to_dict(self, plan_section_ids: list[str] | None = None) -> dict:
         audit = self.audit(plan_section_ids or [])
-        return self.model_dump() | {
+        return self.model_dump(mode="json") | {
             "total_word_count": self.total_word_count,
             "total_estimated_seconds": self.total_estimated_seconds,
             "per_section": {

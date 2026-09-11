@@ -109,7 +109,7 @@ class Plan(BaseModel):
         return not self.sections and not self.learning_objectives
 
     def to_dict(self) -> dict:
-        return self.model_dump() | {
+        return self.model_dump(mode="json") | {
             "total_estimated_seconds": self.total_estimated_seconds,
             "is_empty": self.is_empty,
             "warnings": self.warnings(),

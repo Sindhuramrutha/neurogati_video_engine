@@ -186,7 +186,7 @@ class Composition(BaseModel):
 
     def to_dict(self, known_asset_ids: set[str] | None = None) -> dict:
         audit = self.audit(known_asset_ids)
-        return self.model_dump() | {
+        return self.model_dump(mode="json") | {
             "duration_ms": self.duration_ms,
             "clip_count": self.clip_count,
             "audit": audit,
@@ -213,12 +213,20 @@ def default_composition() -> Composition:
 
     Ordered bottom-to-top so the list reads the way the frame stacks: video at the
     base, then text, then graphics over both. Audio is last and composites nothing.
+
+    **The four ids are fixed, not generated.** A default composition is rebuilt on
+    every read until something saves it, so random ids meant reading the timeline
+    twice returned two different sets. A client that read the composition, took a
+    track id and then placed a clip on it got "no such track" -- fatal for an
+    agent, which does exactly that, and invisible in the browser only because it
+    renders and posts within a single load. Fixed ids also read better in a diff
+    than twelve hex characters.
     """
     return Composition(tracks=[
-        Track(kind=TrackKind.VIDEO, label="V1 · Video"),
-        Track(kind=TrackKind.TEXT, label="V2 · Text"),
-        Track(kind=TrackKind.GRAPHICS, label="V3 · Graphics"),
-        Track(kind=TrackKind.AUDIO, label="A1 · Audio"),
+        Track(id="track-video", kind=TrackKind.VIDEO, label="V1 · Video"),
+        Track(id="track-text", kind=TrackKind.TEXT, label="V2 · Text"),
+        Track(id="track-graphics", kind=TrackKind.GRAPHICS, label="V3 · Graphics"),
+        Track(id="track-audio", kind=TrackKind.AUDIO, label="A1 · Audio"),
     ])
 
 

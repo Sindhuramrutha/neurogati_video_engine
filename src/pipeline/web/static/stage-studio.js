@@ -11,6 +11,7 @@
 
 import { editStageDocument, loadStageDocument, newItemIdentifier }
   from "/static/document-editing.js";
+import { requestJsonFromApi } from "/static/shared-client.js";
 import {
   ICON, applicationState, escapeHtml, icon, projectApiPath, select,
   showStageNotice, stageIcon,
@@ -77,6 +78,10 @@ export async function renderStudioStage(stage, navigateToStage, renderAgentStage
           <h2>Studio</h2>
           <p>Compose the video: media, timeline, layers and rendering.</p>
         </div>
+        <button class="btn" id="studio-render-button"
+                title="Synthesise narration and render the video">
+          ${icon(`<path d="M5 3l14 9-14 9V3z"/>`, 13, 1.8)} Render video
+        </button>
         <button class="btn" id="studio-agent-button">
           ${icon(ICON.gear, 14, 1.8)} Agent &amp; instructions
         </button>
@@ -111,8 +116,9 @@ function renderPreview(composition) {
         <div class="placeholder">
           ${icon(`<rect x="2" y="5" width="14" height="14" rx="2"/><path d="m22 8-6 4 6 4V8z"/>`,
                  40, 1.3)}
-          <p>Rendering is not built yet.<br>
-             The timeline below is real and saved.</p>
+          <p>No preview of this timeline yet.<br>
+             <b>Render video</b> builds from the plan and script, not from these
+             clips &mdash; the timeline is not wired into the renderer.</p>
         </div>
       </div>
 
@@ -338,6 +344,11 @@ function wireStudioStage(stage, navigateToStage, renderAgentStage) {
   });
   select("#studio-agent-button").onclick = () => renderAgentStage(stage);
 
+  const studioRenderButton = select("#studio-render-button");
+  if (studioRenderButton) {
+    studioRenderButton.onclick = () => renderFromStudio(studioRenderButton, navigateToStage);
+  }
+
   // --- selection ---
   document.querySelectorAll("[data-clip]").forEach(clipElement => {
     clipElement.onclick = event => {
@@ -487,4 +498,44 @@ function wireProperties(change) {
       }
     });
   };
+}
+
+
+/** Render, then send the user to Reviewing where the player is.
+ *
+ *  Rendering from Studio but watching in Reviewing would otherwise leave someone
+ *  staring at a placeholder wondering whether it worked.
+ */
+async function renderFromStudio(button, navigateToStage) {
+  const originalLabel = button.textContent;
+  button.disabled = true;
+  button.textContent = "Rendering...";
+
+  let voiceProvider = "";
+  try {
+    voiceProvider = (await requestJsonFromApi("/api/voices")).recommended;
+  } catch (voicesFailure) {
+    console.error("could not list voices", voicesFailure);
+  }
+
+  showStageNotice("warn",
+    `Rendering with the ${voiceProvider || "default"} voice. One synthesis call `
+    + "per section, then ffmpeg - this takes a few minutes.");
+
+  try {
+    const result = await requestJsonFromApi(projectApiPath("/render"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ voice_provider: voiceProvider, voice: "" }),
+    });
+    showStageNotice("ok",
+      `Rendered ${result.section_count} section(s), ${
+        Math.round(result.duration_ms / 1000)}s. Opening Reviewing to watch it.`);
+    navigateToStage("reviewing");
+  } catch (renderFailure) {
+    console.error("render failed", renderFailure);
+    button.disabled = false;
+    button.textContent = originalLabel;
+    showStageNotice("bad", `Render failed - ${renderFailure.message}`);
+  }
 }

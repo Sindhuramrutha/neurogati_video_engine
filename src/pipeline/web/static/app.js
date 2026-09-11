@@ -1,11 +1,14 @@
 /**
  * Explainer Pipeline — application shell.
  *
- * Owns the chrome (topbar, sidebar, stepper, breadcrumb) and routes to a stage
+ * Owns the chrome (topbar, sidebar, breadcrumb) and routes to a stage
  * view. Stage views live in their own modules and import shared state from
  * ui-kit.js, so this file never grows when a stage gains features.
  */
 
+import {
+  closeCredentialsPanel, isCredentialsPanelOpen, openCredentialsPanel,
+} from "/static/credentials-panel.js";
 import { requestJsonFromApi, showNoticeIn } from "/static/shared-client.js";
 import { renderExtractionStage } from "/static/stage-extraction.js";
 import { renderPlanningStage } from "/static/stage-planning.js";
@@ -17,17 +20,6 @@ import {
   formatFileSize, icon, projectApiPath, select, showStageNotice, sortedSources,
   stageIcon, stageStateFor,
 } from "/static/ui-kit.js";
-
-/** One-line hints under each step. Here rather than server-side because they
- *  describe the interface, not the pipeline. */
-const STEP_SUBTITLES = {
-  inputs: "Add your documents",
-  extraction: "Process content",
-  planning: "Organize structure",
-  scripting: "Generate script",
-  studio: "Compose and render",
-  reviewing: "Review output",
-};
 
 /* ---- boot --------------------------------------------------------------- */
 
@@ -143,7 +135,6 @@ function renderMain() {
 
   container.innerHTML = `
     ${renderBreadcrumb(state)}
-    ${renderStepper()}
     <div class="notice" id="stage-notice" hidden></div>
     <div id="stage-body"></div>`;
 
@@ -171,30 +162,6 @@ function renderBreadcrumb(state) {
         ${escapeHtml(state.detail || state.status)}
       </span>
     </div>`;
-}
-
-function renderStepper() {
-  const { stageDefinitions, activeStageKey } = applicationState;
-  const activeIndex = stageDefinitions.findIndex(s => s.key === activeStageKey);
-
-  return `<div class="stepper">` + stageDefinitions.map((stage, index) => {
-    const state = stageStateFor(stage.key);
-    const classes = [
-      index === activeIndex ? "active" : "",
-      state.status === "ready" && index !== activeIndex ? "done" : "",
-    ].join(" ");
-    const connector = index < stageDefinitions.length - 1 ? `<span class="step-line"></span>` : "";
-    return `
-      <div class="step ${classes}" data-step="${stage.key}">
-        <span class="step-num">${
-          state.status === "ready" && index !== activeIndex
-            ? icon(ICON.check, 13, 2.6) : index + 1}</span>
-        <span class="step-text">
-          <span class="step-title">${escapeHtml(stage.title)}</span>
-          <span class="step-sub">${escapeHtml(STEP_SUBTITLES[stage.key] ?? "")}</span>
-        </span>
-      </div>${connector}`;
-  }).join("") + `</div>`;
 }
 
 /* ---- inputs stage ------------------------------------------------------- */
@@ -466,8 +433,8 @@ async function renderAgentStage(stage) {
       <textarea class="agent-body" id="agent-body" spellcheck="false">${escapeHtml(agent.body)}</textarea>
 
       <p class="muted" style="font-size:12.5px;margin:12px 0 0">
-        <b>Stage not implemented yet.</b> The agent definition is live and editable —
-        it is what will drive this stage.
+        This text is the agent's system prompt. Planning and Scripting run it
+        against a model today; the other stages read it but do not call one yet.
       </p>
     </div>`;
 
@@ -577,6 +544,14 @@ const drawer = select("#drawer");
 select("#toggle-drawer-button").onclick = () => drawer.classList.toggle("open");
 select("#close-drawer-button").onclick = () => drawer.classList.remove("open");
 
+// Both panels slide in from the same edge, so opening one closes the other
+// rather than stacking them on top of each other.
+select("#open-credentials-button").onclick = () => {
+  drawer.classList.remove("open");
+  openCredentialsPanel();
+};
+select("#close-credentials-button").onclick = closeCredentialsPanel;
+
 select("#drawer-send-button").onclick = () => {
   const input = select("#drawer-input");
   const messageText = input.value.trim();
@@ -597,9 +572,9 @@ select("#drawer-input").addEventListener("keydown", event => {
 });
 
 document.addEventListener("keydown", event => {
-  if (event.key === "Escape" && drawer.classList.contains("open")) {
-    drawer.classList.remove("open");
-  }
+  if (event.key !== "Escape") return;
+  if (isCredentialsPanelOpen()) closeCredentialsPanel();
+  else if (drawer.classList.contains("open")) drawer.classList.remove("open");
 });
 
 boot();

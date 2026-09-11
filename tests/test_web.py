@@ -779,3 +779,199 @@ def test_a_json_array_is_rejected_as_a_document(tmp_path):
     store.document_path.parent.mkdir(parents=True, exist_ok=True)
     store.document_path.write_text("[1, 2, 3]", encoding="utf-8")
     assert store.load().is_empty
+
+
+# --- credentials: a secret must never reach the browser ----------------------
+
+def test_a_secret_is_never_returned_in_the_clear(monkeypatch, tmp_path):
+    """The one invariant of the credentials panel.
+
+    If this fails, a key is being served to any page that asks -- readable in
+    devtools, in the network log, and in any proxy along the way.
+    """
+    import json
+
+    from pipeline import credentials
+
+    secret = "sk-abcdefghijklmnopqrstuvwxyz0123456789END"
+    env_file = tmp_path / ".env"
+    env_file.write_text(f"LLM_API_KEY={secret}\n", encoding="utf-8")
+    monkeypatch.setattr(credentials, "ENVIRONMENT_FILE_PATH", env_file)
+    monkeypatch.delenv("LLM_API_KEY", raising=False)
+
+    described = credentials.describe_credentials()
+    assert secret not in json.dumps(described), "the raw key is present in the API response"
+
+    key_field = next(f for f in described["fields"] if f["name"] == "LLM_API_KEY")
+    assert key_field["is_set"] is True
+    assert key_field["display_value"] == "•" * 8 + "9END"
+
+
+def test_a_short_secret_reveals_nothing():
+    """Four trailing characters of a 10-character secret is most of it."""
+    from pipeline.credentials import mask_secret
+
+    assert mask_secret("short") == "•" * 8
+    assert "short" not in mask_secret("short")
+
+
+def test_a_blank_submission_does_not_wipe_a_stored_key(monkeypatch, tmp_path):
+    """The panel sends only fields the user typed into.
+
+    A field left out must keep its value -- otherwise editing the model name
+    would silently delete the key, and the user would find out when an agent
+    failed rather than when they saved.
+    """
+    from pipeline import credentials
+
+    env_file = tmp_path / ".env"
+    monkeypatch.setattr(credentials, "ENVIRONMENT_FILE_PATH", env_file)
+    monkeypatch.delenv("LLM_API_KEY", raising=False)
+    monkeypatch.delenv("LLM_MODEL", raising=False)
+
+    credentials.save_credentials({"LLM_API_KEY": "sk-original-key-value-here"})
+    credentials.save_credentials({"LLM_MODEL": "some/other-model"})
+
+    stored = credentials.read_environment_file()
+    assert stored["LLM_API_KEY"] == "sk-original-key-value-here"
+    assert stored["LLM_MODEL"] == "some/other-model"
+
+
+def test_an_empty_string_clears_a_key(monkeypatch, tmp_path):
+    """Clearing has to be possible, and has to be explicit."""
+    from pipeline import credentials
+
+    env_file = tmp_path / ".env"
+    monkeypatch.setattr(credentials, "ENVIRONMENT_FILE_PATH", env_file)
+    monkeypatch.delenv("LLM_API_KEY", raising=False)
+
+    credentials.save_credentials({"LLM_API_KEY": "sk-doomed"})
+    assert credentials.read_environment_file()["LLM_API_KEY"] == "sk-doomed"
+
+    credentials.save_credentials({"LLM_API_KEY": ""})
+    assert "LLM_API_KEY" not in credentials.read_environment_file()
+
+
+def test_unmanaged_env_entries_survive_a_save(monkeypatch, tmp_path):
+    """The file is rewritten on every save. Anything the panel does not know
+    about must still be there afterwards, or saving a key would silently delete
+    someone's unrelated configuration."""
+    from pipeline import credentials
+
+    env_file = tmp_path / ".env"
+    env_file.write_text("SOME_OTHER_TOOL_TOKEN=keep-me\n", encoding="utf-8")
+    monkeypatch.setattr(credentials, "ENVIRONMENT_FILE_PATH", env_file)
+    monkeypatch.delenv("LLM_API_KEY", raising=False)
+
+    credentials.save_credentials({"LLM_API_KEY": "sk-new"})
+
+    stored = credentials.read_environment_file()
+    assert stored["SOME_OTHER_TOOL_TOKEN"] == "keep-me"
+    assert stored["LLM_API_KEY"] == "sk-new"
+
+
+def test_a_shell_environment_variable_is_reported_as_taking_precedence(monkeypatch, tmp_path):
+    """pydantic-settings reads the real environment ahead of .env.
+
+    Without this the panel would accept an edit, store it, and let the old value
+    keep being used -- the most confusing failure this feature could have.
+    """
+    from pipeline import credentials
+
+    env_file = tmp_path / ".env"
+    env_file.write_text("LLM_API_KEY=sk-from-the-file\n", encoding="utf-8")
+    monkeypatch.setattr(credentials, "ENVIRONMENT_FILE_PATH", env_file)
+    monkeypatch.setenv("LLM_API_KEY", "sk-from-the-shell-environment")
+
+    described = credentials.describe_credentials()
+    key_field = next(f for f in described["fields"] if f["name"] == "LLM_API_KEY")
+
+    assert key_field["source"] == "environment"
+    assert key_field["is_editable"] is False
+    assert any("shell environment" in warning for warning in described["warnings"])
+
+
+def test_unknown_credential_fields_are_ignored_not_written(monkeypatch, tmp_path):
+    """The submitted names come from a page, so they are untrusted input."""
+    from pipeline import credentials
+
+    env_file = tmp_path / ".env"
+    monkeypatch.setattr(credentials, "ENVIRONMENT_FILE_PATH", env_file)
+
+    credentials.save_credentials({"TOTALLY_MADE_UP": "value", "LLM_API_KEY": "sk-real"})
+
+    stored = credentials.read_environment_file()
+    assert "TOTALLY_MADE_UP" not in stored
+    assert stored["LLM_API_KEY"] == "sk-real"
+
+
+def test_values_needing_quotes_round_trip(monkeypatch, tmp_path):
+    """A key with a space or a hash would otherwise be truncated on the next
+    read, which looks exactly like the key being wrong."""
+    from pipeline import credentials
+
+    env_file = tmp_path / ".env"
+    monkeypatch.setattr(credentials, "ENVIRONMENT_FILE_PATH", env_file)
+    monkeypatch.delenv("LLM_MODEL", raising=False)
+
+    awkward = "model with spaces #and-a-hash"
+    credentials.save_credentials({"LLM_MODEL": awkward})
+    assert credentials.read_environment_file()["LLM_MODEL"] == awkward
+
+
+def test_env_file_is_gitignored_in_this_repository():
+    """A real key is about to be written to .env. If it is committable, that is
+    a leak waiting to happen."""
+    from pipeline.credentials import is_env_file_ignored
+
+    assert is_env_file_ignored(), ".env must be listed in .gitignore"
+
+
+async def test_credentials_route_masks_and_saves(monkeypatch, tmp_path):
+    import json
+
+    from litestar.testing import TestClient
+
+    from pipeline import credentials
+    from pipeline.web.app import create_app
+
+    env_file = tmp_path / ".env"
+    monkeypatch.setattr(credentials, "ENVIRONMENT_FILE_PATH", env_file)
+    monkeypatch.delenv("LLM_API_KEY", raising=False)
+
+    with TestClient(app=create_app()) as client:
+        saved = client.post(
+            "/api/credentials",
+            json={"values": {"LLM_API_KEY": "sk-routed-through-http-0000WXYZ"}},
+        )
+        assert saved.status_code == 201
+
+        body = saved.json()
+        assert "sk-routed-through-http-0000WXYZ" not in json.dumps(body)
+
+        read_back = client.get("/api/credentials")
+        assert read_back.status_code == 200
+        assert "sk-routed-through-http-0000WXYZ" not in read_back.text
+
+        key_field = next(f for f in read_back.json()["fields"] if f["name"] == "LLM_API_KEY")
+        assert key_field["display_value"].endswith("WXYZ")
+
+
+def test_a_rendered_version_reports_is_rendered_over_the_api():
+    """`is_rendered` is a property, and model_dump does not serialise properties.
+
+    It was therefore absent from every response while the Reviewing UI branched
+    on it -- so a finished render was treated as "no file" and the player showed
+    the empty placeholder instead of the video. The one field that decides
+    whether the user sees their video at all.
+    """
+    from pipeline.review import Review, VideoVersion
+
+    review = Review(versions=[
+        VideoVersion(label="With a file", file_path="C:/out/video.mp4", duration_ms=1000),
+        VideoVersion(label="No file yet"),
+    ])
+    serialised = review.to_dict()
+
+    assert serialised["versions"][0]["is_rendered"] is True
+    assert serialised["versions"][1]["is_rendered"] is False

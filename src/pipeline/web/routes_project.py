@@ -8,18 +8,34 @@ plugin already wired into the app.
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 from typing import Annotated, Any
 
-from litestar import delete, get, post
+from litestar import Request, Response, delete, get, post
 from litestar.di import NamedDependency
 from litestar.enums import RequestEncodingType
 from litestar.exceptions import ClientException, NotFoundException
 from litestar.params import Body, FromPath
 from pydantic import BaseModel
 
+from pipeline.agent_runtime import (
+    ask_stage_agent,
+    draft_plan_with_agent,
+    draft_section_script_with_agent,
+)
 from pipeline.agents import AgentRegistry
 from pipeline.composition import Composition, CompositionStore
 from pipeline.config import REPO_ROOT, get_settings
+from pipeline.credentials import describe_credentials, save_credentials
+from pipeline.extraction import ExtractionStore
+from pipeline.llm import describe_model
+from pipeline.operations import (
+    OperationFailed,
+    list_voice_providers,
+    present_artifact,
+    render_video,
+    run_extraction,
+)
 from pipeline.planning import Plan, PlanStore
 from pipeline.projects import Project, ProjectStore
 from pipeline.review import Review, ReviewStore, chapters_from_plan
@@ -71,6 +87,32 @@ class AgentEdit(BaseModel):
 
 class StageSettingsEdit(BaseModel):
     values: dict[str, Any]
+
+
+class AgentQuestion(BaseModel):
+    question: str
+
+
+class PlanInstruction(BaseModel):
+    instruction: str
+
+
+class SectionScriptInstruction(BaseModel):
+    section_id: str
+    instruction: str = ""
+
+
+class RenderRequest(BaseModel):
+    voice_provider: str = ""
+    voice: str = ""
+
+
+class CredentialsEdit(BaseModel):
+    """Only the fields being changed. A field left out keeps its stored value,
+    which is what lets the panel save without ever having received the secret
+    it is not editing."""
+
+    values: dict[str, str]
 
 
 @get("/api/stages", sync_to_thread=False)
@@ -133,6 +175,7 @@ async def upload_source(
 
     accepted_source_files: list[dict[str, Any]] = []
     rejected_source_files: list[dict[str, str]] = []
+    file_parts_seen = 0
 
     for uploaded_part in data.values():
         original_file_name = getattr(uploaded_part, "filename", "") or ""
@@ -141,6 +184,7 @@ async def upload_source(
         # files; those have no filename and must be skipped, not crashed on.
         if not hasattr(uploaded_part, "read"):
             continue
+        file_parts_seen += 1
 
         try:
             file_content = await uploaded_part.read()
@@ -182,6 +226,17 @@ async def upload_source(
                 "was_renamed": accepted.was_renamed,
                 "size_in_bytes": accepted.size_in_bytes,
             }
+        )
+
+    # A request carrying no usable file part is a client mistake, not a success.
+    # Returning 201 with two empty lists is the worst of both: the caller sees no
+    # error and no result. Reproduced with `curl -F files=@a -F files=@b`, where
+    # the repeated field name collapses to a single entry that is not a file
+    # part -- nothing was stored and nothing was reported.
+    if not file_parts_seen:
+        raise ClientException(
+            detail="No file was found in the upload. Send each file under its own "
+                   "field name, e.g. file0, file1."
         )
 
     return {
@@ -342,15 +397,7 @@ def get_script(
     and cannot disagree between callers.
     """
     project = projects.require(slug)
-    plan = PlanStore(project.root).load()
-    section_ids = [section.id for section in plan.sections]
-    return ScriptStore(project.root).load().to_dict(section_ids) | {
-        "plan_sections": [
-            {"id": s.id, "title": s.title, "summary": s.summary,
-             "estimated_seconds": s.estimated_seconds}
-            for s in plan.sections
-        ],
-    }
+    return present_artifact(project, "script", ScriptStore(project.root).load())
 
 
 @post("/api/projects/{slug:str}/script", sync_to_thread=False)
@@ -358,15 +405,7 @@ def put_script(
     slug: FromPath[str], data: Script, projects: NamedDependency[ProjectService]
 ) -> dict[str, Any]:
     project = projects.require(slug)
-    plan = PlanStore(project.root).load()
-    saved = ScriptStore(project.root).save(data)
-    return saved.to_dict([s.id for s in plan.sections]) | {
-        "plan_sections": [
-            {"id": s.id, "title": s.title, "summary": s.summary,
-             "estimated_seconds": s.estimated_seconds}
-            for s in plan.sections
-        ],
-    }
+    return present_artifact(project, "script", ScriptStore(project.root).save(data))
 
 
 @get("/api/projects/{slug:str}/composition", sync_to_thread=False)
@@ -403,23 +442,7 @@ def get_review(
     reviewer never sees a half-populated page.
     """
     project = projects.require(slug)
-    plan = PlanStore(project.root).load()
-    script = ScriptStore(project.root).load()
-
-    return ReviewStore(project.root).load().to_dict() | {
-        "plan_sections": [
-            {"id": s.id, "title": s.title, "estimated_seconds": s.estimated_seconds}
-            for s in plan.sections
-        ],
-        "transcript": [
-            {
-                "section_id": section.id,
-                "title": section.title,
-                "body": script.resolve(script.body_for(section.id)),
-            }
-            for section in plan.sections
-        ],
-    }
+    return present_artifact(project, "review", ReviewStore(project.root).load())
 
 
 @post("/api/projects/{slug:str}/review", sync_to_thread=False)
@@ -449,3 +472,262 @@ def seed_chapters(
         for s in plan.sections
     ])
     return store.save(review).to_dict()
+
+
+# --- credentials ------------------------------------------------------------
+#
+# Not project-scoped: a key belongs to the installation, not to one video. Both
+# handlers go through pipeline.credentials, which is the only module allowed to
+# touch a secret -- and which returns masks, never values.
+
+
+@get("/api/credentials", sync_to_thread=False)
+def get_credentials() -> dict[str, Any]:
+    """Status of every credential field. Secrets come back masked.
+
+    There is deliberately no route that returns a key in the clear. If one is
+    ever needed, it is a redesign, not a parameter.
+    """
+    return describe_credentials()
+
+
+@post("/api/credentials", sync_to_thread=False)
+def put_credentials(data: CredentialsEdit) -> dict[str, Any]:
+    """Write submitted values to .env and return the refreshed, masked status."""
+    return save_credentials(data.values)
+
+
+# --- running agents ---------------------------------------------------------
+
+
+@get("/api/model", sync_to_thread=False)
+def get_model_status() -> dict[str, Any]:
+    """Whether a model is reachable, and which one. Never includes the key."""
+    return describe_model()
+
+
+@post("/api/projects/{slug:str}/agent/{stage:str}/ask")
+async def ask_agent(
+    slug: FromPath[str], stage: FromPath[str], data: AgentQuestion
+) -> dict[str, Any]:
+    """Ask a stage's agent about this project. Writes nothing.
+
+    Async and off the event loop: the provider call can take the better part of a
+    minute under `llm_timeout_seconds`, and blocking the loop would freeze every
+    other request in the app while one question was answered.
+    """
+    import anyio
+
+    try:
+        return await anyio.to_thread.run_sync(
+            ask_stage_agent, slug, stage, data.question
+        )
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@post("/api/projects/{slug:str}/plan/draft")
+async def draft_plan(slug: FromPath[str], data: PlanInstruction) -> dict[str, Any]:
+    """Have the Planning agent propose a plan. Returns it; saves nothing.
+
+    Deliberately *not* at `/agent/planning/draft-plan`. A literal `planning`
+    segment sitting where `/agent/{stage}/ask` expects a parameter shadowed it
+    for that one value: every stage but planning reached `ask`, and planning
+    alone 404'd -- the stage this feature exists for. Keeping the artifact routes
+    free of literal stage names makes the collision impossible rather than
+    merely fixed.
+    """
+    import anyio
+
+    try:
+        return await anyio.to_thread.run_sync(
+            draft_plan_with_agent, slug, data.instruction
+        )
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@get("/api/projects/{slug:str}/extraction", sync_to_thread=False)
+def get_extraction(
+    slug: FromPath[str], projects: NamedDependency[ProjectService]
+) -> dict[str, Any]:
+    """The structured content parsed out of the source documents."""
+    project = projects.require(slug)
+    return present_artifact(project, "extraction", ExtractionStore(project.root).load())
+
+
+@post("/api/projects/{slug:str}/extraction/run")
+async def run_extraction_route(slug: FromPath[str]) -> dict[str, Any]:
+    """Parse every source document into structured content.
+
+    Off the event loop: a large PDF takes real time to parse, and blocking the
+    loop would freeze the rest of the app while one project extracted.
+    """
+    import anyio
+
+    try:
+        return await anyio.to_thread.run_sync(run_extraction, slug)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@post("/api/projects/{slug:str}/script/draft")
+async def draft_section_script(
+    slug: FromPath[str], data: SectionScriptInstruction
+) -> dict[str, Any]:
+    """Write narration for one plan section and save it.
+
+    Unlike the plan draft this one writes, because narration is addressed by
+    section id: it replaces one section's words and leaves the rest of the script
+    untouched.
+    """
+    import anyio
+
+    try:
+        return await anyio.to_thread.run_sync(
+            draft_section_script_with_agent, slug, data.section_id, data.instruction
+        )
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@get("/api/voices", sync_to_thread=False)
+def get_voice_providers() -> dict[str, Any]:
+    """Every text-to-speech provider, with whether it is usable right now."""
+    return list_voice_providers()
+
+
+@post("/api/projects/{slug:str}/render")
+async def render_project_video(
+    slug: FromPath[str], data: RenderRequest
+) -> dict[str, Any]:
+    """Synthesise narration and render the video.
+
+    Long-running and off the event loop: synthesis is a network round trip per
+    section and ffmpeg is a subprocess, so this would otherwise block every
+    other request for the length of a render.
+    """
+    import anyio
+
+    try:
+        return await anyio.to_thread.run_sync(
+            render_video, slug, data.voice_provider, data.voice
+        )
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+MEDIA_TYPES_BY_SUFFIX = {
+    ".mp4": "video/mp4",
+    ".vtt": "text/vtt",
+    ".srt": "text/plain",
+    ".mp3": "audio/mpeg",
+    ".wav": "audio/wav",
+}
+
+# Big enough that a 9 MB video is a handful of reads, small enough that a seek
+# does not pull megabytes nobody watches.
+MEDIA_CHUNK_SIZE = 1 << 20
+
+
+def parse_range_header(range_header: str, file_size: int) -> tuple[int, int] | None:
+    """Parse a single `bytes=start-end` range. None if it is absent or unusable.
+
+    Only the single-range form is handled, which is all a media element sends.
+    A malformed or unsatisfiable range returns None so the caller falls back to
+    a normal 200 -- refusing outright would break playback over a header the
+    client can survive without.
+    """
+    if not range_header or not range_header.strip().lower().startswith("bytes="):
+        return None
+
+    specifier = range_header.split("=", 1)[1].split(",")[0].strip()
+    start_text, _, end_text = specifier.partition("-")
+
+    try:
+        if not start_text:
+            # A suffix range: the last N bytes.
+            length = int(end_text)
+            if length <= 0:
+                return None
+            return max(0, file_size - length), file_size - 1
+
+        start = int(start_text)
+        end = int(end_text) if end_text else file_size - 1
+    except ValueError:
+        return None
+
+    end = min(end, file_size - 1)
+    if start > end or start >= file_size:
+        return None
+    return start, end
+
+
+def resolve_output_file(project: Project, file_name: str) -> Path:
+    """The requested file, or a 404 -- never a path outside the output directory.
+
+    The name is reduced to a bare name *and* the resolved path is re-checked
+    against the directory: the same belt-and-braces as uploads, because this is
+    the identical hole pointing the other way.
+    """
+    output_directory = (project.root / "reviewing" / "output").resolve()
+    candidate = (output_directory / reduce_to_bare_file_name(file_name)).resolve()
+
+    if not candidate.is_file() or output_directory not in candidate.parents:
+        raise NotFoundException(detail=f"no such output file: {file_name}")
+    return candidate
+
+
+@get("/api/projects/{slug:str}/output/{file_name:str}")
+async def download_output(
+    slug: FromPath[str],
+    file_name: FromPath[str],
+    request: Request,
+    projects: NamedDependency[ProjectService],
+) -> Response:
+    """Serve a rendered file, with Range support so the browser can play it.
+
+    **Range is the whole point.** Returning the bytes as a flat 200 meant no
+    `Accept-Ranges` and no 206, so a `<video>` element had no way to seek and
+    simply refused to start -- the file was fine and the player showed nothing.
+
+    `content_disposition_type="inline"` is the other half: the default is
+    `attachment`, which downloads the file instead of playing it. That is the
+    same trap that once made this app download its own index page.
+    """
+    project = projects.require(slug)
+    candidate = resolve_output_file(project, file_name)
+
+    file_size = candidate.stat().st_size
+    media_type = MEDIA_TYPES_BY_SUFFIX.get(
+        candidate.suffix.lower(), "application/octet-stream"
+    )
+    common_headers = {
+        "accept-ranges": "bytes",
+        "content-disposition": f'inline; filename="{candidate.name}"',
+    }
+
+    requested = parse_range_header(request.headers.get("range", ""), file_size)
+
+    if requested is None:
+        return Response(
+            content=candidate.read_bytes(),
+            media_type=media_type,
+            headers={**common_headers, "content-length": str(file_size)},
+        )
+
+    start, end = requested
+    with candidate.open("rb") as handle:
+        handle.seek(start)
+        payload = handle.read(end - start + 1)
+
+    return Response(
+        content=payload,
+        media_type=media_type,
+        status_code=206,
+        headers={
+            **common_headers,
+            "content-range": f"bytes {start}-{end}/{file_size}",
+            "content-length": str(len(payload)),
+        },
+    )

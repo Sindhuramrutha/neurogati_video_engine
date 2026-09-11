@@ -118,9 +118,9 @@ function renderReadinessCard(review) {
           ? "No open feedback. Export when a render exists."
           : `Where the work is: ${clusters}`}</span>
       </span>
-      <button class="btn btn-accent" id="export-button" disabled
-              title="Rendering is not built yet">
-        Export final video
+      <button class="btn btn-accent" id="render-button"
+              title="Synthesise narration and render the video">
+        Render video
       </button>
     </div>`;
 }
@@ -128,7 +128,37 @@ function renderReadinessCard(review) {
 /* ---- player ------------------------------------------------------------- */
 
 function renderPlayer(review) {
-  const activeVersion = review.versions.find(v => v.id === review.active_version_id);
+  const activeVersion = review.versions.find(v => v.id === review.active_version_id)
+    ?? review.versions.findLast(v => v.is_rendered);
+
+  // A real player once a render exists. The <video> element owns its own
+  // transport, so the fake scrubber below it is dropped rather than left to
+  // disagree with the thing actually playing.
+  if (activeVersion?.is_rendered) {
+    const fileName = activeVersion.file_path.split(/[\\/]/).pop();
+    const videoUrl = projectApiPath(`/output/${encodeURIComponent(fileName)}`);
+    // .vtt for the <track>; a browser will not load .srt. The .srt is still
+    // produced and offered as a download for editors that expect it.
+    const stem = fileName.replace(/\.mp4$/i, "");
+    const captionsUrl = projectApiPath(`/output/${encodeURIComponent(stem + ".vtt")}`);
+    const subtitleUrl = projectApiPath(`/output/${encodeURIComponent(stem + ".srt")}`);
+
+    return `
+      <div class="panel" style="margin-bottom:14px">
+        <video class="review-video" controls preload="metadata" src="${videoUrl}"
+               crossorigin="anonymous">
+          <track kind="subtitles" label="English" srclang="en" src="${captionsUrl}" default>
+          Your browser cannot play this file.
+        </video>
+        <div class="transport">
+          <span class="time">${formatTimecode(activeVersion.duration_ms)}</span>
+          <span class="mono muted">${escapeHtml(activeVersion.label)}</span>
+          <div class="spacer"></div>
+          <a class="btn" href="${videoUrl}" download>Download .mp4</a>
+          <a class="btn" href="${subtitleUrl}" download>.srt</a>
+        </div>
+      </div>`;
+  }
 
   return `
     <div class="panel" style="margin-bottom:14px">
@@ -136,18 +166,10 @@ function renderPlayer(review) {
         <div class="placeholder">
           ${icon(`<rect x="2" y="5" width="14" height="14" rx="2"/><path d="m22 8-6 4 6 4V8z"/>`,
                  40, 1.3)}
-          <p>${activeVersion && activeVersion.is_rendered
-            ? escapeHtml(activeVersion.label)
-            : "No render yet.<br>Comments below can still be written against the plan and script."}</p>
+          <p>No render yet.<br>Use <b>Render video</b> above to make one.</p>
         </div>
       </div>
-
       <div class="transport">
-        <span class="time">${formatTimecode(reviewViewState.playheadMs)}</span>
-        <div class="scrubber" id="review-scrubber">
-          <div class="played" style="width:0%"></div>
-          <div class="head" style="left:0%"></div>
-        </div>
         <span class="mono muted">${review.versions.length} version(s)</span>
       </div>
     </div>`;
@@ -379,6 +401,12 @@ function wireReviewingStage(stage, navigateToStage, renderAgentStage) {
   });
   select("#reviewing-agent-button").onclick = () => renderAgentStage(stage);
 
+  const renderButton = select("#render-button");
+  if (renderButton) {
+    renderButton.onclick = () => renderProjectVideo(renderButton, () =>
+      renderReviewingStage(stage, navigateToStage, renderAgentStage));
+  }
+
   document.querySelectorAll("[data-review-tab]").forEach(tab => {
     tab.onclick = () => {
       reviewViewState.activeTab = tab.dataset.reviewTab;
@@ -550,4 +578,51 @@ function wireVersions(change) {
       review.active_version_id = row.dataset.version;
     });
   });
+}
+
+
+/** Synthesise narration and render the video.
+ *
+ *  Minutes, not seconds: one text-to-speech round trip per section, then ffmpeg.
+ *  The button therefore reports progress rather than going inert, and says which
+ *  voice it is using -- a silent five-minute wait is indistinguishable from a
+ *  hang.
+ */
+async function renderProjectVideo(button, rerender) {
+  const originalLabel = button.textContent;
+  button.disabled = true;
+  button.textContent = "Rendering...";
+
+  let voiceProvider = "";
+  try {
+    const voices = await requestJsonFromApi("/api/voices");
+    voiceProvider = voices.recommended;
+    button.textContent = `Rendering with ${voiceProvider}...`;
+  } catch (voicesFailure) {
+    console.error("could not list voices", voicesFailure);
+  }
+
+  showStageNotice("warn",
+    "Rendering. One synthesis call per section, then ffmpeg - this takes a few minutes.");
+
+  try {
+    const result = await requestJsonFromApi(projectApiPath("/render"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ voice_provider: voiceProvider, voice: "" }),
+    });
+
+    await rerender();
+    showStageNotice(
+      result.warnings.length ? "warn" : "ok",
+      result.warnings.length
+        ? result.warnings.join(" - ")
+        : `Rendered ${result.section_count} section(s), ${
+            Math.round(result.duration_ms / 1000)}s. Playing above.`);
+  } catch (renderFailure) {
+    console.error("render failed", renderFailure);
+    button.disabled = false;
+    button.textContent = originalLabel;
+    showStageNotice("bad", `Render failed - ${renderFailure.message}`);
+  }
 }

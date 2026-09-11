@@ -24,6 +24,9 @@ dependencies = [
     # media
     "soundfile>=0.14",
     "numpy>=2.0",
+    "mcp>=1.2",
+    "edge-tts>=7.2.8",
+    "pillow>=12.3.0",
 ]
 
 [project.optional-dependencies]

@@ -29,6 +29,14 @@
   </button>
 
   <div class="spacer"></div>
+  <button class="btn" id="open-credentials-button" title="Provider API keys">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 8.8-8.8"/>
+      <path d="m17 6 2.5 2.5M14.5 8.5 17 11"/>
+    </svg>
+    API keys
+  </button>
   <button class="btn" id="toggle-drawer-button">Agent</button>
 </div>
 
@@ -60,6 +68,23 @@
   <div class="drawer-composer">
     <input id="drawer-input" placeholder="e.g. make scene 3 slower" aria-label="Message the agent">
     <button class="btn btn-accent" id="drawer-send-button">Send</button>
+  </div>
+</aside>
+
+<aside class="drawer wide" id="credentials-panel" aria-label="API keys">
+  <div class="drawer-head">
+    <b>API keys</b>
+    <div class="spacer"></div>
+    <button class="btn-icon" id="close-credentials-button" aria-label="Close">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="notice" id="credentials-notice" hidden></div>
+  <div class="drawer-scroll" id="credentials-body"></div>
+  <div class="drawer-composer">
+    <div class="spacer"></div>
+    <button class="btn btn-accent" id="credentials-save-button">Save keys</button>
   </div>
 </aside>
 

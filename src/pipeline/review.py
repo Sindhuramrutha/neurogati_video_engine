@@ -167,8 +167,16 @@ class Review(BaseModel):
 
     def to_dict(self) -> dict:
         audit = self.audit()
-        return self.model_dump() | {
-            "chapters": [c.model_dump() for c in self.ordered_chapters()],
+        return self.model_dump(mode="json") | {
+            "chapters": [c.model_dump(mode="json") for c in self.ordered_chapters()],
+            # `is_rendered` is a property, and model_dump does not serialise
+            # properties -- so it was absent from every response while the UI
+            # branched on it. The player treated a finished render as "no file"
+            # and showed the empty placeholder instead of the video.
+            "versions": [
+                v.model_dump(mode="json") | {"is_rendered": v.is_rendered}
+                for v in self.versions
+            ],
             "audit": audit,
             "warnings": self._warnings(audit),
             "is_ready_to_export": not self.open_comments,
