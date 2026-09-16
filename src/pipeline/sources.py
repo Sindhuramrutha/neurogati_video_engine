@@ -28,12 +28,26 @@ import re
 import unicodedata
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath, PureWindowsPath
+from typing import Any
+
+from pipeline.storage.documents import new_identifier
 
 SUPPORTED_SOURCE_FILE_SUFFIXES: frozenset[str] = frozenset(
     {".pdf", ".md", ".txt", ".docx", ".pptx"}
 )
 
-MAXIMUM_SOURCE_FILE_SIZE_IN_BYTES: int = 64 * 1024 * 1024  # 64 MB
+# A 50-slide deck with images and embedded media is routinely 100-300 MB, and
+# a scanned PDF can be larger still. 64 MB refused ordinary course material.
+MAXIMUM_SOURCE_FILE_SIZE_IN_BYTES: int = 512 * 1024 * 1024  # 512 MB
+
+# What one request may carry in total: several files can be dropped at once.
+# Litestar's own default is 10 MB, which rejected a single real deck with
+# "Request Entity Too Large" *before* any of the checks in this module ran --
+# the size limit that mattered was one nobody here had chosen.
+MAXIMUM_UPLOAD_REQUEST_SIZE_IN_BYTES: int = 2 * 1024 * 1024 * 1024  # 2 GB
+
+# Streamed in blocks so a large file never sits in memory in full.
+UPLOAD_CHUNK_SIZE_IN_BYTES: int = 1024 * 1024
 MAXIMUM_SOURCE_FILE_NAME_LENGTH: int = 120
 
 # Windows reserves these regardless of extension; a file named CON.txt cannot be
@@ -121,15 +135,13 @@ def sanitize_source_file_name(original_file_name: str) -> str:
     return f"{cleaned_stem}{suffix}"
 
 
-def validate_uploaded_source_file(
-    original_file_name: str,
-    file_content: bytes,
-    destination_directory: Path,
-) -> AcceptedSourceFile:
-    """The only sanctioned way to admit a source file.
+def check_source_file_name(
+    original_file_name: str, destination_directory: Path
+) -> str:
+    """Everything that can be decided from the name alone, before any bytes.
 
-    Raises `SourceFileRejected` with a user-facing reason; never writes anything.
-    The caller writes to `destination_directory / result.safe_file_name`.
+    Split out so a 300 MB file with the wrong extension is refused immediately
+    rather than after it has been read.
     """
     if not original_file_name or not original_file_name.strip():
         raise SourceFileRejected("(unnamed)", "the upload had no filename")
@@ -145,18 +157,6 @@ def validate_uploaded_source_file(
             f"Supported types: {supported}",
         )
 
-    if len(file_content) == 0:
-        raise SourceFileRejected(original_file_name, "the file is empty")
-
-    if len(file_content) > MAXIMUM_SOURCE_FILE_SIZE_IN_BYTES:
-        limit_in_megabytes = MAXIMUM_SOURCE_FILE_SIZE_IN_BYTES // (1024 * 1024)
-        actual_in_megabytes = len(file_content) / (1024 * 1024)
-        raise SourceFileRejected(
-            original_file_name,
-            f"the file is {actual_in_megabytes:.1f} MB, over the "
-            f"{limit_in_megabytes} MB limit",
-        )
-
     # Belt and braces: sanitisation should already have made traversal impossible,
     # but the destination is re-checked so a future change to the sanitiser cannot
     # silently reintroduce an arbitrary file write.
@@ -167,9 +167,93 @@ def validate_uploaded_source_file(
             original_file_name, "the filename resolves outside the project"
         )
 
+    return safe_file_name
+
+
+def describe_size_limit() -> str:
+    return f"{MAXIMUM_SOURCE_FILE_SIZE_IN_BYTES // (1024 * 1024)} MB"
+
+
+def validate_uploaded_source_file(
+    original_file_name: str,
+    file_content: bytes,
+    destination_directory: Path,
+) -> AcceptedSourceFile:
+    """Admit a source file whose bytes are already in hand.
+
+    Kept for callers that genuinely hold the content -- tests, and any future
+    non-HTTP path. The HTTP upload uses `store_uploaded_source_file`, which
+    never holds a whole file in memory.
+    """
+    safe_file_name = check_source_file_name(original_file_name, destination_directory)
+
+    if len(file_content) == 0:
+        raise SourceFileRejected(original_file_name, "the file is empty")
+
+    if len(file_content) > MAXIMUM_SOURCE_FILE_SIZE_IN_BYTES:
+        actual_in_megabytes = len(file_content) / (1024 * 1024)
+        raise SourceFileRejected(
+            original_file_name,
+            f"the file is {actual_in_megabytes:.1f} MB, over the "
+            f"{describe_size_limit()} limit",
+        )
+
     return AcceptedSourceFile(
         original_file_name=original_file_name,
         safe_file_name=safe_file_name,
         size_in_bytes=len(file_content),
-        suffix=suffix,
+        suffix=Path(safe_file_name).suffix.lower(),
+    )
+
+
+async def store_uploaded_source_file(
+    original_file_name: str,
+    upload_stream: Any,
+    destination_directory: Path,
+) -> AcceptedSourceFile:
+    """Stream an upload to disk, enforcing the size cap as it goes.
+
+    Reading a whole file into memory to measure it means a 300 MB deck costs
+    300 MB of RAM before a single byte is written, and several at once multiply
+    that. Here the file is copied in blocks and abandoned the moment it crosses
+    the limit -- so an oversized upload costs the limit, not the file.
+
+    Written to a temporary name and renamed once complete, so an interrupted
+    upload never leaves a half-file sitting in `sources/` looking like a real
+    document.
+    """
+    safe_file_name = check_source_file_name(original_file_name, destination_directory)
+    destination_directory.mkdir(parents=True, exist_ok=True)
+
+    final_path = destination_directory / safe_file_name
+    temporary_path = final_path.with_name(f"{safe_file_name}.{new_identifier()}.part")
+
+    bytes_written = 0
+    try:
+        with temporary_path.open("wb") as destination:
+            while True:
+                chunk = await upload_stream.read(UPLOAD_CHUNK_SIZE_IN_BYTES)
+                if not chunk:
+                    break
+                bytes_written += len(chunk)
+                if bytes_written > MAXIMUM_SOURCE_FILE_SIZE_IN_BYTES:
+                    raise SourceFileRejected(
+                        original_file_name,
+                        f"the file is larger than the {describe_size_limit()} limit",
+                    )
+                destination.write(chunk)
+
+        if bytes_written == 0:
+            raise SourceFileRejected(original_file_name, "the file is empty")
+
+        temporary_path.replace(final_path)
+    except BaseException:
+        temporary_path.unlink(missing_ok=True)
+        raise
+
+    return AcceptedSourceFile(
+        original_file_name=original_file_name,
+        safe_file_name=safe_file_name,
+        size_in_bytes=bytes_written,
+        suffix=Path(safe_file_name).suffix.lower(),
     )

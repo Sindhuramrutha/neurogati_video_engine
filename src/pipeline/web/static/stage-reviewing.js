@@ -115,7 +115,9 @@ function renderReadinessCard(review) {
       <span class="text">
         <b>${isReady ? "Nothing outstanding" : `${openCount} comment(s) still open`}</b>
         <span>${isReady
-          ? "No open feedback. Export when a render exists."
+          ? (review.versions.some(v => v.is_rendered)
+              ? "No open feedback, and a render exists. Re-render to pick up any changes."
+              : "No open feedback. Render the video to watch it here.")
           : `Where the work is: ${clusters}`}</span>
       </span>
       <button class="btn btn-accent" id="render-button"
@@ -203,16 +205,15 @@ function renderTranscript(review) {
       No sections yet. The transcript follows the plan and script.</p>`;
   }
 
-  let runningMs = 0;
   const rows = review.transcript.map(entry => {
-    const section = review.plan_sections.find(s => s.id === entry.section_id);
-    const stamp = formatTimecode(runningMs);
-    runningMs += (section?.estimated_seconds ?? 0) * 1000;
+    // The server measures these against the render; the page must not recompute
+    // them from the plan's estimates, which is how they came to be minutes out.
+    const startMs = entry.start_ms ?? 0;
     const hasBody = entry.body.trim().length > 0;
 
     return `
-      <button class="transcript-row" data-jump="${runningMs}">
-        <span class="stamp">${stamp}</span>
+      <button class="transcript-row" data-jump="${startMs}">
+        <span class="stamp">${formatTimecode(startMs)}</span>
         <span class="line ${hasBody ? "" : "empty"}">
           ${hasBody
             ? escapeHtml(entry.body.slice(0, 220)) + (entry.body.length > 220 ? "…" : "")
@@ -414,10 +415,17 @@ function wireReviewingStage(stage, navigateToStage, renderAgentStage) {
     };
   });
 
+  // Clicking a line seeks the video. It used to set a playhead variable and
+  // re-render, which did nothing visible once the player became a real <video>
+  // element with its own transport -- the click looked broken.
   document.querySelectorAll("[data-jump]").forEach(row => {
     row.onclick = () => {
-      reviewViewState.playheadMs = Number(row.dataset.jump) || 0;
-      rerender();
+      const atMs = Number(row.dataset.jump) || 0;
+      reviewViewState.playheadMs = atMs;
+      const player = document.querySelector("video.review-video");
+      if (!player) return;
+      player.currentTime = atMs / 1000;
+      player.play().catch(playFailure => console.warn("could not play", playFailure));
     };
   });
 

@@ -42,7 +42,11 @@ LIST_INLINE = re.compile(r"\[(.*?)\]", re.DOTALL)
 
 @dataclass
 class Agent:
-    stage: Stage
+    # `None` for an agent that does not belong to a stage. The orchestrator is
+    # the one such agent: it stands above the pipeline rather than inside it, so
+    # forcing it into the `Stage` enum would put it in the stepper, give it an
+    # artifact to produce, and make every "for each stage" loop wrong.
+    stage: Stage | None
     name: str
     role: str
     body: str
@@ -56,7 +60,7 @@ class Agent:
 
     def to_dict(self) -> dict:
         return {
-            "stage": self.stage.value,
+            "stage": self.stage.value if self.stage else None,
             "name": self.name,
             "role": self.role,
             "body": self.body,
@@ -98,8 +102,8 @@ def _parse_frontmatter(head: str) -> dict[str, object]:
     return out
 
 
-def parse(text: str, stage: Stage, path: Path, is_override: bool) -> Agent:
-    name, role, body = stage.value.title(), "", text
+def parse(text: str, stage: Stage | None, path: Path, is_override: bool) -> Agent:
+    name, role, body = (stage.value.title() if stage else path.parent.name.title()), "", text
     tool_names: list[str] = []
 
     if m := FRONTMATTER.match(text):
@@ -141,6 +145,22 @@ class AgentRegistry:
         default = self._default_path(stage)
         if default.exists():
             return parse(default.read_text(encoding="utf-8"), stage, default, False)
+        return None
+
+    def get_standalone(self, folder: str) -> Agent | None:
+        """An agent that is not a stage, resolved by folder name.
+
+        Same project-then-default rule as `get`; the only difference is that
+        nothing in the pipeline produces its artifact, because it has none.
+        """
+        if self.project_dir is not None:
+            override = self.project_dir / "agents" / folder / "AGENT.md"
+            if override.exists():
+                return parse(override.read_text(encoding="utf-8"), None, override, True)
+
+        default = self.defaults_dir / folder / "AGENT.md"
+        if default.exists():
+            return parse(default.read_text(encoding="utf-8"), None, default, False)
         return None
 
     def write_override(self, stage: Stage, text: str) -> Path:

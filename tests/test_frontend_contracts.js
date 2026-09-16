@@ -82,5 +82,36 @@ check("no in-flight guard silently drops a user action", () => {
     `these drop a click with no feedback: ${offenders.join(", ")}`);
 });
 
+check("the stylesheet has no truncated or empty rules", () => {
+  // Self-inflicted, once: a regex meant for `color:` also matched the `color:`
+  // inside `border-color:` and left `border-` behind in thirteen rules. A
+  // browser drops a malformed declaration silently, so nothing failed and those
+  // rules simply stopped working. Cheap to check, invisible otherwise.
+  const stylesheet = readFileSync(join(staticDirectory, "app.css"), "utf8");
+
+  const truncated = stylesheet.match(/[a-z-]+:\s*[;}]|[a-z]+-\s*[;}]/g) ?? [];
+  assert.deepEqual(truncated, [], `truncated declarations: ${truncated.join(", ")}`);
+
+  const empty = stylesheet.match(/\{\s*\}/g) ?? [];
+  assert.equal(empty.length, 0, `${empty.length} rule(s) declare nothing`);
+
+  const openers = (stylesheet.match(/\{/g) ?? []).length;
+  const closers = (stylesheet.match(/\}/g) ?? []).length;
+  assert.equal(openers, closers, "unbalanced braces in the stylesheet");
+});
+
+check("no source file carries invisible control characters", () => {
+  // U+0080-U+009F never belong in hand-written source; they arrive by accident.
+  // The list bullet in Extracted text was one: the CSS escape `\2022` passed
+  // through a Python string, where `\202` is octal for U+0082, and every list
+  // item showed a stray "2".
+  const damaged = readdirSync(staticDirectory)
+    .filter(name => /\.(js|css|html)$/.test(name))
+    .flatMap(name => readModule(name).split("\n")
+      .map((line, index) => /[\u0080-\u009f]/.test(line) ? `${name}:${index + 1}` : null)
+      .filter(Boolean));
+  assert.deepEqual(damaged, [], `control characters at ${damaged.join(", ")}`);
+});
+
 console.log(failureCount ? `\n${failureCount} contract(s) failed` : "\nall contracts hold");
 process.exit(failureCount ? 1 : 0);

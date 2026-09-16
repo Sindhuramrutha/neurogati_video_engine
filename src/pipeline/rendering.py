@@ -201,32 +201,77 @@ def _format_timestamp(milliseconds: int) -> str:
     return f"{hours:02d}:{minutes:02d}:{seconds:02d},{millis:03d}"
 
 
-def write_subtitles(sections: list[RenderedSection], path: Path) -> None:
-    """One cue per slide, timed against the measured audio.
+@dataclass(frozen=True)
+class Segment:
+    """One thing on screen: a title card or a slide of narration text.
 
-    Subtitles come from the same timings as the picture, so the two cannot
-    disagree -- which is the whole reason ADR 0001 insists on one clock.
+    **Every timing in a render comes from `section_segments`.** The picture, the
+    subtitles and the Studio timeline all read these, so they cannot disagree.
+
+    They did. The frames split narration time evenly across slides while the
+    subtitles split it by text length; the narration was muxed under the title
+    card while the subtitles assumed it started after; and `-shortest` failed to
+    cut the image stream, so each section ran 2-6 seconds long and the error
+    compounded to ~20 seconds by the end. Three formulas for one clock.
     """
+
+    kind: str          # "title" or "slide"
+    text: str
+    start_ms: int      # from the start of the whole video
+    duration_ms: int
+
+    @property
+    def end_ms(self) -> int:
+        return self.start_ms + self.duration_ms
+
+
+def section_segments(section: RenderedSection) -> list[Segment]:
+    """The title card, then the narration split into slides, exactly filling
+    `section.total_ms`.
+
+    Slides share the narration's *measured* duration in proportion to their
+    text, using cumulative rounding so the pieces sum to the exact audio length
+    -- no slide is lost to rounding and none overruns.
+    """
+    segments = [Segment("title", section.title, section.start_ms, TITLE_CARD_MS)]
+
+    if not section.audio_duration_ms or not section.narration.strip():
+        return segments
+
+    slides = _slides_for_narration(section.narration)
+    total_characters = sum(len(slide) for slide in slides) or 1
+    narration_start_ms = section.start_ms + TITLE_CARD_MS
+
+    characters_so_far = 0
+    previous_boundary_ms = 0
+    for slide in slides:
+        characters_so_far += len(slide)
+        boundary_ms = round(section.audio_duration_ms * characters_so_far / total_characters)
+        segments.append(Segment(
+            "slide", slide,
+            narration_start_ms + previous_boundary_ms,
+            boundary_ms - previous_boundary_ms,
+        ))
+        previous_boundary_ms = boundary_ms
+
+    return segments
+
+
+def write_subtitles(sections: list[RenderedSection], path: Path) -> None:
+    """One cue per slide, from the same segments the picture is cut to."""
     entries: list[str] = []
     index = 1
 
     for section in sections:
-        slides = _slides_for_narration(section.narration)
-        if not slides or not section.audio_duration_ms:
-            continue
-
-        cursor = section.start_ms + TITLE_CARD_MS
-        # Divide the measured audio across slides by their share of the text, so
-        # a long slide holds proportionally longer.
-        total_characters = sum(len(s) for s in slides) or 1
-        for slide in slides:
-            slide_ms = int(section.audio_duration_ms * len(slide) / total_characters)
+        for segment in section_segments(section):
+            if segment.kind != "slide":
+                continue
             entries.append(
                 f"{index}\n"
-                f"{_format_timestamp(cursor)} --> {_format_timestamp(cursor + slide_ms)}\n"
-                f"{slide}\n"
+                f"{_format_timestamp(segment.start_ms)} --> "
+                f"{_format_timestamp(segment.end_ms)}\n"
+                f"{segment.text}\n"
             )
-            cursor += slide_ms
             index += 1
 
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -259,63 +304,77 @@ def render_sections(
     working_directory: Path,
     output_video_path: Path,
 ) -> None:
-    """Draw every frame, cut each to its measured audio, and concatenate.
+    """Draw every frame, cut each section to its exact length, and concatenate.
 
     One clip per section rather than one long filtergraph: a failure names the
-    section that caused it, and a long video does not have to be rebuilt from
-    scratch when one section changes.
+    section that caused it.
+
+    Three details carry the timing, and each fixes something that was wrong:
+
+    - **Narration is delayed past the title card** (`adelay`), so the voice
+      starts when the first slide appears -- it used to start under the title.
+    - **Each clip is cut to exactly `total_ms`** with `-t`. `-shortest` did not
+      cut the still-image stream, so sections overran and the drift compounded.
+    - **Every clip has an audio stream**, silent if there is no narration.
+      Concatenating with `-c copy` needs identical streams in every clip; one
+      without audio produces a file whose sound stops partway through.
     """
     ffmpeg = require_ffmpeg()
     working_directory.mkdir(parents=True, exist_ok=True)
     clip_paths: list[Path] = []
 
     for index, section in enumerate(sections):
-        slides = _slides_for_narration(section.narration)
-        slide_count = max(1, len(slides))
-        # The title card takes its fixed share; the rest is split across slides.
-        slide_ms = max(800, section.audio_duration_ms // slide_count)
-
         frame_specs: list[tuple[Path, int]] = []
 
-        title_path = working_directory / f"s{index:02d}_title.png"
-        _draw_frame(
-            textwrap.wrap(section.title, width=34)[:4],
-            "", f"Section {index + 1}", 78,
-        ).save(title_path)
-        frame_specs.append((title_path, TITLE_CARD_MS))
-
-        for slide_index, slide in enumerate(slides):
-            slide_path = working_directory / f"s{index:02d}_b{slide_index:02d}.png"
-            _draw_frame(
-                textwrap.wrap(slide, width=52)[:9],
-                section.title, f"Section {index + 1}", 46,
-            ).save(slide_path)
-            frame_specs.append((slide_path, slide_ms))
+        for segment_index, segment in enumerate(section_segments(section)):
+            frame_path = working_directory / f"s{index:02d}_{segment_index:02d}.png"
+            if segment.kind == "title":
+                image = _draw_frame(
+                    textwrap.wrap(segment.text, width=34)[:4],
+                    "", f"Section {index + 1}", 78,
+                )
+            else:
+                image = _draw_frame(
+                    textwrap.wrap(segment.text, width=52)[:9],
+                    section.title, f"Section {index + 1}", 46,
+                )
+            image.save(frame_path)
+            frame_specs.append((frame_path, segment.duration_ms))
 
         # An ffconcat list gives each still its own on-screen duration without
-        # generating thousands of duplicate frames.
+        # generating thousands of duplicate frames. ffconcat ignores the last
+        # entry's duration unless the file is repeated; `-t` trims the excess.
         concat_list = working_directory / f"s{index:02d}_frames.txt"
         lines = []
         for frame_path, duration_ms in frame_specs:
             lines.append(f"file '{frame_path.as_posix()}'")
             lines.append(f"duration {duration_ms / 1000:.3f}")
-        lines.append(f"file '{frame_specs[-1][0].as_posix()}'")  # ffconcat needs the last repeated
+        lines.append(f"file '{frame_specs[-1][0].as_posix()}'")
         concat_list.write_text("\n".join(lines), encoding="utf-8")
 
-        clip_path = working_directory / f"s{index:02d}.mp4"
-        arguments = [
-            ffmpeg, "-y", "-f", "concat", "-safe", "0", "-i", str(concat_list),
-        ]
-        if section.audio_path and section.audio_path.exists():
-            arguments += ["-i", str(section.audio_path)]
+        has_narration = bool(section.audio_path and section.audio_path.exists())
+        exact_seconds = f"{section.total_ms / 1000:.3f}"
 
+        arguments = [ffmpeg, "-y", "-f", "concat", "-safe", "0", "-i", str(concat_list)]
+        if has_narration:
+            arguments += ["-i", str(section.audio_path)]
+            audio_filter = f"adelay={TITLE_CARD_MS}:all=1,apad"
+        else:
+            arguments += ["-f", "lavfi", "-i", "anullsrc=r=24000:cl=mono"]
+            audio_filter = "apad"
+
+        clip_path = working_directory / f"s{index:02d}.mp4"
         arguments += [
+            "-map", "0:v", "-map", "1:a",
             "-vf", f"scale={FRAME_WIDTH}:{FRAME_HEIGHT},format=yuv420p",
+            "-af", audio_filter,
             "-r", str(FRAME_RATE), "-c:v", "libx264", "-preset", "veryfast",
+            # One sample rate and layout for every clip, whatever the voice
+            # provider produced, so the final copy-concat has matching streams.
+            "-c:a", "aac", "-b:a", "160k", "-ar", "24000", "-ac", "1",
+            "-t", exact_seconds,
+            str(clip_path),
         ]
-        if section.audio_path and section.audio_path.exists():
-            arguments += ["-c:a", "aac", "-b:a", "160k", "-shortest"]
-        arguments.append(str(clip_path))
 
         _run_ffmpeg(arguments, f"rendering section {index + 1} ({section.title[:40]})")
         clip_paths.append(clip_path)

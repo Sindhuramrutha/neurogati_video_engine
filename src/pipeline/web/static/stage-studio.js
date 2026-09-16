@@ -5,8 +5,10 @@
  * absolute millisecond timeline. Everything here reads and writes that one
  * document, so a clip cannot exist on screen without existing in the file.
  *
- * Rendering does not exist yet, and the preview says so rather than showing a
- * plausible-looking frame.
+ * The preview plays the timeline itself: press play and the playhead runs,
+ * the frame at the playhead is drawn from the clips under it, and narration
+ * clips play their audio. A rendered video is watched in Reviewing; this is
+ * the editor's live view of what is on the timeline right now.
  */
 
 import { editStageDocument, loadStageDocument, newItemIdentifier }
@@ -23,6 +25,25 @@ const studioViewState = {
   selectedClipId: null,
   playheadMs: 0,
 };
+
+/** Playback is view state too: never saved, and it stops when you leave Studio
+ *  or switch project. `audioElement` plays whichever narration clip is under
+ *  the playhead. */
+const playback = {
+  isPlaying: false,
+  frameRequest: 0,
+  lastTickAt: 0,
+  projectSlug: null,
+  audioElement: null,
+  audioClipId: null,
+  lastFrameKey: "",
+};
+
+/** Width of the track headers: lanes (and the ruler) start this far in. */
+const TRACK_HEAD_WIDTH_PX = 112;
+
+const PLAY_ICON = `<path d="M5 3l14 9-14 9V3z"/>`;
+const PAUSE_ICON = `<path d="M7 4h3v16H7zM14 4h3v16h-3z"/>`;
 
 /** Clip colour by kind, so a glance at the timeline reads as structure rather
  *  than as a row of identical blocks. */
@@ -107,35 +128,35 @@ export async function renderStudioStage(stage, navigateToStage, renderAgentStage
 /* ---- preview ------------------------------------------------------------ */
 
 function renderPreview(composition) {
-  const totalMs = visibleDurationMs(composition);
-  const playedFraction = totalMs ? (studioViewState.playheadMs / totalMs) * 100 : 0;
+  const contentMs = composition.duration_ms;
+  const hasContent = contentMs > 0;
+  const playedFraction = hasContent
+    ? Math.min(1, studioViewState.playheadMs / contentMs) * 100 : 0;
 
   return `
     <div class="panel">
       <div class="preview-frame">
-        <div class="placeholder">
-          ${icon(`<rect x="2" y="5" width="14" height="14" rx="2"/><path d="m22 8-6 4 6 4V8z"/>`,
-                 40, 1.3)}
-          <p>No preview of this timeline yet.<br>
-             <b>Render video</b> builds from the plan and script, not from these
-             clips &mdash; the timeline is not wired into the renderer.</p>
+        <div class="studio-stage" id="studio-stage">
+          ${renderStageFrame(composition, studioViewState.playheadMs)}
         </div>
       </div>
 
       <div class="transport">
-        <button class="btn-icon" id="playhead-start" title="Go to start" aria-label="Go to start">
+        <button class="btn-icon" id="playhead-start" title="Go to start (Home)"
+                aria-label="Go to start">
           ${icon(`<path d="M19 20 9 12l10-8v16zM5 19V5"/>`, 16, 1.8)}
         </button>
-        <button class="btn-icon" disabled title="Playback needs a render"
-                aria-label="Play (unavailable)">
-          ${icon(`<path d="M5 3l14 9-14 9V3z"/>`, 16, 1.8)}
+        <button class="btn-icon" id="play-toggle" ${hasContent ? "" : "disabled"}
+                title="${hasContent ? "Play / pause (Space)" : "Nothing on the timeline to play"}"
+                aria-label="${playback.isPlaying ? "Pause" : "Play"}">
+          ${icon(playback.isPlaying ? PAUSE_ICON : PLAY_ICON, 16, 1.8)}
         </button>
-        <button class="btn-icon" id="playhead-end" title="Go to end" aria-label="Go to end">
+        <button class="btn-icon" id="playhead-end" title="Go to end (End)" aria-label="Go to end">
           ${icon(`<path d="M5 4l10 8-10 8V4zM19 5v14"/>`, 16, 1.8)}
         </button>
-        <span class="time">${formatTimecode(studioViewState.playheadMs)}
-          / ${formatTimecode(composition.duration_ms)}</span>
-        <div class="scrubber" id="scrubber">
+        <span class="time" id="preview-time">${formatTimecode(studioViewState.playheadMs)}
+          / ${formatTimecode(contentMs)}</span>
+        <div class="scrubber" id="scrubber" title="Click or drag to seek">
           <div class="played" style="width:${playedFraction}%"></div>
           <div class="head" style="left:${playedFraction}%"></div>
         </div>
@@ -143,6 +164,343 @@ function renderPreview(composition) {
           · ${composition.frame_rate}fps</span>
       </div>
     </div>`;
+}
+
+/* ---- live frame --------------------------------------------------------- */
+
+function activeLayersAt(composition, atMs) {
+  const layers = [];
+  composition.tracks.forEach((track, trackIndex) => {
+    if (!track.is_visible) return;
+    const clip = track.clips.find(c => atMs >= c.start_ms && atMs < c.start_ms + c.duration_ms);
+    if (clip) layers.push({ track, clip, trackIndex });
+  });
+  return layers;
+}
+
+/** The frame at `atMs`, drawn from the clips under the playhead.
+ *
+ *  Tracks composite bottom-to-top, exactly as the list reads: a title card on
+ *  the video track sits under a text clip on the text track. Audio draws
+ *  nothing, but says what is playing, so a silent-looking frame is not
+ *  mistaken for a broken one.
+ */
+function renderStageFrame(composition, atMs) {
+  const layers = activeLayersAt(composition, atMs);
+  const visual = layers.filter(layer => layer.track.kind !== "audio");
+  const narration = layers.find(layer => layer.track.kind === "audio");
+
+  const drawn = visual.map(({ track, clip, trackIndex }) => {
+    const words = escapeHtml(clip.text || clip.label || "");
+    if (clip.kind === "scene") {
+      return `<div class="stage-layer stage-title" style="z-index:${trackIndex}">
+                <span class="stage-kicker">${escapeHtml(track.label || "Scene")}</span>
+                <h2>${words || "Untitled scene"}</h2>
+              </div>`;
+    }
+    if (clip.kind === "text") {
+      return `<div class="stage-layer stage-text" style="z-index:${trackIndex}">
+                <p>${words || `<span class="muted">Empty text clip</span>`}</p>
+              </div>`;
+    }
+    return `<div class="stage-layer stage-block" style="z-index:${trackIndex};
+                 --clip-bg:${CLIP_COLOURS[clip.kind] ?? "#475569"}">
+              <span>${escapeHtml(clip.label || clip.kind)}</span>
+              <small>${escapeHtml(clip.kind)} clip · no media preview</small>
+            </div>`;
+  }).join("");
+
+  const empty = visual.length ? "" : `
+    <div class="stage-empty">
+      ${composition.duration_ms
+        ? `Nothing on screen at ${formatTimecode(atMs)}`
+        : "The timeline is empty. Render a video, or add a clip with +."}
+    </div>`;
+
+  const audioBadge = narration ? `
+    <span class="stage-audio-badge">
+      ${icon(`<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>`, 12, 2)}
+      ${escapeHtml(narration.clip.label || "Audio")}
+    </span>` : "";
+
+  return drawn + empty + audioBadge;
+}
+
+/* ---- playback ----------------------------------------------------------- */
+
+/** Where the playhead line sits for `atMs`.
+ *
+ *  This used to be `calc(112px + X% * (100% - 112px) / 100%)`, which is not
+ *  valid CSS: calc cannot multiply two percentages or divide by one. The browser
+ *  discarded the whole rule, so the playhead never moved however the state
+ *  changed. Multiplying by a plain number is valid.
+ */
+function playheadLeft(atMs, composition) {
+  const fraction = Math.min(1, Math.max(0, atMs / visibleDurationMs(composition)));
+  return `calc(${TRACK_HEAD_WIDTH_PX}px + (100% - ${TRACK_HEAD_WIDTH_PX}px) * ${fraction.toFixed(5)})`;
+}
+
+/** Update everything that shows the playhead, in place.
+ *
+ *  Not a re-render: re-rendering Studio refetches the composition, which is far
+ *  too slow to do sixty times a second and would flash the page on every frame.
+ */
+function updatePlaybackDom() {
+  const composition = applicationState.composition;
+  if (!composition) return;
+  const atMs = studioViewState.playheadMs;
+
+  const stageElement = document.getElementById("studio-stage");
+  if (stageElement) {
+    // Redraw the frame only when the set of clips under the playhead changes.
+    const frameKey = activeLayersAt(composition, atMs).map(l => l.clip.id).join("|")
+      + (composition.duration_ms ? "" : "empty");
+    if (frameKey !== playback.lastFrameKey || !stageElement.childElementCount) {
+      stageElement.innerHTML = renderStageFrame(composition, atMs);
+      playback.lastFrameKey = frameKey;
+    }
+  }
+
+  const previewTime = document.getElementById("preview-time");
+  if (previewTime) {
+    previewTime.textContent =
+      `${formatTimecode(atMs)} / ${formatTimecode(composition.duration_ms)}`;
+  }
+
+  const contentFraction = composition.duration_ms
+    ? Math.min(1, atMs / composition.duration_ms) * 100 : 0;
+  const played = document.querySelector("#scrubber .played");
+  const head = document.querySelector("#scrubber .head");
+  if (played) played.style.width = `${contentFraction}%`;
+  if (head) head.style.left = `${contentFraction}%`;
+
+  const playheadLine = document.getElementById("playhead");
+  if (playheadLine) playheadLine.style.left = playheadLeft(atMs, composition);
+
+  const timelineTime = document.getElementById("timeline-time");
+  if (timelineTime) timelineTime.textContent = formatTimecode(atMs);
+
+  const toggle = document.getElementById("play-toggle");
+  if (toggle) {
+    toggle.innerHTML = icon(playback.isPlaying ? PAUSE_ICON : PLAY_ICON, 16, 1.8);
+    toggle.setAttribute("aria-label", playback.isPlaying ? "Pause" : "Play");
+  }
+}
+
+function narrationClipAt(composition, atMs) {
+  return activeLayersAt(composition, atMs)
+    .find(layer => layer.track.kind === "audio" && layer.clip.asset_id)?.clip ?? null;
+}
+
+/** Keep the narration audio matched to the playhead.
+ *
+ *  `force` is for seeks: move the audio to the new position even if it is the
+ *  same clip. Without it a seek inside a narration clip would keep talking from
+ *  where it was.
+ */
+function syncNarration(force) {
+  const composition = applicationState.composition;
+  if (!composition) return;
+
+  const audio = playback.audioElement ??= createNarrationElement();
+  const clip = narrationClipAt(composition, studioViewState.playheadMs);
+
+  if (!playback.isPlaying || !clip) {
+    if (!audio.paused) audio.pause();
+    if (!clip) playback.audioClipId = null;
+    return;
+  }
+
+  const offsetSeconds = () =>
+    Math.max(0, (studioViewState.playheadMs - clip.start_ms + (clip.source_in_ms ?? 0)) / 1000);
+
+  if (playback.audioClipId !== clip.id) {
+    playback.audioClipId = clip.id;
+    audio.src = projectApiPath(`/narration/${encodeURIComponent(clip.asset_id)}`);
+    audio.addEventListener("loadedmetadata", () => {
+      audio.currentTime = offsetSeconds();
+    }, { once: true });
+    audio.play().catch(playFailure => reportNarrationFailure(playFailure));
+    return;
+  }
+
+  if (force && audio.readyState >= 1) audio.currentTime = offsetSeconds();
+  if (audio.paused && !audio.ended) {
+    audio.play().catch(playFailure => reportNarrationFailure(playFailure));
+  }
+}
+
+function createNarrationElement() {
+  const audio = new Audio();
+  audio.preload = "auto";
+  audio.addEventListener("error", () => reportNarrationFailure(audio.error));
+  return audio;
+}
+
+let narrationFailureReported = false;
+function reportNarrationFailure(failure) {
+  // An interrupted play() (the next seek arrived first) is normal, not a fault.
+  if (failure?.name === "AbortError") return;
+  console.error("narration playback failed", failure);
+  if (narrationFailureReported) return;
+  narrationFailureReported = true;
+  showStageNotice("warn",
+    "The narration audio could not be played, so playback continues silently. "
+    + "Re-rendering the video recreates the audio files.");
+}
+
+/** While narration is audible, the audio decides where the playhead is.
+ *
+ *  ADR 0001 again: audio is the clock. Advancing by wall-clock time alone lets
+ *  the picture drift from the voice after a stall or a slow load.
+ */
+function narrationClockMs(composition) {
+  const audio = playback.audioElement;
+  if (!audio || audio.paused || audio.ended || audio.readyState < 2) return null;
+  const clip = composition.tracks.flatMap(t => t.clips)
+    .find(c => c.id === playback.audioClipId);
+  if (!clip) return null;
+  return clip.start_ms + audio.currentTime * 1000 - (clip.source_in_ms ?? 0);
+}
+
+function tick(now) {
+  if (!playback.isPlaying) return;
+
+  const composition = applicationState.composition;
+  const leftStudio = applicationState.activeStageKey !== "studio";
+  const switchedProject = applicationState.selectedProject?.slug !== playback.projectSlug;
+  if (!composition || leftStudio || switchedProject) {
+    stopPlayback();
+    return;
+  }
+
+  const elapsedMs = now - playback.lastTickAt;
+  playback.lastTickAt = now;
+  studioViewState.playheadMs = narrationClockMs(composition)
+    ?? studioViewState.playheadMs + elapsedMs;
+
+  if (studioViewState.playheadMs >= composition.duration_ms) {
+    studioViewState.playheadMs = composition.duration_ms;
+    stopPlayback();
+    return;
+  }
+
+  syncNarration(false);
+  updatePlaybackDom();
+  playback.frameRequest = requestAnimationFrame(tick);
+}
+
+function startPlayback() {
+  const composition = applicationState.composition;
+  if (!composition?.duration_ms) return;
+
+  if (studioViewState.playheadMs >= composition.duration_ms) studioViewState.playheadMs = 0;
+  playback.isPlaying = true;
+  playback.projectSlug = applicationState.selectedProject?.slug ?? null;
+  playback.lastTickAt = performance.now();
+  syncNarration(true);
+  updatePlaybackDom();
+  cancelAnimationFrame(playback.frameRequest);
+  playback.frameRequest = requestAnimationFrame(tick);
+}
+
+function stopPlayback() {
+  playback.isPlaying = false;
+  cancelAnimationFrame(playback.frameRequest);
+  playback.audioElement?.pause();
+  updatePlaybackDom();
+}
+
+function togglePlayback() {
+  if (playback.isPlaying) stopPlayback();
+  else startPlayback();
+}
+
+function seekTo(targetMs) {
+  const composition = applicationState.composition;
+  if (!composition) return;
+  studioViewState.playheadMs = Math.round(
+    Math.min(Math.max(targetMs, 0), visibleDurationMs(composition)));
+  playback.lastTickAt = performance.now();
+  if (playback.isPlaying && studioViewState.playheadMs >= composition.duration_ms) {
+    stopPlayback();
+    return;
+  }
+  syncNarration(true);
+  updatePlaybackDom();
+}
+
+/** Milliseconds for a pointer position over the lanes or the ruler.
+ *
+ *  Measured against a real lane rather than recomputed from CSS, so the time
+ *  under the cursor is the time that lands, whatever the layout does.
+ */
+function msFromTimelinePointer(event) {
+  const lane = document.querySelector(".track-lane");
+  const composition = applicationState.composition;
+  if (!lane || !composition) return studioViewState.playheadMs;
+  const bounds = lane.getBoundingClientRect();
+  const fraction = Math.min(1, Math.max(0, (event.clientX - bounds.left) / bounds.width));
+  return fraction * visibleDurationMs(composition);
+}
+
+function msFromScrubberPointer(event, scrubber) {
+  const composition = applicationState.composition;
+  const bounds = scrubber.getBoundingClientRect();
+  const fraction = Math.min(1, Math.max(0, (event.clientX - bounds.left) / bounds.width));
+  return fraction * (composition.duration_ms || visibleDurationMs(composition));
+}
+
+/** Click to jump, drag to scrub. */
+function wireScrubbing(element, msFromEvent) {
+  if (!element) return;
+  element.onpointerdown = event => {
+    if (event.button !== 0) return;
+    element.setPointerCapture(event.pointerId);
+    seekTo(msFromEvent(event));
+    element.onpointermove = moveEvent => seekTo(msFromEvent(moveEvent));
+  };
+  const endScrub = event => {
+    element.onpointermove = null;
+    if (element.hasPointerCapture?.(event.pointerId)) {
+      element.releasePointerCapture(event.pointerId);
+    }
+  };
+  element.onpointerup = endScrub;
+  element.onpointercancel = endScrub;
+}
+
+let studioKeyboardWired = false;
+/** Space plays and pauses, Home and End jump, arrows step a second (Shift: five).
+ *
+ *  Ignored while typing, and ignored when a button has focus: the browser
+ *  already presses a focused button on Space, and handling it here as well
+ *  would toggle twice and appear to do nothing.
+ */
+function wireStudioKeyboard() {
+  if (studioKeyboardWired) return;
+  studioKeyboardWired = true;
+
+  document.addEventListener("keydown", event => {
+    if (applicationState.activeStageKey !== "studio") return;
+    if (!document.getElementById("studio-stage")) return;
+    const target = event.target;
+    if (target.closest?.("input, textarea, select, button, [contenteditable]")) return;
+
+    const composition = applicationState.composition;
+    const stepMs = event.shiftKey ? 5000 : 1000;
+    const actions = {
+      " ": togglePlayback,
+      Home: () => seekTo(0),
+      End: () => seekTo(composition?.duration_ms ?? 0),
+      ArrowLeft: () => seekTo(studioViewState.playheadMs - stepMs),
+      ArrowRight: () => seekTo(studioViewState.playheadMs + stepMs),
+    };
+    const action = actions[event.key];
+    if (!action) return;
+    event.preventDefault();
+    action();
+  });
 }
 
 /* ---- properties --------------------------------------------------------- */
@@ -234,10 +592,10 @@ function renderTimeline(composition) {
                 title="Split the selected clip at the playhead">
           ${icon(`<path d="M12 3v18M6 8l-3 4 3 4M18 8l3 4-3 4"/>`, 16, 1.7)}
         </button>
-        <span class="time-readout">${formatTimecode(studioViewState.playheadMs)}</span>
+        <span class="time-readout" id="timeline-time">${formatTimecode(studioViewState.playheadMs)}</span>
       </div>
 
-      <div class="ruler">
+      <div class="ruler" id="timeline-ruler" title="Click or drag to seek">
         ${Array.from({ length: tickCount }, (_, index) => {
           const atMs = (totalMs / (tickCount - 1)) * index;
           return `<span style="left:${(index / (tickCount - 1)) * 100}%"
@@ -248,8 +606,7 @@ function renderTimeline(composition) {
       <div style="position:relative">
         ${composition.tracks.map(track => renderTrack(track, composition, totalMs)).join("")}
         <div class="playhead" id="playhead"
-             style="left:calc(112px + ${(studioViewState.playheadMs / totalMs) * 100}%
-                    * (100% - 112px) / 100%)"></div>
+             style="left:${playheadLeft(studioViewState.playheadMs, composition)}"></div>
       </div>
     </div>`;
 }
@@ -337,7 +694,6 @@ function wireStudioStage(stage, navigateToStage, renderAgentStage) {
     documentKind: "composition", apiPathSuffix: "/composition", applyEdit, rerender,
   });
   const composition = applicationState.composition;
-  const totalMs = visibleDurationMs(composition);
 
   document.querySelectorAll("[data-goto]").forEach(button => {
     button.onclick = () => navigateToStage(button.dataset.goto);
@@ -349,42 +705,53 @@ function wireStudioStage(stage, navigateToStage, renderAgentStage) {
     studioRenderButton.onclick = () => renderFromStudio(studioRenderButton, navigateToStage);
   }
 
-  // --- selection ---
+  // --- selection: clicking a clip selects it and moves the playhead there ---
   document.querySelectorAll("[data-clip]").forEach(clipElement => {
     clipElement.onclick = event => {
       event.stopPropagation();
-      studioViewState.selectedClipId = clipElement.dataset.clip;
-      rerender();
+      // Clamped into the clip. Short clips are drawn wider than their duration
+      // so they can be grabbed -- a 2.5s title card on an 8-minute timeline is
+      // ~5px of real time -- so the raw pointer position can map past the
+      // clip's end, and the preview then showed the next clip, not this one.
+      const clickedClip = composition.tracks.flatMap(t => t.clips)
+        .find(c => c.id === clipElement.dataset.clip);
+      // Inside the clip's real time range: land where clicked. Outside it (the
+      // drawn-wider part of a short clip): land at its start, so pressing play
+      // shows the whole clip rather than its last millisecond.
+      const pointerMs = msFromTimelinePointer(event);
+      const isWithinClip = clickedClip
+        && pointerMs >= clickedClip.start_ms
+        && pointerMs < clickedClip.start_ms + clickedClip.duration_ms;
+      seekTo(!clickedClip || isWithinClip ? pointerMs : clickedClip.start_ms);
+      if (studioViewState.selectedClipId !== clipElement.dataset.clip) {
+        studioViewState.selectedClipId = clipElement.dataset.clip;
+        rerender();
+      }
     };
   });
 
-  // Clicking empty lane space clears the selection rather than leaving a stale
-  // properties panel describing a clip you are no longer looking at.
+  // Clicking empty lane space moves the playhead there, and clears the
+  // selection rather than leaving a properties panel describing a clip you are
+  // no longer looking at.
   document.querySelectorAll("[data-track]").forEach(lane => {
-    lane.onclick = () => {
-      studioViewState.selectedClipId = null;
-      rerender();
+    lane.onclick = event => {
+      seekTo(msFromTimelinePointer(event));
+      if (studioViewState.selectedClipId) {
+        studioViewState.selectedClipId = null;
+        rerender();
+      }
     };
   });
 
-  // --- playhead ---
+  // --- playback and seeking ---
+  select("#play-toggle").onclick = togglePlayback;
+  select("#playhead-start").onclick = () => seekTo(0);
+  select("#playhead-end").onclick = () => seekTo(composition.duration_ms);
   const scrubber = select("#scrubber");
-  if (scrubber) {
-    scrubber.onclick = event => {
-      const bounds = scrubber.getBoundingClientRect();
-      const fraction = Math.min(1, Math.max(0, (event.clientX - bounds.left) / bounds.width));
-      studioViewState.playheadMs = Math.round(fraction * totalMs);
-      rerender();
-    };
-  }
-  select("#playhead-start").onclick = () => {
-    studioViewState.playheadMs = 0;
-    rerender();
-  };
-  select("#playhead-end").onclick = () => {
-    studioViewState.playheadMs = composition.duration_ms;
-    rerender();
-  };
+  wireScrubbing(scrubber, event => msFromScrubberPointer(event, scrubber));
+  wireScrubbing(select("#timeline-ruler"), msFromTimelinePointer);
+  wireStudioKeyboard();
+  playback.lastFrameKey = "";
 
   // --- track controls ---
   document.querySelectorAll("[data-toggle-visible]").forEach(button => {

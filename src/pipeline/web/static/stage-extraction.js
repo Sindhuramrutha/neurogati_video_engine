@@ -6,6 +6,9 @@
  * `stage_options.py` rather than a change in three places.
  */
 
+import {
+  openRawFile, releaseRawFile, renderRawFileShell,
+} from "/static/raw-file-viewer.js";
 import { requestJsonFromApi } from "/static/shared-client.js";
 import {
   ICON, applicationState, escapeHtml, fileTypeBadge, formatFileSize, icon,
@@ -177,6 +180,7 @@ function renderExtractedBlocks(extraction) {
     if (block.kind === "list_item") {
       return `<div class="x-block x-list">${escapeHtml(block.text)}</div>`;
     }
+    if (block.kind === "figure") return renderFigureBlock(block);
     return `<div class="x-block">${escapeHtml(block.text)}</div>`;
   }).join("");
 
@@ -188,6 +192,33 @@ function renderExtractedBlocks(extraction) {
   return `<div class="x-doc">
     <div class="x-doc-head">${escapeHtml(parsed.file_name)} &middot; ${
       parsed.blocks.length} blocks</div>${rows}${truncated}</div>`;
+}
+
+/** Formats a browser cannot draw. Word and PowerPoint still embed old Windows
+ *  metafiles, and an <img> pointed at one shows a broken-image icon that reads
+ *  as a failed extraction when the figure was extracted fine. */
+const FIGURES_BROWSERS_CANNOT_SHOW = new Set(["emf", "wmf", "tif", "tiff"]);
+
+/** A figure the extraction pulled out, shown as the image itself. */
+function renderFigureBlock(block) {
+  const assetName = (block.asset_path || "").split("/").pop();
+  const extension = assetName.split(".").pop().toLowerCase();
+
+  if (!assetName) {
+    return `<div class="x-block x-figure missing">
+      <span class="x-figure-note">figure not stored</span>${escapeHtml(block.text)}</div>`;
+  }
+
+  const source = projectApiPath(`/extraction/assets/${encodeURIComponent(assetName)}`);
+  const picture = FIGURES_BROWSERS_CANNOT_SHOW.has(extension)
+    ? `<span class="x-figure-note">.${escapeHtml(extension)} — extracted, but browsers
+         cannot draw this format. <a href="${source}" download>Download it</a>.</span>`
+    : `<img src="${source}" alt="${escapeHtml(block.text)}" loading="lazy">`;
+
+  return `<figure class="x-block x-figure">
+    ${picture}
+    <figcaption>${escapeHtml(block.text)}</figcaption>
+  </figure>`;
 }
 
 function renderPreviewPanel(sources, extraction) {
@@ -202,30 +233,85 @@ function renderPreviewPanel(sources, extraction) {
           <button class="${isPreviewTab ? "" : "on"}" data-preview-tab="text">Extracted text</button>
         </div>
         <div class="spacer"></div>
-        <span class="mono muted">${previewFile ? escapeHtml(previewFile.name) : "—"}</span>
+        <span class="mono muted" title="${previewFile ? escapeHtml(previewFile.name) : ""}"
+              >${previewFile ? escapeHtml(previewFile.name) : "—"}</span>
       </div>
 
-      <div class="preview-stage${isPreviewTab ? "" : " scrolls"}">
-        ${isPreviewTab
-          ? `<div class="preview-empty">
-               ${icon(ICON.doc, 34, 1.4)}
-               <p>Document rendering is not built yet.<br>
-                  Switch to <b>Extracted text</b> to see what was parsed.</p>
-             </div>`
-          : renderExtractedBlocks(extraction)}
+      <div class="preview-stage${isPreviewTab ? " raw" : " scrolls"}">
+        ${!isPreviewTab
+          ? renderExtractedBlocks(extraction)
+          : previewFile
+            ? `<div data-raw-host="${escapeHtml(previewFile.name)}">
+                 <p class="muted" style="margin:0">Opening ${escapeHtml(previewFile.name)}…</p>
+               </div>`
+            : `<div class="preview-empty">
+                 ${icon(ICON.doc, 34, 1.4)}
+                 <p>No file to show.<br>Add one on the Inputs stage.</p>
+               </div>`}
       </div>
     </div>`;
+}
+
+/** The file itself, in the Preview tab: the same raw rendering as Inputs.
+ *
+ *  This tab used to say "Document rendering is not built yet" while the Inputs
+ *  stage, one click away, drew the same deck slide by slide.
+ */
+async function openPreviewedFile() {
+  const host = document.querySelector("[data-raw-host]");
+  if (!host) return;
+  const fileName = host.dataset.rawHost;
+
+  try {
+    const preview = await requestJsonFromApi(
+      projectApiPath(`/sources/${encodeURIComponent(fileName)}/preview`));
+    // The stage may have been redrawn while this was loading.
+    if (!host.isConnected) return;
+    host.innerHTML = renderRawFileShell(fileName, preview);
+    openRawFile(host, fileName, preview.viewer);
+  } catch (previewFailure) {
+    console.error("preview failed", previewFailure);
+    if (host.isConnected) {
+      host.innerHTML = `<p class="muted" style="margin:0">Could not open this file —
+        ${escapeHtml(previewFailure.message)}</p>`;
+    }
+  }
 }
 
 function renderRunBar(selectedCount, totalCount, extraction) {
   const canRun = selectedCount > 0;
   const hasExtracted = !extraction.is_empty;
+  const freshness = extraction.freshness ?? {};
+
+  // Out of date beats "Extracted": a green tick over content that is missing a
+  // whole document is how that gap went unnoticed until an agent reported it.
+  if (hasExtracted && freshness.is_stale) {
+    const missing = freshness.added ?? [];
+    const gone = freshness.removed ?? [];
+    const detail = [
+      missing.length ? `not extracted: ${missing.join(", ")}` : "",
+      gone.length ? `no longer in the project: ${gone.join(", ")}` : "",
+    ].filter(Boolean).join(" · ");
+
+    return `
+      <div class="run-bar stale">
+        <span class="run-icon">${icon(ICON.alert, 17, 2.2)}</span>
+        <span class="run-text">
+          <b>Out of date with your files</b>
+          <span>${escapeHtml(detail)}. Re-extract so later stages see them.</span>
+        </span>
+        <button class="btn btn-accent" id="run-extraction-button" ${canRun ? "" : "disabled"}
+                title="Parse every source document again">Re-extract</button>
+      </div>`;
+  }
+
   const disabledReason = totalCount === 0
     ? "Add a source file first"
     : "Select at least one file";
 
   const summary = hasExtracted
     ? `${extraction.audit.document_count} document(s) - ${extraction.audit.block_count} blocks`
+      + ` - ${extraction.audit.figure_count ?? 0} figures`
       + ` - ${extraction.total_word_count} words (~${
           extraction.estimated_narration_minutes} min narrated)`
     : `${selectedCount} of ${totalCount} file(s) selected.`;
@@ -272,7 +358,14 @@ function renderFooterNav(stage) {
 }
 
 function wireExtractionStage(stage, sources, navigateToStage, renderAgentStage) {
-  const rerender = () => renderExtractionStage(stage, navigateToStage, renderAgentStage);
+  // A redraw replaces the preview, so a rendered deck in it is released first
+  // rather than left as detached slides nobody can see.
+  const rerender = () => {
+    releaseRawFile(applicationState.previewFileName);
+    return renderExtractionStage(stage, navigateToStage, renderAgentStage);
+  };
+
+  openPreviewedFile();
 
   document.querySelectorAll("[data-preview]").forEach(card => {
     card.onclick = event => {

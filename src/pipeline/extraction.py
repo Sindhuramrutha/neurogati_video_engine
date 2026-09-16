@@ -19,6 +19,7 @@ a way that a model that hallucinated a heading is not.
 
 from __future__ import annotations
 
+import hashlib
 import logging
 from pathlib import Path
 
@@ -33,6 +34,12 @@ logger = logging.getLogger(__name__)
 MAXIMUM_BLOCK_LENGTH = 20000
 MAXIMUM_BLOCKS_PER_DOCUMENT = 5000
 
+# Extracted figures are a copy of the pictures inside the source files, so a
+# picture-heavy deck can approach the size of the deck itself. This is a ceiling
+# against the pathological case -- a folder of large decks quietly filling the
+# disk -- not a target; normal documents land far below it.
+MAXIMUM_EXTRACTED_ASSET_BYTES = 512 * 1024 * 1024
+
 # Word counts are what the Planning stage reasons about when estimating spoken
 # duration, so they are computed once here rather than re-derived per stage.
 WORDS_PER_MINUTE_OF_NARRATION = 150
@@ -43,6 +50,7 @@ class BlockKind:
     PARAGRAPH = "paragraph"
     LIST_ITEM = "list_item"
     TABLE = "table"
+    FIGURE = "figure"
 
 
 class ContentBlock(BaseModel):
@@ -58,6 +66,12 @@ class ContentBlock(BaseModel):
     level: int = 0
     text: str = ""
     heading_path: list[str] = Field(default_factory=list)
+
+    # Where the extracted image was written, relative to the project root. Only
+    # a FIGURE block has one. Text extraction alone dropped every diagram on the
+    # floor: a document could say "as Figure 2.1 shows" and nothing downstream
+    # had any figure to show, so Studio narrated a picture that did not exist.
+    asset_path: str = ""
 
     @field_validator("text")
     @classmethod
@@ -98,6 +112,11 @@ class ExtractedDocument(BaseModel):
                 lines.append(f"- {block.text}")
             elif block.kind == BlockKind.TABLE:
                 lines.append(f"\n{block.text}\n")
+            elif block.kind == BlockKind.FIGURE:
+                # Marked as a figure so the planner knows a real image exists at
+                # this point and can plan to show it, instead of reading the
+                # caption as one more sentence of prose.
+                lines.append(f"[figure: {block.text}]")
             else:
                 lines.append(block.text)
         return "\n".join(lines).strip()
@@ -124,6 +143,9 @@ class Extraction(BaseModel):
             "empty_document_names": [d.file_name for d in self.documents if not d.blocks],
             "heading_count": sum(
                 1 for d in self.documents for b in d.blocks if b.kind == BlockKind.HEADING
+            ),
+            "figure_count": sum(
+                1 for d in self.documents for b in d.blocks if b.kind == BlockKind.FIGURE
             ),
         }
 
@@ -186,19 +208,171 @@ def _heading_level(style_name: str) -> int:
     return int(digits) if digits else 1
 
 
-def read_docx(path: Path) -> list[ContentBlock]:
+class AssetSink:
+    """Somewhere to put the images pulled out of a document.
+
+    Content-addressed by digest, so a logo repeated on forty slides is stored
+    once rather than forty times -- which on a real 80 MB deck is the difference
+    between a few megabytes of assets and most of the deck copied out again.
+
+    Passed in rather than derived inside the readers so a reader stays a pure
+    function of its file when nobody wants the images: `read_docx(path)` with no
+    sink extracts text and writes nothing, which is what the tests and the
+    preview path want.
+    """
+
+    def __init__(self, directory: Path, relative_to: Path | None = None) -> None:
+        self.directory = directory
+        self.relative_to = relative_to
+        self.written: dict[str, str] = {}
+        self.bytes_written = 0
+        self.skipped_for_size = 0
+
+    def store(self, blob: bytes, suffix: str) -> str:
+        digest = hashlib.sha256(blob).hexdigest()[:16]
+        if digest in self.written:
+            return self.written[digest]
+
+        if self.bytes_written + len(blob) > MAXIMUM_EXTRACTED_ASSET_BYTES:
+            # Reported rather than raised: losing the last few figures of a very
+            # large deck is a much smaller problem than failing the extraction
+            # and keeping none of its text.
+            self.skipped_for_size += 1
+            return ""
+
+        self.directory.mkdir(parents=True, exist_ok=True)
+        destination = self.directory / f"{digest}{suffix.lower()}"
+        if not destination.exists():
+            destination.write_bytes(blob)
+
+        stored = str(
+            destination.relative_to(self.relative_to) if self.relative_to else destination
+        ).replace("\\", "/")
+        self.written[digest] = stored
+        self.bytes_written += len(blob)
+        return stored
+
+    def prune_unreferenced(self) -> int:
+        """Delete figures this run did not produce. Returns how many went.
+
+        Called only after the new extraction is safely saved. Without it, removing
+        a picture-heavy deck from a project left most of its size behind in
+        `extraction/assets/` for good, referenced by nothing.
+        """
+        if not self.directory.exists():
+            return 0
+        kept = {Path(stored).name for stored in self.written.values()}
+        removed = 0
+        for candidate in self.directory.iterdir():
+            if candidate.is_file() and candidate.name not in kept:
+                candidate.unlink()
+                removed += 1
+        return removed
+
+
+def _render_table(table) -> str:
+    """A table as pipe rows, so its shape survives into the markdown a model reads."""
+    rows = [
+        " | ".join(cell.text.strip().replace("\n", " ") for cell in row.cells)
+        for row in table.rows
+    ]
+    return "\n".join(row for row in rows if row.replace("|", "").strip())
+
+
+def _walk_document_body(document):
+    """Paragraphs and tables, interleaved, in the order they appear on the page.
+
+    `document.paragraphs` and `document.tables` are two separate sequences, so
+    the obvious reading -- all the paragraphs, then all the tables -- puts every
+    table at the end of the document under whatever heading happened to come
+    last. In a real chapter that meant a comparison table belonging to 2.2.9
+    filed under the closing summary, which is not a cosmetic ordering problem:
+    `heading_path` is what makes a block quotable, and it was pointing at the
+    wrong section.
+
+    The body's own XML children are already in document order, so walking those
+    and wrapping each one is the only reading that matches the file.
+
+    Yields `("paragraph" | "table", item)`. The tag is explicit because the two
+    wrapper classes share enough of an interface to be mistaken for each other.
+    """
+    from docx.oxml.table import CT_Tbl
+    from docx.oxml.text.paragraph import CT_P
+    from docx.table import Table
+    from docx.text.paragraph import Paragraph
+
+    for child in document.element.body.iterchildren():
+        if isinstance(child, CT_P):
+            yield "paragraph", Paragraph(child, document)
+        elif isinstance(child, CT_Tbl):
+            yield "table", Table(child, document)
+
+
+def _paragraph_images(paragraph, document) -> list[tuple[str, bytes]]:
+    """Every image anchored in this paragraph, as (extension, bytes).
+
+    Found through the drawing relationships rather than `document.part.image_parts`
+    so each image is tied to the paragraph it sits in -- which is what gives a
+    figure its position and its caption.
+    """
+    from docx.oxml.ns import qn
+
+    found = []
+    for blip in paragraph._element.findall(f".//{qn('a:blip')}"):
+        relationship_id = blip.get(qn("r:embed")) or blip.get(qn("r:link"))
+        if not relationship_id:
+            continue
+        try:
+            part = document.part.related_parts[relationship_id]
+        except KeyError:
+            continue
+        blob = getattr(part, "blob", None)
+        if not blob:
+            continue
+        suffix = Path(str(getattr(part, "partname", ".png"))).suffix or ".png"
+        found.append((suffix, blob))
+    return found
+
+
+def read_docx(path: Path, assets: AssetSink | None = None) -> list[ContentBlock]:
     import docx
 
     document = docx.Document(str(path))
     blocks: list[ContentBlock] = []
     heading_path: list[str] = []
+    figure_number = 0
 
-    for paragraph in document.paragraphs:
-        text = paragraph.text.strip()
-        if not text:
+    for kind, item in _walk_document_body(document):
+        if kind == "table":
+            # It takes the heading path current *at this point in the document*,
+            # which is the whole reason for walking in order. Tagged rather than
+            # sniffed: a python-docx `Table` has a `.style` just as a paragraph
+            # does, so telling them apart by attribute silently sends tables
+            # down the paragraph branch.
+            rendered = _render_table(item)
+            if rendered:
+                blocks.append(ContentBlock(
+                    kind=BlockKind.TABLE, text=rendered, heading_path=list(heading_path),
+                ))
             continue
 
+        paragraph = item
+        text = paragraph.text.strip()
         style_name = (paragraph.style.name or "").lower()
+
+        # Images first: a figure usually sits in a paragraph of its own, so
+        # checking text alone skips it entirely.
+        for suffix, blob in _paragraph_images(paragraph, document):
+            figure_number += 1
+            caption = text or f"Figure {figure_number} from {path.name}"
+            stored = assets.store(blob, suffix) if assets else ""
+            blocks.append(ContentBlock(
+                kind=BlockKind.FIGURE, text=caption,
+                heading_path=list(heading_path), asset_path=stored,
+            ))
+
+        if not text:
+            continue
 
         if style_name.startswith("heading"):
             level = _heading_level(paragraph.style.name)
@@ -216,20 +390,6 @@ def read_docx(path: Path) -> list[ContentBlock]:
         else:
             blocks.append(ContentBlock(
                 kind=BlockKind.PARAGRAPH, text=text, heading_path=list(heading_path),
-            ))
-
-    # Tables come after the paragraph pass because python-docx does not interleave
-    # them in `.paragraphs`. Rendered as pipe rows so the shape survives into the
-    # markdown a model reads.
-    for table in document.tables:
-        rows = [
-            " | ".join(cell.text.strip().replace("\n", " ") for cell in row.cells)
-            for row in table.rows
-        ]
-        rendered = "\n".join(row for row in rows if row.replace("|", "").strip())
-        if rendered:
-            blocks.append(ContentBlock(
-                kind=BlockKind.TABLE, text=rendered, heading_path=list(heading_path),
             ))
 
     return blocks
@@ -287,15 +447,87 @@ def read_plain_text(path: Path) -> list[ContentBlock]:
     return blocks
 
 
+def read_pptx(path: Path, assets: AssetSink | None = None) -> list[ContentBlock]:
+    """One heading per slide, then its text and tables.
+
+    `.pptx` was accepted on upload and advertised on the Inputs page from the
+    start, with no reader behind it: a deck uploaded fine and then dead-ended at
+    extraction with "no reader for .pptx". Advertising a format the pipeline
+    cannot read is worse than refusing it.
+    """
+    from pptx import Presentation
+
+    presentation = Presentation(str(path))
+    blocks: list[ContentBlock] = []
+    figure_number = 0
+
+    for number, slide in enumerate(presentation.slides, start=1):
+        # A slide's own title if it has one, so the heading path means something.
+        title = ""
+        if slide.shapes.title is not None and slide.shapes.title.has_text_frame:
+            title = slide.shapes.title.text.strip()
+        heading = title or f"Slide {number}"
+        heading_path = [heading]
+
+        blocks.append(ContentBlock(
+            kind=BlockKind.HEADING, level=2, text=heading, heading_path=list(heading_path),
+        ))
+
+        for shape in slide.shapes:
+            if shape is slide.shapes.title:
+                continue
+            if shape.has_text_frame:
+                for paragraph in shape.text_frame.paragraphs:
+                    line = "".join(run.text for run in paragraph.runs).strip()
+                    if not line:
+                        continue
+                    # Bulleted levels stay list items so the structure survives.
+                    kind = BlockKind.LIST_ITEM if paragraph.level else BlockKind.PARAGRAPH
+                    blocks.append(ContentBlock(
+                        kind=kind, text=line, heading_path=list(heading_path),
+                    ))
+            elif getattr(shape, "has_table", False):
+                rendered = _render_table(shape.table)
+                if rendered:
+                    blocks.append(ContentBlock(
+                        kind=BlockKind.TABLE, text=rendered, heading_path=list(heading_path),
+                    ))
+            else:
+                # A picture. Slides carry most of their meaning in diagrams, so a
+                # text-only reading of a deck loses more than it keeps.
+                image = getattr(shape, "image", None)
+                if image is None:
+                    continue
+                figure_number += 1
+                caption = (getattr(shape, "name", "") or "").strip()
+                blocks.append(ContentBlock(
+                    kind=BlockKind.FIGURE,
+                    text=f"{caption or 'Figure'} (slide {number})",
+                    heading_path=list(heading_path),
+                    asset_path=assets.store(image.blob, f".{image.ext}") if assets else "",
+                ))
+
+        if slide.has_notes_slide:
+            notes = (slide.notes_slide.notes_text_frame.text or "").strip()
+            if notes:
+                blocks.append(ContentBlock(
+                    kind=BlockKind.PARAGRAPH, text=f"[speaker notes] {notes}",
+                    heading_path=list(heading_path),
+                ))
+
+    return blocks
+
+
 READERS_BY_SUFFIX = {
     ".docx": read_docx,
+    ".pptx": read_pptx,
     ".pdf": read_pdf,
     ".md": read_plain_text,
     ".txt": read_plain_text,
 }
 
 
-def extract_document(path: Path) -> ExtractedDocument:
+def extract_document(path: Path, assets: AssetSink | None = None) -> ExtractedDocument:
     reader = READERS_BY_SUFFIX.get(path.suffix.lower())
     if reader is None:
         raise SourceUnreadable(
@@ -303,8 +535,13 @@ def extract_document(path: Path) -> ExtractedDocument:
             f"Supported: {', '.join(sorted(READERS_BY_SUFFIX))}."
         )
 
+    # Only the readers that can produce figures take a sink; the rest stay
+    # single-argument, so adding one later is a signature change rather than a
+    # silently ignored keyword.
+    takes_assets = reader in (read_docx, read_pptx)
+
     try:
-        blocks = reader(path)
+        blocks = reader(path, assets) if takes_assets else reader(path)
     except SourceUnreadable:
         raise
     except Exception as parse_failure:

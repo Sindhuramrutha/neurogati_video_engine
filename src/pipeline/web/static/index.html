@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Explainer Pipeline</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e879a8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9'/%3E%3Cpath d='M14 3v5h5'/%3E%3Cpath d='M13 14.5l5-3-5-3v6z' fill='%23e879a8' stroke='none'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="/static/app.css">
 </head>
 <body>
@@ -48,9 +49,10 @@
   </main>
 </div>
 
-<aside class="drawer" id="drawer" aria-label="Agent">
+<aside class="drawer" id="drawer" aria-label="Orchestrator">
   <div class="drawer-head">
-    <b>Agent</b>
+    <b>Orchestrator</b>
+    <span class="head-note">commands every stage agent</span>
     <div class="spacer"></div>
     <button class="btn-icon" id="close-drawer-button" aria-label="Close">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -58,11 +60,13 @@
     </button>
   </div>
   <div class="drawer-log" id="drawer-log">
-    <div class="msg muted">
-      Acts on instructions about plan modification or approach, with the current
-      project and stage as context.
-      <br><br><b>Not wired to a model yet</b> — the surface exists so stages have
-      somewhere to send feedback.
+    <div class="msg muted" id="drawer-intro">
+      This is the <b>Orchestrator</b> — the master agent, above all six stages.
+      Ask it anything about this project from any tab; it works out which stage
+      agents can answer, puts several of them to work at once, and replies from
+      what they send back.
+      <br><br>Every reply lists the agents it consulted, and you can open any of
+      them to read what that agent actually said. It never writes to the project.
     </div>
   </div>
   <div class="drawer-composer">

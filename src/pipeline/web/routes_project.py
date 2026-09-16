@@ -31,11 +31,15 @@ from pipeline.extraction import ExtractionStore
 from pipeline.llm import describe_model
 from pipeline.operations import (
     OperationFailed,
+    extraction_freshness,
     list_voice_providers,
     present_artifact,
+    preview_source,
     render_video,
     run_extraction,
+    save_artifact,
 )
+from pipeline.orchestrator import ask_the_orchestrator
 from pipeline.planning import Plan, PlanStore
 from pipeline.projects import Project, ProjectStore
 from pipeline.review import Review, ReviewStore, chapters_from_plan
@@ -43,7 +47,7 @@ from pipeline.scripting import Script, ScriptStore
 from pipeline.sources import (
     SourceFileRejected,
     reduce_to_bare_file_name,
-    validate_uploaded_source_file,
+    store_uploaded_source_file,
 )
 from pipeline.stage_options import StageSettingsStore
 from pipeline.stages import STAGES, Stage, downstream_of
@@ -187,10 +191,12 @@ async def upload_source(
         file_parts_seen += 1
 
         try:
-            file_content = await uploaded_part.read()
-            accepted = validate_uploaded_source_file(
+            # Streamed to disk in blocks. Reading the whole part first meant a
+            # 300 MB deck cost 300 MB of memory before a byte was written, and
+            # several at once multiplied it.
+            accepted = await store_uploaded_source_file(
                 original_file_name=original_file_name,
-                file_content=file_content,
+                upload_stream=uploaded_part,
                 destination_directory=project.sources_dir,
             )
         except SourceFileRejected as rejection:
@@ -203,7 +209,11 @@ async def upload_source(
             continue
 
         try:
-            (project.sources_dir / accepted.safe_file_name).write_bytes(file_content)
+            stored_size = (project.sources_dir / accepted.safe_file_name).stat().st_size
+            logger.info(
+                "stored source %s (%s bytes) for project %s",
+                accepted.safe_file_name, stored_size, slug,
+            )
         except OSError as write_failure:
             # Disk full, permission denied, name still unusable on this platform.
             # The user gets a plain reason; the log keeps the underlying error.
@@ -382,8 +392,8 @@ def put_plan(
     section count capped before anything reaches disk -- the request cannot store
     a shape the rest of the pipeline would then have to defend against.
     """
-    project = projects.require(slug)
-    return PlanStore(project.root).save(data).to_dict()
+    projects.require(slug)  # 404 before anything is written
+    return save_artifact(slug, "plan", data)
 
 
 @get("/api/projects/{slug:str}/script", sync_to_thread=False)
@@ -404,8 +414,8 @@ def get_script(
 def put_script(
     slug: FromPath[str], data: Script, projects: NamedDependency[ProjectService]
 ) -> dict[str, Any]:
-    project = projects.require(slug)
-    return present_artifact(project, "script", ScriptStore(project.root).save(data))
+    projects.require(slug)  # 404 before anything is written
+    return save_artifact(slug, "script", data)
 
 
 @get("/api/projects/{slug:str}/composition", sync_to_thread=False)
@@ -426,8 +436,8 @@ def put_composition(
     minimum grabbable size and the track/clip counts are capped before anything
     reaches disk. A drag that produced a zero-length clip cannot persist one.
     """
-    project = projects.require(slug)
-    return CompositionStore(project.root).save(data).to_dict()
+    projects.require(slug)  # 404 before anything is written
+    return save_artifact(slug, "composition", data)
 
 
 @get("/api/projects/{slug:str}/review", sync_to_thread=False)
@@ -449,8 +459,8 @@ def get_review(
 def put_review(
     slug: FromPath[str], data: Review, projects: NamedDependency[ProjectService]
 ) -> dict[str, Any]:
-    project = projects.require(slug)
-    return ReviewStore(project.root).save(data).to_dict()
+    projects.require(slug)  # 404 before anything is written
+    return save_artifact(slug, "review", data)
 
 
 @post("/api/projects/{slug:str}/review/seed-chapters", sync_to_thread=False)
@@ -526,6 +536,27 @@ async def ask_agent(
         raise ClientException(detail=str(failure)) from failure
 
 
+@post("/api/projects/{slug:str}/orchestrator/ask")
+async def ask_orchestrator(slug: FromPath[str], data: AgentQuestion) -> dict[str, Any]:
+    """Ask the master agent. It decides which stage agents to put to work.
+
+    Deliberately at `/orchestrator/ask` rather than `/agent/ask`: the latter has
+    a literal `ask` sitting exactly where `/agent/{stage}` expects a parameter,
+    which is the same shadowing that once made `planning` the one stage unable to
+    reach its own agent. A separate noun makes the collision impossible instead
+    of merely absent.
+
+    Slower than a single stage agent by design -- it may run several of them --
+    so it goes off the event loop like the rest of the model calls.
+    """
+    import anyio
+
+    try:
+        return await anyio.to_thread.run_sync(ask_the_orchestrator, slug, data.question)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
 @post("/api/projects/{slug:str}/plan/draft")
 async def draft_plan(slug: FromPath[str], data: PlanInstruction) -> dict[str, Any]:
     """Have the Planning agent propose a plan. Returns it; saves nothing.
@@ -551,9 +582,24 @@ async def draft_plan(slug: FromPath[str], data: PlanInstruction) -> dict[str, An
 def get_extraction(
     slug: FromPath[str], projects: NamedDependency[ProjectService]
 ) -> dict[str, Any]:
-    """The structured content parsed out of the source documents."""
+    """The structured content parsed out of the source documents.
+
+    Carries whether it still matches the files on disk, so the page can say a
+    re-run is needed instead of showing stale content as if it were current.
+    """
     project = projects.require(slug)
-    return present_artifact(project, "extraction", ExtractionStore(project.root).load())
+    presented = present_artifact(project, "extraction", ExtractionStore(project.root).load())
+    freshness = extraction_freshness(project)
+    presented["freshness"] = freshness
+
+    if freshness["is_stale"]:
+        changed = [
+            *(f"{name} has not been extracted" for name in freshness["added"]),
+            *(f"{name} was extracted but is no longer in the project"
+              for name in freshness["removed"]),
+        ]
+        presented["warnings"] = [*presented["warnings"], *changed]
+    return presented
 
 
 @post("/api/projects/{slug:str}/extraction/run")
@@ -618,11 +664,24 @@ async def render_project_video(
 
 
 MEDIA_TYPES_BY_SUFFIX = {
+    ".pdf": "application/pdf",
+    ".md": "text/plain",
+    ".txt": "text/plain",
+    ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
     ".mp4": "video/mp4",
     ".vtt": "text/vtt",
     ".srt": "text/plain",
     ".mp3": "audio/mpeg",
     ".wav": "audio/wav",
+    # Figures pulled out of the source documents.
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".gif": "image/gif",
+    ".webp": "image/webp",
+    ".bmp": "image/bmp",
+    ".svg": "image/svg+xml",
 }
 
 # Big enough that a 9 MB video is a handful of reads, small enough that a seek
@@ -663,14 +722,15 @@ def parse_range_header(range_header: str, file_size: int) -> tuple[int, int] | N
     return start, end
 
 
-def resolve_output_file(project: Project, file_name: str) -> Path:
+def resolve_output_file(project: Project, file_name: str, subdirectory: str = "") -> Path:
     """The requested file, or a 404 -- never a path outside the output directory.
 
     The name is reduced to a bare name *and* the resolved path is re-checked
     against the directory: the same belt-and-braces as uploads, because this is
-    the identical hole pointing the other way.
+    the identical hole pointing the other way. `subdirectory` is chosen by the
+    route, never by the request.
     """
-    output_directory = (project.root / "reviewing" / "output").resolve()
+    output_directory = (project.root / "reviewing" / "output" / subdirectory).resolve()
     candidate = (output_directory / reduce_to_bare_file_name(file_name)).resolve()
 
     if not candidate.is_file() or output_directory not in candidate.parents:
@@ -678,26 +738,18 @@ def resolve_output_file(project: Project, file_name: str) -> Path:
     return candidate
 
 
-@get("/api/projects/{slug:str}/output/{file_name:str}")
-async def download_output(
-    slug: FromPath[str],
-    file_name: FromPath[str],
-    request: Request,
-    projects: NamedDependency[ProjectService],
+def media_response(
+    candidate: Path, request: Request, extra_headers: dict[str, str] | None = None
 ) -> Response:
-    """Serve a rendered file, with Range support so the browser can play it.
+    """A file response that answers HTTP Range requests.
 
-    **Range is the whole point.** Returning the bytes as a flat 200 meant no
-    `Accept-Ranges` and no 206, so a `<video>` element had no way to seek and
-    simply refused to start -- the file was fine and the player showed nothing.
+    **Range is the whole point.** A flat 200 meant no `Accept-Ranges` and no 206,
+    so a `<video>` or `<audio>` element had no way to seek and refused to start --
+    the file was fine and the player showed nothing.
 
-    `content_disposition_type="inline"` is the other half: the default is
-    `attachment`, which downloads the file instead of playing it. That is the
-    same trap that once made this app download its own index page.
+    `inline` is the other half: `attachment` downloads the file instead of
+    playing it, the same trap that once made this app download its own index.
     """
-    project = projects.require(slug)
-    candidate = resolve_output_file(project, file_name)
-
     file_size = candidate.stat().st_size
     media_type = MEDIA_TYPES_BY_SUFFIX.get(
         candidate.suffix.lower(), "application/octet-stream"
@@ -705,6 +757,7 @@ async def download_output(
     common_headers = {
         "accept-ranges": "bytes",
         "content-disposition": f'inline; filename="{candidate.name}"',
+        **(extra_headers or {}),
     }
 
     requested = parse_range_header(request.headers.get("range", ""), file_size)
@@ -731,3 +784,100 @@ async def download_output(
             "content-length": str(len(payload)),
         },
     )
+
+
+@get("/api/projects/{slug:str}/extraction/assets/{file_name:str}")
+async def read_extracted_asset(
+    slug: FromPath[str],
+    file_name: FromPath[str],
+    request: Request,
+    projects: NamedDependency[ProjectService],
+) -> Response:
+    """Serve a figure that extraction pulled out of a source document.
+
+    These bytes came out of an uploaded file, so they are someone else's content
+    served from this app's own origin. An SVG is a document, not just a picture:
+    opened directly it can run script with this origin's authority. The sandbox
+    policy makes the browser treat every asset as inert, whatever it contains.
+    """
+    project = projects.require(slug)
+    assets_directory = (project.root / "extraction" / "assets").resolve()
+    candidate = (assets_directory / reduce_to_bare_file_name(file_name)).resolve()
+
+    if not candidate.is_file() or assets_directory not in candidate.parents:
+        raise NotFoundException(detail=f"no such extracted asset: {file_name}")
+
+    return media_response(candidate, request, {
+        "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; sandbox",
+        "x-content-type-options": "nosniff",
+    })
+
+
+@get("/api/projects/{slug:str}/output/{file_name:str}")
+async def download_output(
+    slug: FromPath[str],
+    file_name: FromPath[str],
+    request: Request,
+    projects: NamedDependency[ProjectService],
+) -> Response:
+    """Serve a rendered video, caption or subtitle file."""
+    project = projects.require(slug)
+    return media_response(resolve_output_file(project, file_name), request)
+
+
+@get("/api/projects/{slug:str}/narration/{file_name:str}")
+async def download_narration(
+    slug: FromPath[str],
+    file_name: FromPath[str],
+    request: Request,
+    projects: NamedDependency[ProjectService],
+) -> Response:
+    """Serve one section's narration audio, so Studio can play the timeline.
+
+    A separate route rather than a path parameter on /output: the directory is
+    fixed here, so a request can only ever name a file, never a folder.
+    """
+    project = projects.require(slug)
+    return media_response(resolve_output_file(project, file_name, "audio"), request)
+
+
+# --- reading a source document ----------------------------------------------
+
+
+@get("/api/projects/{slug:str}/sources/{file_name:str}")
+async def read_source_file(
+    slug: FromPath[str],
+    file_name: FromPath[str],
+    request: Request,
+    projects: NamedDependency[ProjectService],
+) -> Response:
+    """Serve an uploaded document so the page can show it.
+
+    Range-capable and `inline`, so a browser can render a PDF in place rather
+    than downloading it. The name is reduced to a bare name and the resolved
+    path re-checked against the sources directory -- the read counterpart of the
+    guard on upload.
+    """
+    project = projects.require(slug)
+    sources_directory = project.sources_dir.resolve()
+    candidate = (sources_directory / reduce_to_bare_file_name(file_name)).resolve()
+
+    if not candidate.is_file() or sources_directory not in candidate.parents:
+        raise NotFoundException(detail=f"no such source file: {file_name}")
+
+    return media_response(candidate, request)
+
+
+@get("/api/projects/{slug:str}/sources/{file_name:str}/preview", sync_to_thread=True)
+def preview_source_file(
+    slug: FromPath[str], file_name: FromPath[str]
+) -> dict[str, Any]:
+    """What this file contains, without running the Extraction stage.
+
+    `sync_to_thread` because parsing a large document is CPU work, and doing it
+    on the event loop would stall every other request for the duration.
+    """
+    try:
+        return preview_source(slug, file_name)
+    except OperationFailed as failure:
+        raise NotFoundException(detail=str(failure)) from failure

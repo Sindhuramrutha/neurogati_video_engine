@@ -85,13 +85,27 @@ class Project:
         d = self.stage_dir(stage)
         if not d.exists() or not any(d.iterdir()):
             return StageState(stage=stage, status="empty", artifact=None, detail="not run")
-        files = [p for p in d.rglob("*") if p.is_file()]
         return StageState(
             stage=stage,
             status="ready",
             artifact=f"{stage.value}/",
-            detail=f"{len(files)} file(s)",
+            detail=_stage_detail(stage, d),
         )
+
+    @staticmethod
+    def _detail_for_reviewing(stage_directory: Path) -> str:
+        """What Reviewing has, not how many files it left lying around.
+
+        Counting files reported "96 file(s)" for one 8-minute video, because a
+        render leaves a PNG per slide and an audio file per section in its
+        working directory. A number that large reads as something being wrong,
+        and it told the operator nothing they wanted to know.
+        """
+        renders = sorted((stage_directory / "output").glob("*.mp4"))
+        if not renders:
+            return "no render yet"
+        newest = max(renders, key=lambda path: path.stat().st_mtime)
+        return f"{len(renders)} render(s) - {newest.name}"
 
     def states(self) -> list[StageState]:
         return [self.stage_state(s.key) for s in STAGES]
@@ -112,6 +126,14 @@ class Project:
                 for s in self.states()
             ],
         }
+
+
+def _stage_detail(stage: Stage, stage_directory: Path) -> str:
+    """One line saying what a finished stage produced."""
+    if stage is Stage.REVIEWING:
+        return Project._detail_for_reviewing(stage_directory)
+    files = [path for path in stage_directory.rglob("*") if path.is_file()]
+    return f"{len(files)} file(s)"
 
 
 class ProjectStore:

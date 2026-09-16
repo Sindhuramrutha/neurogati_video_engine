@@ -9,7 +9,12 @@
 import {
   closeCredentialsPanel, isCredentialsPanelOpen, openCredentialsPanel,
 } from "/static/credentials-panel.js";
-import { requestJsonFromApi, showNoticeIn } from "/static/shared-client.js";
+import {
+  openRawFile, releaseRawFile, renderRawFileShell,
+} from "/static/raw-file-viewer.js";
+import {
+  renderModelMarkdown, requestJsonFromApi, showNoticeIn,
+} from "/static/shared-client.js";
 import { renderExtractionStage } from "/static/stage-extraction.js";
 import { renderPlanningStage } from "/static/stage-planning.js";
 import { renderScriptingStage } from "/static/stage-scripting.js";
@@ -28,6 +33,16 @@ async function boot() {
   try {
     applicationState.stageDefinitions = await requestJsonFromApi("/api/stages");
     await refreshProjects();
+
+    // A stage named in the path opens; anything unrecognised falls back to the
+    // first stage, and the address is corrected by replacement so the back
+    // button is not filled with a place nobody chose.
+    const { stageKey } = readAddress();
+    const known = applicationState.stageDefinitions.some(s => s.key === stageKey);
+    applicationState.activeStageKey =
+      known ? stageKey : applicationState.stageDefinitions[0]?.key;
+    writeAddress({ replace: true });
+
     renderSidebar();
     renderMain();
   } catch (startupFailure) {
@@ -47,6 +62,66 @@ function renderFatalStartupError(startupFailure) {
   select("#retry-boot-button").onclick = boot;
 }
 
+const LAST_PROJECT_STORAGE_KEY = "explainer-pipeline:last-project";
+
+/* ---- addresses ----------------------------------------------------------
+ *
+ * A stage is a place, so it has an address: `/planning/<project>`. The path is
+ * the truth on load and is kept in step on every change, which is what makes a
+ * reload land where you were and a pasted link open what the sender was looking
+ * at.
+ */
+
+/** What the current path is asking for. Empty fields mean "no preference". */
+function readAddress() {
+  const [stageKey = "", projectSlug = ""] = window.location.pathname
+    .split("/").filter(Boolean).map(decodeURIComponent);
+  return { stageKey, projectSlug };
+}
+
+/** Put the address in the bar without reloading.
+ *
+ *  `replace` is for corrections -- landing on a default, or a stage that does
+ *  not exist -- so the back button is not filled with places nobody chose.
+ */
+function writeAddress({ replace = false } = {}) {
+  const { selectedProject, activeStageKey } = applicationState;
+  if (!selectedProject || !activeStageKey) return;
+
+  const path = `/${encodeURIComponent(activeStageKey)}`
+    + `/${encodeURIComponent(selectedProject.slug)}`;
+  if (window.location.pathname === path) return;
+
+  const title = `${selectedProject.name} · ${activeStageKey}`;
+  if (replace) window.history.replaceState({}, title, path);
+  else window.history.pushState({}, title, path);
+}
+
+function rememberSelectedProject(slug) {
+  try { localStorage.setItem(LAST_PROJECT_STORAGE_KEY, slug); }
+  catch { /* storage unavailable: the choice just won't survive a reload */ }
+}
+
+function recallSelectedProject() {
+  try { return localStorage.getItem(LAST_PROJECT_STORAGE_KEY); }
+  catch { return null; }
+}
+
+/** Which project to open when nothing is selected yet.
+ *
+ *  It used to be `availableProjects[0]` -- the first alphabetically. After a
+ *  reload that meant always landing on "Demystifying the Brain", an old test
+ *  project, instead of "... - Module 2" where the video was. Reloading to clear
+ *  the cache sent the user straight back to the wrong project, three times.
+ *  Now: the one they last had open, else the newest.
+ */
+function chooseProjectToOpen(availableProjects) {
+  const remembered = availableProjects.find(p => p.slug === recallSelectedProject());
+  if (remembered) return remembered;
+  return [...availableProjects].sort(
+    (a, b) => String(b.created ?? "").localeCompare(String(a.created ?? "")))[0];
+}
+
 async function refreshProjects() {
   applicationState.availableProjects = await requestJsonFromApi("/api/projects");
   const projectSelect = select("#project-select");
@@ -60,11 +135,15 @@ async function refreshProjects() {
   const previouslySelectedSlug = selectedProject?.slug;
 
   if (availableProjects.length) {
-    // Preserve the current selection across a refresh; fall back to the first
-    // project only when the selected one is genuinely gone.
+    // The address wins on a fresh load: someone who pasted a link asked for that
+    // project, whatever this browser had open last.
+    const addressed = availableProjects.find(p => p.slug === readAddress().projectSlug);
     applicationState.selectedProject =
-      availableProjects.find(p => p.slug === previouslySelectedSlug) ?? availableProjects[0];
+      addressed
+      ?? availableProjects.find(p => p.slug === previouslySelectedSlug)
+      ?? chooseProjectToOpen(availableProjects);
     projectSelect.value = applicationState.selectedProject.slug;
+    rememberSelectedProject(applicationState.selectedProject.slug);
   } else {
     applicationState.selectedProject = null;
   }
@@ -78,8 +157,9 @@ async function refreshProjects() {
 
 /** The single way to change stage. Stage views call this rather than reaching
  *  into the sidebar, so navigation stays one behaviour. */
-function navigateToStage(stageKey) {
+function navigateToStage(stageKey, { replaceAddress = false } = {}) {
   applicationState.activeStageKey = stageKey;
+  writeAddress({ replace: replaceAddress });
   renderSidebar();
   renderMain();
 }
@@ -136,7 +216,7 @@ function renderMain() {
   container.innerHTML = `
     ${renderBreadcrumb(state)}
     <div class="notice" id="stage-notice" hidden></div>
-    <div id="stage-body"></div>`;
+    <div id="stage-body" data-stage="${stage.key}"></div>`;
 
   // Stage views own their own rendering; the shell only routes. Adding a stage
   // view means one more line here and one more module.
@@ -177,7 +257,9 @@ function renderInputsStage(stage) {
           <h2>${escapeHtml(stage.title)}</h2>
           <p>Source documents for this project.</p>
         </div>
-        <span class="card-note">PDF &middot; MD &middot; DOCX &middot; PPTX &middot; TXT</span>
+        <span class="supported-types" title="Supported source documents">
+          ${["pdf", "md", "docx", "pptx", "txt"].map(fileTypeBadge).join("")}
+        </span>
       </div>
 
       <div class="dropzone" id="dropzone">
@@ -208,17 +290,25 @@ function renderInputsStage(stage) {
       </div>
 
       ${sources.length ? sources.map(file => `
-        <div class="file-row">
-          ${fileTypeBadge(file.suffix)}
-          <span class="file-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</span>
-          ${file.supported ? "" : `<span class="chip">unsupported</span>`}
-          <span class="file-size">${formatFileSize(file.bytes)}</span>
-          <span class="file-actions">
-            <button class="btn-icon danger" data-delete="${escapeHtml(file.name)}"
-                    aria-label="Delete ${escapeHtml(file.name)}" title="Delete">
-              ${icon(`<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>`, 16, 1.8)}
-            </button>
-          </span>
+        <div class="file-entry">
+          <div class="file-row">
+            ${fileTypeBadge(file.suffix)}
+            <span class="file-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</span>
+            ${file.supported ? "" : `<span class="chip">unsupported</span>`}
+            <span class="file-size">${formatFileSize(file.bytes)}</span>
+            <span class="file-actions">
+              <button class="btn-icon" data-preview="${escapeHtml(file.name)}"
+                      aria-expanded="false" title="Preview this file"
+                      aria-label="Preview ${escapeHtml(file.name)}">
+                ${icon(`<path d="M6 9l6 6 6-6"/>`, 16, 2.2)}
+              </button>
+              <button class="btn-icon danger" data-delete="${escapeHtml(file.name)}"
+                      aria-label="Delete ${escapeHtml(file.name)}" title="Delete">
+                ${icon(`<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>`, 16, 1.8)}
+              </button>
+            </span>
+          </div>
+          <div class="file-preview" data-preview-for="${escapeHtml(file.name)}" hidden></div>
         </div>`).join("")
         : `<div class="empty" style="padding:26px">
              <p class="muted" style="margin:0">No files yet — add one to begin.</p>
@@ -272,6 +362,10 @@ function wireInputsStage(stage) {
     applicationState.sourceSortOrder = event.target.value;
     renderInputsStage(stage);
   };
+
+  document.querySelectorAll("[data-preview]").forEach(button => {
+    button.onclick = () => toggleSourcePreview(button);
+  });
 
   document.querySelectorAll("[data-delete]").forEach(button => {
     button.onclick = () => deleteSourceFile(stage, button.dataset.delete);
@@ -533,6 +627,8 @@ select("#project-select").onchange = event => {
   if (chosenProject?.slug === applicationState.selectedProject?.slug) return;
 
   applicationState.selectedProject = chosenProject;
+  if (chosenProject) rememberSelectedProject(chosenProject.slug);
+  writeAddress();
   // Everything loaded for the previous project is now wrong, and leaving it in
   // place would let a save write one project's document into another.
   clearProjectScopedState();
@@ -552,20 +648,125 @@ select("#open-credentials-button").onclick = () => {
 };
 select("#close-credentials-button").onclick = closeCredentialsPanel;
 
-select("#drawer-send-button").onclick = () => {
+/** Ask the orchestrator — the master agent, not the stage you happen to be on.
+ *
+ *  This panel used to send your question to whichever stage tab was open, so
+ *  "hi" typed on Inputs was refused on the grounds that Inputs has no agent.
+ *  That is backwards: a person asking a question should not have to know which
+ *  stage owns the answer, or navigate to it first.
+ *
+ *  The orchestrator sits above all six stages. It decides which stage agents to
+ *  put to work, runs several of them at once, and answers from what they send
+ *  back. The reply lists everyone it consulted, so an answer can be checked
+ *  against the agents that produced it.
+ */
+async function askTheAgent() {
   const input = select("#drawer-input");
-  const messageText = input.value.trim();
-  if (!messageText) return;
+  const question = input.value.trim();
+  if (!question) return;
 
   const log = select("#drawer-log");
-  log.insertAdjacentHTML("beforeend", `<div class="msg mine">${escapeHtml(messageText)}</div>`);
-  log.insertAdjacentHTML("beforeend", `<div class="msg muted">
-    No model wired up yet — this is the surface only. Context would be:
-    <b>${escapeHtml(applicationState.selectedProject?.name ?? "no project")}</b> /
-    <b>${escapeHtml(applicationState.activeStageKey)}</b>.</div>`);
+  const project = applicationState.selectedProject;
+
+  if (!project) {
+    log.insertAdjacentHTML("beforeend",
+      `<div class="msg muted">Open a project first — the agent answers about one.</div>`);
+    return;
+  }
+
+  log.insertAdjacentHTML("beforeend", `<div class="msg mine">${escapeHtml(question)}</div>`);
   input.value = "";
+
+  // It may run several agents in sequence, so it says what it is doing rather
+  // than leaving a still spinner for a minute.
+  const working = document.createElement("div");
+  working.className = "msg muted";
+  working.innerHTML = `<span class="working-dot"></span>Orchestrator is deciding
+    which agents to put to work…`;
+  log.appendChild(working);
   log.scrollTop = log.scrollHeight;
-};
+
+  const sendButton = select("#drawer-send-button");
+  sendButton.disabled = true;
+
+  try {
+    const reply = await requestJsonFromApi(projectApiPath("/orchestrator/ask"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question }),
+    });
+    working.remove();
+    log.insertAdjacentHTML("beforeend", renderOrchestratorReply(reply));
+    wireConsultedAgents(log);
+  } catch (askFailure) {
+    console.error("orchestrator ask failed", askFailure);
+    working.remove();
+    log.insertAdjacentHTML("beforeend", `<div class="msg bad">
+      ${escapeHtml(askFailure.message)}</div>`);
+  } finally {
+    sendButton.disabled = false;
+    log.scrollTop = log.scrollHeight;
+  }
+}
+
+/** The answer, plus who was actually asked to produce it.
+ *
+ *  Showing the consultations is not decoration. An orchestrator that summarises
+ *  five agents is a layer between you and the thing that knows, and without the
+ *  originals there is no way to tell a real finding from a confident paraphrase.
+ */
+function renderOrchestratorReply(reply) {
+  const consulted = reply.consulted ?? [];
+  const readNames = reply.artifacts_read ?? [];
+
+  const worked = consulted.length
+    ? `<div class="consulted">
+         ${consulted.map(one => `
+           <button class="agent-chip${one.ok ? "" : " failed"}"
+                   data-consulted="${escapeHtml(one.stage)}"
+                   title="What the ${escapeHtml(one.agent)} agent said">
+             ${escapeHtml(one.agent)}
+           </button>`).join("")}
+         ${readNames.map(name =>
+           `<span class="artifact-chip">${escapeHtml(name)}.json</span>`).join("")}
+       </div>`
+    : "";
+
+  const transcripts = consulted.map(one => `
+    <div class="consulted-answer" data-answer-for="${escapeHtml(one.stage)}" hidden>
+      <span class="msg-who">${escapeHtml(one.agent)} was asked</span>
+      <p class="consulted-question">${escapeHtml(one.question)}</p>
+      <div class="answer-body">${renderModelMarkdown(one.answer)}</div>
+    </div>`).join("");
+
+  return `
+    <div class="msg">
+      <span class="msg-who">${escapeHtml(reply.agent)} ·
+        ${escapeHtml(reply.agent_source)} instructions${
+          consulted.length ? ` · ${consulted.length} agent${consulted.length === 1 ? "" : "s"} consulted` : ""
+        }</span>
+      <div class="answer-body">${renderModelMarkdown(reply.answer)}</div>
+      ${worked}
+      ${transcripts}
+    </div>`;
+}
+
+/** Each consulted agent's own words, on demand. */
+function wireConsultedAgents(log) {
+  log.querySelectorAll("[data-consulted]").forEach(chip => {
+    if (chip.dataset.wired) return;
+    chip.dataset.wired = "true";
+    chip.onclick = () => {
+      const panel = chip.closest(".msg")
+        .querySelector(`[data-answer-for="${CSS.escape(chip.dataset.consulted)}"]`);
+      if (!panel) return;
+      panel.hidden = !panel.hidden;
+      chip.classList.toggle("open", !panel.hidden);
+    };
+  });
+}
+
+select("#drawer-send-button").onclick = askTheAgent;
 
 select("#drawer-input").addEventListener("keydown", event => {
   if (event.key === "Enter") select("#drawer-send-button").click();
@@ -578,3 +779,64 @@ document.addEventListener("keydown", event => {
 });
 
 boot();
+
+
+/** Expand a file row to show the file itself.
+ *
+ *  Opened on first expand and then kept, so collapsing and reopening a document
+ *  does not draw it again -- except a deck, which is released on collapse
+ *  because its rendered slides are the heaviest thing on the page.
+ */
+async function toggleSourcePreview(button) {
+  const fileName = button.dataset.preview;
+  const panel = document.querySelector(`[data-preview-for="${CSS.escape(fileName)}"]`);
+  if (!panel) return;
+
+  const isOpening = panel.hidden;
+  panel.hidden = !isOpening;
+
+  if (!isOpening && releaseRawFile(fileName)) panel.dataset.loaded = "";
+  button.setAttribute("aria-expanded", String(isOpening));
+  button.classList.toggle("open", isOpening);
+
+  if (!isOpening || panel.dataset.loaded === "true") return;
+
+  panel.innerHTML = `<p class="muted" style="margin:0">Reading ${escapeHtml(fileName)}…</p>`;
+
+  try {
+    const preview = await requestJsonFromApi(
+      projectApiPath(`/sources/${encodeURIComponent(fileName)}/preview`));
+    panel.innerHTML = renderRawFileShell(fileName, preview);
+    panel.dataset.loaded = "true";
+    openRawFile(panel, fileName, preview.viewer);
+  } catch (previewFailure) {
+    console.error("preview failed", previewFailure);
+    panel.innerHTML = `<p class="muted" style="margin:0">
+      Could not read this file — ${escapeHtml(previewFailure.message)}</p>`;
+  }
+}
+
+/** The back button moves through the stages you visited.
+ *
+ *  Without this, pushing an address on every navigation would give a back
+ *  button that changes the bar and nothing else -- worse than no routing at
+ *  all, because the page would then disagree with its own URL.
+ */
+window.addEventListener("popstate", async () => {
+  const { stageKey, projectSlug } = readAddress();
+
+  const wantedProject = applicationState.availableProjects
+    .find(project => project.slug === projectSlug);
+  if (wantedProject && wantedProject.slug !== applicationState.selectedProject?.slug) {
+    applicationState.selectedProject = wantedProject;
+    rememberSelectedProject(wantedProject.slug);
+    select("#project-select").value = wantedProject.slug;
+    clearProjectScopedState();
+  }
+
+  const known = applicationState.stageDefinitions.some(stage => stage.key === stageKey);
+  if (known) applicationState.activeStageKey = stageKey;
+
+  renderSidebar();
+  renderMain();
+});

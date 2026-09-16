@@ -133,6 +133,31 @@ class Composition(BaseModel):
     frame_width: int = DEFAULT_FRAME_WIDTH
     frame_height: int = DEFAULT_FRAME_HEIGHT
     tracks: list[Track] = Field(default_factory=list)
+    # Set when a render wrote this timeline. A timeline with this empty was made
+    # by hand, and a render must never overwrite it -- that would silently
+    # delete someone's editing to show them what the renderer did.
+    generated_from_render_at: str = ""
+    # What the render left behind, so "is this still the render's timeline?" is
+    # answerable. The timestamp alone was not enough: an edit round-trips the
+    # whole document back through the API, flag included, so an edited timeline
+    # still claimed to be generated and the next render replaced it.
+    generated_fingerprint: str = ""
+
+    def fingerprint(self) -> str:
+        """A digest of every clip's identity and placement.
+
+        Changes when anything is added, moved, resized, retimed or retyped --
+        which is exactly the question `_write_timeline_from_render` needs
+        answered before it replaces anything.
+        """
+        import hashlib
+
+        parts = [
+            f"{clip.id}:{clip.start_ms}:{clip.duration_ms}:{clip.kind.value}:{clip.text}"
+            for track in self.tracks
+            for clip in track.clips
+        ]
+        return hashlib.sha256("|".join(parts).encode("utf-8")).hexdigest()[:32]
 
     @field_validator("frame_rate")
     @classmethod

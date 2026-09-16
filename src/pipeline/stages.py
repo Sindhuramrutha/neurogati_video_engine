@@ -40,8 +40,9 @@ class StageSpec:
     # Inputs is file handling -- there is nothing to steer.
     has_agent: bool
     produces: str
-    # Each agent tab is visually distinct so the five are never confused at a
-    # glance; Inputs stays neutral because it is not one of them.
+    # Every stage carries its own colour, Inputs included: a neutral stage reads
+    # as a disabled one, and the rail should show six places, not five plus a
+    # waiting room.
     color: str
 
 
@@ -52,7 +53,7 @@ STAGES: tuple[StageSpec, ...] = (
         "Source documents for this project — PDF, MD, PPTX, DOCX.",
         has_agent=False,
         produces="sources/",
-        color="#8b93a5",
+        color="#4D96FF",
     ),
     StageSpec(
         Stage.EXTRACTION,
@@ -61,7 +62,7 @@ STAGES: tuple[StageSpec, ...] = (
         "code, tables, figures — losing nothing, inventing nothing.",
         has_agent=True,
         produces="extraction/content.json",
-        color="#22d3ee",
+        color="#4ECDC4",
     ),
     StageSpec(
         Stage.PLANNING,
@@ -70,7 +71,7 @@ STAGES: tuple[StageSpec, ...] = (
         "— dynamic tool calling, not a fixed renderer.",
         has_agent=True,
         produces="planning/plan.json",
-        color="#a78bfa",
+        color="#B197FC",
     ),
     StageSpec(
         Stage.SCRIPTING,
@@ -78,7 +79,7 @@ STAGES: tuple[StageSpec, ...] = (
         "Plan to scenarios to scenes: narration and a per-scene brief.",
         has_agent=True,
         produces="scripting/script.json",
-        color="#4ade80",
+        color="#A3E635",
     ),
     StageSpec(
         Stage.STUDIO,
@@ -91,7 +92,7 @@ STAGES: tuple[StageSpec, ...] = (
         "an agent that can build and edit alongside you.",
         has_agent=True,
         produces="studio/composition.json",
-        color="#fb923c",
+        color="#FF8A5B",
     ),
     StageSpec(
         Stage.REVIEWING,
@@ -99,7 +100,7 @@ STAGES: tuple[StageSpec, ...] = (
         "Mechanical checks, then human judgement. Feedback returns to any earlier stage.",
         has_agent=True,
         produces="reviewing/review.json",
-        color="#f472b6",
+        color="#FF6B9D",
     ),
 )
 

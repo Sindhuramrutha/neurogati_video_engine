@@ -4,8 +4,11 @@ An AGENT.md declares which of these its agent may use. That declaration is the
 grant: an agent cannot reach a tool it has not been given, so capability is
 inspectable in one markdown file rather than buried in code.
 
-Nothing here executes yet. This is the contract the stages will implement against,
-and the thing the UI reads to show what each agent can do.
+Most of these do not execute yet: they are the contract the stages will implement
+against, and the thing the UI reads to show what each agent can do. The
+orchestration tools at the bottom are the exception -- those run, which is why
+the orchestrator is told it may actually use them and the stage agents are told
+they may not.
 """
 
 from __future__ import annotations
@@ -16,6 +19,7 @@ from enum import StrEnum
 
 class ToolKind(StrEnum):
     READ = "read"        # inspects existing artifacts
+    DELEGATE = "delegate"  # puts another agent to work and reads its answer
     WRITE = "write"      # produces or edits an artifact
     FETCH = "fetch"      # reaches outside the project
     MEASURE = "measure"  # returns facts about something built
@@ -123,6 +127,15 @@ TOOLS: tuple[Tool, ...] = (
          "Diff every on-screen string against the source document."),
     Tool("route_feedback", ToolKind.WRITE,
          "Send feedback to the earliest stage that could have prevented the defect."),
+
+    # orchestration -- the only tools here that actually run
+    Tool("consult_agents", ToolKind.DELEGATE,
+         "Put a question to one or more stage agents at once and collect their "
+         "answers."),
+    Tool("read_artifact", ToolKind.READ,
+         "Read any stage's artifact whole, across the whole pipeline."),
+    Tool("inspect_pipeline", ToolKind.READ,
+         "Which stages have produced something, and what the project contains."),
 )
 
 TOOLS_BY_NAME = {t.name: t for t in TOOLS}

@@ -118,6 +118,10 @@ class Review(BaseModel):
     chapters: list[Chapter] = Field(default_factory=list)
     versions: list[VideoVersion] = Field(default_factory=list)
     active_version_id: str | None = None
+    # Set when a render wrote these chapters, cleared by any edit -- so a later
+    # render can correct its own chapter marks without ever overwriting titles
+    # someone wrote by hand.
+    chapters_generated_from_render_at: str = ""
 
     @field_validator("comments")
     @classmethod

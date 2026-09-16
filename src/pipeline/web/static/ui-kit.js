@@ -94,14 +94,73 @@ export function formatFileSize(sizeInBytes) {
   return `${(sizeInBytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-/** Badge colour per file type, so a source list is scannable by shape as well
- *  as by name. */
+/** What each file type wears: a colour, a label, and a glyph for the sheet.
+ *
+ *  The glyph is what makes the icon readable at a glance before the letters
+ *  are: a pie chart is a deck, ruled lines are a document, a play triangle is
+ *  video. Paths are drawn in a 24x24 box and placed on the sheet.
+ */
+const FILE_TYPES = {
+  pdf:  { colour: "#FF5C5C", label: "PDF",
+          glyph: `<path d="M5 4h9l5 5v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/>
+                  <path d="M8 13h8M8 17h5"/>` },
+  doc:  { colour: "#4D96FF", label: "DOC",  glyph: `<path d="M5 6h14M5 11h14M5 16h9"/>` },
+  docx: { colour: "#4D96FF", label: "DOCX", glyph: `<path d="M5 6h14M5 11h14M5 16h9"/>` },
+  ppt:  { colour: "#FF8A5B", label: "PPT",
+          glyph: `<circle cx="12" cy="12" r="8"/><path d="M12 4v8h8"/>` },
+  pptx: { colour: "#FF8A5B", label: "PPTX",
+          glyph: `<circle cx="12" cy="12" r="8"/><path d="M12 4v8h8"/>` },
+  md:   { colour: "#B197FC", label: "MD",
+          glyph: `<path d="M4 17V7l5 6 5-6v10"/><path d="M18 7v7m0 0 2.5-3M18 14l-2.5-3"/>` },
+  txt:  { colour: "#FFD93D", label: "TXT", glyph: `<path d="M5 7h14M5 12h14M5 17h7"/>` },
+  mp4:  { colour: "#38D89B", label: "MP4", glyph: `<path d="M9 6l10 6-10 6V6z"/>` },
+  mov:  { colour: "#38D89B", label: "MOV", glyph: `<path d="M9 6l10 6-10 6V6z"/>` },
+  mp3:  { colour: "#4ECDC4", label: "MP3",
+          glyph: `<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>` },
+  wav:  { colour: "#4ECDC4", label: "WAV",
+          glyph: `<path d="M4 12h3l3-7 4 14 3-7h3"/>` },
+  png:  { colour: "#A3E635", label: "PNG",
+          glyph: `<rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m5 17 5-5 4 4 3-3 2 2"/>` },
+  jpg:  { colour: "#A3E635", label: "JPG",
+          glyph: `<rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m5 17 5-5 4 4 3-3 2 2"/>` },
+};
+
+const UNKNOWN_FILE_TYPE = {
+  colour: "#C9C2BA", label: "FILE",
+  glyph: `<path d="M12 7v6M12 17h.01"/>`,
+};
+
+/** A file icon: two stacked sheets, a coloured band across the foot, a glyph
+ *  above it and the extension lettered on it.
+ *
+ *  Drawn rather than fetched. A 40px glyph is not worth a network dependency
+ *  that breaks the app offline, and the instantly recognisable ones (Word,
+ *  Acrobat) are trademarked artwork we should not ship. The stacked sheet and
+ *  folded band are what make it read as a file; the colour and glyph say which.
+ */
 export function fileTypeBadge(suffix) {
   const extension = (suffix || "").replace(".", "").toLowerCase();
-  const colourVariable = ["pdf", "md", "docx", "pptx"].includes(extension)
-    ? `var(--${extension})` : "var(--txt)";
-  return `<span class="file-badge" style="--badge:${colourVariable}"
-    >${escapeHtml(extension.toUpperCase().slice(0, 4) || "?")}</span>`;
+  const type = FILE_TYPES[extension] ?? UNKNOWN_FILE_TYPE;
+  const label = extension ? extension.toUpperCase().slice(0, 4) : type.label;
+  const letterSize = label.length >= 4 ? 7.6 : label.length === 3 ? 8.8 : 10;
+
+  return `<span class="file-badge" title="${escapeHtml(label)} file">
+    <svg viewBox="0 0 44 52" width="34" height="40" aria-hidden="true"
+         stroke="#14110F" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+      <!-- the sheet behind, so a file reads as a stack of pages -->
+      <rect x="13" y="3" width="28" height="40" rx="5" fill="#E7EBF2"/>
+      <!-- the sheet in front -->
+      <rect x="3" y="9" width="28" height="40" rx="5" fill="#F8F9FC"/>
+      <!-- the glyph, drawn in a 24x24 box and set into the white area -->
+      <g transform="translate(9 13) scale(0.55)" fill="none" stroke="#14110F"
+         stroke-width="3.4">${type.glyph}</g>
+      <!-- the colour band across the foot, carrying the letters -->
+      <path d="M3 33h28v11a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5z" fill="${type.colour}"/>
+      <text x="17" y="45" text-anchor="middle" fill="#14110F" stroke="none"
+            font-family="system-ui, sans-serif" font-size="${letterSize}"
+            font-weight="800" letter-spacing=".2">${escapeHtml(label)}</text>
+    </svg>
+  </span>`;
 }
 
 /* ---- derived reads ------------------------------------------------------ */

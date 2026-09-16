@@ -6,6 +6,7 @@ client separately and hoping.
 """
 
 import json
+from pathlib import Path
 
 import pytest
 
@@ -391,3 +392,363 @@ def test_output_route_refuses_to_escape_the_output_directory(project_root):
             assert response.status_code == 404, f"{payload} was not refused"
 
     routes_project_module._service = None
+
+
+# --- render timing: one clock for picture, subtitles and timeline -------------
+
+
+def test_section_segments_are_one_exact_clock():
+    """Picture, subtitles and the Studio timeline all read these segments.
+
+    Before this there were three formulas: slides split evenly for the picture
+    and by text length for the subtitles, narration muxed under the title card
+    while subtitles assumed it started after, and sections overrunning by 2-6s.
+    By the end of an 8-minute video the captions were ~20 seconds off.
+    """
+    from pipeline.rendering import TITLE_CARD_MS, RenderedSection, section_segments
+
+    narration = "First point here. A second, noticeably longer sentence follows it. Third. " * 8
+    section = RenderedSection("s1", "A title", narration,
+                              audio_duration_ms=64_703, start_ms=12_345)
+    segments = section_segments(section)
+
+    assert segments[0].kind == "title"
+    assert segments[0].start_ms == 12_345
+    assert segments[1].start_ms == 12_345 + TITLE_CARD_MS, "narration must start after the card"
+    assert all(a.end_ms == b.start_ms for a, b in zip(segments, segments[1:], strict=False)), \
+        "segments must be contiguous"
+    assert segments[-1].end_ms == 12_345 + section.total_ms, "must end on the section length"
+    assert sum(s.duration_ms for s in segments if s.kind == "slide") == 64_703
+
+
+def test_a_section_without_narration_is_just_its_title_card():
+    from pipeline.rendering import TITLE_CARD_MS, RenderedSection, section_segments
+
+    segments = section_segments(RenderedSection("s", "Only a title", "", start_ms=0))
+    assert [s.kind for s in segments] == ["title"]
+    assert segments[0].duration_ms == TITLE_CARD_MS
+
+
+def _rendered_section(audio_path):
+    from pipeline.rendering import RenderedSection
+
+    return RenderedSection(
+        "s1", "Section title", "One sentence. Another sentence.",
+        audio_path=audio_path, audio_duration_ms=6_000, start_ms=0,
+    )
+
+
+def test_render_writes_its_structure_onto_an_empty_timeline(project_root, tmp_path):
+    operations.create_project("Timeline Fill")
+    project = operations.require_project("timeline-fill")
+    audio = tmp_path / "section-00.mp3"
+    audio.write_bytes(b"x")
+
+    note = operations._write_timeline_from_render(project, [_rendered_section(audio)])
+    composition = operations.read_artifact("timeline-fill", "composition")
+
+    assert note == ""
+    assert composition["generated_from_render_at"]
+    kinds = {t["kind"]: [c["kind"] for c in t["clips"]] for t in composition["tracks"]}
+    assert kinds["video"] == ["scene"]
+    assert kinds["text"] and set(kinds["text"]) == {"text"}
+    assert kinds["audio"] == ["audio"]
+    audio_clip = next(t for t in composition["tracks"] if t["kind"] == "audio")["clips"][0]
+    assert audio_clip["asset_id"] == "section-00.mp3", "the timeline must name a file, never a path"
+
+
+def test_render_never_overwrites_hand_made_clips(project_root, tmp_path):
+    """Replacing someone's editing to display the renderer's output would destroy
+    their work, silently."""
+    operations.create_project("Hand Made")
+    composition = operations.read_artifact("hand-made", "composition")
+    operations.add_clip("hand-made", track_id=composition["tracks"][1]["id"],
+                        kind="text", label="Mine", text="I placed this")
+
+    audio = tmp_path / "section-00.mp3"
+    audio.write_bytes(b"x")
+    project = operations.require_project("hand-made")
+    note = operations._write_timeline_from_render(project, [_rendered_section(audio)])
+
+    after = operations.read_artifact("hand-made", "composition")
+    labels = [c["label"] for t in after["tracks"] for c in t["clips"]]
+    assert labels == ["Mine"], "the hand-made clip must be the only clip left"
+    assert "your own edits" in note
+
+
+def test_a_render_generated_timeline_is_replaced_by_the_next_render(project_root, tmp_path):
+    operations.create_project("Rerender")
+    project = operations.require_project("rerender")
+    audio = tmp_path / "section-00.mp3"
+    audio.write_bytes(b"x")
+
+    operations._write_timeline_from_render(project, [_rendered_section(audio)])
+    first_count = operations.read_artifact("rerender", "composition")["clip_count"]
+    note = operations._write_timeline_from_render(project, [_rendered_section(audio)])
+
+    assert note == ""
+    assert operations.read_artifact("rerender", "composition")["clip_count"] == first_count, \
+        "a re-render replaces its own timeline rather than stacking a second copy"
+
+
+def test_narration_route_streams_and_refuses_to_escape(project_root):
+    from litestar.testing import TestClient
+
+    import pipeline.web.routes_project as routes_project_module
+    from pipeline.web.app import create_app
+
+    routes_project_module._service = None
+    operations.create_project("Narration Serving")
+    audio_directory = project_root / "narration-serving" / "reviewing" / "output" / "audio"
+    audio_directory.mkdir(parents=True)
+    (audio_directory / "section-00.mp3").write_bytes(b"ID3" + b"\x00" * 997)
+
+    with TestClient(app=create_app()) as client:
+        ranged = client.get("/api/projects/narration-serving/narration/section-00.mp3",
+                            headers={"Range": "bytes=0-99"})
+        assert ranged.status_code == 206
+        assert ranged.headers["content-type"].startswith("audio/mpeg")
+
+        for payload in ("../../project.json", "..%2F..%2F..%2Fproject.json"):
+            escaped = client.get(f"/api/projects/narration-serving/narration/{payload}")
+            assert escaped.status_code == 404, payload
+
+    routes_project_module._service = None
+
+
+def test_chapters_follow_the_rendered_video_not_the_plan_estimate(project_root, tmp_path):
+    """Chapters are navigation, and these pointed at the wrong places.
+
+    The plan's `estimated_seconds` are a guess made before any narration exists.
+    Seeding from them put chapter 5 at 5:30 for a section that really starts at
+    7:19 -- 109 seconds out on an 8-minute video. A render knows the measured
+    positions, so once one exists the chapters come from it.
+    """
+    operations.create_project("Chapter Times")
+    # The plan guesses 60s per section...
+    first = operations.add_plan_section("chapter-times", title="One", estimated_seconds=60)
+    operations.add_plan_section("chapter-times", title="Two", estimated_seconds=60)
+    for section in operations.read_artifact("chapter-times", "plan")["sections"]:
+        operations.write_section_script("chapter-times", section["id"], "Some narration here.")
+
+    project = operations.require_project("chapter-times")
+    assert first  # the plan exists
+
+    # ...but the render measured something quite different.
+    audio = tmp_path / "section-00.mp3"
+    audio.write_bytes(b"x")
+    from pipeline.rendering import RenderedSection
+
+    sections = [
+        RenderedSection("a", "One", "A sentence.", audio_path=audio,
+                        audio_duration_ms=90_000, start_ms=0),
+        RenderedSection("b", "Two", "Another sentence.", audio_path=audio,
+                        audio_duration_ms=40_000, start_ms=92_500),
+    ]
+    operations._write_timeline_from_render(project, sections)
+
+    chapters = operations.chapters_for(project)
+    assert [c.start_ms for c in chapters] == [0, 92_500], "chapters must use measured positions"
+    assert [c.title for c in chapters] == ["One", "Two"]
+
+
+def test_chapters_fall_back_to_the_plan_before_anything_is_rendered(project_root):
+    operations.create_project("No Render Yet")
+    operations.add_plan_section("no-render-yet", title="Only", estimated_seconds=45)
+
+    chapters = operations.chapters_for(operations.require_project("no-render-yet"))
+    assert [c.start_ms for c in chapters] == [0]
+
+
+def test_reviewing_reports_its_renders_not_its_working_files(project_root):
+    """A render leaves a PNG per slide and an audio file per section, so counting
+    files reported '96 file(s)' for one video -- a number that reads as a fault
+    and tells the operator nothing."""
+    operations.create_project("Badge")
+    output = project_root / "badge" / "reviewing" / "output"
+    (output / "frames").mkdir(parents=True)
+    for index in range(40):
+        (output / "frames" / f"s00_{index:02d}.png").write_bytes(b"x")
+    (output / "badge.mp4").write_bytes(b"x")
+
+    project = operations.require_project("badge")
+    from pipeline.stages import Stage
+
+    detail = project.stage_state(Stage.REVIEWING).detail
+    assert "96" not in detail and "41" not in detail, f"still counting working files: {detail}"
+    assert "render" in detail and "badge.mp4" in detail, detail
+
+
+def test_transcript_times_come_from_the_render(project_root, tmp_path):
+    """Clicking a transcript line seeks the video, so its times must be the
+    video's -- not the plan's pre-narration guess."""
+    from pipeline.rendering import RenderedSection
+
+    operations.create_project("Transcript Times")
+    for title in ("One", "Two"):
+        operations.add_plan_section("transcript-times", title=title, estimated_seconds=60)
+    for section in operations.read_artifact("transcript-times", "plan")["sections"]:
+        operations.write_section_script("transcript-times", section["id"], "Narration.")
+
+    before = operations.read_artifact("transcript-times", "review")
+    assert [entry["start_ms"] for entry in before["transcript"]] == [0, 60_000], \
+        "before a render, the plan's estimate is the only answer available"
+
+    audio = tmp_path / "section-00.mp3"
+    audio.write_bytes(b"x")
+    operations._write_timeline_from_render(
+        operations.require_project("transcript-times"),
+        [
+            RenderedSection("a", "One", "Narration.", audio_path=audio,
+                            audio_duration_ms=90_000, start_ms=0),
+            RenderedSection("b", "Two", "Narration.", audio_path=audio,
+                            audio_duration_ms=30_000, start_ms=92_500),
+        ],
+    )
+
+    after = operations.read_artifact("transcript-times", "review")
+    assert [entry["start_ms"] for entry in after["transcript"]] == [0, 92_500]
+
+
+# --- the three P1s: renders must not destroy work or lie about history -------
+
+
+def _render_two_short_sections(slug):
+    """A real render (silent voice, so no network) of two short sections."""
+    operations.create_project(slug.replace("-", " ").title())
+    for title in ("First section", "Second section"):
+        operations.add_plan_section(slug, title=title, estimated_seconds=60)
+    for section in operations.read_artifact(slug, "plan")["sections"]:
+        operations.write_section_script(slug, section["id"], "One sentence. Two sentences.")
+    return operations.render_video(slug, voice_provider="silent")
+
+
+def test_an_edited_timeline_survives_a_re_render(project_root):
+    """The marker alone was not proof the timeline was still the renderer's.
+
+    Every client sends the whole document back on save, marker included, so an
+    edited timeline still claimed to be generated and the next render replaced
+    it -- silently destroying the edit.
+    """
+    _render_two_short_sections("edit-survives")
+
+    composition = operations.read_artifact("edit-survives", "composition")
+    for track in composition["tracks"]:
+        for clip in track["clips"]:
+            clip["text"] = clip["label"] = "MINE"
+            break
+    operations.write_artifact("edit-survives", "composition", composition)
+
+    saved = operations.read_artifact("edit-survives", "composition")
+    assert saved["generated_from_render_at"] == "", "a client write must clear the marker"
+
+    result = operations.render_video("edit-survives", voice_provider="silent")
+    after = operations.read_artifact("edit-survives", "composition")
+    assert any(clip["text"] == "MINE" for track in after["tracks"] for clip in track["clips"]), \
+        "the re-render erased an edit"
+    assert any("your own edits" in warning for warning in result["warnings"])
+
+
+def test_a_forged_marker_does_not_defeat_the_guard(project_root):
+    """Defence in depth: a client that writes the marker back by hand still
+    cannot get its edits replaced, because the fingerprint will not match."""
+    _render_two_short_sections("forged-marker")
+
+    composition = operations.read_artifact("forged-marker", "composition")
+    for track in composition["tracks"]:
+        for clip in track["clips"]:
+            clip["text"] = "MINE"
+            break
+    composition["generated_from_render_at"] = "2026-01-01T00:00:00"
+    composition["generated_fingerprint"] = "not-the-real-one"
+    operations.write_artifact("forged-marker", "composition", composition)
+
+    operations.render_video("forged-marker", voice_provider="silent")
+    after = operations.read_artifact("forged-marker", "composition")
+    assert any(clip["text"] == "MINE" for track in after["tracks"] for clip in track["clips"])
+
+
+def test_an_untouched_generated_timeline_is_still_rebuilt(project_root):
+    """The guard must not be so strict that a re-render stops updating its own
+    timeline -- otherwise the timeline drifts from the video."""
+    _render_two_short_sections("rebuild-ok")
+    first = operations.read_artifact("rebuild-ok", "composition")
+
+    operations.render_video("rebuild-ok", voice_provider="silent")
+    second = operations.read_artifact("rebuild-ok", "composition")
+
+    assert second["generated_from_render_at"] != first["generated_from_render_at"]
+    assert second["clip_count"] == first["clip_count"]
+
+
+def test_the_first_render_seeds_chapters_from_measured_timing(project_root):
+    """Chapters were seeded before the measured timeline existed, so they fell
+    back to the plan's estimates -- pointing at 60s in a 15s video."""
+    _render_two_short_sections("measured-chapters")
+
+    review = operations.read_artifact("measured-chapters", "review")
+    composition = operations.read_artifact("measured-chapters", "composition")
+    measured = sorted(
+        clip["start_ms"]
+        for track in composition["tracks"] if track["kind"] == "video"
+        for clip in track["clips"]
+    )
+
+    assert [c["start_ms"] for c in review["chapters"]] == measured
+    assert review["chapters"][-1]["start_ms"] < review["versions"][-1]["duration_ms"], \
+        "a chapter must not point past the end of the video"
+
+
+def test_edited_chapters_are_not_overwritten_but_are_flagged(project_root):
+    _render_two_short_sections("kept-chapters")
+
+    review = operations.read_artifact("kept-chapters", "review")
+    review["chapters"] = [{"id": "c1", "title": "Mine", "start_ms": 1234}]
+    operations.write_artifact("kept-chapters", "review", review)
+
+    result = operations.render_video("kept-chapters", voice_provider="silent")
+    after = operations.read_artifact("kept-chapters", "review")
+
+    assert [c["title"] for c in after["chapters"]] == ["Mine"], "hand-written chapters were lost"
+    assert any("do not match this render" in warning for warning in result["warnings"])
+
+
+def test_every_render_is_kept_as_its_own_file(project_root):
+    """A version that can be overwritten is not a version: re-rendering used to
+    replace every earlier cut, and selecting an old one played the newest."""
+    first = _render_two_short_sections("immutable-versions")
+    second = operations.render_video("immutable-versions", voice_provider="silent")
+
+    assert first["video_path"] != second["video_path"]
+    from pathlib import Path as _Path
+    assert _Path(first["video_path"]).exists(), "the earlier cut was overwritten"
+    assert _Path(second["video_path"]).exists()
+
+    versions = operations.read_artifact("immutable-versions", "review")["versions"]
+    assert len({v["file_path"] for v in versions}) == len(versions)
+
+
+def test_render_frames_are_cleaned_up(project_root):
+    """Frames are intermediates. Keeping a PNG per slide for every render would
+    grow without limit."""
+    _render_two_short_sections("tidy-frames")
+    frames = project_root / "tidy-frames" / "reviewing" / "output" / "frames"
+    leftover = list(frames.rglob("*.png")) if frames.exists() else []
+    assert leftover == [], f"{len(leftover)} frame(s) left behind"
+
+
+def test_two_renders_in_the_same_second_are_still_separate_versions(project_root):
+    """A render id is a file path. At one-second resolution two quick renders
+    shared one, so the second overwrote the first's video while the review still
+    listed both -- picking the older version played the newer file, which is the
+    bug the id was introduced to prevent."""
+    _render_two_short_sections("same-second")
+    operations.render_video("same-second", voice_provider="silent")
+
+    review = operations.read_artifact("same-second", "review")
+    paths = [version["file_path"] for version in review["versions"]]
+
+    assert len(paths) == 2
+    assert paths[0] != paths[1], "both versions point at the same file"
+    for path in paths:
+        assert Path(path).exists(), f"{path} was overwritten by the other render"
