@@ -1,12 +1,13 @@
 # Academic Explainer Video Pipeline
 
 Turns written academic material (lecture notes, chapters, slide decks) into a
-narrated explainer video. Six stages each produce one artifact you can read and
-edit, and every stage is run by an AI agent whose instructions are a markdown
-file you can change.
+narrated explainer video. Each stage produces one artifact you can read and
+edit, and every stage but Inputs is run by an AI agent whose instructions are a
+markdown file you can change.
 
 ```text
-Inputs → Extraction → Planning → Scripting → Studio → Reviewing
+Inputs → Extraction → Assets & Design → Scene Plan → Script & Staging →
+Studio → Reviewing → Export
 ```
 
 The pipeline never hides work inside a model call. Every stage's output is a
@@ -40,13 +41,15 @@ timing is measured from the narration audio rather than estimated.
 | --- | --- | --- |
 | **Inputs** | Upload source documents: `.pdf`, `.docx`, `.pptx`, `.md`, `.txt`. Up to 512 MB per file, streamed to disk. Each file can be opened and viewed as itself: decks slide by slide, Word documents with their layout, PDFs in the browser's viewer. | `sources/` |
 | **Extraction** | Parses the sources into structured blocks: headings, paragraphs, lists, tables and figures, in document order and filed under the heading they belong to. No model is involved; it is parsing. Embedded images are saved as figures. For decks it can also capture the **slide layout** (where each title, picture and text box sits), the **background images** behind the slides, and the **styling** (theme colours and fonts). Its agent reviews what came out: every picture is opened and measured, and the agent reads the text for what the checks cannot see. | `extraction/content.json`, `extraction/assets/` |
-| **Planning** | Sections, learning objectives, audience and key themes. Each section records the extracted content it covers, how it should be shown and why, and which objectives it serves. The Planning agent drafts a plan from the whole extraction; the draft is reviewed next to your plan and accepted whole or section by section. Warns when the extraction has changed since the plan was made. | `planning/plan.json` |
-| **Scripting** | Each plan section written as **scenes**: what is said, and a brief of what is on screen while it is said. The Scripting agent drafts one section or every unwritten one at once, from that section's own source text. Beside the editor sit the section's plan details, its source text and any review comments. Flags narration written against a plan section or source that has changed since, and narration whose section the plan no longer has. `{{VARIABLES}}` are filled everywhere they are spoken or shown. | `scripting/script.json` |
+| **Assets & Design** | Every extracted picture, with what it measures and where it came from — the source, a person or a model — and a decision about each: use it or skip it. Decisions are keyed by the picture itself, so re-extracting never loses them. Also holds **the look**: the source deck's colours, fonts and proportions, and whether the video should follow them. | `assets/library.json` |
+| **Scene Plan** | Sections, learning objectives, audience and key themes. Each section records the extracted content it covers, how it should be shown and why, and which objectives it serves. The Planning agent drafts a plan from the whole extraction; the draft is reviewed next to your plan and accepted whole or section by section. Warns when the extraction has changed since the plan was made. | `planning/plan.json` |
+| **Script & Staging** | Each plan section written as **scenes**: what is said, and a brief of what is on screen while it is said. The Scripting agent drafts one section or every unwritten one at once, from that section's own source text. Beside the editor sit the section's plan details, its source text and any review comments. Flags narration written against a plan section or source that has changed since, and narration whose section the plan no longer has. `{{VARIABLES}}` are filled everywhere they are spoken or shown. | `scripting/script.json` |
 | **Studio** | A multi-track timeline with playback, seeking and clip properties. Rendering synthesises the narration, measures each section's real audio length, and cuts the picture to fit. | `studio/composition.json` |
 | **Reviewing** | Plays the rendered video with chapters and subtitles, keeps every render as a separate version, and collects comments routed back to the stage that should fix them. | `reviewing/review.json`, `reviewing/output/` |
+| **Export** | The video and everything that travels with it: a transcript, chapter marks a video host can read, a description built from the plan, and the subtitles. Every file is derived, never hand-written. Says plainly what would make the hand-over wrong — a cut built from an abandoned script, a section nobody narrated, a missing video file. | `export/manifest.json`, `export/` |
 
-The **Orchestrator**, the Agent panel in the top bar, sits above all six
-stages. Ask it anything about the project from any tab: it decides which stage
+The **Orchestrator**, the Agent panel in the top bar, sits above every
+stage. Ask it anything about the project from any tab: it decides which stage
 agents can answer, asks several at once, reads whatever artifacts it needs, and
 replies with a list of who it consulted. Click an agent's name to read what that
 agent actually said. Conversations are kept per project: **New conversation**
@@ -85,11 +88,15 @@ Open <http://127.0.0.1:8000>, then:
    is gitignored and never sent to the browser.
 2. **New project**, then drop your documents on **Inputs**.
 3. Go to **Extraction** and click **Extract content**.
-4. On **Planning**, click **Draft plan**, review the proposal, and accept it
+4. On **Assets & Design**, click **Gather pictures** to see what the documents
+   contain and decide which are worth showing.
+5. On **Scene Plan**, click **Draft plan**, review the proposal, and accept it
    (or build the plan by hand).
-5. On **Scripting**, click **Draft all unwritten** to have the agent write
-   every section as scenes, then edit what it wrote.
-6. **Render video** from Studio or Reviewing.
+6. On **Script & Staging**, click **Draft all unwritten** to have the agent
+   write every section as scenes, then edit what it wrote.
+7. **Render video** from Studio or Reviewing.
+8. On **Export**, click **Build export** for the transcript, chapters and
+   description — and for a straight answer about whether it is ready.
 
 Rendering in the app uses the recommended voice, which out of the box is Edge
 TTS and needs a network connection. To render with no narration at all, for
@@ -100,8 +107,8 @@ checking structure and timing, use
 
 ## Using the app
 
-**Every stage has its own address.** `/planning/<project>` opens that project on
-Planning, so a URL can be bookmarked, reloaded or sent to someone. The browser's
+**Every stage has its own address.** `/scene-plan/<project>` opens that project on
+the Scene Plan, so a URL can be bookmarked, reloaded or sent to someone. The browser's
 back and forward buttons move between stages.
 
 **Inputs.** Expand any file row to see the file as it is: a PowerPoint deck is
@@ -137,13 +144,16 @@ view is the file that moves on to the next stages.
   mid-sentence, a table that lost its shape, a reference to a figure nobody
   extracted.
 - **Each finding says where it is** and shows the picture itself. **Upload a
-  picture** puts your own image in place of a broken one — the next extraction
-  run takes it from the source document again. **It is fine** dismisses a
-  finding for good, and re-reviewing does not raise it again.
+  picture** puts your own image in place of a broken one; **Draw a picture** has
+  an image model draw one from the figure's caption and the text around it. Both
+  are recorded as what they are — `uploaded` or `generated`, never as the
+  author's own figure — and the next extraction run takes the picture from the
+  source document again. **It is fine** dismisses a finding for good, and
+  re-reviewing does not raise it again.
 
-**Planning.**
+**Scene Plan.**
 
-- **Draft plan** has the Planning agent read the whole extraction in two passes:
+- **Draft plan** has the Scene Plan agent read the whole extraction in two passes:
   every heading of every document first (with a few words of any untitled slide
   or page), then each section from its own full text. Optional guidance steers
   it. Drafting takes a minute or two and is kept as a draft even if you leave.
@@ -163,7 +173,19 @@ view is the file that moves on to the next stages.
   checked it.
 - **Objectives show coverage**: which sections serve each one, or "not covered".
 
-**Scripting.**
+**Assets & Design.**
+
+- **Gather pictures** reads every figure the extraction holds, measures it, and
+  says where it came from. A decision — *Use* or *Skip*, with a one-line reason
+  — is keyed to the picture itself, so re-running extraction keeps it.
+- **Decoration is named rather than hidden.** Anything under 64 pixels a side
+  is marked as decoration and left out of "would be shown", but it is still
+  listed: a small picture is usually a bullet and occasionally a diagram.
+- **The look** is the source deck's own: its colours, heading and body fonts,
+  proportions and background. It is off by default — a video that silently
+  adopted a client's brand colours would be worse than one that asked.
+
+**Script & Staging.**
 
 - **Scenes, not a wall of text.** Each scene is what is said plus a brief of
   what is on screen while it is said. The video speaks the scenes in order, and
@@ -173,7 +195,7 @@ view is the file that moves on to the next stages.
   narration that is already written -- including anything typed while it runs.
 - **Beside the editor** is everything the section was planned with: its summary,
   target length, how it will be shown and why, the objectives it serves, its
-  source text, and any review comment routed back to Scripting for it.
+  source text, and any review comment routed back to Script & Staging for it.
 - **Out of date** marks narration written against a plan section or a source
   that has changed since. **Keep narration as is** records that you checked it.
 - **Stranded narration** -- written for a section the plan no longer has -- is
@@ -183,9 +205,29 @@ view is the file that moves on to the next stages.
   spoken audio, the subtitles, the timeline and the transcript. One that is not
   defined is spoken as written, and said so.
 
-**Scripting and Reviewing warnings.** A section whose narration runs more than
+**Script & Staging and Reviewing warnings.** A section whose narration runs more than
 25% past its planned length is flagged on both pages. Reviewing shows every
 warning, not only open comments, before calling a project ready.
+
+**Export.**
+
+- **Build export** writes `transcript.md` (every spoken word under its section),
+  `chapters.txt` (`0:00 Title` per line, ready to paste into a video host) and
+  `description.md` (audience, objectives and chapters from the plan), then lists
+  them beside the rendered video and its subtitles.
+- **It says what would make the hand-over wrong** before it says anything else:
+  a timeline built from an abandoned script, a section with no narration, a
+  video file that is no longer on disk. Open comments are reported as warnings,
+  not blockers — whether one stops a hand-over is your judgement.
+- **It never refuses.** A project with problems still gets its files, with the
+  problems named: withholding the transcript does not make the video better, and
+  someone checking what is wrong needs to read it.
+
+**A cut that no longer matches its script is flagged.** Studio and Reviewing
+compare the timeline and the chapters against the current plan and say so when
+they describe sections it no longer has — the failure that let a project look
+finished while its video was built from an abandoned script. Studio offers to
+empty the timeline so the next render rebuilds it.
 
 **Renders are versions.** Each render gets its own file name, so choosing an
 older version plays that cut. Chapters and the Studio timeline are rebuilt from
@@ -207,6 +249,7 @@ stdin.
 | `LLM_BASE_URL` | `https://api.tokenrouter.com/v1` | Any OpenAI-compatible endpoint. |
 | `LLM_MODEL` | `deepseek/deepseek-v4-flash` | Model id as the provider spells it. |
 | `IR_LLM_API_KEY`, `IR_LLM_BASE_URL`, `IR_LLM_MODEL` | text model's values | A separate provider for structured output (drafted plans and scripts). |
+| `IMAGE_MODEL`, `IMAGE_BASE_URL`, `IMAGE_API_KEY` | `google/gemini-2.5-flash-image`, text model's values | The model that draws a replacement for a figure that did not extract. |
 | `LLM_TIMEOUT_SECONDS` | `600` | Per-request timeout. |
 | `LLM_MAX_RETRIES` | `3` | Retries on transient failures. |
 | `PROJECTS_DIR` | `./projects` | Where project data is stored. |
@@ -261,10 +304,10 @@ uv run pipeline plan accept-draft neural-signals --section <drafted-section-id> 
 uv run pipeline plan discard-draft neural-signals
 uv run pipeline script write neural-signals --section <section-id> --body "..."
 uv run pipeline studio add-clip neural-signals --track <track-id> --text "..."
-uv run pipeline review comment neural-signals --body "Too fast" --at-ms 42000 --route scripting
+uv run pipeline review comment neural-signals --body "Too fast" --at-ms 42000 --route script-staging
 uv run pipeline review seed-chapters neural-signals
 
-uv run pipeline agent ask neural-signals planning --question "What is missing?"
+uv run pipeline agent ask neural-signals scene-plan --question "What is missing?"
 uv run pipeline agent draft-plan neural-signals --instruction "Aim for eight minutes"   # kept as a draft
 uv run pipeline agent draft-script neural-signals --section <section-id>
 uv run pipeline agent draft-unwritten neural-signals    # every section with no narration
@@ -303,7 +346,7 @@ Tools: `describe_stages`, `list_projects`, `describe_project`, `create_project`,
 
 No tool can read an API key or delete a project. A drafted plan is kept as a
 pending draft, so one drafted from MCP or the command line can be reviewed on the
-Planning page, and the other way round.
+Scene Plan page, and the other way round.
 
 > **Not every feature is in every client yet.**
 >
@@ -319,12 +362,12 @@ Each stage with an agent has a definition at `agents/<stage>/AGENT.md`:
 
 ```markdown
 ---
-name: Planning
+name: Scene Plan
 role: Decide what gets taught, in what order, and which tool renders each part.
 tools: [read_extraction, web_search, choose_renderer, estimate_duration]
 ---
 
-# Planning
+# Scene Plan
 
 Instructions, in markdown...
 ```
@@ -342,9 +385,9 @@ Instructions, in markdown...
   in at most two rounds, with at most five agent calls per round, and every
   answer lists the agents it consulted.
 
-Agents work from the extracted source text, not from file names. The Planning
+Agents work from the extracted source text, not from file names. The Scene Plan
 agent reads all of it when drafting: every heading first, then each section's
-own text. The Scripting agent writes a section as scenes from the content that
+own text. The Script & Staging agent writes a section as scenes from the content that
 section records, and is also shown the whole plan in compact form and the
 narration on either side of its section, so what it writes joins up with its
 neighbours; for a section with no recorded sources, it falls back to the
@@ -365,17 +408,29 @@ projects/<project>/
 │   ├── content.json            structured blocks per document
 │   ├── review.json             what the checks and the agent found wrong
 │   └── assets/                 extracted figures, stored once per image
-├── planning/plan.json
-├── scripting/script.json
+├── assets/library.json         which pictures to use, and the video's look
+├── scene-plan/plan.json
+├── script-staging/script.json
 ├── studio/composition.json
 ├── reviewing/
 │   ├── review.json             comments, chapters, versions
 │   └── output/                 rendered .mp4, .srt, .vtt and narration audio
+├── export/
+│   ├── manifest.json           what was exported, and what would make it wrong
+│   ├── transcript.md           every spoken word, under its section
+│   ├── chapters.txt            0:00 Title, per line
+│   └── description.md          audience, objectives and chapters
 ├── drafts/plan.json            a drafted plan waiting to be accepted or discarded
 ├── settings/                   stage options and which files are extracted
 ├── agents/conversations.json   threads with the Orchestrator
 └── agents/<stage>/AGENT.md     per-project agent overrides, if any
 ```
+
+Two stages were renamed once their scope was clear: **Planning → Scene Plan**
+and **Scripting → Script & Staging**. A project written under the old names is
+moved to the new folders the first time it is opened, and the old stage keys
+still resolve — so routed comments, saved settings and old bookmarks keep
+working.
 
 `projects/` is gitignored: it holds your documents and renders, not code.
 
@@ -399,8 +454,10 @@ src/pipeline/
 ├── sources.py           upload validation and streaming
 ├── extraction.py        document readers (pdf, docx, pptx, md, txt) and figures
 ├── extraction_review.py checks on what was extracted, and the agent's reading of it
-├── planning.py          plan model and store
-├── scripting.py         script, scenarios, variables, length checks
+├── planning.py          the Scene Plan's model and store
+├── scripting.py         the script: scenes, variables, length checks
+├── assets.py            the picture library and the video's look
+├── exporting.py         the transcript, chapters and description
 ├── composition.py       tracks and clips
 ├── review.py            comments, chapters, versions
 ├── rendering.py         audio-first rendering with Pillow frames and ffmpeg
@@ -489,25 +546,26 @@ This is an early working version. Things to know before relying on it:
   are extracted but not yet placed in the video, and the Studio graphics track
   is empty.
 - **Some options are placeholders.** Extraction mode, output format, key-field
-  detection, handwriting OCR, and every Planning preference (duration, tone,
+  detection, handwriting OCR, and every Scene Plan preference (duration, tone,
   language) are shown as "not built yet" and change nothing.
 - **Stage agents advise and draft; they do not act.** Their declared tools are
-  not executable yet. The Planning agent drafts plans (kept as a draft until you
-  accept it); the Scripting agent writes narration straight into the script,
+  not executable yet. The Scene Plan agent drafts plans (kept as a draft until you
+  accept it); the Script & Staging agent writes narration straight into the script,
   one section or every unwritten one, from the page or from a client; the
   Extraction agent reviews what was extracted and can flag it, but the only
   repair it offers is a picture you upload.
-- **Nothing generates a picture.** A broken figure can be replaced by one you
-  supply; generating a replacement would need an image model, and none is
-  configured. The button says so rather than being hidden.
+- **A drawn picture is not the source's figure.** Drawing one is available
+  where a figure failed to extract, and what it draws is marked `generated` so
+  no later stage can present it as the author's own diagram. Nothing generates
+  pictures on its own.
 - **A section's rendering approach is recorded but not yet used.** The renderer
   still draws every section as text slides, whatever the plan chooses.
 - **Slide layout, backgrounds and styling are captured but not yet drawn.**
   Extraction records where everything sits on a slide, what is behind it, the
   theme colours and the fonts; nothing renders from them yet, and a scene's
   on-screen brief is text the renderer does not read either.
-- **Planning does not target a duration.** The plan's lengths are whatever the
-  plan says; Scripting and Reviewing warn when narration runs well over them.
+- **The Scene Plan does not target a duration.** The plan's lengths are whatever the
+  plan says; Script & Staging and Reviewing warn when narration runs well over them.
 - **PDF extraction is text-only.** Figures are extracted from Word and
   PowerPoint files.
 - **Not every feature is in every client**, as listed under

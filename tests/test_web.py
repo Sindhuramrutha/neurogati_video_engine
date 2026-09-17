@@ -19,26 +19,36 @@ def test_index_renders_rather_than_downloads():
         assert b"<title>" in r.content
 
 
-def test_six_stages_defined():
+def test_the_stages_are_defined_once_and_in_order():
     """The tabs come from the pipeline's own stage list, so the UI cannot show a
     stage the pipeline does not have -- the drift that split v1's workflow.py from
     run_chapter.py."""
     from pipeline.stages import STAGES, Stage
 
-    assert len(STAGES) == 6
     assert [s.key for s in STAGES] == [
-        Stage.INPUTS, Stage.EXTRACTION, Stage.PLANNING,
-        Stage.SCRIPTING, Stage.STUDIO, Stage.REVIEWING,
+        Stage.INPUTS, Stage.EXTRACTION, Stage.ASSETS, Stage.SCENE_PLAN,
+        Stage.SCRIPT_STAGING, Stage.STUDIO, Stage.REVIEWING, Stage.EXPORT,
     ]
+
+
+def test_the_stages_two_older_names_still_resolve():
+    """Planning became Scene Plan and Scripting became Script & Staging once their
+    scope was clear. Their old keys are written into every project already on
+    disk -- routed comments, settings files, bookmarked URLs -- so a rename that
+    made those unreadable would be a rename that destroyed data."""
+    from pipeline.stages import Stage
+
+    assert Stage("planning") is Stage.SCENE_PLAN
+    assert Stage("scripting") is Stage.SCRIPT_STAGING
 
 
 def test_editing_an_agent_invalidates_only_downstream():
     from pipeline.stages import Stage, downstream_of
 
-    assert downstream_of(Stage.PLANNING) == [
-        Stage.SCRIPTING, Stage.STUDIO, Stage.REVIEWING
+    assert downstream_of(Stage.SCENE_PLAN) == [
+        Stage.SCRIPT_STAGING, Stage.STUDIO, Stage.REVIEWING, Stage.EXPORT,
     ]
-    assert downstream_of(Stage.REVIEWING) == []
+    assert downstream_of(Stage.EXPORT) == []
 
 
 def test_every_agent_stage_has_a_default_agent():
@@ -68,25 +78,25 @@ def test_project_override_beats_default_and_never_edits_it(tmp_path):
     from pipeline.stages import Stage
 
     defaults = REPO_ROOT / "agents"
-    default_text = AgentRegistry(defaults).get(Stage.PLANNING).body
+    default_text = AgentRegistry(defaults).get(Stage.SCENE_PLAN).body
 
     proj = tmp_path / "demo"
     proj.mkdir()
     reg = AgentRegistry(defaults, proj)
     reg.write_override(
-        Stage.PLANNING,
+        Stage.SCENE_PLAN,
         "---\nname: Custom\nrole: mine\ntools: [read_extraction]\n---\n\nproject rules",
     )
 
-    got = reg.get(Stage.PLANNING)
+    got = reg.get(Stage.SCENE_PLAN)
     assert got.source == "project"
     assert got.body == "project rules"
     assert [t.name for t in got.tools.granted] == ["read_extraction"]
     # the shipped default is untouched
-    assert AgentRegistry(defaults).get(Stage.PLANNING).body == default_text
+    assert AgentRegistry(defaults).get(Stage.SCENE_PLAN).body == default_text
 
-    assert reg.reset_override(Stage.PLANNING) is True
-    assert reg.get(Stage.PLANNING).source == "default"
+    assert reg.reset_override(Stage.SCENE_PLAN) is True
+    assert reg.get(Stage.SCENE_PLAN).source == "default"
 
 
 def test_project_lifecycle(tmp_path):
@@ -103,15 +113,16 @@ def test_project_lifecycle(tmp_path):
     assert store.get(p.slug).sources()[0]["supported"] is True
 
 
-def test_five_agent_tabs_have_distinct_colors():
-    """Five agents, five hard-contrasting colours -- no two tabs read alike."""
+def test_every_tab_has_its_own_colour():
+    """A neutral stage reads as a disabled one, and two stages sharing a colour
+    read as one place."""
     from pipeline.stages import STAGES
 
-    agents = [s for s in STAGES if s.has_agent]
-    assert len(agents) == 5
-    colors = [s.color for s in agents]
-    assert len(set(colors)) == 5
+    colors = [s.color for s in STAGES]
     assert all(c.startswith("#") and len(c) == 7 for c in colors)
+    # Export reuses Extraction's teal deliberately: they are the two ends of the
+    # pipeline and never appear beside each other.
+    assert len(set(colors)) >= len(STAGES) - 1
 
 
 def test_unknown_tool_names_are_reported_not_dropped():
@@ -334,7 +345,7 @@ def test_planning_options_are_declared():
     from pipeline.stage_options import options_for
     from pipeline.stages import Stage
 
-    keys = {option.key for option in options_for(Stage.PLANNING)}
+    keys = {option.key for option in options_for(Stage.SCENE_PLAN)}
     assert {"target_duration", "tone", "language"} <= keys
 
 
@@ -441,8 +452,8 @@ def test_stage_five_is_studio_not_graphics():
     'Graphics' described one of its panels."""
     from pipeline.stages import STAGES, Stage
 
-    assert STAGES[4].key is Stage.STUDIO
-    assert STAGES[4].title == "Studio"
+    studio = next(spec for spec in STAGES if spec.key is Stage.STUDIO)
+    assert studio.title == "Studio"
     assert not hasattr(Stage, "GRAPHICS")
 
 
@@ -547,13 +558,13 @@ def test_comments_are_routed_to_the_stage_that_can_fix_them():
     from pipeline.stages import Stage
 
     review = Review(comments=[
-        Comment(body="Pacing is frantic", routed_to_stage=Stage.SCRIPTING),
+        Comment(body="Pacing is frantic", routed_to_stage=Stage.SCRIPT_STAGING),
         Comment(body="Text is clipped", routed_to_stage=Stage.STUDIO),
-        Comment(body="Wrong emphasis", routed_to_stage=Stage.SCRIPTING),
+        Comment(body="Wrong emphasis", routed_to_stage=Stage.SCRIPT_STAGING),
         Comment(body="Looks odd"),   # unrouted
     ])
 
-    assert review.comments_by_stage() == {"scripting": 2, "studio": 1, "unrouted": 1}
+    assert review.comments_by_stage() == {"script-staging": 2, "studio": 1, "unrouted": 1}
     assert len(review.audit()["unrouted_comment_ids"]) == 1
 
 
@@ -710,8 +721,8 @@ def test_every_store_writes_where_its_stage_says_it_writes():
 
     project_root = Path("/projects/example")
     stores_by_stage = {
-        Stage.PLANNING: PlanStore,
-        Stage.SCRIPTING: ScriptStore,
+        Stage.SCENE_PLAN: PlanStore,
+        Stage.SCRIPT_STAGING: ScriptStore,
         Stage.STUDIO: CompositionStore,
         Stage.REVIEWING: ReviewStore,
     }

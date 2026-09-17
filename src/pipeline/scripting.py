@@ -382,7 +382,7 @@ class ScriptStore(JsonDocumentStore[Script]):
 
     def __init__(self, project_root: Path) -> None:
         super().__init__(
-            document_path=artifact_path(project_root, Stage.SCRIPTING),
+            document_path=artifact_path(project_root, Stage.SCRIPT_STAGING),
             model_type=Script,
             build_default=default_script,
             description="script",

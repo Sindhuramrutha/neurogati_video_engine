@@ -58,7 +58,7 @@ const formatClock = milliseconds => {
 const referenceLabel = reference =>
   [reference.file_name, ...reference.heading_path].join(" › ");
 
-export async function renderScriptingStage(stage, navigateToStage, renderAgentStage) {
+export async function renderScriptStagingStage(stage, navigateToStage, renderAgentStage) {
   const body = select("#stage-body");
   if (!body.querySelector(".script-grid")) {
     body.innerHTML = `<div class="card muted">Loading script…</div>`;
@@ -84,9 +84,9 @@ export async function renderScriptingStage(stage, navigateToStage, renderAgentSt
         ${scriptingHeader()}
         <div class="empty">
           <h3>No sections to write for</h3>
-          <p>Scripting writes narration per plan section. Build the outline first.</p>
-          <button class="btn btn-accent" data-goto="planning">
-            ${icon(ICON.arrowLeft)} Go to Planning</button>
+          <p>Narration is written per planned section. Build the scene plan first.</p>
+          <button class="btn btn-accent" data-goto="scene-plan">
+            ${icon(ICON.arrowLeft)} Go to the Scene Plan</button>
         </div>
       </div>`;
     wireNavigation(navigateToStage);
@@ -135,9 +135,9 @@ export async function renderScriptingStage(stage, navigateToStage, renderAgentSt
 function scriptingHeader() {
   return `
     <div class="card-head">
-      <span class="card-icon">${stageIcon("scripting", 21)}</span>
+      <span class="card-icon">${stageIcon("script-staging", 21)}</span>
       <div>
-        <h2>Scripting</h2>
+        <h2>Script &amp; Staging</h2>
         <p>Write each section as scenes: what is said, and what is on screen.</p>
       </div>
       <button class="btn" id="scripting-agent-button">
@@ -585,7 +585,7 @@ function wireNavigation(navigateToStage) {
 }
 
 function wireScriptingStage(stage, navigateToStage, renderAgentStage) {
-  const rerender = () => renderScriptingStage(stage, navigateToStage, renderAgentStage);
+  const rerender = () => renderScriptStagingStage(stage, navigateToStage, renderAgentStage);
   const change = async applyEdit => {
     await flushPendingSave();
     if (isDrafting()) {

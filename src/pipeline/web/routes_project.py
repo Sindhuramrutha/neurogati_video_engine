@@ -30,6 +30,7 @@ from pipeline.credentials import describe_credentials, save_credentials
 from pipeline.extraction import ExtractionStore
 from pipeline.extraction_review import (
     acknowledge_finding,
+    generate_figure,
     read_extraction_review,
     replace_figure,
     review_extraction,
@@ -38,20 +39,27 @@ from pipeline.llm import describe_model
 from pipeline.operations import (
     OperationFailed,
     accept_plan_draft,
+    build_export,
+    clear_timeline,
     confirm_plan_matches_extraction,
     confirm_section_narration,
+    decide_figure,
     discard_plan_draft,
     extraction_freshness,
     forget_excluded_source,
     list_voice_providers,
     present_artifact,
     preview_source,
+    read_asset_library,
+    read_export,
     read_plan_draft,
+    refresh_asset_library,
     render_video,
     run_extraction,
     save_artifact,
     section_source_material,
     set_excluded_sources,
+    set_project_look,
 )
 from pipeline.orchestrator import (
     ask_the_orchestrator,
@@ -110,6 +118,22 @@ class AgentEdit(BaseModel):
 
 class StageSettingsEdit(BaseModel):
     values: dict[str, Any]
+
+
+class DrawingInstruction(BaseModel):
+    # Optional steer, e.g. "show the three stages side by side".
+    instruction: str = ""
+
+
+class FigureDecision(BaseModel):
+    # "use", "skip" or "undecided". A string rather than an enum so the same
+    # body works from curl and from the page without a schema lookup.
+    use: str = "undecided"
+    note: str | None = None
+
+
+class LookChoice(BaseModel):
+    use_source_styling: bool = False
 
 
 class ReviewRequest(BaseModel):
@@ -467,8 +491,11 @@ def put_script(
 def get_composition(
     slug: FromPath[str], projects: NamedDependency[ProjectService]
 ) -> dict[str, Any]:
+    # Through `present_artifact`, like every other artifact: the timeline cannot
+    # be judged on its own -- whether it still matches the plan it was built
+    # from is the difference between a finished cut and an abandoned one.
     project = projects.require(slug)
-    return CompositionStore(project.root).load().to_dict()
+    return present_artifact(project, "composition", CompositionStore(project.root).load())
 
 
 @post("/api/projects/{slug:str}/composition", sync_to_thread=False)
@@ -866,6 +893,118 @@ async def replace_extracted_figure(
         return replace_figure(slug, block_id, content, Path(file_name).suffix or ".png")
     except OperationFailed as failure:
         raise ClientException(detail=str(failure)) from failure
+
+
+@post("/api/projects/{slug:str}/extraction/figures/{block_id:str}/draw")
+async def draw_extracted_figure(
+    slug: FromPath[str], block_id: FromPath[str], data: DrawingInstruction
+) -> dict[str, Any]:
+    """Draw a replacement for a figure that did not extract.
+
+    The result is recorded as generated rather than swapped in quietly:
+    everything else in a project comes from the source documents, and a drawn
+    picture is the one thing that does not.
+    """
+    import anyio
+
+    try:
+        return await anyio.to_thread.run_sync(
+            generate_figure, slug, block_id, data.instruction
+        )
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@post("/api/projects/{slug:str}/composition/clear", sync_to_thread=False)
+def clear_studio_timeline(slug: FromPath[str]) -> dict[str, Any]:
+    """Empty the timeline so the next render builds it from the current script.
+
+    The hand-edit protection refuses to overwrite a timeline someone has worked
+    on, which is right -- but without this the only way out was deleting clips
+    one at a time, and a timeline from an abandoned script survived four renders
+    that way.
+    """
+    try:
+        return clear_timeline(slug)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@get("/api/projects/{slug:str}/assets", sync_to_thread=False)
+def get_asset_library(slug: FromPath[str]) -> dict[str, Any]:
+    """Every extracted picture and what was decided about it."""
+    try:
+        return read_asset_library(slug)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@post("/api/projects/{slug:str}/assets/refresh", sync_to_thread=False)
+def refresh_assets(slug: FromPath[str]) -> dict[str, Any]:
+    """Gather the pictures the current extraction has, keeping every decision."""
+    try:
+        return refresh_asset_library(slug)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@post("/api/projects/{slug:str}/assets/figures/{figure_id:str}", sync_to_thread=False)
+def decide_asset_figure(
+    slug: FromPath[str], figure_id: FromPath[str], data: FigureDecision
+) -> dict[str, Any]:
+    """Say whether a picture should be used, and why."""
+    try:
+        return decide_figure(slug, figure_id, data.use, data.note)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@post("/api/projects/{slug:str}/assets/look", sync_to_thread=False)
+def set_asset_look(slug: FromPath[str], data: LookChoice) -> dict[str, Any]:
+    """Whether the video follows the source deck's colours and fonts."""
+    try:
+        return set_project_look(slug, data.use_source_styling)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@get("/api/projects/{slug:str}/export", sync_to_thread=False)
+def get_export(slug: FromPath[str]) -> dict[str, Any]:
+    """The last export, with today's blockers rather than the ones it was built with."""
+    try:
+        return read_export(slug)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@post("/api/projects/{slug:str}/export", sync_to_thread=False)
+def build_project_export(slug: FromPath[str]) -> dict[str, Any]:
+    """Write the transcript, chapters and description, and list what is ready."""
+    try:
+        return build_export(slug)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@get("/api/projects/{slug:str}/export/files/{file_name:str}", sync_to_thread=False)
+def download_export_file(slug: FromPath[str], file_name: FromPath[str]) -> Response:
+    """One exported file, by name.
+
+    The name is reduced to a bare file name before it is joined, so a crafted
+    request cannot walk out of the export folder.
+    """
+    project = ProjectStore(get_settings().projects_dir).get(slug)
+    if project is None:
+        raise NotFoundException(detail=f"no such project: {slug}")
+
+    path = project.root / "export" / reduce_to_bare_file_name(file_name)
+    if not path.is_file():
+        raise NotFoundException(detail=f"no exported file named {file_name}")
+    return Response(
+        content=path.read_bytes(),
+        media_type=MEDIA_TYPES_BY_SUFFIX.get(path.suffix.lower(), "text/plain"),
+        headers={"Content-Disposition": f'attachment; filename="{path.name}"'},
+    )
 
 
 @get("/api/voices", sync_to_thread=False)

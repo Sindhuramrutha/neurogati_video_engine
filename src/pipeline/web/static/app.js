@@ -15,9 +15,11 @@ import {
 import {
   renderModelMarkdown, requestJsonFromApi, showNoticeIn,
 } from "/static/shared-client.js";
+import { renderAssetsStage } from "/static/stage-assets.js";
+import { renderExportStage } from "/static/stage-export.js";
 import { renderExtractionStage } from "/static/stage-extraction.js";
-import { renderPlanningStage } from "/static/stage-planning.js";
-import { renderScriptingStage } from "/static/stage-scripting.js";
+import { renderScenePlanStage } from "/static/stage-scene-plan.js";
+import { renderScriptStagingStage } from "/static/stage-script-staging.js";
 import { renderReviewingStage } from "/static/stage-reviewing.js";
 import { renderStudioStage } from "/static/stage-studio.js";
 import {
@@ -66,7 +68,7 @@ const LAST_PROJECT_STORAGE_KEY = "explainer-pipeline:last-project";
 
 /* ---- addresses ----------------------------------------------------------
  *
- * A stage is a place, so it has an address: `/planning/<project>`. The path is
+ * A stage is a place, so it has an address: `/scene-plan/<project>`. The path is
  * the truth on load and is kept in step on every change, which is what makes a
  * reload land where you were and a pasted link open what the sender was looking
  * at.
@@ -158,11 +160,7 @@ async function refreshProjects() {
 
 /** Redraw the chrome when a stage changes what the project's status says.
  *  Only the chrome: the stage view owns its own body and redraws itself. */
-onProjectSummaryRefreshed(() => {
-  renderSidebar();
-  const pill = select(".status-pill");
-  if (pill) pill.innerHTML = statusPillContents(stageStateFor(applicationState.activeStageKey));
-});
+onProjectSummaryRefreshed(() => renderSidebar());
 
 /** The single way to change stage. Stage views call this rather than reaching
  *  into the sidebar, so navigation stays one behaviour. */
@@ -220,10 +218,8 @@ function renderMain() {
 
   const stage = applicationState.stageDefinitions
     .find(s => s.key === applicationState.activeStageKey);
-  const state = stageStateFor(stage.key);
 
   container.innerHTML = `
-    ${renderBreadcrumb(state)}
     <div class="notice" id="stage-notice" hidden></div>
     <div id="stage-body" data-stage="${stage.key}"></div>`;
 
@@ -232,28 +228,14 @@ function renderMain() {
   const stageRenderers = {
     inputs: () => renderInputsStage(stage),
     extraction: () => renderExtractionStage(stage, navigateToStage, renderAgentStage),
-    planning: () => renderPlanningStage(stage, navigateToStage, renderAgentStage),
-    scripting: () => renderScriptingStage(stage, navigateToStage, renderAgentStage),
+    assets: () => renderAssetsStage(stage, navigateToStage, renderAgentStage),
+    "scene-plan": () => renderScenePlanStage(stage, navigateToStage, renderAgentStage),
+    "script-staging": () => renderScriptStagingStage(stage, navigateToStage, renderAgentStage),
     studio: () => renderStudioStage(stage, navigateToStage, renderAgentStage),
     reviewing: () => renderReviewingStage(stage, navigateToStage, renderAgentStage),
+    export: () => renderExportStage(stage, navigateToStage, renderAgentStage),
   };
   (stageRenderers[stage.key] ?? (() => renderAgentStage(stage)))();
-}
-
-function statusPillContents(state) {
-  return `
-    <span class="dot ${state.status === "ready" ? "ready" : ""}"></span>
-    ${escapeHtml(state.detail || state.status)}`;
-}
-
-function renderBreadcrumb(state) {
-  return `
-    <div class="breadcrumb">
-      <span>Project</span><span>&rsaquo;</span>
-      <span class="current">${escapeHtml(applicationState.selectedProject.name)}</span>
-      <div class="spacer"></div>
-      <span class="status-pill">${statusPillContents(state)}</span>
-    </div>`;
 }
 
 /* ---- inputs stage ------------------------------------------------------- */
@@ -537,7 +519,7 @@ async function renderAgentStage(stage) {
       <textarea class="agent-body" id="agent-body" spellcheck="false">${escapeHtml(agent.body)}</textarea>
 
       <p class="muted" style="font-size:12.5px;margin:12px 0 0">
-        This text is the agent's system prompt. Planning and Scripting run it
+        This text is the agent's system prompt. Scene Plan and Script & Staging run it
         against a model today; the other stages read it but do not call one yet.
       </p>
     </div>`;

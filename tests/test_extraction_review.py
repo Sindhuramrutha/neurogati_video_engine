@@ -342,3 +342,77 @@ def test_a_review_of_an_older_extraction_says_it_is_out_of_date(project_root):
     ExtractionStore(project.root).save(extraction)
 
     assert extraction_review.read_extraction_review(slug)["is_stale"] is True
+
+
+def test_a_drawn_picture_is_recorded_as_drawn(project_root, monkeypatch):
+    """Everything else in a project comes from the source documents. A picture a
+    model drew is the one thing that does not, and a video that shows it as the
+    author's own diagram is making a false claim about the material."""
+    slug, project = project_with_figures("drawn", [
+        ("Figure 2.1 the acquisition chain", None, None),
+    ], extra_blocks=[
+        ContentBlock(kind=BlockKind.PARAGRAPH, heading_path=["Chapter 2"],
+                     text="Electrodes feed an amplifier, then a filter, then a converter."),
+    ])
+    block_id = next(
+        b.id for b in ExtractionStore(project.root).load().documents[0].blocks
+        if b.kind == BlockKind.FIGURE
+    )
+    asked = {}
+
+    def fake_draw(prompt, **kwargs):
+        asked["prompt"] = prompt
+        return picture_bytes("green")
+
+    monkeypatch.setattr("pipeline.llm.draw_image", fake_draw)
+
+    result = extraction_review.generate_figure(slug, block_id, "side by side")
+
+    stored = next(
+        b for b in ExtractionStore(project.root).load().documents[0].blocks
+        if b.id == block_id
+    )
+    assert stored.asset_origin == "generated"
+    assert (project.root / stored.asset_path).exists()
+    assert result["asset_origin"] == "generated"
+    # The prompt is built from the figure's own surroundings, not invented.
+    assert "Figure 2.1 the acquisition chain" in asked["prompt"]
+    assert "Electrodes feed an amplifier" in asked["prompt"]
+    assert "side by side" in asked["prompt"]
+    assert "Do not invent numbers" in asked["prompt"]
+
+
+def test_an_uploaded_picture_is_recorded_as_uploaded(project_root):
+    slug, project = project_with_figures("uploaded", [
+        ("Figure 2.1", picture_bytes("white", noise=False), "blank.png"),
+    ])
+    block_id = next(
+        b.id for b in ExtractionStore(project.root).load().documents[0].blocks
+        if b.kind == BlockKind.FIGURE
+    )
+
+    extraction_review.replace_figure(slug, block_id, picture_bytes("blue"), ".png")
+
+    stored = next(
+        b for b in ExtractionStore(project.root).load().documents[0].blocks
+        if b.id == block_id
+    )
+    assert stored.asset_origin == "uploaded"
+
+
+def test_drawing_reports_a_provider_failure_plainly(project_root, monkeypatch):
+    slug, project = project_with_figures("draw-fails", [("Figure 2.1", None, None)])
+    block_id = next(
+        b.id for b in ExtractionStore(project.root).load().documents[0].blocks
+        if b.kind == BlockKind.FIGURE
+    )
+
+    def unreachable(*_args, **_kwargs):
+        from pipeline.llm import ModelCallFailed
+
+        raise ModelCallFailed("Could not reach the model provider.")
+
+    monkeypatch.setattr("pipeline.llm.draw_image", unreachable)
+
+    with pytest.raises(OperationFailed, match="could not be drawn"):
+        extraction_review.generate_figure(slug, block_id)

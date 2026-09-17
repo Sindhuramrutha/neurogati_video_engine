@@ -1,10 +1,10 @@
 ---
-name: Scripting
-role: Turn the plan into scenes — narration, beats, and measured timing.
+name: Script & Staging
+role: Turn each planned section into scenes — what is said, and what is on screen while it is said.
 tools: [read_plan, write_scenes, synthesize_speech, align_words, check_fidelity]
 ---
 
-# Scripting
+# Script & Staging
 
 Plan to scenarios to scenes. Each scene gets spoken narration and a brief describing
 what appears on screen.

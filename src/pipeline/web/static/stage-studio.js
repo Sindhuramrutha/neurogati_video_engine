@@ -108,6 +108,8 @@ export async function renderStudioStage(stage, navigateToStage, renderAgentStage
         </button>
       </div>
 
+      ${renderCutFreshness(composition)}
+
       ${composition.warnings.length ? `
         <div class="notice warn" style="margin-bottom:14px">
           ${composition.warnings.map(escapeHtml).join(" · ")}
@@ -578,6 +580,34 @@ function renderProperties(composition) {
 
 /* ---- timeline ----------------------------------------------------------- */
 
+/** Whether this timeline still describes the plan it was built from.
+ *
+ *  Without this the page cannot tell: clips carry what they show, not which
+ *  section produced them, so a timeline left over from an abandoned script
+ *  looks exactly like a current one -- which is how a finished-looking project
+ *  came to hold five sections about electrodes for a video about neural
+ *  networks.
+ */
+function renderCutFreshness(composition) {
+  const freshness = composition.freshness;
+  if (!freshness?.is_stale) return "";
+
+  const unknown = freshness.unknown_sections ?? [];
+  return `
+    <div class="notice bad stale-cut">
+      <div>
+        <b>This timeline was built from a different script.</b>
+        ${unknown.length
+          ? `${unknown.length} of its ${freshness.section_count} section(s) are not in the
+             plan any more: ${escapeHtml(unknown.slice(0, 3).join(" · "))}${
+               unknown.length > 3 ? " …" : ""}.`
+          : `${freshness.missing_sections.length} planned section(s) are missing from it.`}
+        Rendering leaves it alone because it counts as edited by hand.
+      </div>
+      <button class="btn" id="clear-timeline-button">Empty it and rebuild on the next render</button>
+    </div>`;
+}
+
 function renderTimeline(composition) {
   const totalMs = visibleDurationMs(composition);
   const tickCount = 7;
@@ -698,6 +728,24 @@ function wireStudioStage(stage, navigateToStage, renderAgentStage) {
   document.querySelectorAll("[data-goto]").forEach(button => {
     button.onclick = () => navigateToStage(button.dataset.goto);
   });
+
+  const clearButton = select("#clear-timeline-button");
+  if (clearButton) {
+    clearButton.onclick = async () => {
+      if (!window.confirm(
+        "Empty this timeline? Its clips are from a script that is no longer current, "
+        + "and the next render will build it again.")) return;
+      try {
+        applicationState.composition = await requestJsonFromApi(
+          projectApiPath("/composition/clear"), { method: "POST" });
+        showStageNotice("ok", "Timeline emptied. Render again to rebuild it.");
+      } catch (clearFailure) {
+        console.error("clearing the timeline failed", clearFailure);
+        showStageNotice("bad", clearFailure.message);
+      }
+      await rerender();
+    };
+  }
   select("#studio-agent-button").onclick = () => renderAgentStage(stage);
 
   const studioRenderButton = select("#studio-render-button");

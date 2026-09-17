@@ -17,7 +17,7 @@ from pathlib import Path
 from pipeline.sources import SUPPORTED_SOURCE_FILE_SUFFIXES
 from pipeline.stages import STAGES, Stage
 from pipeline.storage.documents import read_json_object, write_text_atomically
-from pipeline.storage.layout import slugify
+from pipeline.storage.layout import migrate_stage_folders, slugify
 
 logger = logging.getLogger(__name__)
 
@@ -136,11 +136,11 @@ def _stage_detail(stage: Stage, stage_directory: Path) -> str:
         detail = _detail_for_extraction(stage_directory)
         if detail:
             return detail
-    if stage is Stage.PLANNING:
+    if stage is Stage.SCENE_PLAN:
         detail = _detail_for_planning(stage_directory)
         if detail:
             return detail
-    if stage is Stage.SCRIPTING:
+    if stage is Stage.SCRIPT_STAGING:
         detail = _detail_for_scripting(stage_directory)
         if detail:
             return detail
@@ -155,7 +155,7 @@ def _detail_for_scripting(stage_directory: Path) -> str:
     try:
         script = json.loads((stage_directory / "script.json").read_text(encoding="utf-8"))
         plan = json.loads(
-            (stage_directory.parent / "planning" / "plan.json").read_text(encoding="utf-8")
+            (stage_directory.parent / "scene-plan" / "plan.json").read_text(encoding="utf-8")
         )
     except (OSError, ValueError):
         return ""
@@ -255,7 +255,15 @@ class ProjectStore:
 
     def get(self, slug: str) -> Project | None:
         d = self.root / slug
-        return self._load(d) if d.is_dir() else None
+        if not d.is_dir():
+            return None
+        # Every operation goes through here, so this is the one place that can
+        # bring an older project's folders up to the names the stages now use
+        # without a migration command nobody would run.
+        moved = migrate_stage_folders(d)
+        if moved:
+            logger.info("moved %s to its current layout: %s", slug, ", ".join(moved))
+        return self._load(d)
 
     def create(self, name: str) -> Project:
         """Create a project directory, or fail without leaving a half-built one.

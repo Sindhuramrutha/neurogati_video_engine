@@ -85,6 +85,11 @@ class ContentBlock(BaseModel):
     # had any figure to show, so Studio narrated a picture that did not exist.
     asset_path: str = ""
 
+    # Where that picture came from: the source document, a person, or a model.
+    # A drawn picture is not the author's diagram, and a video that shows one as
+    # if it were is making a claim about the source material that is not true.
+    asset_origin: str = "source"   # source | uploaded | generated
+
     @field_validator("text")
     @classmethod
     def _cap_text(cls, value: str) -> str:

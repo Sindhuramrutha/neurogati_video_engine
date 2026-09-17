@@ -19,8 +19,8 @@ The layout, in full:
       agents/<stage>/AGENT.md         project override of the shipped default
       inputs/                         (the sources themselves; see above)
       extraction/content.json
-      planning/plan.json
-      scripting/script.json
+      scene-plan/plan.json
+      script-staging/script.json
       studio/composition.json
       reviewing/review.json
 
@@ -47,6 +47,50 @@ def slugify(text: str) -> str:
     than a directory with no name."""
     slug = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
     return slug or "untitled"
+
+
+# The folders two stages used before they were renamed. Kept as data rather than
+# as a one-off `if`, because this is the list a reader needs when they find a
+# `planning/` directory in an old project and wonder what reads it.
+RENAMED_STAGE_FOLDERS: tuple[tuple[str, str], ...] = (
+    ("planning", "scene-plan"),
+    ("scripting", "script-staging"),
+)
+
+
+def migrate_stage_folders(project_root: Path) -> list[str]:
+    """Move a project's folders to the names its stages now use.
+
+    A rename that left `planning/plan.json` unreadable would be a rename that
+    threw away work, so every project is moved the first time it is opened.
+    Moved, not copied: two folders holding two versions of the same plan is the
+    ambiguity this avoids. If both exist -- which should not happen -- the new
+    one wins and the old is left untouched for someone to look at.
+    """
+    moved: list[str] = []
+    for old_name, new_name in RENAMED_STAGE_FOLDERS:
+        old_folder = project_root / old_name
+        new_folder = project_root / new_name
+        if not old_folder.is_dir() or new_folder.exists():
+            continue
+        old_folder.rename(new_folder)
+        moved.append(f"{old_name}/ -> {new_name}/")
+
+    # Settings and agent overrides are named after the stage too.
+    for old_name, new_name in RENAMED_STAGE_FOLDERS:
+        old_settings = project_root / "settings" / f"{old_name}.json"
+        new_settings = project_root / "settings" / f"{new_name}.json"
+        if old_settings.is_file() and not new_settings.exists():
+            old_settings.rename(new_settings)
+            moved.append(f"settings/{old_name}.json -> settings/{new_name}.json")
+
+        old_agent = project_root / "agents" / old_name
+        new_agent = project_root / "agents" / new_name
+        if old_agent.is_dir() and not new_agent.exists():
+            old_agent.rename(new_agent)
+            moved.append(f"agents/{old_name}/ -> agents/{new_name}/")
+
+    return moved
 
 
 def artifact_path(project_root: Path, stage: Stage) -> Path:

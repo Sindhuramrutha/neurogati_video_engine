@@ -257,7 +257,7 @@ def draft_plan(slug: str, instruction: str = "") -> dict[str, Any]:
             f"a plan is drafted from what they say."
         )
 
-    agent = resolve_agent(project, Stage.PLANNING)
+    agent = resolve_agent(project, Stage.SCENE_PLAN)
     current_plan = PlanStore(project.root).load()
     audience = current_plan.selected_audience or "a general audience"
     notes: list[str] = []

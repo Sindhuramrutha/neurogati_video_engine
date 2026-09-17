@@ -227,3 +227,38 @@ def complete_structured[ModelType: BaseModel](
             or f"The model did not return a valid {response_model.__name__} after "
                f"{MAXIMUM_SCHEMA_RETRIES} retries: {type(call_failure).__name__}: {call_failure}"
         ) from call_failure
+
+
+def draw_image(prompt: str, *, size: str = "1024x1024") -> bytes:
+    """Ask the image model for a picture, and return the bytes.
+
+    Deliberately here beside the text calls: it is the same providers, the same
+    key handling and the same failure vocabulary, and a second module for one
+    endpoint would drift from this one the first time a timeout changed.
+
+    Returns the image itself rather than a URL. A URL would expire, and the
+    caller always wants the bytes -- they are going straight into the project's
+    own asset store.
+    """
+    import base64
+
+    settings = get_settings()
+    base_url, api_key, model_name = settings.image_llm
+    client = _build_client(base_url, api_key, "images")
+
+    try:
+        response = client.images.generate(model=model_name, prompt=prompt, size=size, n=1)
+    except Exception as call_failure:
+        logger.exception("image generation failed")
+        raise ModelCallFailed(
+            _what_went_wrong(call_failure)
+            or f"{type(call_failure).__name__}: {call_failure}"
+        ) from call_failure
+
+    data = getattr(response, "data", None) or []
+    encoded = getattr(data[0], "b64_json", "") if data else ""
+    if not encoded:
+        raise ModelCallFailed(
+            f"{model_name} returned no image. It may not be an image model."
+        )
+    return base64.b64decode(encoded)

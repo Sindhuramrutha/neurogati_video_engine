@@ -256,7 +256,7 @@ class PlanStore(JsonDocumentStore[Plan]):
 
     def __init__(self, project_root: Path) -> None:
         super().__init__(
-            document_path=artifact_path(project_root, Stage.PLANNING),
+            document_path=artifact_path(project_root, Stage.SCENE_PLAN),
             model_type=Plan,
             build_default=Plan,
             description="plan",

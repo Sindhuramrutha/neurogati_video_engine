@@ -87,7 +87,7 @@ def draft_section(slug: str, section_id: str, instruction: str = "") -> dict[str
     store = ScriptStore(project.root)
     script = store.load()
     extraction = ExtractionStore(project.root).load()
-    agent = resolve_agent(project, Stage.SCRIPTING)
+    agent = resolve_agent(project, Stage.SCRIPT_STAGING)
 
     try:
         written, notes = _write_section(agent, plan, script, extraction, section, instruction)
@@ -106,7 +106,7 @@ def draft_section(slug: str, section_id: str, instruction: str = "") -> dict[str
 
     target_words = _target_words(section)
     return present_artifact(project, "script", saved) | {
-        "stage": Stage.SCRIPTING.value,
+        "stage": Stage.SCRIPT_STAGING.value,
         "agent": agent.name,
         "section_id": section_id,
         "section_title": section.title,
@@ -133,7 +133,7 @@ def draft_unwritten_sections(slug: str, instruction: str = "") -> dict[str, Any]
         raise OperationFailed("Every section already has narration.")
 
     extraction = ExtractionStore(project.root).load()
-    agent = resolve_agent(project, Stage.SCRIPTING)
+    agent = resolve_agent(project, Stage.SCRIPT_STAGING)
 
     def draft(section: PlanSection):
         try:

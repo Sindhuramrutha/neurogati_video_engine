@@ -86,7 +86,9 @@ def test_a_project_can_override_the_orchestrator(project, project_root):
 def test_the_snapshot_covers_every_stage(project):
     snapshot = orchestrator.pipeline_snapshot(operations.require_project(project))
 
-    for stage_key in ("inputs", "extraction", "planning", "scripting", "studio", "reviewing"):
+    for stage_key in (
+        "inputs", "extraction", "scene-plan", "script-staging", "studio", "reviewing",
+    ):
         assert stage_key in snapshot
     # And it says which artifacts do not exist yet, so the agent reports an
     # empty project rather than inventing one.
@@ -103,7 +105,7 @@ def test_the_snapshot_notices_an_artifact_appearing(project):
 def test_the_roster_names_every_stage_agent(project):
     roster = orchestrator.agent_roster(operations.require_project(project))
 
-    for name in ("Extraction", "Planning", "Scripting", "Studio", "Reviewing"):
+    for name in ("Extraction", "Scene Plan", "Script & Staging", "Studio", "Reviewing"):
         assert name in roster
     # Inputs has no agent, so it cannot be commanded and is not offered.
     assert "inputs" not in roster

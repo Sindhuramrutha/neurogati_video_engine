@@ -581,10 +581,12 @@ function renderReviewPanel(review) {
                   <input type="file" accept="image/*" hidden
                          data-replace-figure="${escapeHtml(finding.block_id)}">
                 </label>` : ""}
-              <button class="btn" disabled
-                      title="Generating a picture needs an image model; none is configured.">
-                Generate a picture
-              </button>
+              ${finding.block_id ? `
+                <button class="btn" data-draw-figure="${escapeHtml(finding.block_id)}"
+                        title="Draw one from the surrounding text. It is recorded as
+                               generated, not as the author's own figure.">
+                  Draw a picture
+                </button>` : ""}
               <button class="btn" data-acknowledge="${escapeHtml(finding.id)}">
                 It is fine
               </button>
@@ -648,6 +650,33 @@ function wireReviewPanel(rerender) {
         return;
       }
       await rerender();
+    };
+  });
+
+  document.querySelectorAll("[data-draw-figure]").forEach(button => {
+    button.onclick = async () => {
+      const instruction = window.prompt(
+        "Anything the picture must show? (optional) "
+        + "It is drawn from the figure's caption and the text around it, and is "
+        + "recorded as generated rather than as the author's own figure.", "");
+      if (instruction === null) return;
+      button.disabled = true;
+      button.textContent = "Drawing…";
+      try {
+        const drawn = await requestJsonFromApi(
+          projectApiPath(`/extraction/figures/${
+            encodeURIComponent(button.dataset.drawFigure)}/draw`),
+          {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ instruction }),
+          });
+        showStageNotice("ok", `Picture drawn by ${drawn.model} and marked as generated.`);
+        await runExtractionReview(rerender);
+      } catch (drawFailure) {
+        console.error("drawing a figure failed", drawFailure);
+        showStageNotice("bad", drawFailure.message);
+        await rerender();
+      }
     };
   });
 

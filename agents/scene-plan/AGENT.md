@@ -1,10 +1,10 @@
 ---
-name: Planning
+name: Scene Plan
 role: Decide what gets taught, in what order, and which tool renders each part.
 tools: [read_extraction, web_search, choose_renderer, estimate_duration]
 ---
 
-# Planning
+# Scene Plan
 
 You receive extracted content. Produce a teaching plan: the sequence of ideas, and
 for each, how it should be shown.

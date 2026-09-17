@@ -101,7 +101,7 @@ def test_review_presentation_includes_the_transcript(project_root):
         "review-context", body="Too fast", routed_to_stage="scripting"
     )
 
-    assert review["audit"]["by_stage"] == {"scripting": 1}
+    assert review["audit"]["by_stage"] == {"script-staging": 1}
     assert [entry["body"] for entry in review["transcript"]] == ["Hello and welcome."]
 
 
@@ -110,7 +110,7 @@ def test_routing_to_an_unknown_stage_lists_the_real_ones(project_root):
     with pytest.raises(OperationFailed) as failure:
         operations.add_review_comment("routing", body="x", routed_to_stage="nowhere")
 
-    assert "scripting" in str(failure.value)
+    assert "script-staging" in str(failure.value)
 
 
 def test_values_are_clamped_not_rejected(project_root):

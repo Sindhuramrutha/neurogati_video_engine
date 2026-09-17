@@ -193,3 +193,87 @@ def test_distinct_renders_raise_no_shared_file_warning():
     ])
 
     assert review.to_dict()["audit"]["shared_file_version_ids"] == []
+
+
+# --- a cut that no longer matches its script -------------------------------------------
+
+
+def _timeline_with_titles(slug, titles):
+    from pipeline.composition import Clip, ClipKind, CompositionStore, TrackKind
+
+    project = operations.require_project(slug)
+    store = CompositionStore(project.root)
+    composition = store.load()
+    video = next(track for track in composition.tracks if track.kind == TrackKind.VIDEO)
+    video.clips = [
+        Clip(kind=ClipKind.SCENE, label=title[:80], text=title,
+             start_ms=index * 10_000, duration_ms=9_000)
+        for index, title in enumerate(titles)
+    ]
+    return store.save(composition)
+
+
+def test_a_timeline_from_an_abandoned_script_is_reported(project_root):
+    """The defect this exists for: a plan was re-drafted from a different source,
+    the timeline and chapters stayed as an earlier render left them, and every
+    later render refused to rebuild them because they counted as hand-edited.
+    Studio and Reviewing went on describing a video nobody was making."""
+    slug, _ = planned_project("Wrong Cut", [
+        ("Perceptrons: Architecture and Learning", 90),
+        ("Backpropagation: The Breakthrough", 90),
+    ])
+    _timeline_with_titles(slug, [
+        "The Neural Signal Acquisition Chain: An Overview",
+        "Electrodes and Sensors: The Interface with the Body",
+    ])
+
+    composition = operations.read_artifact(slug, "composition")
+
+    assert composition["freshness"]["is_stale"] is True
+    assert len(composition["freshness"]["unknown_sections"]) == 2
+    assert any("built from a different script" in warning
+               for warning in composition["warnings"])
+
+
+def test_a_timeline_that_matches_the_plan_is_not_flagged(project_root):
+    slug, _ = planned_project("Right Cut", [
+        ("Perceptrons: Architecture and Learning", 90),
+    ])
+    _timeline_with_titles(slug, ["Perceptrons: Architecture and Learning"])
+
+    composition = operations.read_artifact(slug, "composition")
+
+    assert composition["freshness"]["is_stale"] is False
+    assert composition["warnings"] == []
+
+
+def test_reviewing_repeats_that_the_cut_is_wrong(project_root):
+    """Reviewing is the last gate before someone calls a video finished."""
+    slug, _ = planned_project("Wrong Cut Reviewed", [
+        ("Perceptrons: Architecture and Learning", 90),
+    ])
+    _timeline_with_titles(slug, ["Electrodes and Sensors: The Interface with the Body"])
+    from pipeline.review import Chapter, ReviewStore
+
+    project = operations.require_project(slug)
+    store = ReviewStore(project.root)
+    review = store.load()
+    review.chapters = [Chapter(title="Electrodes and Sensors", start_ms=0)]
+    store.save(review)
+
+    warnings = operations.read_artifact(slug, "review")["warnings"]
+
+    assert any("not in the plan any more" in warning for warning in warnings)
+    assert any("different script" in warning for warning in warnings)
+
+
+def test_emptying_the_timeline_lets_a_render_rebuild_it(project_root):
+    """The only way out used to be deleting clips one at a time."""
+    slug, _ = planned_project("Emptied", [("Perceptrons", 90)])
+    _timeline_with_titles(slug, ["Something else entirely"])
+
+    cleared = operations.clear_timeline(slug)
+
+    assert sum(len(track["clips"]) for track in cleared["tracks"]) == 0
+    assert cleared["freshness"]["is_stale"] is False
+    assert cleared["generated_from_render_at"] == ""

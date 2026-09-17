@@ -138,7 +138,7 @@ EXTRACTION_OPTIONS: tuple[StageOption, ...] = (
 )
 
 
-PLANNING_OPTIONS: tuple[StageOption, ...] = (
+SCENE_PLAN_OPTIONS: tuple[StageOption, ...] = (
     StageOption(
         key="target_duration",
         kind=OptionKind.CHOICE,
@@ -183,7 +183,7 @@ PLANNING_OPTIONS: tuple[StageOption, ...] = (
 
 OPTIONS_BY_STAGE: dict[Stage, tuple[StageOption, ...]] = {
     Stage.EXTRACTION: EXTRACTION_OPTIONS,
-    Stage.PLANNING: PLANNING_OPTIONS,
+    Stage.SCENE_PLAN: SCENE_PLAN_OPTIONS,
 }
 
 

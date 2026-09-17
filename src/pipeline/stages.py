@@ -1,4 +1,4 @@
-"""The six pipeline stages.
+"""The pipeline stages.
 
 One definition, used by the CLI, the API, the UI tabs, and the graph — so a stage
 cannot exist in the interface but not in the pipeline, which is exactly how v1's
@@ -24,10 +24,27 @@ from enum import StrEnum
 class Stage(StrEnum):
     INPUTS = "inputs"
     EXTRACTION = "extraction"
-    PLANNING = "planning"
-    SCRIPTING = "scripting"
+    ASSETS = "assets"
+    SCENE_PLAN = "scene-plan"
+    SCRIPT_STAGING = "script-staging"
     STUDIO = "studio"
     REVIEWING = "reviewing"
+    EXPORT = "export"
+
+    @classmethod
+    def _missing_(cls, value: object) -> Stage | None:
+        """Accept the names these stages used to have.
+
+        Two stages were renamed once their scope was clear: Planning became
+        Scene Plan, and Scripting became Script & Staging. Their old keys are
+        written into every project already on disk -- in review comments routed
+        back to a stage, in settings file names, in bookmarked URLs -- and a
+        rename that made those unreadable would be a rename that destroyed data.
+        """
+        return {
+            "planning": cls.SCENE_PLAN,
+            "scripting": cls.SCRIPT_STAGING,
+        }.get(str(value))
 
 
 @dataclass(frozen=True)
@@ -65,20 +82,31 @@ STAGES: tuple[StageSpec, ...] = (
         color="#4ECDC4",
     ),
     StageSpec(
-        Stage.PLANNING,
-        "Planning",
-        "Decide what gets taught, in what order, and which tool renders each part "
-        "— dynamic tool calling, not a fixed renderer.",
+        Stage.ASSETS,
+        "Assets & Design",
+        "Everything the video can show, and how it should look: the extracted "
+        "pictures, which of them are worth using, and the deck's own colours "
+        "and fonts.",
         has_agent=True,
-        produces="planning/plan.json",
+        produces="assets/library.json",
+        color="#FFD93D",
+    ),
+    StageSpec(
+        Stage.SCENE_PLAN,
+        "Scene Plan",
+        "Decide what gets taught, in what order, and how each part is shown — the "
+        "sections, their objectives, and the source content each one draws on.",
+        has_agent=True,
+        produces="scene-plan/plan.json",
         color="#B197FC",
     ),
     StageSpec(
-        Stage.SCRIPTING,
-        "Scripting",
-        "Plan to scenarios to scenes: narration and a per-scene brief.",
+        Stage.SCRIPT_STAGING,
+        "Script & Staging",
+        "Each section as scenes: what is said, and what is on screen while it is "
+        "said.",
         has_agent=True,
-        produces="scripting/script.json",
+        produces="script-staging/script.json",
         color="#A3E635",
     ),
     StageSpec(
@@ -102,6 +130,15 @@ STAGES: tuple[StageSpec, ...] = (
         produces="reviewing/review.json",
         color="#FF6B9D",
     ),
+    StageSpec(
+        Stage.EXPORT,
+        "Export",
+        "The video and everything that travels with it: transcript, chapter "
+        "marks, subtitles and a description, written as files you can hand over.",
+        has_agent=True,
+        produces="export/manifest.json",
+        color="#4ECDC4",
+    ),
 )
 
 BY_KEY: dict[Stage, StageSpec] = {s.key: s for s in STAGES}
@@ -114,8 +151,8 @@ def order(stage: Stage) -> int:
 def downstream_of(stage: Stage) -> list[Stage]:
     """Stages invalidated when `stage` changes.
 
-    Editing the Planning agent makes scripting, studio and reviewing stale, and
-    leaves inputs and extraction alone.
+    Editing the Scene Plan agent makes Script & Staging, Studio and Reviewing
+    stale, and leaves Inputs and Extraction alone.
 
     This computes *which* stages go stale, not *whether* they have. Answering
     that needs content hashes of each stage's artifact, which nothing records

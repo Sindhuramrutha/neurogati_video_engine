@@ -34,6 +34,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
+from pipeline.config import get_settings
 from pipeline.extraction import BlockKind, Extraction, ExtractionStore
 from pipeline.storage.documents import JsonDocumentStore, new_identifier
 
@@ -499,7 +500,9 @@ def acknowledge_finding(slug: str, finding_id: str) -> dict[str, Any]:
     return saved.to_dict(ExtractionStore(project.root).load())
 
 
-def replace_figure(slug: str, block_id: str, image_bytes: bytes, suffix: str) -> dict[str, Any]:
+def replace_figure(
+    slug: str, block_id: str, image_bytes: bytes, suffix: str, origin: str = "uploaded"
+) -> dict[str, Any]:
     """Put a picture you supply where the extracted one should have been.
 
     The extraction itself is edited, because that is what every later stage
@@ -548,11 +551,98 @@ def replace_figure(slug: str, block_id: str, image_bytes: bytes, suffix: str) ->
         raise OperationFailed("The picture could not be stored.")
 
     target.asset_path = stored
+    target.asset_origin = origin
     saved = store.save(extraction)
 
     return present_artifact(project, "extraction", saved) | {
         "block_id": block_id,
         "asset_path": stored,
+        "asset_origin": origin,
         "note": "Running extraction again will replace this picture with the "
                 "one in the source document.",
     }
+
+
+# --- drawing a replacement ----------------------------------------------------------
+
+# What the picture has to be, whatever it is of. An explainer video needs a
+# legible diagram on a plain background, not an illustration with a style.
+IMAGE_STYLE = (
+    "A clear, simple diagram for an educational video. Flat vector style, plain "
+    "white background, strong contrast, large legible labels, no watermark, no "
+    "signature, no photographic texture."
+)
+
+MAXIMUM_CONTEXT_CHARACTERS_FOR_A_PICTURE = 1_500
+
+
+def _picture_context(document, block) -> str:
+    """The words around a figure, which are what it has to illustrate."""
+    blocks = document.blocks
+    position = next((i for i, b in enumerate(blocks) if b.id == block.id), 0)
+    nearby = blocks[max(0, position - 3):position + 4]
+    text = " ".join(
+        b.text for b in nearby
+        if b.kind in {BlockKind.PARAGRAPH, BlockKind.LIST_ITEM, BlockKind.HEADING}
+    )
+    return text[:MAXIMUM_CONTEXT_CHARACTERS_FOR_A_PICTURE]
+
+
+def describe_figure_for_drawing(slug: str, block_id: str) -> dict[str, Any]:
+    """What would be drawn, and from what, without drawing it.
+
+    So the prompt can be shown before it is sent: a picture that will be stated
+    as part of the source material should not be produced by a prompt nobody
+    saw.
+    """
+    from pipeline.operations import OperationFailed, require_project
+
+    project = require_project(slug)
+    extraction = ExtractionStore(project.root).load()
+    for document in extraction.documents:
+        for block in document.blocks:
+            if block.id == block_id:
+                return {
+                    "block_id": block_id,
+                    "caption": block.text,
+                    "file_name": document.file_name,
+                    "heading_path": list(block.heading_path),
+                    "context": _picture_context(document, block),
+                    "model": get_settings().image_llm[2],
+                }
+    raise OperationFailed(f"This extraction has no block {block_id!r}.")
+
+
+def generate_figure(slug: str, block_id: str, instruction: str = "") -> dict[str, Any]:
+    """Draw a replacement for a figure that did not extract, and put it in place.
+
+    Recorded as generated, not quietly swapped in. Everything else in this
+    pipeline comes from the source documents; a drawn picture is the one thing
+    that does not, and the stage that shows it has to be able to say so.
+    """
+    from pipeline.llm import ModelCallFailed, ModelNotConfigured
+    from pipeline.operations import OperationFailed
+
+    described = describe_figure_for_drawing(slug, block_id)
+    where = " › ".join(described["heading_path"]) or described["file_name"]
+    prompt = "\n".join(part for part in [
+        f"Draw the figure described as: {described['caption'] or 'an unnamed figure'}.",
+        f"It belongs in: {where}.",
+        f"The surrounding text says: {described['context']}" if described["context"] else "",
+        f"Additional instruction: {instruction}" if instruction.strip() else "",
+        "Show only what that text supports. Do not invent numbers, data points or "
+        "labels that are not in it.",
+        IMAGE_STYLE,
+    ] if part)
+
+    from pipeline.llm import draw_image
+
+    try:
+        drawn = draw_image(prompt)
+    except ModelNotConfigured as not_configured:
+        raise OperationFailed(str(not_configured)) from not_configured
+    except ModelCallFailed as call_failure:
+        raise OperationFailed(f"The picture could not be drawn. {call_failure}") from call_failure
+
+    saved = replace_figure(slug, block_id, drawn, ".png", origin="generated")
+    return saved | {"prompt": prompt, "model": described["model"]}

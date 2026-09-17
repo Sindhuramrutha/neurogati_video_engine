@@ -23,7 +23,7 @@ const reviewViewState = {
 
 /** Stages a comment can be routed to. Reviewing itself is excluded: routing a
  *  comment back to the stage it was raised in says nothing about who fixes it. */
-const ROUTABLE_STAGES = ["extraction", "planning", "scripting", "studio"];
+const ROUTABLE_STAGES = ["extraction", "scene-plan", "script-staging", "studio"];
 
 function formatTimecode(milliseconds) {
   const totalSeconds = Math.floor(milliseconds / 1000);
@@ -106,7 +106,7 @@ function renderReadinessCard(review) {
   const warnings = review.warnings ?? [];
   const hasChecks = isReady && warnings.length > 0;
 
-  // Where the open comments cluster is the useful signal: six routed to Scripting
+  // Where the open comments cluster is the useful signal: six routed to Script & Staging
   // means the script is the problem, not the timeline.
   const clusters = Object.entries(byStage)
     .sort((a, b) => b[1] - a[1])

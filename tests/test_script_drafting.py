@@ -474,7 +474,7 @@ def test_the_scripting_chip_counts_sections_written(project_root):
     slug, project = planned_project("Chip")
     operations.write_section_script(slug, "s1", " ".join(["word"] * 150))
 
-    assert project.stage_state(Stage.SCRIPTING).detail == "1 of 3 sections written · ~1 min"
+    assert project.stage_state(Stage.SCRIPT_STAGING).detail == "1 of 3 sections written · ~1 min"
 
 
 def test_the_source_for_a_section_can_be_read_whole(project_root):

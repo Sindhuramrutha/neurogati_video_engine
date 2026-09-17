@@ -28,8 +28,15 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from pipeline.composition import Clip, Composition, CompositionStore, Track
+from pipeline.assets import AssetLibraryStore, FigureUse, rebuild_library
+from pipeline.composition import Clip, ClipKind, Composition, CompositionStore, Track
 from pipeline.config import get_settings
+from pipeline.exporting import (
+    ExportedFile,
+    ExportManifest,
+    ExportStore,
+    write_export_files,
+)
 from pipeline.extraction import (
     AssetSink,
     Extraction,
@@ -54,7 +61,13 @@ from pipeline.rendering import (
     render_sections,
     write_subtitles,
 )
-from pipeline.review import Comment, Review, ReviewStore, chapters_from_plan
+from pipeline.review import (
+    Comment,
+    CommentStatus,
+    Review,
+    ReviewStore,
+    chapters_from_plan,
+)
 from pipeline.scripting import (
     Script,
     ScriptScene,
@@ -97,8 +110,8 @@ class ArtifactBinding:
 
 ARTIFACTS: dict[str, ArtifactBinding] = {
     "extraction": ArtifactBinding(Stage.EXTRACTION, ExtractionStore, Extraction),
-    "plan": ArtifactBinding(Stage.PLANNING, PlanStore, Plan),
-    "script": ArtifactBinding(Stage.SCRIPTING, ScriptStore, Script),
+    "plan": ArtifactBinding(Stage.SCENE_PLAN, PlanStore, Plan),
+    "script": ArtifactBinding(Stage.SCRIPT_STAGING, ScriptStore, Script),
     "composition": ArtifactBinding(Stage.STUDIO, CompositionStore, Composition),
     "review": ArtifactBinding(Stage.REVIEWING, ReviewStore, Review),
 }
@@ -226,7 +239,7 @@ def present_artifact(project: Project, artifact_name: str, document: Any) -> dic
             ],
             "selected_audience": plan.selected_audience,
             "out_of_date": out_of_date,
-            "comments_by_section": _open_comments_by_section(project, plan, Stage.SCRIPTING),
+            "comments_by_section": _open_comments_by_section(project, plan, Stage.SCRIPT_STAGING),
             "measured_seconds": _measured_narration_seconds(project, plan),
         }
 
@@ -242,9 +255,24 @@ def present_artifact(project: Project, artifact_name: str, document: Any) -> dic
             {section.id: section.estimated_seconds for section in plan.sections},
             {section.id: section.title for section in plan.sections},
         )
+        # Chapters are what a viewer navigates by, so a chapter naming a section
+        # the plan no longer has is the same defect as a stale timeline: the cut
+        # describes work that was abandoned.
+        planned_titles = {s.title.strip() for s in plan.sections if s.title.strip()}
+        stale_chapters = [
+            chapter.title for chapter in document.chapters
+            if chapter.title.strip() and chapter.title.strip() not in planned_titles
+        ]
         presented["warnings"] = [
             *presented["warnings"],
             *(over_budget_warning(section) for section in budget_audit["over_budget"]),
+            *([
+                f"{len(stale_chapters)} chapter(s) name sections that are not in the plan "
+                f"any more: {', '.join(stale_chapters[:3])}"
+                f"{'…' if len(stale_chapters) > 3 else ''}. This cut was made from a "
+                f"different script."
+            ] if stale_chapters else []),
+            *cut_freshness(plan, CompositionStore(project.root).load())["warnings"],
         ]
         return presented | {
             "plan_sections": [
@@ -267,7 +295,86 @@ def present_artifact(project: Project, artifact_name: str, document: Any) -> dic
             ],
         }
 
+    if artifact_name == "composition":
+        plan = PlanStore(project.root).load()
+        freshness = cut_freshness(plan, document)
+        presented = document.to_dict()
+        presented["warnings"] = [*presented.get("warnings", []), *freshness["warnings"]]
+        return presented | {"freshness": freshness}
+
     return document.to_dict()
+
+
+def cut_freshness(plan: Plan, composition: Composition) -> dict[str, Any]:
+    """Whether the timeline still describes the plan it was built from.
+
+    This is the check whose absence let a finished project look finished while
+    being wrong. A plan was re-drafted from a different source document; the
+    timeline and the chapters stayed as the previous render had left them, and
+    every later render refused to rebuild them because they counted as
+    hand-edited. Studio and Reviewing went on showing five sections about
+    electrodes for a video whose script was about neural networks, and nothing
+    anywhere said so.
+
+    Matched on titles, because a clip records what it shows rather than which
+    section produced it. That is a weaker link than an id and is the reason this
+    reports "these do not appear in the plan" rather than claiming to know which
+    section each clip came from.
+    """
+    scene_titles = [
+        clip.text.strip() or clip.label.strip()
+        for track in composition.tracks
+        for clip in track.clips
+        if clip.kind == ClipKind.SCENE
+    ]
+    planned_titles = {section.title.strip() for section in plan.sections if section.title.strip()}
+
+    unknown = [title for title in scene_titles if title and title not in planned_titles]
+    missing = [
+        title for title in planned_titles
+        if title not in set(scene_titles)
+    ]
+
+    warnings: list[str] = []
+    if scene_titles and unknown:
+        warnings.append(
+            f"{len(unknown)} of {len(scene_titles)} section(s) in this timeline are not in "
+            f"the plan any more — it was built from a different script. Rebuild it, or "
+            f"re-render, before trusting the cut."
+        )
+    elif scene_titles and missing:
+        warnings.append(
+            f"{len(missing)} planned section(s) are missing from this timeline: "
+            f"{', '.join(sorted(missing)[:3])}"
+            f"{'…' if len(missing) > 3 else ''}."
+        )
+
+    return {
+        "has_timeline": bool(scene_titles),
+        "was_generated": bool(composition.generated_from_render_at),
+        "section_count": len(scene_titles),
+        "unknown_sections": unknown,
+        "missing_sections": sorted(missing),
+        "is_stale": bool(scene_titles and (unknown or missing)),
+        "warnings": warnings,
+    }
+
+
+def clear_timeline(slug: str) -> dict[str, Any]:
+    """Empty the Studio timeline so the next render builds it again.
+
+    The hand-edit protection is right to refuse to overwrite a timeline someone
+    has worked on, but it left no way out except deleting clips one at a time --
+    which is how a timeline from an abandoned script survived four renders.
+    """
+    project = require_project(slug)
+    store = CompositionStore(project.root)
+    composition = store.load()
+    for track in composition.tracks:
+        track.clips = []
+    composition.generated_from_render_at = ""
+    composition.generated_fingerprint = ""
+    return present_artifact(project, "composition", store.save(composition))
 
 
 def read_artifact(slug: str, artifact_name: str) -> dict[str, Any]:
@@ -1382,7 +1489,192 @@ def seed_review_chapters(slug: str) -> dict[str, Any]:
     return present_artifact(project, "review", store.save(review))
 
 
+
+# --- assets and design --------------------------------------------------------
+
+
+def read_asset_library(slug: str) -> dict[str, Any]:
+    """The library as it stands, without rebuilding it."""
+    project = require_project(slug)
+    return AssetLibraryStore(project.root).load().to_dict()
+
+
+def refresh_asset_library(slug: str) -> dict[str, Any]:
+    """Bring the library in step with the current extraction, keeping decisions."""
+    project = require_project(slug)
+    extraction = ExtractionStore(project.root).load()
+    if not extraction.documents:
+        raise OperationFailed(
+            f"{project.name} has nothing extracted yet, so there are no pictures "
+            f"to gather. Run extraction first."
+        )
+
+    store = AssetLibraryStore(project.root)
+    rebuilt = rebuild_library(project.root, extraction, store.load())
+    rebuilt.refreshed_at = datetime.now(UTC).isoformat(timespec="seconds")
+    return store.save(rebuilt).to_dict()
+
+
+def decide_figure(
+    slug: str, figure_id: str, use: str, note: str | None = None
+) -> dict[str, Any]:
+    """Say whether a picture should be used, and why."""
+    if use not in {FigureUse.USE, FigureUse.SKIP, FigureUse.UNDECIDED}:
+        raise OperationFailed(
+            f"{use!r} is not a decision. Use one of: "
+            f"{FigureUse.USE}, {FigureUse.SKIP}, {FigureUse.UNDECIDED}."
+        )
+
+    project = require_project(slug)
+    store = AssetLibraryStore(project.root)
+    library = store.load()
+    figure = next((f for f in library.figures if f.id == figure_id), None)
+    if figure is None:
+        raise OperationFailed(f"This library has no picture {figure_id!r}.")
+
+    figure.use = use
+    if note is not None:
+        figure.note = note
+    return store.save(library).to_dict()
+
+
+def set_project_look(slug: str, use_source_styling: bool) -> dict[str, Any]:
+    """Whether the video follows the source deck's colours and fonts."""
+    project = require_project(slug)
+    store = AssetLibraryStore(project.root)
+    library = store.load()
+    library.look.use_source_styling = bool(use_source_styling)
+    return store.save(library).to_dict()
+
+
+# --- export -------------------------------------------------------------------
+
+
+def _export_sections(project: Project, plan: Plan, script: Script) -> list[dict[str, Any]]:
+    starts = section_start_times(project, plan)
+    return [
+        {
+            "id": section.id,
+            "title": section.title,
+            "body": script.spoken_text(section.id),
+            "start_ms": start_ms,
+        }
+        for section, start_ms in zip(plan.sections, starts, strict=False)
+    ]
+
+
+def export_readiness(project: Project) -> tuple[list[str], list[str]]:
+    """What stops this project being handed over, and what merely ought to be known.
+
+    Blockers are the things that make the files wrong: no plan, no narration, no
+    render, or a cut built from a script that is no longer current. Everything
+    else is a warning, because "one comment is still open" is a judgement and
+    this stage does not get to make it.
+    """
+    plan = PlanStore(project.root).load()
+    script = ScriptStore(project.root).load()
+    review = ReviewStore(project.root).load()
+    composition = CompositionStore(project.root).load()
+
+    blockers: list[str] = []
+    warnings: list[str] = []
+
+    if not plan.sections:
+        blockers.append("The plan has no sections.")
+    unwritten = [s.title for s in plan.sections if not script.body_for(s.id).strip()]
+    if unwritten:
+        shown = ", ".join(unwritten[:3])
+        more = "..." if len(unwritten) > 3 else ""
+        blockers.append(f"{len(unwritten)} section(s) have no narration: {shown}{more}.")
+    if not review.versions:
+        blockers.append("Nothing has been rendered yet.")
+
+    blockers.extend(cut_freshness(plan, composition)["warnings"])
+
+    open_comments = [
+        comment for comment in review.comments
+        if comment.status == CommentStatus.OPEN
+    ]
+    if open_comments:
+        warnings.append(f"{len(open_comments)} review comment(s) are still open.")
+    stranded = script.audit([s.id for s in plan.sections])["orphaned_section_ids"]
+    if stranded:
+        warnings.append(
+            f"{len(stranded)} piece(s) of narration are not attached to any section."
+        )
+    return blockers, warnings
+
+
+def build_export(slug: str) -> dict[str, Any]:
+    """Write the transcript, chapters and description, and list what is ready.
+
+    Refuses nothing: a project with problems still gets its manifest, with the
+    problems named in it. Withholding the files would not make the video better,
+    and someone checking what is wrong needs the transcript to do it.
+    """
+    project = require_project(slug)
+    plan = PlanStore(project.root).load()
+    script = ScriptStore(project.root).load()
+    review = ReviewStore(project.root).load()
+
+    blockers, warnings = export_readiness(project)
+    sections = _export_sections(project, plan, script)
+    files = write_export_files(project.root, project.name, plan.to_dict(), sections)
+
+    version = next(
+        (v for v in review.versions if v.id == review.active_version_id),
+        review.versions[-1] if review.versions else None,
+    )
+    if version is not None:
+        video = Path(version.file_path)
+        if video.exists():
+            files.append(ExportedFile(
+                name=video.name, kind="video",
+                path=str(video.relative_to(project.root)).replace("\\", "/"),
+                bytes=video.stat().st_size,
+                note=version.label or "The rendered video.",
+            ))
+            for subtitle in sorted(video.parent.glob(video.stem + "*.vtt")):
+                files.append(ExportedFile(
+                    name=subtitle.name, kind="subtitles",
+                    path=str(subtitle.relative_to(project.root)).replace("\\", "/"),
+                    bytes=subtitle.stat().st_size,
+                    note="Subtitles, timed to the narration.",
+                ))
+        else:
+            blockers.append(f"The rendered video is missing from disk: {video.name}")
+
+    manifest = ExportManifest(
+        built_at=datetime.now(UTC).isoformat(timespec="seconds"),
+        video_version_id=version.id if version else "",
+        title=project.name,
+        duration_ms=version.duration_ms if version else 0,
+        files=files,
+        blockers=blockers,
+        warnings=warnings,
+    )
+    return ExportStore(project.root).save(manifest).to_dict()
+
+
+def read_export(slug: str) -> dict[str, Any]:
+    """The last export, with today's blockers rather than the ones it was built with."""
+    project = require_project(slug)
+    manifest = ExportStore(project.root).load()
+    blockers, warnings = export_readiness(project)
+    return manifest.to_dict() | {
+        "blockers_now": blockers,
+        "warnings_now": warnings,
+        "is_ready_now": not blockers,
+    }
+
 __all__ = [
+    "export_readiness",
+    "read_export",
+    "build_export",
+    "set_project_look",
+    "decide_figure",
+    "refresh_asset_library",
+    "read_asset_library",
     "ARTIFACTS",
     "list_voice_providers",
     "render_video",

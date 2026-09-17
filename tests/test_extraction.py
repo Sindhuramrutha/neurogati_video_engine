@@ -368,8 +368,8 @@ def test_only_options_that_change_a_run_are_marked_as_built():
     }
 
     # Nothing in Planning reads its preferences yet.
-    assert not [option for option in options_for(Stage.PLANNING) if option.implemented]
-    assert all("implemented" in option.to_dict() for option in options_for(Stage.PLANNING))
+    assert not [option for option in options_for(Stage.SCENE_PLAN) if option.implemented]
+    assert all("implemented" in option.to_dict() for option in options_for(Stage.SCENE_PLAN))
 
 
 def test_switching_images_off_extracts_no_figures(project_root):
@@ -555,7 +555,7 @@ def test_agents_are_told_a_file_was_left_out_on_purpose(project_root):
     operations.set_excluded_sources(slug, ["deck.md"])
     operations.run_extraction(slug)
 
-    assert "deck.md (left out of extraction by choice)" in stage_context(project, Stage.PLANNING)
+    assert "deck.md (left out of extraction by choice)" in stage_context(project, Stage.SCENE_PLAN)
     snapshot = orchestrator.pipeline_snapshot(project)
     assert "Left out of extraction by choice: deck.md" in snapshot
     assert "not extracted yet: deck.md" not in snapshot

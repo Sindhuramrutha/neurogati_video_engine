@@ -84,8 +84,8 @@ def stage_context(project: Project, stage: Stage, include_source: bool = True) -
     """
     upstream_by_stage: dict[Stage, list[str]] = {
         Stage.EXTRACTION: [],
-        Stage.PLANNING: [],
-        Stage.SCRIPTING: ["plan", "script"],
+        Stage.SCENE_PLAN: [],
+        Stage.SCRIPT_STAGING: ["plan", "script"],
         Stage.STUDIO: ["script", "composition"],
         Stage.REVIEWING: ["plan", "script", "composition", "review"],
     }
@@ -110,7 +110,7 @@ def stage_context(project: Project, stage: Stage, include_source: bool = True) -
     # the Planning agent saw only file names, which is a guarantee of invention:
     # asked to plan a video about a document it cannot read, a model writes a
     # plausible plan about the title. This is the most important block here.
-    if include_source and stage in (Stage.EXTRACTION, Stage.PLANNING, Stage.SCRIPTING):
+    if include_source and stage in (Stage.EXTRACTION, Stage.SCENE_PLAN, Stage.SCRIPT_STAGING):
         source_text = extracted_content_as_markdown(project)
         if source_text:
             if len(source_text) > MAXIMUM_SOURCE_CHARACTERS:
@@ -125,7 +125,7 @@ def stage_context(project: Project, stage: Stage, include_source: bool = True) -
                 "working from the project name."
             )
 
-    if stage is Stage.PLANNING:
+    if stage is Stage.SCENE_PLAN:
         parts.append("\nThe current plan is below; propose changes against it.")
         parts.append(artifact_for_agents(project, "plan"))
 
@@ -291,7 +291,7 @@ def draft_plan_with_agent(slug: str, instruction: str) -> dict[str, Any]:
 
     draft = draft_plan(slug, instruction)
     return draft | {
-        "stage": Stage.PLANNING.value,
+        "stage": Stage.SCENE_PLAN.value,
         "is_saved": False,
         "note": (
             "Kept as a pending draft; the plan was not changed. Accept it whole or by "

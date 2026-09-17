@@ -51,7 +51,7 @@ function formatDuration(totalSeconds) {
 const referenceLabel = reference =>
   [reference.file_name, ...reference.heading_path].join(" › ");
 
-export async function renderPlanningStage(stage, navigateToStage, renderAgentStage) {
+export async function renderScenePlanStage(stage, navigateToStage, renderAgentStage) {
   const body = select("#stage-body");
   if (!body.querySelector(".plan-bar")) {
     body.innerHTML = `<div class="card muted">Loading plan…</div>`;
@@ -89,9 +89,9 @@ export async function renderPlanningStage(stage, navigateToStage, renderAgentSta
   body.innerHTML = `
     <div class="card">
       <div class="card-head">
-        <span class="card-icon">${stageIcon("planning", 21)}</span>
+        <span class="card-icon">${stageIcon("scene-plan", 21)}</span>
         <div>
-          <h2>Planning</h2>
+          <h2>Scene Plan</h2>
           <p>Turn extracted content into a clear structure for your video.</p>
         </div>
         <button class="btn" id="planning-agent-button">
@@ -121,7 +121,7 @@ export async function renderPlanningStage(stage, navigateToStage, renderAgentSta
       ${renderFooterNav(stage)}
     </div>`;
 
-  wirePlanningStage(stage, navigateToStage, renderAgentStage, draft);
+  wireScenePlanStage(stage, navigateToStage, renderAgentStage, draft);
 }
 
 /* ---- the plan against the extraction ------------------------------------ */
@@ -421,7 +421,7 @@ function renderDraftPanel(draft, currentPlan) {
           ${formatDuration(proposed.total_estimated_seconds)}</span>
       </div>
       <p class="panel-sub">
-        Drafted by the ${escapeHtml(draft.agent ?? "Planning")} agent from
+        Drafted by the ${escapeHtml(draft.agent ?? "Scene Plan")} agent from
         ${(draft.documents_read ?? []).length} document(s) and ${draft.headings_read ?? 0} headings
         ${drafted ? `· ${escapeHtml(drafted)}` : ""}
         ${draft.instruction ? `· guidance: “${escapeHtml(draft.instruction)}”` : ""}
@@ -436,7 +436,7 @@ function renderDraftPanel(draft, currentPlan) {
         <div class="notice warn draft-notice">
           <b>Accept all</b> replaces your ${currentPlan.sections.length} current section(s).
           Narration already written for ${draft.replaces_narrated_sections} of them in
-          Scripting is kept, but no longer attached to a section.
+          Script &amp; Staging is kept, but no longer attached to a section.
           Use <b>Add to plan</b> to keep your sections and add these alongside.
         </div>` : ""}
 
@@ -540,7 +540,7 @@ function renderObjectivesPanel(plan) {
           </div>`;
           }).join("")
         : `<p class="muted" style="font-size:12.5px;margin:0">
-             None yet. These guide what Scripting emphasises.</p>`}
+             None yet. These guide what Script &amp; Staging emphasises.</p>`}
     </div>`;
 }
 
@@ -689,8 +689,8 @@ async function draftPlan(rerender) {
 
 /* ---- wiring ------------------------------------------------------------- */
 
-function wirePlanningStage(stage, navigateToStage, renderAgentStage, draft) {
-  const rerender = () => renderPlanningStage(stage, navigateToStage, renderAgentStage);
+function wireScenePlanStage(stage, navigateToStage, renderAgentStage, draft) {
+  const rerender = () => renderScenePlanStage(stage, navigateToStage, renderAgentStage);
   const change = applyEdit => editStageDocument({
     documentKind: "plan", apiPathSuffix: "/plan", applyEdit, rerender,
   });

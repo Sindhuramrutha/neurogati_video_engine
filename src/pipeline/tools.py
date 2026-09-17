@@ -102,6 +102,22 @@ TOOLS: tuple[Tool, ...] = (
     Tool("check_fidelity", ToolKind.MEASURE,
          "Verify every claim in narration traces to the source."),
 
+    # assets & design
+    Tool("inspect_image", ToolKind.MEASURE,
+         "Open a stored picture and measure it: size, proportions, whether it is blank."),
+    Tool("describe_image", ToolKind.READ,
+         "Say what a picture shows, to judge whether it carries information the "
+         "words do not."),
+    Tool("choose_look", ToolKind.WRITE,
+         "Set whether the video follows the source deck's colours and fonts."),
+
+    # export
+    Tool("read_review", ToolKind.READ, "Read the review: comments, chapters and versions."),
+    Tool("read_composition", ToolKind.READ, "Read the Studio timeline."),
+    Tool("read_script", ToolKind.READ, "Read the narration, scene by scene."),
+    Tool("write_export", ToolKind.WRITE,
+         "Write the transcript, chapter marks and description beside the video."),
+
     # studio
     Tool("search_asset_library", ToolKind.READ,
          "Find an existing asset before making a new one.", ("asset-library",)),

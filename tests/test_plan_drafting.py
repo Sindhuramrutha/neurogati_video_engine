@@ -212,7 +212,7 @@ def test_the_planning_chip_counts_sections_not_files(project_root):
     operations.add_plan_section(slug, title="One", estimated_seconds=90)
     operations.add_plan_section(slug, title="Two", estimated_seconds=90)
 
-    assert project.stage_state(Stage.PLANNING).detail == "2 sections · ~3 min"
+    assert project.stage_state(Stage.SCENE_PLAN).detail == "2 sections · ~3 min"
 
 
 # --- drafting reads everything ------------------------------------------------------------

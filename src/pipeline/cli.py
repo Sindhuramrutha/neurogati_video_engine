@@ -380,7 +380,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--author", default="")
     p.add_argument("--at-ms", type=int, default=0, dest="at_ms")
     p.add_argument("--route", help="stage that should fix it",
-                   choices=["extraction", "planning", "scripting", "studio"])
+                   choices=["extraction", "scene-plan", "script-staging", "studio"])
     p.set_defaults(fn=command_review_comment)
 
     p = add_parser(review_sub, "seed-chapters", help="rebuild chapters from the plan")
@@ -394,7 +394,7 @@ def build_parser() -> argparse.ArgumentParser:
     p = add_parser(agent_sub, "ask", help="ask a stage agent a question; writes nothing")
     p.add_argument("project")
     p.add_argument("stage",
-                   choices=["extraction", "planning", "scripting", "studio", "reviewing"])
+                   choices=["extraction", "scene-plan", "script-staging", "studio", "reviewing"])
     p.add_argument("--question", required=True)
     p.set_defaults(fn=command_agent_ask)
 
