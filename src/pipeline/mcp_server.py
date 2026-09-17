@@ -295,10 +295,12 @@ def ask_stage_agent(project: str, stage: str, question: str) -> str:
 
 @server.tool()
 def draft_plan(project: str, instruction: str) -> str:
-    """Have the Planning agent propose a plan as structured data.
+    """Have the Planning agent draft a plan from the whole extraction.
 
-    Returns a proposal and saves nothing. To keep it, pass the `proposed_plan`
-    from the result to `write_artifact` with artifact "plan".
+    Reads every heading of every extracted document, then details each section
+    from its own text. The plan is not changed: the result is kept as a pending
+    draft. Accept it with `accept_plan_draft`, or discard it with
+    `discard_plan_draft`.
 
     Args:
         project: the project slug.
@@ -310,11 +312,37 @@ def draft_plan(project: str, instruction: str) -> str:
 
 
 @server.tool()
-def draft_section_script(project: str, section_id: str, instruction: str = "") -> str:
-    """Have the Scripting agent write narration for one plan section, and save it.
+def accept_plan_draft(project: str, section_ids: list[str] | None = None) -> str:
+    """Accept the pending drafted plan.
 
-    Writes, unlike `draft_plan`: narration is addressed by section id, so this
-    replaces one section's words and leaves the rest of the script alone.
+    With no `section_ids`, the draft replaces the plan's sections, objectives and
+    key themes. With `section_ids`, only those drafted sections are appended to
+    the current plan, bringing their learning objectives with them.
+
+    Args:
+        project: the project slug.
+        section_ids: drafted section ids to append, or omit to accept everything.
+    """
+    return guarded(operations.accept_plan_draft, project, section_ids)
+
+
+@server.tool()
+def discard_plan_draft(project: str) -> str:
+    """Throw away the pending drafted plan. The plan itself is not touched.
+
+    Args:
+        project: the project slug.
+    """
+    return guarded(operations.discard_plan_draft, project)
+
+
+@server.tool()
+def draft_section_script(project: str, section_id: str, instruction: str = "") -> str:
+    """Have the Scripting agent write one plan section as scenes, and save it.
+
+    Each scene is narration plus a brief of what is on screen. Writes, unlike
+    `draft_plan`: narration is addressed by section id, so this replaces one
+    section's scenes and leaves the rest of the script alone.
 
     Args:
         project: the project slug.
@@ -324,6 +352,21 @@ def draft_section_script(project: str, section_id: str, instruction: str = "") -
     from pipeline.agent_runtime import draft_section_script_with_agent
 
     return guarded(draft_section_script_with_agent, project, section_id, instruction)
+
+
+@server.tool()
+def draft_unwritten_sections(project: str, instruction: str = "") -> str:
+    """Draft every plan section that has no narration yet, and save them.
+
+    Never replaces narration that is already written.
+
+    Args:
+        project: the project slug.
+        instruction: optional steer for every section.
+    """
+    from pipeline.script_drafting import draft_unwritten_sections as draft_all
+
+    return guarded(draft_all, project, instruction)
 
 
 @server.tool()

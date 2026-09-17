@@ -20,19 +20,31 @@ a way that a model that hallucinated a heading is not.
 from __future__ import annotations
 
 import hashlib
+import json
 import logging
 from pathlib import Path
 
 from pydantic import BaseModel, Field, field_validator
 
 from pipeline.stages import Stage
-from pipeline.storage.documents import JsonDocumentStore, new_identifier
+from pipeline.storage.documents import (
+    JsonDocumentStore,
+    new_identifier,
+    read_json_object,
+    write_text_atomically,
+)
 from pipeline.storage.layout import artifact_path
 
 logger = logging.getLogger(__name__)
 
 MAXIMUM_BLOCK_LENGTH = 20000
 MAXIMUM_BLOCKS_PER_DOCUMENT = 5000
+
+# A slide with more shapes than this is a diagram drawn by hand; its geometry is
+# not something a video can reproduce anyway, and keeping all of it would bloat
+# the extraction for no gain.
+MAXIMUM_SHAPES_PER_SLIDE = 60
+MAXIMUM_SHAPE_TEXT_LENGTH = 300
 
 # Extracted figures are a copy of the pictures inside the source files, so a
 # picture-heavy deck can approach the size of the deck itself. This is a ceiling
@@ -83,10 +95,78 @@ class ContentBlock(BaseModel):
         return len(self.text.split())
 
 
+class LayoutShape(BaseModel):
+    """One shape on a slide, and where it sits.
+
+    Positions are fractions of the slide, not EMUs or pixels: a deck can be 4:3
+    or 16:9 and the video is neither, so the only number that survives the
+    journey is "38% across, 12% down".
+    """
+
+    kind: str = "other"     # title | text | picture | table | chart | other
+    left: float = 0.0
+    top: float = 0.0
+    width: float = 0.0
+    height: float = 0.0
+    z: int = 0              # back to front, as PowerPoint stacks them
+    text: str = ""          # a preview; the words themselves are blocks
+    asset_path: str = ""    # a picture's stored copy
+    font_size_pt: float = 0.0
+    bold: bool = False
+    align: str = ""
+
+    @field_validator("text")
+    @classmethod
+    def _cap_text(cls, value: str) -> str:
+        return value.strip()[:MAXIMUM_SHAPE_TEXT_LENGTH]
+
+
+class SlideBackground(BaseModel):
+    """What is behind everything else on a slide."""
+
+    colour: str = ""        # "#RRGGBB"
+    asset_path: str = ""    # a picture background, stored like a figure
+    inherited_from: str = ""  # slide | layout | master -- where it was set
+
+
+class SlideLayout(BaseModel):
+    number: int = 0
+    title: str = ""
+    layout_name: str = ""
+    shapes: list[LayoutShape] = Field(default_factory=list)
+    background: SlideBackground | None = None
+
+    @field_validator("shapes")
+    @classmethod
+    def _cap_shapes(cls, value: list[LayoutShape]) -> list[LayoutShape]:
+        return value[:MAXIMUM_SHAPES_PER_SLIDE]
+
+
+class DocumentDesign(BaseModel):
+    """The deck's own styling: its proportions, colours and fonts.
+
+    Kept so a video made from a deck can look like the deck instead of like the
+    renderer's defaults.
+    """
+
+    aspect_ratio: str = ""          # "16:9"
+    slide_width_emu: int = 0
+    slide_height_emu: int = 0
+    theme_name: str = ""
+    colours: dict[str, str] = Field(default_factory=dict)
+    major_font: str = ""
+    minor_font: str = ""
+
+
 class ExtractedDocument(BaseModel):
     file_name: str = ""
     blocks: list[ContentBlock] = Field(default_factory=list)
     extraction_note: str = ""
+
+    # Only decks have these, and only when the options are on. Kept out of the
+    # markdown an agent reads: a hundred shape boxes would drown the words.
+    slides: list[SlideLayout] = Field(default_factory=list)
+    design: DocumentDesign | None = None
 
     @field_validator("blocks")
     @classmethod
@@ -96,6 +176,48 @@ class ExtractedDocument(BaseModel):
     @property
     def word_count(self) -> int:
         return sum(block.word_count for block in self.blocks)
+
+    def blocks_under(self, heading_path: list[str]) -> list[ContentBlock]:
+        """Every block filed under this heading, including the heading itself.
+
+        A heading path is a *location*, and locations are how a plan points at
+        content: block ids are generated afresh on every run, so a plan holding
+        them would lose every reference the next time extraction ran. An empty
+        path means the whole document.
+        """
+        depth = len(heading_path)
+        return [block for block in self.blocks if block.heading_path[:depth] == heading_path]
+
+    def has_location(self, heading_path: list[str]) -> bool:
+        return bool(self.blocks_under(heading_path))
+
+    def heading_outline(self) -> list[dict]:
+        """Every heading with the number of words filed under it, in order.
+
+        This is what lets a planner see a whole source at once: the headings of a
+        long chapter fit easily where its full text would not, and the word count
+        says how much material sits behind each one.
+        """
+        outline = []
+        for block in self.blocks:
+            if block.kind != BlockKind.HEADING:
+                continue
+            words = sum(
+                under.word_count for under in self.blocks_under(block.heading_path)
+                if under.kind != BlockKind.HEADING
+            )
+            outline.append({
+                "heading_path": list(block.heading_path),
+                "level": block.level,
+                "words": words,
+            })
+        return outline
+
+    def text_under(self, heading_path: list[str]) -> str:
+        """The markdown of one location, in document order."""
+        return ExtractedDocument(
+            file_name=self.file_name, blocks=self.blocks_under(heading_path)
+        ).as_markdown()
 
     def as_markdown(self) -> str:
         """The document as text a model can read.
@@ -125,10 +247,44 @@ class ExtractedDocument(BaseModel):
 class Extraction(BaseModel):
     documents: list[ExtractedDocument] = Field(default_factory=list)
     extracted_at: str = ""
+    # The options this run honoured. Kept so a changed toggle can be reported as
+    # "out of date" -- otherwise switching figures off leaves the page saying 70
+    # figures were extracted, which is true of a run that no longer matches.
+    options_used: dict[str, bool] = Field(default_factory=dict)
 
     @property
     def total_word_count(self) -> int:
         return sum(document.word_count for document in self.documents)
+
+    def document(self, file_name: str) -> ExtractedDocument | None:
+        return next((d for d in self.documents if d.file_name == file_name), None)
+
+    def has_location(self, file_name: str, heading_path: list[str]) -> bool:
+        document = self.document(file_name)
+        return document is not None and document.has_location(heading_path)
+
+    def content_fingerprint(self) -> str:
+        """An identity for what this extraction *says*, for knowing when a plan
+        built on it is out of date.
+
+        Built from each document's name and its blocks' kind, location and text.
+        Block ids are left out because they are regenerated on every run -- a
+        fingerprint that included them would call every plan stale after a
+        re-extraction that changed nothing. Figures are left out too: switching
+        figure extraction off changes what can be shown, not what is taught.
+        """
+        if not self.documents:
+            return ""
+        digest = hashlib.sha256()
+        for document in sorted(self.documents, key=lambda d: d.file_name):
+            digest.update(document.file_name.encode("utf-8") + b"\0")
+            for block in document.blocks:
+                if block.kind == BlockKind.FIGURE:
+                    continue
+                digest.update(json.dumps(
+                    [block.kind, block.heading_path, block.text], ensure_ascii=False
+                ).encode("utf-8") + b"\0")
+        return digest.hexdigest()[:16]
 
     def as_markdown(self) -> str:
         return "\n\n".join(
@@ -147,6 +303,20 @@ class Extraction(BaseModel):
             "figure_count": sum(
                 1 for d in self.documents for b in d.blocks if b.kind == BlockKind.FIGURE
             ),
+            # Stated, because an option that captured nothing looks exactly like
+            # one that was never on.
+            # Slides with shapes, not slides: a design-only run still records a
+            # slide for its background, and counting those would claim layout
+            # was captured when it was switched off.
+            "slide_layout_count": sum(
+                1 for d in self.documents for s in d.slides if s.shapes
+            ),
+            "slide_background_count": sum(
+                1 for d in self.documents for s in d.slides if s.background is not None
+            ),
+            "themed_document_names": [
+                d.file_name for d in self.documents if d.design and d.design.theme_name
+            ],
         }
 
     def to_dict(self) -> dict:
@@ -189,6 +359,34 @@ class ExtractionStore(JsonDocumentStore[Extraction]):
     @property
     def extraction_path(self) -> Path:
         return self.document_path
+
+
+class SourceSelectionStore:
+    """The source files someone has chosen to leave out of extraction.
+
+    **Stored as what is left out, not what is ticked.** A file uploaded later is
+    then included without anyone remembering to tick it, and is reported as not
+    yet extracted until it is. Storing the ticked set would do the opposite: a
+    new upload would be silently excluded, and nothing would ever say so.
+
+    Kept with the stage's settings rather than in the extraction itself, for the
+    same reason the options are: it is an input to a run, and it exists before
+    any run has happened.
+    """
+
+    def __init__(self, project_root: Path) -> None:
+        self.path = project_root / "settings" / "extraction-sources.json"
+
+    def load(self) -> list[str]:
+        stored = read_json_object(self.path, "extraction source selection") or {}
+        names = stored.get("excluded", [])
+        return sorted({name for name in names if isinstance(name, str) and name})
+
+    def save(self, excluded: list[str]) -> list[str]:
+        cleaned = sorted(set(excluded))
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        write_text_atomically(self.path, json.dumps({"excluded": cleaned}, indent=2))
+        return cleaned
 
 
 # --- readers ----------------------------------------------------------------
@@ -464,6 +662,7 @@ def read_pptx(path: Path, assets: AssetSink | None = None) -> list[ContentBlock]
     for number, slide in enumerate(presentation.slides, start=1):
         # A slide's own title if it has one, so the heading path means something.
         title = ""
+        title_element = _title_element(slide)
         if slide.shapes.title is not None and slide.shapes.title.has_text_frame:
             title = slide.shapes.title.text.strip()
         heading = title or f"Slide {number}"
@@ -474,7 +673,7 @@ def read_pptx(path: Path, assets: AssetSink | None = None) -> list[ContentBlock]
         ))
 
         for shape in slide.shapes:
-            if shape is slide.shapes.title:
+            if shape._element is title_element:
                 continue
             if shape.has_text_frame:
                 for paragraph in shape.text_frame.paragraphs:
@@ -518,6 +717,285 @@ def read_pptx(path: Path, assets: AssetSink | None = None) -> list[ContentBlock]
     return blocks
 
 
+DRAWING_NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/main"
+PRESENTATION_NAMESPACE = "http://schemas.openxmlformats.org/presentationml/2006/main"
+RELATIONSHIP_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+
+
+def _aspect_ratio(width: int, height: int) -> str:
+    """"16:9" rather than 1.777…, because that is what a deck is described as."""
+    if not width or not height:
+        return ""
+    from math import gcd
+
+    divisor = gcd(width, height)
+    return f"{width // divisor}:{height // divisor}"
+
+
+def _shape_box(shape, slide, slide_width: int, slide_height: int) -> tuple[float, ...]:
+    """Where a shape sits, as fractions of the slide.
+
+    A placeholder usually declares no position of its own and inherits the one
+    on its layout, so an unresolved box is looked up there rather than reported
+    as sitting in the top-left corner.
+    """
+    left, top, width, height = shape.left, shape.top, shape.width, shape.height
+
+    if None in (left, top, width, height) and shape.is_placeholder:
+        try:
+            inherited = slide.slide_layout.placeholders[shape.placeholder_format.idx]
+        except (KeyError, AttributeError):
+            inherited = None
+        if inherited is not None:
+            left = left if left is not None else inherited.left
+            top = top if top is not None else inherited.top
+            width = width if width is not None else inherited.width
+            height = height if height is not None else inherited.height
+
+    return (
+        (left or 0) / slide_width,
+        (top or 0) / slide_height,
+        (width or 0) / slide_width,
+        (height or 0) / slide_height,
+    )
+
+
+def _title_element(slide):
+    """The XML behind a slide's title, or None.
+
+    Compared by element, never by object: `slide.shapes.title` builds a fresh
+    proxy on every access, so `shape is slide.shapes.title` is always False. It
+    read as working -- and quietly extracted every slide title twice, once as
+    the heading and again as a paragraph of its own.
+    """
+    title = slide.shapes.title
+    return title._element if title is not None else None
+
+
+def _shape_kind(shape, title_element) -> str:
+    if title_element is not None and shape._element is title_element:
+        return "title"
+    if getattr(shape, "shape_type", None) is not None and shape.shape_type == 13:  # PICTURE
+        return "picture"
+    if getattr(shape, "has_table", False):
+        return "table"
+    if getattr(shape, "has_chart", False):
+        return "chart"
+    if shape.has_text_frame:
+        return "text"
+    return "other"
+
+
+def _first_run_style(shape) -> tuple[float, bool, str]:
+    """The look of a shape's first line: size, weight, alignment.
+
+    The first line, not an average: what is wanted is "this is a 32pt heading",
+    and a shape whose runs disagree is not something a slide-like frame can
+    reproduce anyway.
+    """
+    if not shape.has_text_frame:
+        return 0.0, False, ""
+    for paragraph in shape.text_frame.paragraphs:
+        for run in paragraph.runs:
+            size = run.font.size.pt if run.font.size is not None else 0.0
+            align = paragraph.alignment.__str__().split(" ")[0].lower() \
+                if paragraph.alignment is not None else ""
+            return float(size), bool(run.font.bold), align
+    return 0.0, False, ""
+
+
+def _colour_of(fill) -> str:
+    """A fill's colour as "#RRGGBB", or empty when it is not a plain colour."""
+    try:
+        colour = fill.fore_color
+        if colour.type is not None and str(colour.type).startswith("RGB"):
+            return f"#{colour.rgb}"
+        # A theme colour resolves against the theme, which is captured
+        # separately; the name is more useful than a guessed hex.
+        if colour.type is not None:
+            return str(colour.theme_color).split(" ")[0].lower()
+    except (AttributeError, TypeError, ValueError):
+        return ""
+    return ""
+
+
+def _background_picture(holder, assets: AssetSink | None) -> str:
+    """A background image, stored like any other extracted picture.
+
+    Read from the XML because python-pptx models solid fills but not the
+    `blipFill` a background picture uses.
+    """
+    if assets is None:
+        return ""
+    background = holder._element.find(f"{{{PRESENTATION_NAMESPACE}}}bg")
+    if background is None:
+        return ""
+    blip = background.find(f".//{{{DRAWING_NAMESPACE}}}blip")
+    if blip is None:
+        return ""
+    relationship_id = blip.get(f"{{{RELATIONSHIP_NAMESPACE}}}embed")
+    if not relationship_id:
+        return ""
+    try:
+        part = holder.part.related_part(relationship_id)
+        suffix = Path(str(part.partname)).suffix or ".png"
+        return assets.store(part.blob, suffix)
+    except (KeyError, AttributeError) as unresolved:
+        logger.warning("a slide background could not be read: %s", unresolved)
+        return ""
+
+
+def _slide_background(
+    slide, assets: AssetSink | None, theme_colours: dict[str, str]
+) -> SlideBackground | None:
+    """What is behind the slide, looking where PowerPoint looks.
+
+    A slide usually sets no background of its own and inherits the layout's or
+    the master's, so all three are tried in that order -- and when none of them
+    sets one, the answer is still not "nothing": it is the theme's light colour.
+    Recording that spares every later stage from re-implementing PowerPoint's
+    inheritance rules.
+    """
+    from pptx.enum.dml import MSO_FILL
+
+    holders = [("slide", slide), ("layout", slide.slide_layout)]
+    master = getattr(slide.slide_layout, "slide_master", None)
+    if master is not None:
+        holders.append(("master", master))
+
+    for source, holder in holders:
+        picture = _background_picture(holder, assets)
+        if picture:
+            return SlideBackground(asset_path=picture, inherited_from=source)
+        try:
+            fill = holder.background.fill
+            if fill.type == MSO_FILL.SOLID:
+                colour = _colour_of(fill)
+                if colour:
+                    return SlideBackground(colour=colour, inherited_from=source)
+        except (AttributeError, NotImplementedError, ValueError):
+            continue
+
+    fallback = theme_colours.get("lt1", "")
+    if fallback.startswith("#"):
+        return SlideBackground(colour=fallback, inherited_from="theme")
+    return None
+
+
+def _deck_theme(presentation) -> tuple[str, dict[str, str], str, str]:
+    """The theme's name, colour scheme and fonts, read from the theme part."""
+    from lxml import etree
+    from pptx.opc.constants import RELATIONSHIP_TYPE as RT
+
+    try:
+        theme_part = presentation.slide_masters[0].part.part_related_by(RT.THEME)
+        root = etree.fromstring(theme_part.blob)
+    except (KeyError, IndexError, AttributeError, etree.XMLSyntaxError) as unreadable:
+        logger.warning("the deck theme could not be read: %s", unreadable)
+        return "", {}, "", ""
+
+    namespaces = {"a": DRAWING_NAMESPACE}
+    colours: dict[str, str] = {}
+    scheme = root.find(".//a:clrScheme", namespaces)
+    for entry in scheme if scheme is not None else []:
+        name = entry.tag.split("}")[-1]
+        value = next(iter(entry), None)
+        if value is None:
+            continue
+        # A system colour (window, windowText) names itself in `val` and states
+        # what that resolves to in `lastClr`. Taking `val` first would record
+        # the theme's darkest colour as "#WINDOWTEXT".
+        is_system = value.tag.endswith("}sysClr")
+        hex_value = (value.get("lastClr") if is_system else value.get("val")) or ""
+        if hex_value and not hex_value.startswith("#"):
+            hex_value = f"#{hex_value.upper()}"
+        colours[name] = hex_value
+
+    def typeface(which: str) -> str:
+        found = root.find(f".//a:fontScheme/a:{which}Font/a:latin", namespaces)
+        return (found.get("typeface") or "") if found is not None else ""
+
+    return root.get("name") or "", colours, typeface("major"), typeface("minor")
+
+
+def read_pptx_design(
+    path: Path,
+    assets: AssetSink | None = None,
+    *,
+    capture_layout: bool = True,
+    capture_design: bool = True,
+    store_pictures: bool = True,
+) -> tuple[list[SlideLayout], DocumentDesign | None]:
+    """How a deck is put together: where things sit, and how it is styled.
+
+    Separate from `read_pptx` deliberately. The readers all answer the same
+    question -- what does this document say -- and every one of them returns
+    blocks. This answers a different question, for a different consumer: the
+    renderer, which needs to place a picture where the slide placed it rather
+    than re-typeset the words.
+    """
+    from pptx import Presentation
+
+    presentation = Presentation(str(path))
+    slide_width = presentation.slide_width or 0
+    slide_height = presentation.slide_height or 0
+
+    design = None
+    colours: dict[str, str] = {}
+    if capture_design:
+        theme_name, colours, major, minor = _deck_theme(presentation)
+        design = DocumentDesign(
+            aspect_ratio=_aspect_ratio(slide_width, slide_height),
+            slide_width_emu=slide_width, slide_height_emu=slide_height,
+            theme_name=theme_name, colours=colours,
+            major_font=major, minor_font=minor,
+        )
+
+    slides: list[SlideLayout] = []
+    if not capture_layout and not capture_design:
+        return slides, design
+    if not slide_width or not slide_height:
+        return slides, design
+
+    for number, slide in enumerate(presentation.slides, start=1):
+        shapes: list[LayoutShape] = []
+        title_element = _title_element(slide)
+        if capture_layout:
+            for z, shape in enumerate(slide.shapes):
+                left, top, width, height = _shape_box(
+                    shape, slide, slide_width, slide_height)
+                font_size, bold, align = _first_run_style(shape)
+                image = getattr(shape, "image", None)
+                shapes.append(LayoutShape(
+                    kind=_shape_kind(shape, title_element),
+                    left=left, top=top, width=width, height=height, z=z,
+                    text=shape.text_frame.text if shape.has_text_frame else "",
+                    # Geometry only when figures are switched off: knowing a
+                    # picture sits here is layout, copying it out is not.
+                    asset_path=(
+                        assets.store(image.blob, f".{image.ext}")
+                        if image is not None and assets is not None and store_pictures
+                        else ""
+                    ),
+                    font_size_pt=font_size, bold=bold, align=align,
+                ))
+
+        title = ""
+        if slide.shapes.title is not None and slide.shapes.title.has_text_frame:
+            title = slide.shapes.title.text.strip()
+
+        slides.append(SlideLayout(
+            number=number, title=title,
+            layout_name=getattr(slide.slide_layout, "name", "") or "",
+            shapes=shapes,
+            background=(
+                _slide_background(slide, assets, colours) if capture_design else None
+            ),
+        ))
+
+    return slides, design
+
+
 READERS_BY_SUFFIX = {
     ".docx": read_docx,
     ".pptx": read_pptx,
@@ -527,7 +1005,15 @@ READERS_BY_SUFFIX = {
 }
 
 
-def extract_document(path: Path, assets: AssetSink | None = None) -> ExtractedDocument:
+def extract_document(
+    path: Path,
+    assets: AssetSink | None = None,
+    *,
+    keep_tables: bool = True,
+    keep_figures: bool = True,
+    capture_layout: bool = False,
+    capture_design: bool = False,
+) -> ExtractedDocument:
     reader = READERS_BY_SUFFIX.get(path.suffix.lower())
     if reader is None:
         raise SourceUnreadable(
@@ -541,7 +1027,12 @@ def extract_document(path: Path, assets: AssetSink | None = None) -> ExtractedDo
     takes_assets = reader in (read_docx, read_pptx)
 
     try:
-        blocks = reader(path, assets) if takes_assets else reader(path)
+        # The sink is withheld from the reader when figures are off: passing it
+        # would copy every picture out and then drop the blocks that point at
+        # them, leaving orphaned files behind. The design pass still gets it,
+        # because a slide background is styling rather than a figure.
+        reader_assets = assets if keep_figures else None
+        blocks = reader(path, reader_assets) if takes_assets else reader(path)
     except SourceUnreadable:
         raise
     except Exception as parse_failure:
@@ -549,8 +1040,43 @@ def extract_document(path: Path, assets: AssetSink | None = None) -> ExtractedDo
             f"{path.name}: {type(parse_failure).__name__}: {parse_failure}"
         ) from parse_failure
 
+    if not keep_figures:
+        blocks = [block for block in blocks if block.kind != BlockKind.FIGURE]
+    if not keep_tables:
+        # What the option promises when off: the table's words, as ordinary
+        # text, rather than rows a model can read as a table.
+        blocks = [
+            block.model_copy(update={
+                "kind": BlockKind.PARAGRAPH,
+                "text": " ".join(cell.strip() for cell in block.text.replace("\n", " | ")
+                                 .split("|") if cell.strip()),
+            }) if block.kind == BlockKind.TABLE else block
+            for block in blocks
+        ]
+
+    slides: list[SlideLayout] = []
+    design: DocumentDesign | None = None
+    if reader is read_pptx and (capture_layout or capture_design):
+        try:
+            slides, design = read_pptx_design(
+                path, assets,
+                capture_layout=capture_layout, capture_design=capture_design,
+                store_pictures=keep_figures,
+            )
+        except Exception as design_failure:
+            # The words are the point; losing the styling is a degraded result,
+            # not a failed extraction.
+            logger.warning("%s: layout and design were not captured (%s)",
+                           path.name, design_failure)
+
+    note = f"{len(blocks)} block(s) read by {reader.__name__}"
+    if slides:
+        note += f", layout captured for {len(slides)} slide(s)"
+
     return ExtractedDocument(
         file_name=path.name,
         blocks=blocks,
-        extraction_note=f"{len(blocks)} block(s) read by {reader.__name__}",
+        extraction_note=note,
+        slides=slides,
+        design=design,
     )

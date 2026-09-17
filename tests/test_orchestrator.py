@@ -305,7 +305,7 @@ def test_the_route_is_not_shadowed_by_the_stage_agent_route(project, monkeypatch
 
     monkeypatch.setattr(
         "pipeline.web.routes_project.ask_the_orchestrator",
-        lambda slug, question: {
+        lambda slug, question, conversation_id="": {
             "agent": "Orchestrator", "agent_source": "default", "agent_path": "x",
             "question": question, "answer": "heard you", "rounds": 0,
             "consulted": [], "artifacts_read": [],
@@ -326,7 +326,7 @@ def test_the_route_reports_a_failure_rather_than_a_traceback(project, monkeypatc
 
     from pipeline.web.app import create_app
 
-    def unhappy(slug, question):
+    def unhappy(slug, question, conversation_id=""):
         raise OperationFailed("no model is configured")
 
     monkeypatch.setattr("pipeline.web.routes_project.ask_the_orchestrator", unhappy)
@@ -338,3 +338,131 @@ def test_the_route_reports_a_failure_rather_than_a_traceback(project, monkeypatc
 
     assert response.status_code == 400
     assert "no model is configured" in json.dumps(response.json())
+
+
+# --- conversations -----------------------------------------------------------
+
+
+def _answering(text, monkeypatch):
+    fake = scripted(OrchestratorTurn(answer=text))
+    monkeypatch.setattr(orchestrator, "complete_structured", fake)
+    return fake
+
+
+def test_an_answer_is_kept_so_the_panel_can_be_closed_and_reopened(project, monkeypatch):
+    """The panel used to hold the exchange in the page alone, so closing the
+    drawer threw the thread away."""
+    _answering("Section 2 runs long.", monkeypatch)
+
+    reply = orchestrator.ask_the_orchestrator(project, "How is the pacing?")
+
+    listed = orchestrator.list_conversations(project)["conversations"]
+    assert [c["title"] for c in listed] == ["How is the pacing?"]
+    assert listed[0]["turn_count"] == 1
+
+    reopened = orchestrator.read_conversation(project, reply["conversation_id"])
+    assert reopened["turns"][0]["question"] == "How is the pacing?"
+    assert reopened["turns"][0]["answer"] == "Section 2 runs long."
+
+
+def test_a_follow_up_is_told_what_was_already_said(project, monkeypatch):
+    """Every ask used to start from nothing, so "and why is that?" referred to
+    a conversation only the person could remember."""
+    first = _answering("Section 2 runs long.", monkeypatch)
+    started = orchestrator.ask_the_orchestrator(project, "How is the pacing?")
+
+    second = _answering("Because it covers three ideas.", monkeypatch)
+    orchestrator.ask_the_orchestrator(
+        project, "And why is that?", started["conversation_id"])
+
+    asked = second.calls[-1]["user"]
+    assert "earlier in this conversation" in asked
+    assert "They asked: How is the pacing?" in asked
+    assert "You answered: Section 2 runs long." in asked
+    assert first.calls[0]["user"].count("earlier in this conversation") == 0
+
+
+def test_a_new_conversation_starts_clean(project, monkeypatch):
+    _answering("First answer.", monkeypatch)
+    orchestrator.ask_the_orchestrator(project, "First question?")
+
+    fresh = _answering("Second answer.", monkeypatch)
+    second = orchestrator.ask_the_orchestrator(project, "Unrelated question?")
+
+    assert "earlier in this conversation" not in fresh.calls[-1]["user"]
+    assert len(orchestrator.list_conversations(project)["conversations"]) == 2
+    assert orchestrator.read_conversation(project, second["conversation_id"])["turns"] != []
+
+
+def test_conversations_are_listed_newest_first(project, monkeypatch):
+    _answering("A.", monkeypatch)
+    orchestrator.ask_the_orchestrator(project, "Older question?")
+    _answering("B.", monkeypatch)
+    newer = orchestrator.ask_the_orchestrator(project, "Newer question?")
+
+    listed = orchestrator.list_conversations(project)["conversations"]
+    assert listed[0]["id"] == newer["conversation_id"]
+
+
+def test_a_failed_ask_is_not_recorded_as_something_the_agent_said(project, monkeypatch):
+    """A dropped connection is not an answer. Replaying it as one would teach
+    the agent to answer that way."""
+    from pipeline.llm import ModelCallFailed
+
+    def fails(*_args, **_kwargs):
+        raise ModelCallFailed("Could not reach the model provider.")
+
+    monkeypatch.setattr(orchestrator, "complete_structured", fails)
+
+    with pytest.raises(OperationFailed):
+        orchestrator.ask_the_orchestrator(project, "Anything?")
+
+    assert orchestrator.list_conversations(project)["conversations"] == []
+
+
+def test_a_long_thread_replays_its_most_recent_turns_only(project, monkeypatch):
+    from pipeline.conversations import MAXIMUM_HISTORY_CHARACTERS
+
+    _answering("x" * 3000, monkeypatch)
+    thread = orchestrator.ask_the_orchestrator(project, "First of many?")
+    for number in range(4):
+        _answering("y" * 3000, monkeypatch)
+        orchestrator.ask_the_orchestrator(
+            project, f"Question {number}?", thread["conversation_id"])
+
+    latest = _answering("done", monkeypatch)
+    orchestrator.ask_the_orchestrator(project, "And finally?", thread["conversation_id"])
+    asked = latest.calls[-1]["user"]
+    history = asked.split("--- earlier in this conversation ---")[1]
+
+    assert len(history) < MAXIMUM_HISTORY_CHARACTERS + 500
+    assert "First of many?" not in history, "the oldest turn should be the one dropped"
+    assert "Question 3?" in history
+
+
+def test_a_conversation_can_be_forgotten(project, monkeypatch):
+    _answering("Kept.", monkeypatch)
+    kept = orchestrator.ask_the_orchestrator(project, "Keep me?")
+    _answering("Gone.", monkeypatch)
+    gone = orchestrator.ask_the_orchestrator(project, "Forget me?")
+
+    left = orchestrator.forget_conversation(project, gone["conversation_id"])
+
+    assert [c["id"] for c in left["conversations"]] == [kept["conversation_id"]]
+    with pytest.raises(OperationFailed, match="no conversation"):
+        orchestrator.read_conversation(project, gone["conversation_id"])
+
+
+def test_the_consulted_agents_are_kept_with_the_answer(project, monkeypatch):
+    """Without them a reopened thread is a claim with no way to check it."""
+    monkeypatch.setattr(orchestrator, "complete_structured", scripted(
+        OrchestratorTurn(consult=[Consultation(stage="planning", question="Is it long?")]),
+        OrchestratorTurn(answer="Yes, section 2."),
+    ))
+    monkeypatch.setattr(orchestrator, "ask_stage_agent",
+                        lambda *_args: {"agent": "Planning", "answer": "It is long."})
+
+    reply = orchestrator.ask_the_orchestrator(project, "Is section 2 long?")
+    reopened = orchestrator.read_conversation(project, reply["conversation_id"])
+
+    assert [c["stage"] for c in reopened["turns"][0]["consulted"]] == ["planning"]

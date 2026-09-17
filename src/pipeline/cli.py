@@ -140,6 +140,24 @@ def command_plan_add_section(args: argparse.Namespace) -> int:
     )
 
 
+def command_plan_accept_draft(args: argparse.Namespace) -> int:
+    from pipeline.operations import accept_plan_draft
+
+    return emit(accept_plan_draft(args.project, args.section or None), args)
+
+
+def command_plan_discard_draft(args: argparse.Namespace) -> int:
+    from pipeline.operations import discard_plan_draft
+
+    return emit(discard_plan_draft(args.project), args)
+
+
+def command_plan_show_draft(args: argparse.Namespace) -> int:
+    from pipeline.operations import read_plan_draft
+
+    return emit(read_plan_draft(args.project), args)
+
+
 def command_script_write(args: argparse.Namespace) -> int:
     return emit(write_section_script(args.project, args.section, args.body), args)
 
@@ -173,6 +191,12 @@ def command_agent_draft_plan(args: argparse.Namespace) -> int:
     from pipeline.agent_runtime import draft_plan_with_agent
 
     return emit(draft_plan_with_agent(args.project, args.instruction), args)
+
+
+def command_agent_draft_unwritten(args: argparse.Namespace) -> int:
+    from pipeline.script_drafting import draft_unwritten_sections
+
+    return emit(draft_unwritten_sections(args.project, args.instruction), args)
 
 
 def command_agent_draft_script(args: argparse.Namespace) -> int:
@@ -306,6 +330,21 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--seconds", type=int, default=60, help="estimated duration")
     p.set_defaults(fn=command_plan_add_section)
 
+    p = add_parser(plan_sub, "show-draft", help="the pending drafted plan, if any")
+    p.add_argument("project")
+    p.set_defaults(fn=command_plan_show_draft)
+
+    p = add_parser(plan_sub, "accept-draft",
+                   help="accept the drafted plan, or only the given --section ids")
+    p.add_argument("project")
+    p.add_argument("--section", action="append", default=[],
+                   help="a drafted section id to append; repeat for several")
+    p.set_defaults(fn=command_plan_accept_draft)
+
+    p = add_parser(plan_sub, "discard-draft", help="throw away the drafted plan")
+    p.add_argument("project")
+    p.set_defaults(fn=command_plan_discard_draft)
+
     # --- script ---
     script = sub.add_parser("script", help="scripting shortcuts")
     script_sub = script.add_subparsers(dest="script_command", required=True)
@@ -370,6 +409,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--section", required=True, help="a plan section id")
     p.add_argument("--instruction", default="")
     p.set_defaults(fn=command_agent_draft_script)
+
+    p = add_parser(agent_sub, "draft-unwritten",
+                   help="write narration for every section that has none; saves it")
+    p.add_argument("project")
+    p.add_argument("--instruction", default="")
+    p.set_defaults(fn=command_agent_draft_unwritten)
 
     p = add_parser(sub, "voices", help="text-to-speech providers and their availability")
     p.set_defaults(fn=command_voices)

@@ -132,8 +132,84 @@ def _stage_detail(stage: Stage, stage_directory: Path) -> str:
     """One line saying what a finished stage produced."""
     if stage is Stage.REVIEWING:
         return Project._detail_for_reviewing(stage_directory)
+    if stage is Stage.EXTRACTION:
+        detail = _detail_for_extraction(stage_directory)
+        if detail:
+            return detail
+    if stage is Stage.PLANNING:
+        detail = _detail_for_planning(stage_directory)
+        if detail:
+            return detail
+    if stage is Stage.SCRIPTING:
+        detail = _detail_for_scripting(stage_directory)
+        if detail:
+            return detail
     files = [path for path in stage_directory.rglob("*") if path.is_file()]
     return f"{len(files)} file(s)"
+
+
+def _detail_for_scripting(stage_directory: Path) -> str:
+    """Sections written out of the plan's sections, and the spoken length."""
+    import json
+
+    try:
+        script = json.loads((stage_directory / "script.json").read_text(encoding="utf-8"))
+        plan = json.loads(
+            (stage_directory.parent / "planning" / "plan.json").read_text(encoding="utf-8")
+        )
+    except (OSError, ValueError):
+        return ""
+
+    section_ids = {s.get("id") for s in plan.get("sections", [])}
+    written = [
+        s for s in script.get("section_scripts", [])
+        if s.get("section_id") in section_ids and (s.get("body") or "").strip()
+    ]
+    words = sum(len((s.get("body") or "").split()) for s in written)
+    seconds = round(words / 150 * 60)
+    length = f"~{round(seconds / 60)} min" if seconds >= 60 else f"~{seconds} sec"
+    return f"{len(written)} of {len(section_ids)} sections written · {length}"
+
+
+def _detail_for_planning(stage_directory: Path) -> str:
+    """Sections and running time, from the plan -- not "1 file(s)", which was
+    true of every plan ever made and said nothing about any of them."""
+    import json
+
+    try:
+        plan = json.loads((stage_directory / "plan.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return ""
+
+    sections = plan.get("sections", [])
+    seconds = sum(int(s.get("estimated_seconds") or 0) for s in sections)
+    length = f"~{round(seconds / 60)} min" if seconds >= 60 else f"~{seconds} sec"
+    return f"{len(sections)} section{'' if len(sections) == 1 else 's'} · {length}"
+
+
+def _detail_for_extraction(stage_directory: Path) -> str:
+    """Documents and figures, read from the artifact rather than counted on disk.
+
+    Counting files stopped meaning anything once figures were extracted: a
+    three-document project read "55 file(s)", which is 54 images and one JSON
+    file and says nothing about what was extracted.
+    """
+    import json
+
+    content = stage_directory / "content.json"
+    try:
+        documents = json.loads(content.read_text(encoding="utf-8")).get("documents", [])
+    except (OSError, ValueError):
+        return ""
+
+    figures = sum(
+        1 for document in documents for block in document.get("blocks", [])
+        if block.get("kind") == "figure"
+    )
+    parts = [f"{len(documents)} document{'' if len(documents) == 1 else 's'}"]
+    if figures:
+        parts.append(f"{figures} figure{'' if figures == 1 else 's'}")
+    return " · ".join(parts)
 
 
 class ProjectStore:

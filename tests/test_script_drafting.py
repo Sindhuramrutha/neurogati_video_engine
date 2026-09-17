@@ -1,0 +1,552 @@
+"""Scripting: scenes, the text that is actually spoken, drafting from the plan and
+source, and knowing when narration no longer matches what it was written from.
+
+The model is stood in for. What is checked is what the agent is shown, what is
+kept, and what every later stage reads.
+"""
+
+import pytest
+
+from pipeline import operations, script_drafting
+from pipeline.extraction import (
+    BlockKind,
+    ContentBlock,
+    ExtractedDocument,
+    Extraction,
+    ExtractionStore,
+)
+from pipeline.operations import OperationFailed
+from pipeline.planning import (
+    LearningObjective,
+    Plan,
+    PlanSection,
+    PlanStore,
+    SourceReference,
+)
+from pipeline.rendering import _slides_for_narration
+from pipeline.script_drafting import DraftedScene, DraftedSection
+from pipeline.scripting import Script, ScriptScene, ScriptStore, ScriptVariable, SectionScript
+
+
+@pytest.fixture
+def project_root(tmp_path, monkeypatch):
+    from pipeline.config import get_settings
+
+    monkeypatch.setenv("PROJECTS_DIR", str(tmp_path))
+    get_settings.cache_clear()
+    yield tmp_path
+    get_settings.cache_clear()
+
+
+def document(file_name, parts):
+    blocks = []
+    for heading, text in parts:
+        blocks.append(ContentBlock(kind=BlockKind.HEADING, level=1, text=heading,
+                                   heading_path=[heading]))
+        blocks.append(ContentBlock(kind=BlockKind.PARAGRAPH, text=text, heading_path=[heading]))
+    return ExtractedDocument(file_name=file_name, blocks=blocks)
+
+
+CHAPTER = document("chapter.docx", [
+    ("Signals", "Neurons produce tiny signals of about 50 microvolts."),
+    ("Electrodes", "Electrodes detect potentials that are already present."),
+    ("Amplifiers", "Amplifiers raise the signal a thousandfold before digitising."),
+])
+
+
+def reference(heading):
+    return SourceReference(file_name="chapter.docx", heading_path=[heading])
+
+
+def planned_project(name, *, extraction=CHAPTER):
+    """Three sections, each built on one part of the chapter."""
+    slug = operations.create_project(name)["slug"]
+    project = operations.require_project(slug)
+    (project.sources_dir / "chapter.docx").write_text("source", encoding="utf-8")
+    ExtractionStore(project.root).save(Extraction(documents=[extraction]))
+    objective = LearningObjective(text="Explain how a neural signal is recorded")
+    PlanStore(project.root).save(Plan(
+        learning_objectives=[objective],
+        selected_audience="Students new to the topic",
+        sections=[
+            PlanSection(id="s1", title="Signals", summary="How small the signal is.",
+                        estimated_seconds=40, sources=[reference("Signals")],
+                        rendering_approach="plot", rendering_reason="Real amplitudes on axes.",
+                        objective_ids=[objective.id]),
+            PlanSection(id="s2", title="Electrodes", summary="What an electrode detects.",
+                        estimated_seconds=40, sources=[reference("Electrodes")]),
+            PlanSection(id="s3", title="Amplifiers", summary="Why amplification comes first.",
+                        estimated_seconds=40, sources=[reference("Amplifiers")]),
+        ],
+    ))
+    return slug, project
+
+
+class FakeScriptModel:
+    """Two scenes per section, built from the prompt it is shown. Records prompts."""
+
+    def __init__(self, fail_for=(), during_call=None):
+        self.prompts = {}
+        self.fail_for = set(fail_for)
+        self.during_call = during_call
+
+    def __call__(self, response_model, system_prompt, user_prompt, **kwargs):
+        assert response_model is DraftedSection
+        title = user_prompt.split("--- the section you are writing ---\nTitle: ")[1].split("\n")[0]
+        self.prompts[title] = user_prompt
+        if self.during_call:
+            self.during_call(title)
+        if title in self.fail_for:
+            from pipeline.llm import ModelCallFailed
+            raise ModelCallFailed("provider timed out")
+        return DraftedSection(scenes=[
+            DraftedScene(narration=f"{title} opens here.", brief=f"Title card: {title}"),
+            DraftedScene(narration=f"{title} continues.", brief="The 50 microvolt trace"),
+        ])
+
+
+# --- scenes are the narration -----------------------------------------------------
+
+
+def test_narration_saved_before_scenes_becomes_one_scene():
+    section = SectionScript(section_id="s1", body="Old narration, word for word.")
+
+    assert len(section.scenes) == 1
+    assert section.scenes[0].narration == "Old narration, word for word."
+    assert section.body == "Old narration, word for word."
+
+
+def test_the_body_is_always_rebuilt_from_the_scenes():
+    section = SectionScript(section_id="s1", body="stale", scenes=[
+        ScriptScene(narration="First.", brief="a"), ScriptScene(narration="Second.", brief="b"),
+    ])
+
+    assert section.body == "First.\n\nSecond."
+
+
+def test_writing_narration_through_the_old_command_is_not_lost(project_root):
+    """`script write` set `body` alone; the scenes, still holding the old text,
+    would have put it back on the next load."""
+    slug, project = planned_project("Old Command")
+    operations.write_section_script(slug, "s1", "First version.")
+    operations.write_section_script(slug, "s1", "Second version.")
+
+    assert ScriptStore(project.root).load().body_for("s1") == "Second version."
+
+
+def test_a_slide_never_runs_across_two_scenes():
+    slides = _slides_for_narration("One short scene.\n\nAnother short scene.")
+
+    assert slides == ["One short scene.", "Another short scene."]
+
+
+# --- the text that is spoken --------------------------------------------------------
+
+
+def test_variables_are_filled_in_in_the_video(project_root):
+    """The review transcript read "Neuroscience 101" while the video's subtitles
+    and timeline said "{{COURSE}}" -- and the voice would have read the braces."""
+    slug, project = planned_project("Variables")
+    ScriptStore(project.root).save(Script(
+        section_scripts=[SectionScript(section_id="s1", body="Welcome to {{COURSE}}.")],
+        variables=[ScriptVariable(name="COURSE", value="Neuroscience 101")],
+    ))
+
+    operations.render_video(slug, voice_provider="silent")
+    output = project.root / "reviewing" / "output"
+    subtitles = next(output.glob("*.vtt")).read_text(encoding="utf-8")
+    timeline_text = [c["text"] for t in operations.read_artifact(slug, "composition")["tracks"]
+                     for c in t["clips"] if "Welcome" in (c.get("text") or "")]
+    transcript = operations.read_artifact(slug, "review")["transcript"][0]["body"]
+
+    assert "Welcome to Neuroscience 101." in subtitles
+    assert "{{" not in subtitles
+    assert timeline_text == ["Welcome to Neuroscience 101."]
+    assert transcript == "Welcome to Neuroscience 101."
+
+
+def test_a_render_warns_about_a_variable_that_is_not_defined(project_root):
+    slug, project = planned_project("Undefined")
+    ScriptStore(project.root).save(Script(section_scripts=[
+        SectionScript(section_id="s1", body="Welcome to {{COURSE}}."),
+    ]))
+
+    result = operations.render_video(slug, voice_provider="silent")
+
+    assert any("{{COURSE}} is not defined" in warning for warning in result["warnings"])
+
+
+# --- drafting a section ------------------------------------------------------------------
+
+
+def test_a_drafted_section_is_saved_as_scenes_with_briefs(project_root, monkeypatch):
+    slug, project = planned_project("Draft One")
+    monkeypatch.setattr(script_drafting, "complete_structured", FakeScriptModel())
+
+    result = script_drafting.draft_section(slug, "s2")
+
+    saved = next(s for s in ScriptStore(project.root).load().section_scripts
+                 if s.section_id == "s2")
+    assert [scene.brief for scene in saved.scenes] == [
+        "Title card: Electrodes", "The 50 microvolt trace"]
+    assert saved.body == "Electrodes opens here.\n\nElectrodes continues."
+    assert result["scene_count"] == 2 and result["is_saved"] is True
+
+
+def test_the_agent_is_shown_its_section_its_neighbours_and_its_own_source(
+    project_root, monkeypatch
+):
+    slug, project = planned_project("Context")
+    operations.write_section_script(slug, "s1", "Signals are tiny, about 50 microvolts.")
+    fake = FakeScriptModel()
+    monkeypatch.setattr(script_drafting, "complete_structured", fake)
+
+    script_drafting.draft_section(slug, "s2")
+    prompt = fake.prompts["Electrodes"]
+
+    # The whole plan, compactly, with this section marked.
+    assert "2. Electrodes (~40 s)  <- this section" in prompt
+    assert "3. Amplifiers" in prompt
+    assert "source_outline" not in prompt and "freshness" not in prompt
+    # Its own plan details.
+    assert "Target: about 40 seconds, about 100 words" in prompt
+    # The narration before it, and what comes after.
+    assert "Signals are tiny, about 50 microvolts." in prompt
+    assert 'the section after: "Amplifiers"' in prompt
+    assert "Why amplification comes first." in prompt
+    # Its own source -- and not the others'.
+    assert "Electrodes detect potentials that are already present." in prompt
+    assert "Amplifiers raise the signal a thousandfold" not in prompt.split(
+        "--- source material for this section ---")[1]
+
+
+def test_the_sections_objectives_and_presentation_reach_the_agent(project_root, monkeypatch):
+    slug, _ = planned_project("Objectives")
+    fake = FakeScriptModel()
+    monkeypatch.setattr(script_drafting, "complete_structured", fake)
+
+    script_drafting.draft_section(slug, "s1")
+    prompt = fake.prompts["Signals"]
+
+    assert "Shown as: plot -- Real amplitudes on axes." in prompt
+    assert "- Explain how a neural signal is recorded" in prompt
+    assert "Audience: Students new to the topic" in prompt
+
+
+def test_drafting_one_section_leaves_the_others_alone(project_root, monkeypatch):
+    slug, project = planned_project("Leave Others")
+    operations.write_section_script(slug, "s1", "Mine, by hand.")
+    monkeypatch.setattr(script_drafting, "complete_structured", FakeScriptModel())
+
+    script_drafting.draft_section(slug, "s2")
+
+    assert ScriptStore(project.root).load().body_for("s1") == "Mine, by hand."
+
+
+def test_what_is_saved_while_one_section_drafts_is_not_overwritten(project_root, monkeypatch):
+    slug, project = planned_project("Saved Meanwhile")
+
+    def someone_types(title):
+        operations.write_section_script(slug, "s1", "Typed while the draft ran.")
+
+    monkeypatch.setattr(script_drafting, "complete_structured",
+                        FakeScriptModel(during_call=someone_types))
+    script_drafting.draft_section(slug, "s2")
+
+    script = ScriptStore(project.root).load()
+    assert script.body_for("s1") == "Typed while the draft ran."
+    assert script.body_for("s2").startswith("Electrodes opens here.")
+
+
+def test_a_section_with_no_sources_says_it_read_the_extraction(project_root, monkeypatch):
+    slug, project = planned_project("No Sources")
+    plan = PlanStore(project.root).load()
+    plan.sections[1].sources = []
+    PlanStore(project.root).save(plan)
+    monkeypatch.setattr(script_drafting, "complete_structured", FakeScriptModel())
+
+    result = script_drafting.draft_section(slug, "s2")
+
+    assert any("records no sources" in note for note in result["notes"])
+
+
+def test_drafting_an_unknown_section_is_refused(project_root):
+    slug, _ = planned_project("Unknown")
+    with pytest.raises(OperationFailed, match="no section"):
+        script_drafting.draft_section(slug, "made-up")
+
+
+# --- drafting every unwritten section ---------------------------------------------------
+
+
+def test_draft_all_fills_only_the_empty_sections(project_root, monkeypatch):
+    slug, project = planned_project("Draft All")
+    operations.write_section_script(slug, "s1", "Already written by hand.")
+    monkeypatch.setattr(script_drafting, "complete_structured", FakeScriptModel())
+
+    result = script_drafting.draft_unwritten_sections(slug)
+
+    script = ScriptStore(project.root).load()
+    assert script.body_for("s1") == "Already written by hand."
+    assert sorted(result["drafted_section_ids"]) == ["s2", "s3"]
+    assert script.body_for("s3").startswith("Amplifiers opens here.")
+
+
+def test_text_written_while_drafting_is_kept(project_root, monkeypatch):
+    slug, project = planned_project("Typed Meanwhile")
+
+    def someone_types(title):
+        if title == "Electrodes":
+            operations.write_section_script(slug, "s3", "Typed while the drafts ran.")
+
+    monkeypatch.setattr(script_drafting, "complete_structured",
+                        FakeScriptModel(during_call=someone_types))
+    result = script_drafting.draft_unwritten_sections(slug)
+
+    assert ScriptStore(project.root).load().body_for("s3") == "Typed while the drafts ran."
+    assert any("kept as it is" in note for note in result["notes"])
+
+
+def test_one_failed_section_does_not_lose_the_rest(project_root, monkeypatch):
+    slug, project = planned_project("One Fails")
+    monkeypatch.setattr(script_drafting, "complete_structured",
+                        FakeScriptModel(fail_for={"Electrodes"}))
+
+    result = script_drafting.draft_unwritten_sections(slug)
+
+    assert sorted(result["drafted_section_ids"]) == ["s1", "s3"]
+    assert any('"Electrodes" could not be drafted' in note for note in result["notes"])
+
+
+def test_draft_all_with_nothing_to_draft_says_so(project_root, monkeypatch):
+    slug, _ = planned_project("All Written")
+    for section_id in ("s1", "s2", "s3"):
+        operations.write_section_script(slug, section_id, "Written.")
+
+    with pytest.raises(OperationFailed, match="already has narration"):
+        script_drafting.draft_unwritten_sections(slug)
+
+
+# --- narration against what it was written from -------------------------------------------
+
+
+def out_of_date(slug):
+    return {entry["section_id"]: entry["reasons"]
+            for entry in operations.read_artifact(slug, "script")["out_of_date"]}
+
+
+def test_changing_the_plan_section_flags_its_narration(project_root):
+    slug, project = planned_project("Plan Changed")
+    operations.write_section_script(slug, "s1", "Written against the first summary.")
+    assert out_of_date(slug) == {}
+
+    plan = PlanStore(project.root).load()
+    plan.sections[0].summary = "A different point entirely."
+    PlanStore(project.root).save(plan)
+
+    assert out_of_date(slug) == {"s1": ["the plan section changed"]}
+
+
+def test_changing_the_source_content_flags_its_narration(project_root):
+    slug, project = planned_project("Source Changed")
+    operations.write_section_script(slug, "s2", "Electrodes detect what is there.")
+
+    reworded = document("chapter.docx", [
+        ("Signals", "Neurons produce tiny signals of about 50 microvolts."),
+        ("Electrodes", "Electrodes now also inject current."),
+        ("Amplifiers", "Amplifiers raise the signal a thousandfold before digitising."),
+    ])
+    ExtractionStore(project.root).save(Extraction(documents=[reworded]))
+
+    assert out_of_date(slug) == {"s2": ["its source content changed"]}
+
+
+def test_a_new_target_length_does_not_flag_narration(project_root):
+    slug, project = planned_project("Length Only")
+    operations.write_section_script(slug, "s1", "Short.")
+    plan = PlanStore(project.root).load()
+    plan.sections[0].estimated_seconds = 120
+    PlanStore(project.root).save(plan)
+
+    assert out_of_date(slug) == {}
+
+
+def test_keeping_narration_as_is_clears_the_flag(project_root):
+    slug, project = planned_project("Keep As Is")
+    operations.write_section_script(slug, "s1", "Still right.")
+    plan = PlanStore(project.root).load()
+    plan.sections[0].summary = "Reworded, same point."
+    PlanStore(project.root).save(plan)
+
+    confirmed = operations.confirm_section_narration(slug, "s1")
+
+    assert confirmed["out_of_date"] == []
+    assert ScriptStore(project.root).load().body_for("s1") == "Still right."
+
+
+def test_narration_with_no_record_is_not_called_out_of_date(project_root):
+    slug, project = planned_project("No Record")
+    ScriptStore(project.root).save(Script(section_scripts=[
+        SectionScript(section_id="s1", body="Written before this was tracked."),
+    ]))
+    plan = PlanStore(project.root).load()
+    plan.sections[0].summary = "Changed."
+    PlanStore(project.root).save(plan)
+
+    assert out_of_date(slug) == {}
+
+
+def test_saving_the_script_stamps_only_the_sections_whose_words_changed(project_root):
+    """Saving the whole script after editing one section must not declare every
+    other section freshly checked against the current plan."""
+    slug, project = planned_project("Stamp One")
+    operations.write_section_script(slug, "s1", "One.")
+    operations.write_section_script(slug, "s2", "Two.")
+    plan = PlanStore(project.root).load()
+    plan.sections[1].summary = "Section two changed."
+    PlanStore(project.root).save(plan)
+
+    script = ScriptStore(project.root).load()
+    edited = next(s for s in script.section_scripts if s.section_id == "s1")
+    edited.scenes[0].narration = "One, edited."
+    operations.save_artifact(slug, "script", script)
+
+    assert out_of_date(slug) == {"s2": ["the plan section changed"]}
+
+
+# --- what the page is given --------------------------------------------------------------
+
+
+def test_the_script_carries_each_sections_plan_details(project_root):
+    slug, _ = planned_project("Page Data")
+
+    script = operations.read_artifact(slug, "script")
+    first = script["plan_sections"][0]
+
+    assert first["rendering_approach"] == "plot"
+    assert first["sources"] == [{"file_name": "chapter.docx", "heading_path": ["Signals"]}]
+    assert first["objective_ids"] == [script["plan_objectives"][0]["id"]]
+    assert script["selected_audience"] == "Students new to the topic"
+
+
+def test_narration_no_section_points_at_is_shown(project_root):
+    """Module-2 had 1,004 words in this state, visible nowhere."""
+    slug, project = planned_project("Stranded")
+    ScriptStore(project.root).save(Script(section_scripts=[
+        SectionScript(section_id="old-section", body="Words from an earlier plan."),
+    ]))
+
+    orphaned = operations.read_artifact(slug, "script")["orphaned"]
+
+    assert orphaned == [{"section_id": "old-section", "word_count": 5, "scene_count": 1,
+                         "preview": "Words from an earlier plan."}]
+
+
+def test_review_comments_for_scripting_appear_on_their_section(project_root):
+    slug, _ = planned_project("Comments")
+    operations.add_review_comment(slug, body="Too fast here", at_ms=45_000,
+                                  routed_to_stage="scripting")
+    operations.add_review_comment(slug, body="Wrong colour", at_ms=45_000,
+                                  routed_to_stage="studio")
+
+    placed = operations.read_artifact(slug, "script")["comments_by_section"]
+
+    # Estimated starts: s1 at 0, s2 at 40 s, s3 at 80 s -- 45 s falls in s2.
+    assert list(placed) == ["s2"]
+    assert placed["s2"][0]["body"] == "Too fast here"
+
+
+def test_measured_durations_appear_after_a_render(project_root):
+    slug, project = planned_project("Measured")
+    operations.write_section_script(slug, "s1", "One sentence for the first section.")
+    operations.write_section_script(slug, "s2", "Two sentences here. And a second one.")
+
+    operations.render_video(slug, voice_provider="silent")
+    measured = operations.read_artifact(slug, "script")["measured_seconds"]
+
+    assert set(measured) == {"s1", "s2"}
+    assert all(seconds > 0 for seconds in measured.values())
+
+
+def test_the_scripting_chip_counts_sections_written(project_root):
+    from pipeline.stages import Stage
+
+    slug, project = planned_project("Chip")
+    operations.write_section_script(slug, "s1", " ".join(["word"] * 150))
+
+    assert project.stage_state(Stage.SCRIPTING).detail == "1 of 3 sections written · ~1 min"
+
+
+def test_the_source_for_a_section_can_be_read_whole(project_root):
+    slug, _ = planned_project("Source Route")
+
+    material = operations.section_source_material(slug, "s3")
+
+    assert material["parts"][0]["label"] == "chapter.docx › Amplifiers"
+    assert "a thousandfold" in material["parts"][0]["text"]
+    assert material["missing"] == []
+
+
+# --- agents read a compact plan ------------------------------------------------------------
+
+
+def test_agents_see_every_section_of_a_large_plan(project_root):
+    """A real twelve-section plan was 23,000 characters as the page receives it;
+    cut at 12,000, the Scripting agent could see only ten sections."""
+    from pipeline.agent_runtime import artifact_for_agents
+
+    slug, project = planned_project("Large Plan")
+    plan = PlanStore(project.root).load()
+    plan.sections = [
+        PlanSection(title=f"Section {n}: " + "a long descriptive title " * 3,
+                    summary="A summary that goes on for a while. " * 6,
+                    sources=[reference("Signals")])
+        for n in range(1, 41)
+    ]
+    PlanStore(project.root).save(plan)
+
+    for_agents = artifact_for_agents(project, "plan")
+
+    assert all(f"Section {n}:" in for_agents for n in range(1, 41))
+    assert "source_outline" not in for_agents and "heading_path" not in for_agents
+
+
+# --- clients -----------------------------------------------------------------------------------
+
+
+@pytest.fixture
+def client(project_root):
+    from litestar.testing import TestClient
+
+    from pipeline.web import routes_project as routes_project_module
+    from pipeline.web.app import create_app
+
+    routes_project_module._service = None
+    with TestClient(app=create_app()) as test_client:
+        yield test_client
+    routes_project_module._service = None
+
+
+def test_the_scripting_routes(project_root, client, monkeypatch):
+    slug, _ = planned_project("Routes")
+    monkeypatch.setattr(script_drafting, "complete_structured", FakeScriptModel())
+
+    source = client.get(f"/api/projects/{slug}/script/sections/s1/source")
+    assert source.status_code == 200 and source.json()["parts"]
+
+    drafted = client.post(f"/api/projects/{slug}/script/draft-unwritten", json={})
+    assert drafted.status_code == 201, drafted.text
+    assert sorted(drafted.json()["drafted_section_ids"]) == ["s1", "s2", "s3"]
+
+    confirmed = client.post(f"/api/projects/{slug}/script/sections/s1/confirm")
+    assert confirmed.status_code == 201, confirmed.text
+
+    one = client.post(f"/api/projects/{slug}/script/draft", json={"section_id": "s2"})
+    assert one.status_code == 201 and one.json()["scene_count"] == 2
+
+
+async def test_mcp_offers_drafting_every_unwritten_section():
+    from pipeline.mcp_server import server
+
+    names = {tool.name for tool in await server.list_tools()}
+    assert {"draft_section_script", "draft_unwritten_sections"} <= names

@@ -31,15 +31,28 @@ from pipeline.extraction import ExtractionStore
 from pipeline.llm import describe_model
 from pipeline.operations import (
     OperationFailed,
+    accept_plan_draft,
+    confirm_plan_matches_extraction,
+    confirm_section_narration,
+    discard_plan_draft,
     extraction_freshness,
+    forget_excluded_source,
     list_voice_providers,
     present_artifact,
     preview_source,
+    read_plan_draft,
     render_video,
     run_extraction,
     save_artifact,
+    section_source_material,
+    set_excluded_sources,
 )
-from pipeline.orchestrator import ask_the_orchestrator
+from pipeline.orchestrator import (
+    ask_the_orchestrator,
+    forget_conversation,
+    list_conversations,
+    read_conversation,
+)
 from pipeline.planning import Plan, PlanStore
 from pipeline.projects import Project, ProjectStore
 from pipeline.review import Review, ReviewStore, chapters_from_plan
@@ -95,10 +108,26 @@ class StageSettingsEdit(BaseModel):
 
 class AgentQuestion(BaseModel):
     question: str
+    # Empty starts a new thread. The panel sends the id of the conversation it
+    # has open, so the Orchestrator is told what was already said.
+    conversation_id: str = ""
+
+
+class SourceSelection(BaseModel):
+    excluded: list[str]
 
 
 class PlanInstruction(BaseModel):
-    instruction: str
+    instruction: str = ""
+
+
+class UnwrittenSectionsInstruction(BaseModel):
+    instruction: str = ""
+
+
+class DraftAcceptance(BaseModel):
+    # None accepts the whole draft; a list accepts just those sections.
+    section_ids: list[str] | None = None
 
 
 class SectionScriptInstruction(BaseModel):
@@ -292,6 +321,10 @@ async def delete_source(
         )
         raise ClientException(detail="could not delete that file") from delete_failure
 
+    # Otherwise a file deleted while unticked would come back unticked when
+    # uploaded again under the same name, with no sign of why.
+    forget_excluded_source(project, bare_file_name)
+
     return {"deleted": bare_file_name, "project": project.to_dict()}
 
 
@@ -375,7 +408,7 @@ def get_plan(
     slug: FromPath[str], projects: NamedDependency[ProjectService]
 ) -> dict[str, Any]:
     project = projects.require(slug)
-    return PlanStore(project.root).load().to_dict()
+    return present_artifact(project, "plan", PlanStore(project.root).load())
 
 
 @post("/api/projects/{slug:str}/plan", sync_to_thread=False)
@@ -552,14 +585,51 @@ async def ask_orchestrator(slug: FromPath[str], data: AgentQuestion) -> dict[str
     import anyio
 
     try:
-        return await anyio.to_thread.run_sync(ask_the_orchestrator, slug, data.question)
+        return await anyio.to_thread.run_sync(
+            ask_the_orchestrator, slug, data.question, data.conversation_id
+        )
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@get("/api/projects/{slug:str}/conversations", sync_to_thread=False)
+def list_agent_conversations(slug: FromPath[str]) -> dict[str, Any]:
+    """Every thread with the Orchestrator for this project, newest first."""
+    try:
+        return list_conversations(slug)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@get("/api/projects/{slug:str}/conversations/{conversation_id:str}", sync_to_thread=False)
+def get_agent_conversation(
+    slug: FromPath[str], conversation_id: FromPath[str]
+) -> dict[str, Any]:
+    """One thread in full, to reopen and continue."""
+    try:
+        return read_conversation(slug, conversation_id)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@delete(
+    "/api/projects/{slug:str}/conversations/{conversation_id:str}",
+    status_code=200, sync_to_thread=False,
+)
+def delete_agent_conversation(
+    slug: FromPath[str], conversation_id: FromPath[str]
+) -> dict[str, Any]:
+    """Forget one thread. Nothing the project produced is touched."""
+    try:
+        return forget_conversation(slug, conversation_id)
     except OperationFailed as failure:
         raise ClientException(detail=str(failure)) from failure
 
 
 @post("/api/projects/{slug:str}/plan/draft")
 async def draft_plan(slug: FromPath[str], data: PlanInstruction) -> dict[str, Any]:
-    """Have the Planning agent propose a plan. Returns it; saves nothing.
+    """Have the Planning agent draft a plan. Kept as a pending draft; the plan
+    itself is not changed.
 
     Deliberately *not* at `/agent/planning/draft-plan`. A literal `planning`
     segment sitting where `/agent/{stage}/ask` expects a parameter shadowed it
@@ -574,6 +644,41 @@ async def draft_plan(slug: FromPath[str], data: PlanInstruction) -> dict[str, An
         return await anyio.to_thread.run_sync(
             draft_plan_with_agent, slug, data.instruction
         )
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@get("/api/projects/{slug:str}/plan/draft", sync_to_thread=False)
+def get_plan_draft(slug: FromPath[str]) -> dict[str, Any]:
+    """The pending drafted plan, if there is one, and what accepting it would do."""
+    try:
+        return read_plan_draft(slug)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@post("/api/projects/{slug:str}/plan/draft/accept", sync_to_thread=False)
+def accept_plan_draft_route(slug: FromPath[str], data: DraftAcceptance) -> dict[str, Any]:
+    """Take the drafted plan whole, or append chosen sections to the current plan."""
+    try:
+        return accept_plan_draft(slug, data.section_ids)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@delete("/api/projects/{slug:str}/plan/draft", status_code=200, sync_to_thread=False)
+def discard_plan_draft_route(slug: FromPath[str]) -> dict[str, Any]:
+    try:
+        return discard_plan_draft(slug)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@post("/api/projects/{slug:str}/plan/confirm-extraction", sync_to_thread=False)
+def confirm_plan_route(slug: FromPath[str]) -> dict[str, Any]:
+    """Record that the plan was checked against the current extraction."""
+    try:
+        return confirm_plan_matches_extraction(slug)
     except OperationFailed as failure:
         raise ClientException(detail=str(failure)) from failure
 
@@ -597,9 +702,26 @@ def get_extraction(
             *(f"{name} has not been extracted" for name in freshness["added"]),
             *(f"{name} was extracted but is no longer in the project"
               for name in freshness["removed"]),
+            *(f"the {key.replace('_', ' ')} option changed since the last run"
+              for key in freshness["options_changed"]),
+            *(f"{name} was extracted but has since been left out"
+              for name in freshness["newly_excluded"]),
         ]
         presented["warnings"] = [*presented["warnings"], *changed]
     return presented
+
+
+@post("/api/projects/{slug:str}/extraction/sources", sync_to_thread=False)
+def put_extraction_sources(slug: FromPath[str], data: SourceSelection) -> dict[str, Any]:
+    """Choose which source files extraction leaves out.
+
+    Saved with the project, so the checkboxes on the Extraction page are the same
+    after a reload and in any other client, and the run reads the same list.
+    """
+    try:
+        return set_excluded_sources(slug, data.excluded)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
 
 
 @post("/api/projects/{slug:str}/extraction/run")
@@ -633,6 +755,45 @@ async def draft_section_script(
         return await anyio.to_thread.run_sync(
             draft_section_script_with_agent, slug, data.section_id, data.instruction
         )
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@post("/api/projects/{slug:str}/script/draft-unwritten")
+async def draft_unwritten_script_sections(
+    slug: FromPath[str], data: UnwrittenSectionsInstruction
+) -> dict[str, Any]:
+    """Draft every section that has no narration yet, at the same time.
+
+    Never replaces narration already written. Off the event loop: it is one model
+    call per section.
+    """
+    import anyio
+
+    from pipeline.script_drafting import draft_unwritten_sections
+
+    try:
+        return await anyio.to_thread.run_sync(draft_unwritten_sections, slug, data.instruction)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@get("/api/projects/{slug:str}/script/sections/{section_id:str}/source", sync_to_thread=False)
+def get_section_source(slug: FromPath[str], section_id: FromPath[str]) -> dict[str, Any]:
+    """The full text of the content a plan section records, for writing from."""
+    try:
+        return section_source_material(slug, section_id)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@post("/api/projects/{slug:str}/script/sections/{section_id:str}/confirm", sync_to_thread=False)
+def confirm_section_narration_route(
+    slug: FromPath[str], section_id: FromPath[str]
+) -> dict[str, Any]:
+    """Record that a section's narration still matches its plan section and source."""
+    try:
+        return confirm_section_narration(slug, section_id)
     except OperationFailed as failure:
         raise ClientException(detail=str(failure)) from failure
 

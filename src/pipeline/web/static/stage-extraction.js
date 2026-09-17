@@ -1,7 +1,9 @@
 /**
- * Extraction stage — the three-column workbench.
+ * Extraction stage — the run bar, then the workbench.
  *
- * Files to process | options | preview. Options are declared server-side and
+ * The run bar (status and the Extract button) sits first, so the stage's one
+ * action is always in view. Below it, files and options stack on the left and
+ * the preview takes the remaining width. Options are declared server-side and
  * rendered generically here, so adding an option is one entry in
  * `stage_options.py` rather than a change in three places.
  */
@@ -12,17 +14,19 @@ import {
 import { requestJsonFromApi } from "/static/shared-client.js";
 import {
   ICON, applicationState, escapeHtml, fileTypeBadge, formatFileSize, icon,
-  projectApiPath, select, showStageNotice, sortedSources, stageIcon,
+  notBuiltYet, projectApiPath, refreshProjectSummary, select, showStageNotice, sortedSources,
+  stageIcon,
 } from "/static/ui-kit.js";
 
-/** Default to everything selected. An explicit empty Set is a real state and
- *  must not be confused with "not chosen yet", which is why null is used for
- *  the latter rather than an empty collection. */
-function selectedSourceNames(sources) {
-  if (applicationState.selectedSourceNames === null) {
-    return new Set(sources.map(file => file.name));
-  }
-  return applicationState.selectedSourceNames;
+/** The files extraction will read: every source except those left out.
+ *
+ *  Read from the project, not held in the page. The ticks used to live only in
+ *  this tab's memory and the run ignored them -- unticking a file changed
+ *  nothing, and a reload ticked it again.
+ */
+function includedSourceNames(sources, extraction) {
+  const leftOut = new Set(extraction.freshness?.excluded ?? []);
+  return new Set(sources.map(file => file.name).filter(name => !leftOut.has(name)));
 }
 
 export async function renderExtractionStage(stage, navigateToStage, renderAgentStage) {
@@ -53,7 +57,7 @@ export async function renderExtractionStage(stage, navigateToStage, renderAgentS
     console.error("extraction load failed", extractionFailure);
   }
 
-  const selected = selectedSourceNames(sources);
+  const selected = includedSourceNames(sources, extraction);
   if (!applicationState.previewFileName && sources.length) {
     applicationState.previewFileName = sources[0].name;
   }
@@ -71,35 +75,78 @@ export async function renderExtractionStage(stage, navigateToStage, renderAgentS
         </button>
       </div>
 
-      <div class="workbench">
-        ${renderFilePanel(sources, selected)}
-        ${renderOptionsPanel(settings)}
-        ${renderPreviewPanel(sources, extraction)}
+      ${renderRunBar(selected.size, sources.length, extraction)}
+
+      <div class="workbench extraction-workbench">
+        <div class="workbench-side">
+          ${renderFilePanel(sources, selected, extraction)}
+          ${renderOptionsPanel(settings)}
+        </div>
+        ${renderPreviewPanel(sources, extraction, selected)}
       </div>
 
-      ${renderRunBar(selected.size, sources.length, extraction)}
       ${renderFooterNav(stage)}
     </div>`;
 
   wireExtractionStage(stage, sources, navigateToStage, renderAgentStage);
 }
 
-function renderFilePanel(sources, selected) {
+/** What one file's card says about it, from the server's view of the run.
+ *
+ *  Per file, because "which of my files made it in?" was answerable only by
+ *  reading the run bar's sentence. Checked in the order that matters to someone
+ *  deciding whether to re-run: a choice to leave it out first, then whether the
+ *  current extraction actually contains it.
+ */
+function fileStatus(file, selected, extraction) {
+  const freshness = extraction.freshness ?? {};
+  const extracted = extraction.documents.find(d => d.file_name === file.name);
+
+  if (!selected.has(file.name)) {
+    return extracted
+      ? { tone: "warn", text: "left out · still in the last run" }
+      : { tone: "muted", text: "left out" };
+  }
+  if (!extracted) {
+    // Before any run, nothing is behind; after one, a missing file is.
+    return freshness.has_run
+      ? { tone: "warn", text: "not extracted yet" }
+      : { tone: "muted", text: "ready to extract" };
+  }
+  const figures = extracted.blocks.filter(block => block.kind === "figure").length;
+  return {
+    tone: "ok",
+    text: `${extracted.blocks.length} blocks${figures ? ` · ${figures} figures` : ""}`,
+  };
+}
+
+function renderFileStatus(file, selected, extraction) {
+  const status = fileStatus(file, selected, extraction);
+  return `<span class="file-status ${status.tone}"
+                data-status-for="${escapeHtml(file.name)}">${escapeHtml(status.text)}</span>`;
+}
+
+function renderFilePanel(sources, selected, extraction) {
   return `
     <div class="panel">
-      <div class="panel-head"><h3>Files to process (${sources.length})</h3></div>
+      <div class="panel-head"><h3 id="files-to-process-heading">${
+        filesToProcessHeading(selected.size, sources.length)}</h3></div>
 
       ${sources.length ? sources.map(file => `
-        <button class="file-card ${applicationState.previewFileName === file.name ? "selected" : ""}"
-                data-preview="${escapeHtml(file.name)}">
+        <button class="file-card ${applicationState.previewFileName === file.name ? "selected" : ""}
+                       ${selected.has(file.name) ? "" : "left-out"}"
+                data-preview="${escapeHtml(file.name)}" title="View ${escapeHtml(file.name)}"
+                aria-current="${applicationState.previewFileName === file.name}">
           ${fileTypeBadge(file.suffix)}
           <span class="meta">
             <span class="name">${escapeHtml(file.name)}</span>
             <span class="sub">${formatFileSize(file.bytes)}</span>
+            ${renderFileStatus(file, selected, extraction)}
           </span>
           <span class="checkbox ${selected.has(file.name) ? "on" : ""}"
                 data-toggle-file="${escapeHtml(file.name)}" role="checkbox"
                 aria-checked="${selected.has(file.name)}"
+                title="${selected.has(file.name) ? "Included in extraction" : "Left out of extraction"}"
                 aria-label="Include ${escapeHtml(file.name)}">
             ${icon(ICON.check, 11, 3.5)}
           </span>
@@ -115,15 +162,23 @@ function renderFilePanel(sources, selected) {
 }
 
 function renderOptionsPanel(settings) {
-  const controls = settings.options.map(option => {
+  // Built options first and in full; the ones nothing reads yet fold away. Four
+  // disabled placeholders used to fill most of this panel and push the two
+  // switches that do something into the middle of it.
+  const built = settings.options.filter(option => option.implemented !== false);
+  const planned = settings.options.filter(option => option.implemented === false);
+  const renderControl = option => {
     const currentValue = settings.values[option.key];
 
     if (option.kind === "choice") {
       const activeChoice = option.choices.find(choice => choice.value === currentValue);
+      const inert = option.implemented === false;
       return `
-        <div class="option">
-          <label for="opt-${escapeHtml(option.key)}">${escapeHtml(option.label)}</label>
-          <select id="opt-${escapeHtml(option.key)}" data-option="${escapeHtml(option.key)}">
+        <div class="option${inert ? " inert" : ""}">
+          <label for="opt-${escapeHtml(option.key)}">${escapeHtml(option.label)}
+            ${notBuiltYet(option)}</label>
+          <select id="opt-${escapeHtml(option.key)}" data-option="${escapeHtml(option.key)}"
+                  ${inert ? "disabled" : ""}>
             ${option.choices.map(choice => `
               <option value="${escapeHtml(choice.value)}"
                       ${choice.value === currentValue ? "selected" : ""}>
@@ -133,14 +188,16 @@ function renderOptionsPanel(settings) {
         </div>`;
     }
 
+    const inert = option.implemented === false;
     return `
-      <button class="toggle-row" data-option="${escapeHtml(option.key)}"
-              role="switch" aria-checked="${currentValue}"
+      <button class="toggle-row${inert ? " inert" : ""}" data-option="${escapeHtml(option.key)}"
+              role="switch" aria-checked="${currentValue}" ${inert ? "disabled" : ""}
               title="${escapeHtml(option.help_text)}">
-        <span class="switch ${currentValue ? "on" : ""}"></span>
+        <span class="switch ${currentValue && !inert ? "on" : ""}"></span>
         <span class="toggle-label">${escapeHtml(option.label)}</span>
+        ${notBuiltYet(option)}
       </button>`;
-  }).join("");
+  };
 
   return `
     <div class="panel">
@@ -151,22 +208,36 @@ function renderOptionsPanel(settings) {
         <div class="spacer"></div>
         <span class="mono muted" id="settings-saved-hint"></span>
       </div>
-      ${controls}
+      ${built.map(renderControl).join("")}
+      ${planned.length ? `
+        <details class="planned-options">
+          <summary>Planned options <span class="not-built">not built yet</span>
+            <span class="count">${planned.length}</span></summary>
+          ${planned.map(renderControl).join("")}
+        </details>` : ""}
     </div>`;
 }
 
 /** Blocks carry the heading they sit under, so extracted text reads back with
  *  its structure rather than as a wall of paragraphs. */
-function renderExtractedBlocks(extraction) {
+function renderExtractedBlocks(extraction, selected) {
   const previewName = applicationState.previewFileName;
-  const parsed = extraction.documents.find(d => d.file_name === previewName)
-    ?? extraction.documents[0];
+  // Only ever the file whose name is in the header. Falling back to the first
+  // extracted document put a deck's 408 blocks under a Word document's name
+  // whenever the Word document had been left out.
+  const parsed = extraction.documents.find(d => d.file_name === previewName);
 
   if (!parsed) {
-    return `<div class="preview-empty">
-      ${icon(ICON.doc, 34, 1.4)}
-      <p>Nothing extracted yet.<br>Run the stage to parse your documents.</p>
-    </div>`;
+    const message = !previewName
+      ? "No file selected."
+      : !selected.has(previewName)
+        ? `<b>${escapeHtml(previewName)}</b> is left out of extraction.<br>
+           Tick it in the file list to include it in the next run.`
+        : extraction.is_empty
+          ? "Nothing extracted yet.<br>Extract to see what is inside your documents."
+          : `<b>${escapeHtml(previewName)}</b> has not been extracted yet.<br>
+             Re-extract to see what is inside it.`;
+    return `<div class="preview-empty">${icon(ICON.doc, 34, 1.4)}<p>${message}</p></div>`;
   }
 
   const rows = parsed.blocks.slice(0, 400).map(block => {
@@ -221,12 +292,12 @@ function renderFigureBlock(block) {
   </figure>`;
 }
 
-function renderPreviewPanel(sources, extraction) {
+function renderPreviewPanel(sources, extraction, selected) {
   const previewFile = sources.find(file => file.name === applicationState.previewFileName);
   const isPreviewTab = applicationState.previewTab === "preview";
 
   return `
-    <div class="panel">
+    <div class="panel preview-panel">
       <div class="preview-head">
         <div class="seg">
           <button class="${isPreviewTab ? "on" : ""}" data-preview-tab="preview">Preview</button>
@@ -239,7 +310,7 @@ function renderPreviewPanel(sources, extraction) {
 
       <div class="preview-stage${isPreviewTab ? " raw" : " scrolls"}">
         ${!isPreviewTab
-          ? renderExtractedBlocks(extraction)
+          ? renderExtractedBlocks(extraction, selected)
           : previewFile
             ? `<div data-raw-host="${escapeHtml(previewFile.name)}">
                  <p class="muted" style="margin:0">Opening ${escapeHtml(previewFile.name)}…</p>
@@ -288,9 +359,13 @@ function renderRunBar(selectedCount, totalCount, extraction) {
   if (hasExtracted && freshness.is_stale) {
     const missing = freshness.added ?? [];
     const gone = freshness.removed ?? [];
+    const changed = (freshness.options_changed ?? []).map(key => key.replaceAll("_", " "));
+    const unticked = freshness.newly_excluded ?? [];
     const detail = [
       missing.length ? `not extracted: ${missing.join(", ")}` : "",
+      unticked.length ? `left out since the last run: ${unticked.join(", ")}` : "",
       gone.length ? `no longer in the project: ${gone.join(", ")}` : "",
+      changed.length ? `options changed since the last run: ${changed.join(", ")}` : "",
     ].filter(Boolean).join(" · ");
 
     return `
@@ -312,6 +387,13 @@ function renderRunBar(selectedCount, totalCount, extraction) {
   const summary = hasExtracted
     ? `${extraction.audit.document_count} document(s) - ${extraction.audit.block_count} blocks`
       + ` - ${extraction.audit.figure_count ?? 0} figures`
+      // Stated when there is something to state: an option that captured
+      // nothing looks exactly like one that was never switched on.
+      + (extraction.audit.slide_layout_count
+        ? ` - layout for ${extraction.audit.slide_layout_count} slide(s)` : "")
+      + (extraction.audit.themed_document_names?.length
+        ? ` - ${extraction.audit.themed_document_names.length} deck design(s)` : "")
+      + (totalCount > selectedCount ? ` - ${totalCount - selectedCount} left out` : "")
       + ` - ${extraction.total_word_count} words (~${
           extraction.estimated_narration_minutes} min narrated)`
     : `${selectedCount} of ${totalCount} file(s) selected.`;
@@ -380,12 +462,7 @@ function wireExtractionStage(stage, sources, navigateToStage, renderAgentStage) 
   document.querySelectorAll("[data-toggle-file]").forEach(checkbox => {
     checkbox.onclick = event => {
       event.stopPropagation();
-      const fileName = checkbox.dataset.toggleFile;
-      const selected = new Set(selectedSourceNames(sources));
-      if (selected.has(fileName)) selected.delete(fileName);
-      else selected.add(fileName);
-      applicationState.selectedSourceNames = selected;
-      rerender();
+      toggleFileInclusion(checkbox, rerender);
     };
   });
 
@@ -411,6 +488,7 @@ function wireExtractionStage(stage, sources, navigateToStage, renderAgentStage) 
   select("#extraction-agent-button").onclick = () => renderAgentStage(stage);
 
   document.querySelectorAll("[data-option]").forEach(control => {
+    if (control.disabled) return;
     const optionKey = control.dataset.option;
     if (control.tagName === "SELECT") {
       control.onchange = () => persistOption(stage, optionKey, control.value, rerender);
@@ -421,6 +499,99 @@ function wireExtractionStage(stage, sources, navigateToStage, renderAgentStage) 
       };
     }
   });
+}
+
+/** Redraw the run bar from the server's current view of the extraction. */
+async function refreshRunBar(rerender) {
+  const bar = document.querySelector(".run-bar");
+  if (!bar) return;
+
+  let extraction;
+  try {
+    extraction = await requestJsonFromApi(projectApiPath("/extraction"));
+  } catch (refreshFailure) {
+    console.error("run bar refresh failed", refreshFailure);
+    return;
+  }
+  if (!bar.isConnected) return;
+
+  const sources = sortedSources();
+  const included = includedSourceNames(sources, extraction);
+  bar.outerHTML = renderRunBar(included.size, sources.length, extraction);
+
+  const heading = select("#files-to-process-heading");
+  if (heading) heading.textContent = filesToProcessHeading(included.size, sources.length);
+
+  for (const file of sources) {
+    const badge = document.querySelector(`[data-status-for="${CSS.escape(file.name)}"]`);
+    if (badge) badge.outerHTML = renderFileStatus(file, included, extraction);
+  }
+
+  const runButton = select("#run-extraction-button");
+  if (runButton && !runButton.disabled) {
+    runButton.onclick = () => runExtraction(runButton, rerender);
+  }
+}
+
+function filesToProcessHeading(includedCount, totalCount) {
+  return includedCount === totalCount
+    ? `Files to process (${totalCount})`
+    : `Files to process (${includedCount} of ${totalCount})`;
+}
+
+/** Tick or untick a file for extraction, saved with the project.
+ *
+ *  The tick moves at once; the run bar is then redrawn from the server, which is
+ *  what decides whether the extraction still matches. Unticking a file that was
+ *  extracted makes it out of date -- later stages are still reading it -- while
+ *  a file that was never extracted can be left out without any warning at all.
+ */
+async function toggleFileInclusion(checkbox, rerender) {
+  if (applicationState.isSavingSettings) {
+    showStageNotice("warn", "Still saving the last change — try again in a moment.");
+    return;
+  }
+  applicationState.isSavingSettings = true;
+
+  const include = !checkbox.classList.contains("on");
+  showFileIncluded(checkbox, include);
+  const excluded = [...document.querySelectorAll("[data-toggle-file]")]
+    .filter(box => !box.classList.contains("on"))
+    .map(box => box.dataset.toggleFile);
+
+  try {
+    await requestJsonFromApi(projectApiPath("/extraction/sources"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ excluded }),
+    });
+    await refreshRunBar(rerender);
+  } catch (saveFailure) {
+    console.error("file selection save failed", saveFailure);
+    showFileIncluded(checkbox, !include);
+    showStageNotice("bad", `Could not save that choice — ${saveFailure.message}`);
+  } finally {
+    applicationState.isSavingSettings = false;
+  }
+}
+
+function showFileIncluded(checkbox, included) {
+  checkbox.classList.toggle("on", included);
+  checkbox.setAttribute("aria-checked", String(included));
+  checkbox.title = included ? "Included in extraction" : "Left out of extraction";
+  checkbox.closest(".file-card")?.classList.toggle("left-out", !included);
+}
+
+/** Move one control to a value without redrawing anything else. */
+function showOptionValue(optionKey, value) {
+  const control = document.querySelector(`[data-option="${CSS.escape(optionKey)}"]`);
+  if (!control) return;
+  if (control.tagName === "SELECT") {
+    control.value = value;
+    return;
+  }
+  control.setAttribute("aria-checked", String(Boolean(value)));
+  control.querySelector(".switch")?.classList.toggle("on", Boolean(value));
 }
 
 async function persistOption(stage, optionKey, newValue, rerender) {
@@ -437,8 +608,13 @@ async function persistOption(stage, optionKey, newValue, rerender) {
 
   // Optimistic: the control moves immediately and reverts if the write fails.
   // A toggle that lags behind the pointer feels broken even when it works.
+  //
+  // In place, not by redrawing the stage. A redraw re-reads the settings from
+  // the server, and it used to run *before* the save was sent -- so it fetched
+  // the old value and put the switch straight back. Every toggle here looked
+  // dead while quietly saving.
   settings.values[optionKey] = newValue;
-  await rerender();
+  showOptionValue(optionKey, newValue);
 
   try {
     const savedSettings = await requestJsonFromApi(
@@ -448,6 +624,12 @@ async function persistOption(stage, optionKey, newValue, rerender) {
         body: JSON.stringify({ values: settings.values }),
       });
     applicationState.stageSettings[stage.key] = savedSettings;
+
+    // Now the save has landed, ask again whether the extraction still matches:
+    // a changed option can make it out of date. Only the run bar is redrawn --
+    // redrawing the stage would re-download and re-render a 50 MB deck sitting
+    // in the Preview tab for the sake of one switch.
+    await refreshRunBar(rerender);
 
     const savedHint = select("#settings-saved-hint");
     if (savedHint) {
@@ -485,6 +667,7 @@ async function runExtraction(button, rerender) {
     // Land on the tab that shows the result. Running a stage and seeing no
     // visible change is the most confusing possible outcome.
     applicationState.previewTab = "text";
+    await refreshProjectSummary();
     await rerender();
 
     showStageNotice(

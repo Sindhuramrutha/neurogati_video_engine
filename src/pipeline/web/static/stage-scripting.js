@@ -1,36 +1,68 @@
 /**
- * Scripting stage — narration per plan section, plus scenarios and variables.
+ * Scripting stage — each plan section's narration, written as scenes.
  *
- * The section list is the *plan's*, not a copy: bodies are keyed by
- * `PlanSection.id`, so renaming or reordering in Planning carries the narration
- * with it. Deleting a section leaves its text orphaned rather than destroyed, and
- * the server reports that so it is visible instead of silent.
+ * A scene is what is said and what is on screen while it is said. The section
+ * list is the *plan's*: narration is keyed by `PlanSection.id`, so renaming or
+ * reordering in Planning carries it along, and narration a plan no longer has is
+ * shown -- to reattach or delete -- instead of only counted in a warning.
+ *
+ * Beside the editor sits everything the section was planned with: its summary,
+ * target length, how it will be shown, its objectives and its source text, plus
+ * any review comments sent back to Scripting for it. Narration written against a
+ * plan section or source that has since changed is flagged there.
  */
 
 import { editStageDocument, loadStageDocument, newItemIdentifier }
   from "/static/document-editing.js";
 import { requestJsonFromApi } from "/static/shared-client.js";
 import {
-  ICON, applicationState, escapeHtml, icon, projectApiPath, select,
+  ICON, applicationState, escapeHtml, icon, projectApiPath, refreshProjectSummary, select,
   showStageNotice, stageIcon,
 } from "/static/ui-kit.js";
 
-/** View-only state: which section is open, which pane is showing, and whether a
- *  save is in flight. None of it belongs in the saved script. */
+/** View-only state. None of it belongs in the saved script. */
 const scriptViewState = {
   activeSectionId: null,
   editorTab: "script",
   pendingSaveTimer: null,
+  savePromise: null,
+  saveAgain: false,
+  typedWhileSaving: false,
+  draftingSectionId: null,
+  isDraftingAll: false,
+  draftInstruction: "",
+  sourceShownFor: null,
+  sourceCache: {},
 };
 
 /** Typing saves on a debounce rather than per keystroke: a POST per character
  *  would be wasteful and would make every save a potential conflict with the
  *  next one. */
 const SCRIPT_AUTOSAVE_DELAY_MS = 700;
+const WORDS_PER_SECOND = 150 / 60;
+
+const APPROACH_LABELS = {
+  composition: "Composition", plot: "Plot", simulation: "Simulation",
+  code: "Code", still: "Still",
+};
+
+const isDrafting = () =>
+  scriptViewState.isDraftingAll || scriptViewState.draftingSectionId !== null;
+
+const countWords = text => (text.trim() ? text.trim().split(/\s+/).length : 0);
+const secondsFor = words => Math.round(words / WORDS_PER_SECOND);
+const formatClock = milliseconds => {
+  const seconds = Math.round(milliseconds / 1000);
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+};
+const referenceLabel = reference =>
+  [reference.file_name, ...reference.heading_path].join(" › ");
 
 export async function renderScriptingStage(stage, navigateToStage, renderAgentStage) {
   const body = select("#stage-body");
-  body.innerHTML = `<div class="card muted">Loading script…</div>`;
+  if (!body.querySelector(".script-grid")) {
+    body.innerHTML = `<div class="card muted">Loading script…</div>`;
+  }
 
   let script;
   try {
@@ -49,7 +81,7 @@ export async function renderScriptingStage(stage, navigateToStage, renderAgentSt
   if (!sections.length) {
     body.innerHTML = `
       <div class="card">
-        ${scriptingHeader(stage)}
+        ${scriptingHeader()}
         <div class="empty">
           <h3>No sections to write for</h3>
           <p>Scripting writes narration per plan section. Build the outline first.</p>
@@ -67,19 +99,28 @@ export async function renderScriptingStage(stage, navigateToStage, renderAgentSt
     scriptViewState.activeSectionId = sections[0].id;
   }
 
+  // Stranded and out-of-date narration have their own places on the page; the
+  // notice keeps the rest.
+  const shownElsewhere = /belong to sections no longer in the plan|were written against an earlier/;
+  const warnings = script.warnings.filter(warning => !shownElsewhere.test(warning));
+
   body.innerHTML = `
     <div class="card">
-      ${scriptingHeader(stage)}
+      ${scriptingHeader()}
+      ${renderDraftBar(script, sections)}
 
-      ${script.warnings.length ? `
+      ${warnings.length ? `
         <div class="notice warn" style="margin-bottom:14px">
-          ${script.warnings.map(escapeHtml).join(" · ")}
+          ${warnings.map(escapeHtml).join(" · ")}
         </div>` : ""}
+
+      ${renderStrandedNarration(script, sections)}
 
       <div class="script-grid">
         ${renderSectionList(script, sections)}
         ${renderEditor(script, sections)}
         <div>
+          ${renderSectionContext(script, sections)}
           ${renderScenarioPanel(script)}
           ${renderVariablePanel(script)}
         </div>
@@ -91,13 +132,13 @@ export async function renderScriptingStage(stage, navigateToStage, renderAgentSt
   wireScriptingStage(stage, navigateToStage, renderAgentStage);
 }
 
-function scriptingHeader(stage) {
+function scriptingHeader() {
   return `
     <div class="card-head">
       <span class="card-icon">${stageIcon("scripting", 21)}</span>
       <div>
         <h2>Scripting</h2>
-        <p>Write the narration for each section, and the scenarios it can be told in.</p>
+        <p>Write each section as scenes: what is said, and what is on screen.</p>
       </div>
       <button class="btn" id="scripting-agent-button">
         ${icon(ICON.gear, 14, 1.8)} Agent &amp; instructions
@@ -105,11 +146,80 @@ function scriptingHeader(stage) {
     </div>`;
 }
 
-/* ---- panels ------------------------------------------------------------- */
+/* ---- drafting ------------------------------------------------------------ */
+
+function renderDraftBar(script, sections) {
+  const unwritten = sections.filter(s => !(script.per_section[s.id]?.word_count > 0));
+  const plannedSeconds = sections.reduce((sum, s) => sum + s.estimated_seconds, 0);
+  const bar = (tone, iconPaths, title, detail, actions = "") => `
+    <div class="run-bar plan-bar ${tone}">
+      <span class="run-icon">${icon(iconPaths, 17, 2.2)}</span>
+      <span class="run-text"><b>${title}</b><span>${detail}</span></span>
+      ${actions ? `<span class="plan-actions">${actions}</span>` : ""}
+    </div>`;
+
+  if (scriptViewState.isDraftingAll) {
+    return bar("working", ICON.doc, `Drafting ${unwritten.length} section(s) at once…`,
+      "Each is written from its own source text, as scenes with on-screen briefs. "
+      + "This can take a minute or two; editing is paused until they are saved.");
+  }
+  if (unwritten.length) {
+    return bar("ready", ICON.doc,
+      `${unwritten.length} of ${sections.length} section(s) have no narration`,
+      `About ${Math.round(plannedSeconds / 60)} min planned. Drafting never replaces narration
+       that is already written.`,
+      `<input id="draft-instruction" class="draft-instruction" maxlength="300"
+              placeholder="Guidance for every section (optional)"
+              value="${escapeHtml(scriptViewState.draftInstruction)}"
+              aria-label="Guidance for the drafts">
+       <button class="btn btn-accent" id="draft-unwritten-button"
+               ${isDrafting() ? "disabled" : ""}>Draft all unwritten</button>`);
+  }
+  return bar("ready", ICON.check, `All ${sections.length} sections have narration`,
+    `~${Math.round(script.total_estimated_seconds / 60)} min spoken, `
+    + `~${Math.round(plannedSeconds / 60)} min planned.`);
+}
+
+/* ---- narration no section points at --------------------------------------- */
+
+function renderStrandedNarration(script, sections) {
+  if (!script.orphaned?.length) return "";
+  const writtenIds = new Set(sections
+    .filter(s => script.per_section[s.id]?.word_count > 0).map(s => s.id));
+
+  return `
+    <div class="panel stranded-panel">
+      <div class="panel-head">
+        <h3>Narration not attached to any section (${script.orphaned.length})</h3>
+      </div>
+      <p class="panel-sub">Written for sections the plan no longer has. Attach it to a
+        section to use it, or delete it.</p>
+      ${script.orphaned.map(entry => `
+        <div class="stranded-row">
+          <div class="stranded-text">
+            <b>${entry.word_count} words · ${entry.scene_count} scene(s)</b>
+            <span>${escapeHtml(entry.preview)}${entry.preview.length >= 160 ? "…" : ""}</span>
+          </div>
+          <select data-attach-orphan="${escapeHtml(entry.section_id)}"
+                  aria-label="Attach this narration to a section">
+            <option value="">Attach to…</option>
+            ${sections.map((section, index) => `
+              <option value="${section.id}">${index + 1}. ${escapeHtml(section.title)}${
+                writtenIds.has(section.id) ? " (replaces its narration)" : ""}</option>`).join("")}
+          </select>
+          <button class="btn-icon danger" data-delete-orphan="${escapeHtml(entry.section_id)}"
+                  title="Delete this narration" aria-label="Delete this narration">
+            ${icon(`<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>`, 15, 1.8)}
+          </button>
+        </div>`).join("")}
+    </div>`;
+}
+
+/* ---- section list ---------------------------------------------------------- */
 
 function renderSectionList(script, sections) {
-  const writtenCount = sections.filter(
-    section => (script.per_section[section.id]?.word_count ?? 0) > 0).length;
+  const writtenCount = sections.filter(s => script.per_section[s.id]?.word_count > 0).length;
+  const stale = new Set((script.out_of_date ?? []).map(entry => entry.section_id));
 
   return `
     <div class="panel">
@@ -123,16 +233,26 @@ function renderSectionList(script, sections) {
       ${sections.map((section, index) => {
         const stats = script.per_section[section.id];
         const isWritten = (stats?.word_count ?? 0) > 0;
+        const comments = (script.comments_by_section?.[section.id] ?? []).length;
+        const measured = script.measured_seconds?.[section.id];
+        const over = isWritten && stats.estimated_seconds > section.estimated_seconds * 1.25;
         return `
           <button class="section-row ${scriptViewState.activeSectionId === section.id ? "active" : ""}"
                   data-section="${section.id}">
             <span class="outline-num">${index + 1}</span>
             <span class="body">
               <span class="title ${section.title ? "" : "untitled"}"
+                    title="${escapeHtml(section.title)}"
                 >${escapeHtml(section.title || "Untitled section")}</span>
-              <span class="sub">${isWritten
-                ? `${stats.word_count}w · ~${stats.estimated_seconds}s`
-                : "not written"}</span>
+              <span class="sub ${over ? "over" : ""}">${isWritten
+                ? `~${stats.estimated_seconds}s of ${section.estimated_seconds}s`
+                : `not written · ${section.estimated_seconds}s planned`}</span>
+              ${stale.has(section.id) || comments || measured ? `
+                <span class="section-flags">
+                  ${stale.has(section.id) ? `<span class="fact warn">out of date</span>` : ""}
+                  ${comments ? `<span class="fact bad">${comments} comment${comments === 1 ? "" : "s"}</span>` : ""}
+                  ${measured ? `<span class="fact" title="Measured in the last render">${measured}s spoken</span>` : ""}
+                </span>` : ""}
             </span>
             <span class="written-dot ${isWritten ? "written" : ""}"
                   title="${isWritten ? "Has narration" : "No narration yet"}"></span>
@@ -141,62 +261,194 @@ function renderSectionList(script, sections) {
     </div>`;
 }
 
+/* ---- the editor ------------------------------------------------------------- */
+
+function activeSectionScript(script) {
+  return script.section_scripts.find(s => s.section_id === scriptViewState.activeSectionId);
+}
+
 function renderEditor(script, sections) {
-  const activeSection = sections.find(s => s.id === scriptViewState.activeSectionId);
-  const body = script.section_scripts
-    .find(s => s.section_id === scriptViewState.activeSectionId)?.body ?? "";
+  const section = sections.find(s => s.id === scriptViewState.activeSectionId);
+  const written = activeSectionScript(script);
+  const scenes = written?.scenes ?? [];
   const isScriptTab = scriptViewState.editorTab === "script";
-  const lineCount = body ? body.split("\n").length : 1;
-  const stats = script.per_section[activeSection.id];
+  const isDraftingThis = scriptViewState.draftingSectionId === section.id;
+  const words = countWords(scenes.map(scene => scene.narration).join(" "));
 
   return `
     <div class="panel editor-shell">
       <div class="editor-bar">
         <div class="seg">
-          <button class="${isScriptTab ? "on" : ""}" data-editor-tab="script">Script</button>
+          <button class="${isScriptTab ? "on" : ""}" data-editor-tab="script">Scenes</button>
           <button class="${isScriptTab ? "" : "on"}" data-editor-tab="preview">Preview</button>
         </div>
         <div class="spacer"></div>
-        <span class="mono muted">${escapeHtml(activeSection.title || "Untitled section")}</span>
+        <button class="btn ${words ? "" : "btn-accent"}" id="draft-section-button"
+                ${isDrafting() ? "disabled" : ""}>
+          ${isDraftingThis ? "Drafting…" : words ? "Redraft this section" : "Draft this section"}
+        </button>
       </div>
 
-      ${isScriptTab ? `
-        <div class="editor-wrap">
-          <div class="gutter" id="line-gutter">${
-            Array.from({ length: lineCount }, (_, i) => i + 1).join("\n")}</div>
-          <textarea class="script-body" id="script-body" spellcheck="true"
-                    placeholder="Write the narration for this section.&#10;&#10;Use {{VARIABLE}} for values that change between runs."
-                    aria-label="Narration for ${escapeHtml(activeSection.title || "this section")}"
-                    >${escapeHtml(body)}</textarea>
-        </div>`
-        : `<div class="script-preview">${renderPreview(script, body)}</div>`}
+      ${isDraftingThis ? `
+        <div class="notice ok" style="margin-bottom:10px">
+          Writing “${escapeHtml(section.title)}” from its source text… Editing is paused
+          until it is saved.
+        </div>` : ""}
+
+      ${isScriptTab ? renderScenes(scenes) : renderPreview(script, scenes)}
 
       <div class="editor-foot">
-        <span>Lines ${lineCount}</span>
-        <span>Words ${stats?.word_count ?? 0}</span>
-        <span>~${stats?.estimated_seconds ?? 0} sec</span>
+        <span id="section-word-count">Words ${words}</span>
+        <span id="section-length" class="${secondsFor(words) > section.estimated_seconds * 1.25 ? "over" : ""}"
+          >~${secondsFor(words)}s of ${section.estimated_seconds}s planned</span>
+        <span>${scenes.length} scene${scenes.length === 1 ? "" : "s"}</span>
         <div class="spacer"></div>
         <span id="script-save-hint"></span>
       </div>
     </div>`;
 }
 
-/** Substitute defined variables; leave unknown ones visible and highlighted.
- *  Silently blanking an undefined variable would hide the mistake until it
- *  reached narration. */
-function renderPreview(script, body) {
-  if (!body.trim()) {
-    return `<span class="muted">Nothing written for this section yet.</span>`;
+function renderScenes(scenes) {
+  // While a draft is written on the server, the page's copy of the script is
+  // out of date: a save from it would put the old narration back over the draft.
+  const locked = isDrafting() ? "disabled" : "";
+  if (!scenes.length) {
+    return `
+      <div class="scenes-empty">
+        <p>No narration yet. Draft this section from its source text, or add a scene and
+           write it yourself.</p>
+        <button class="add-row" data-add-scene ${locked}>${icon(ICON.plus)} Add a scene</button>
+      </div>`;
+  }
+
+  return `
+    <div class="scene-list">
+      ${scenes.map((scene, index) => `
+        <div class="scene-card" data-scene-card="${index}">
+          <div class="scene-head">
+            <span class="outline-num">${index + 1}</span>
+            <b>Scene ${index + 1}</b>
+            <span class="mono muted scene-length" data-scene-length="${index}"
+              >~${secondsFor(countWords(scene.narration))}s</span>
+            <div class="spacer"></div>
+            <button class="btn-icon" data-move-scene="${index}" data-direction="-1"
+                    ${index === 0 ? "disabled" : locked} title="Move up" aria-label="Move scene up">
+              ${icon(`<path d="M18 15l-6-6-6 6"/>`, 14, 2.2)}</button>
+            <button class="btn-icon" data-move-scene="${index}" data-direction="1"
+                    ${index === scenes.length - 1 ? "disabled" : locked} title="Move down"
+                    aria-label="Move scene down">
+              ${icon(`<path d="M6 9l6 6 6-6"/>`, 14, 2.2)}</button>
+            <button class="btn-icon danger" data-delete-scene="${index}" ${locked}
+                    title="Delete scene" aria-label="Delete scene">
+              ${icon(`<path d="M18 6 6 18M6 6l12 12"/>`, 14, 2)}</button>
+          </div>
+          <label class="scene-label" for="scene-narration-${index}">Said</label>
+          <textarea id="scene-narration-${index}" class="scene-narration" spellcheck="true"
+                    data-scene-field="narration" data-scene-index="${index}" ${locked ? "readonly" : ""}
+                    placeholder="What is said aloud. Use {{VARIABLE}} for values that change."
+                    >${escapeHtml(scene.narration)}</textarea>
+          <label class="scene-label" for="scene-brief-${index}">On screen</label>
+          <textarea id="scene-brief-${index}" class="scene-brief" spellcheck="true"
+                    data-scene-field="brief" data-scene-index="${index}" ${locked ? "readonly" : ""}
+                    placeholder="Exactly what is shown: the real values and labels from the source."
+                    >${escapeHtml(scene.brief)}</textarea>
+        </div>`).join("")}
+      <button class="add-row" data-add-scene ${locked}>${icon(ICON.plus)} Add a scene</button>
+    </div>`;
+}
+
+/** What is spoken, variables filled in exactly as the render fills them, with
+ *  unknown ones left visible and highlighted. */
+function renderPreview(script, scenes) {
+  if (!scenes.some(scene => scene.narration.trim())) {
+    return `<div class="script-preview"><span class="muted">Nothing written for this section yet.</span></div>`;
   }
   const values = Object.fromEntries(
     script.variables.filter(v => v.name).map(v => [v.name.toUpperCase(), v.value]));
-
-  return escapeHtml(body).replace(/\{\{\s*([A-Za-z0-9_]+)\s*\}\}/g, (whole, name) => {
+  const fill = text => escapeHtml(text).replace(/\{\{\s*([A-Za-z0-9_]+)\s*\}\}/g, (whole, name) => {
     const value = values[name.toUpperCase()];
     return value !== undefined
       ? escapeHtml(value)
-      : `<span class="var-unresolved" title="Not defined">${escapeHtml(whole)}</span>`;
+      : `<span class="var-unresolved" title="Not defined: spoken as written">${escapeHtml(whole)}</span>`;
   });
+
+  return `
+    <div class="script-preview scene-preview">
+      ${scenes.map((scene, index) => `
+        <div class="preview-scene">
+          <span class="scene-label">Scene ${index + 1}</span>
+          <p>${fill(scene.narration)}</p>
+          ${scene.brief ? `<div class="preview-brief"><b>On screen:</b> ${escapeHtml(scene.brief)}</div>` : ""}
+        </div>`).join("")}
+    </div>`;
+}
+
+/* ---- what the section was planned with -------------------------------------- */
+
+function renderSectionContext(script, sections) {
+  const section = sections.find(s => s.id === scriptViewState.activeSectionId);
+  const objectives = Object.fromEntries((script.plan_objectives ?? []).map(o => [o.id, o.text]));
+  const served = (section.objective_ids ?? []).map(id => objectives[id]).filter(Boolean);
+  const stale = (script.out_of_date ?? []).find(entry => entry.section_id === section.id);
+  const comments = script.comments_by_section?.[section.id] ?? [];
+  const source = scriptViewState.sourceShownFor === section.id
+    ? scriptViewState.sourceCache[section.id] : null;
+
+  return `
+    <div class="panel section-context" style="margin-bottom:14px">
+      <div class="panel-head"><h3>This section</h3></div>
+
+      ${stale ? `
+        <div class="notice warn context-notice">
+          <b>Out of date:</b> ${escapeHtml(stale.reasons.join(" and "))} since this was written.
+          <button class="btn" id="confirm-narration-button">Keep narration as is</button>
+        </div>` : ""}
+
+      ${comments.length ? `
+        <div class="context-comments">
+          <b>Review comments for Scripting</b>
+          ${comments.map(comment => `
+            <div class="context-comment">
+              <span class="mono">${formatClock(comment.at_ms)}</span>
+              <span><b>${escapeHtml(comment.author)}:</b> ${escapeHtml(comment.body)}</span>
+            </div>`).join("")}
+        </div>` : ""}
+
+      <p class="context-summary">${escapeHtml(section.summary || "No summary in the plan.")}</p>
+      <dl class="context-facts">
+        <dt>Target</dt><dd>~${section.estimated_seconds}s
+          (about ${Math.round(section.estimated_seconds * WORDS_PER_SECOND)} words)</dd>
+        ${section.rendering_approach ? `
+          <dt>Shown as</dt><dd><span class="fact approach ${escapeHtml(section.rendering_approach)}"
+            >${escapeHtml(APPROACH_LABELS[section.rendering_approach] ?? section.rendering_approach)}</span>
+            ${escapeHtml(section.rendering_reason ?? "")}</dd>` : ""}
+        ${served.length ? `
+          <dt>Objectives</dt><dd><ul>${served.map(o => `<li>${escapeHtml(o)}</li>`).join("")}</ul></dd>` : ""}
+        ${script.selected_audience ? `
+          <dt>Audience</dt><dd>${escapeHtml(script.selected_audience)}</dd>` : ""}
+      </dl>
+
+      <div class="context-sources">
+        <b>Source content</b>
+        ${(section.sources ?? []).length
+          ? `<div class="source-chips">${section.sources.map(r =>
+              `<span class="source-chip">${escapeHtml(referenceLabel(r))}</span>`).join("")}</div>
+             <button class="btn" id="toggle-source-button">
+               ${source ? "Hide source text" : "Show source text"}</button>`
+          : `<p class="muted edit-hint">The plan records no source for this section. Drafting
+               reads the whole extraction instead.</p>`}
+        ${source ? `
+          <div class="source-text">
+            ${source.parts.map(part => `
+              <div class="source-part">
+                <span class="scene-label">${escapeHtml(part.label)}</span>
+                <pre>${escapeHtml(part.text)}</pre>
+              </div>`).join("")}
+            ${source.missing.length ? `<p class="fact bad">No longer extracted:
+              ${source.missing.map(escapeHtml).join("; ")}</p>` : ""}
+          </div>` : ""}
+      </div>
+    </div>`;
 }
 
 function renderScenarioPanel(script) {
@@ -238,7 +490,7 @@ function renderVariablePanel(script) {
       <div class="panel-head">
         <h3>Script variables</h3>
         <span class="info-dot"
-              title="Written as {{NAME}} in a script and replaced on output.">i</span>
+              title="Written as {{NAME}} in a script and filled in wherever it is spoken or shown.">i</span>
         <div class="spacer"></div>
         <button class="btn-icon" id="add-variable-button"
                 title="Add variable" aria-label="Add variable">${icon(ICON.plus, 15)}</button>
@@ -259,7 +511,7 @@ function renderVariablePanel(script) {
 
       ${undefinedNames.size ? `
         <p class="muted" style="font-size:11.5px;margin:9px 0 0;color:var(--warn)">
-          Used but not defined: ${[...undefinedNames].map(escapeHtml).join(", ")}
+          Used but not defined, so spoken as written: ${[...undefinedNames].map(escapeHtml).join(", ")}
         </p>` : ""}
     </div>`;
 }
@@ -299,6 +551,31 @@ function showSaveHint(text) {
   setTimeout(() => { if (hint.isConnected) hint.textContent = ""; }, 1500);
 }
 
+/** The active section's entry, created if the section has none yet. */
+function ensureSectionScript(script, sectionId) {
+  let entry = script.section_scripts.find(s => s.section_id === sectionId);
+  if (!entry) {
+    entry = { section_id: sectionId, body: "", scenes: [], written_from: {} };
+    script.section_scripts.push(entry);
+  }
+  return entry;
+}
+
+/**
+ * What a save sends: the scenes, never the `body` derived from them.
+ *
+ * `SectionScript.body` is rebuilt from the scenes when the script is saved, and
+ * a section that arrives with a body and no scenes is migrated the other way --
+ * that is how scripts written before scenes existed are read. Sending the page's
+ * copy of `body` made deleting the *last* scene do nothing: the payload said no
+ * scenes and still carried the old body, so the server helpfully turned that
+ * body back into a scene.
+ */
+const scriptPayload = script => ({
+  ...script,
+  section_scripts: script.section_scripts.map(({ body, ...rest }) => rest),
+});
+
 /* ---- wiring ------------------------------------------------------------- */
 
 function wireNavigation(navigateToStage) {
@@ -309,94 +586,326 @@ function wireNavigation(navigateToStage) {
 
 function wireScriptingStage(stage, navigateToStage, renderAgentStage) {
   const rerender = () => renderScriptingStage(stage, navigateToStage, renderAgentStage);
-  const change = (applyEdit, options = {}) => editStageDocument({
-    documentKind: "script", apiPathSuffix: "/script", applyEdit, rerender,
-    ...options,
-  });
+  const change = async applyEdit => {
+    await flushPendingSave();
+    if (isDrafting()) {
+      showStageNotice("warn", "Editing is paused until the draft is saved.");
+      return;
+    }
+    await editStageDocument({
+      documentKind: "script", apiPathSuffix: "/script", applyEdit, rerender,
+      buildPayload: scriptPayload,
+    });
+  };
 
   wireNavigation(navigateToStage);
   select("#scripting-agent-button").onclick = () => renderAgentStage(stage);
 
   document.querySelectorAll("[data-section]").forEach(row => {
-    row.onclick = () => {
-      flushPendingSave();
+    row.onclick = async () => {
+      await flushPendingSave();
       scriptViewState.activeSectionId = row.dataset.section;
       rerender();
     };
   });
 
   document.querySelectorAll("[data-editor-tab]").forEach(tab => {
-    tab.onclick = () => {
-      flushPendingSave();
+    tab.onclick = async () => {
+      await flushPendingSave();
       scriptViewState.editorTab = tab.dataset.editorTab;
       rerender();
     };
   });
 
-  wireEditor(change);
+  wireDrafting(rerender);
+  wireScenes(change);
+  wireSectionContext(rerender);
+  wireStrandedNarration(change);
   wireScenarios(change);
   wireVariables(change);
 }
 
-function wireEditor(change) {
-  const editor = select("#script-body");
-  if (!editor) return;
-
-  const gutter = select("#line-gutter");
-
-  const scheduleSave = () => {
-    clearTimeout(scriptViewState.pendingSaveTimer);
-    scriptViewState.pendingSaveTimer = setTimeout(() => {
-      const currentText = editor.value;
-      const sectionId = scriptViewState.activeSectionId;
-      // silent: re-rendering mid-typing would move the caret to the end.
-      change(script => {
-        const existing = script.section_scripts.find(s => s.section_id === sectionId);
-        if (existing) existing.body = currentText;
-        else script.section_scripts.push({ section_id: sectionId, body: currentText });
-      }, { silent: true, onSaved: saved => { showSaveHint("saved"); return saved; } });
-    }, SCRIPT_AUTOSAVE_DELAY_MS);
-  };
-
-  editor.addEventListener("input", () => {
-    // Gutter is updated directly rather than by re-render, for the same reason.
-    const lineCount = editor.value.split("\n").length;
-    gutter.textContent = Array.from({ length: lineCount }, (_, i) => i + 1).join("\n");
-    scheduleSave();
-  });
-
-  // Keep the gutter aligned when the textarea scrolls independently.
-  editor.addEventListener("scroll", () => { gutter.scrollTop = editor.scrollTop; });
-
-  editor.addEventListener("blur", flushPendingSave);
+async function runScriptAction({ path, body, method = "POST", done, rerender }) {
+  await flushPendingSave();
+  let result = null;
+  try {
+    result = await requestJsonFromApi(projectApiPath(path), {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  } catch (actionFailure) {
+    console.error("script action failed", path, actionFailure);
+    showStageNotice("bad", actionFailure.message);
+  }
+  await refreshProjectSummary();
+  await rerender();
+  if (result && done) showStageNotice("ok", done);
+  return result;
 }
 
-/** Commit a debounced edit immediately.
- *
- *  Called before any navigation away from the editor. Without it, switching
- *  section within the debounce window would discard the last keystrokes — the
- *  quiet data loss that is hardest to notice. */
-function flushPendingSave() {
-  if (!scriptViewState.pendingSaveTimer) return;
-  clearTimeout(scriptViewState.pendingSaveTimer);
-  scriptViewState.pendingSaveTimer = null;
+function wireDrafting(rerender) {
+  const instruction = select("#draft-instruction");
+  if (instruction) {
+    instruction.oninput = () => { scriptViewState.draftInstruction = instruction.value; };
+  }
 
-  const editor = select("#script-body");
-  if (!editor) return;
+  const draftAll = select("#draft-unwritten-button");
+  if (draftAll) {
+    draftAll.onclick = async () => {
+      await flushPendingSave();
+      scriptViewState.draftInstruction = select("#draft-instruction")?.value.trim() ?? "";
+      scriptViewState.isDraftingAll = true;
+      await rerender();
+      let result = null;
+      try {
+        result = await requestJsonFromApi(projectApiPath("/script/draft-unwritten"), {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ instruction: scriptViewState.draftInstruction }),
+        });
+      } catch (draftFailure) {
+        console.error("draft all failed", draftFailure);
+        showStageNotice("bad", `Could not draft — ${draftFailure.message}`);
+      } finally {
+        scriptViewState.isDraftingAll = false;
+        await refreshProjectSummary();
+        await rerender();
+      }
+      if (result) {
+        const drafted = result.drafted_section_ids.length;
+        showStageNotice(result.notes.length ? "warn" : "ok",
+          `Drafted ${drafted} section(s).${result.notes.length ? " " + result.notes.join(" ") : ""}`);
+      }
+    };
+  }
 
-  const currentText = editor.value;
+  const draftOne = select("#draft-section-button");
+  if (draftOne) {
+    draftOne.onclick = async () => {
+      await flushPendingSave();
+      const sectionId = scriptViewState.activeSectionId;
+      const written = activeSectionScript(applicationState.script);
+      if (written?.scenes?.some(scene => scene.narration.trim() || scene.brief.trim())
+          && !window.confirm("Redraft this section? Its current scenes will be replaced.")) {
+        return;
+      }
+      scriptViewState.draftingSectionId = sectionId;
+      await rerender();
+      let result = null;
+      try {
+        result = await requestJsonFromApi(projectApiPath("/script/draft"), {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ section_id: sectionId, instruction: "" }),
+        });
+      } catch (draftFailure) {
+        console.error("section draft failed", draftFailure);
+        showStageNotice("bad", `Could not draft this section — ${draftFailure.message}`);
+      } finally {
+        scriptViewState.draftingSectionId = null;
+        await refreshProjectSummary();
+        await rerender();
+      }
+      if (result) {
+        showStageNotice(result.notes?.length ? "warn" : "ok",
+          `Drafted ${result.scene_count} scene(s), ${result.written_words} words.`
+          + (result.notes?.length ? " " + result.notes.join(" ") : ""));
+      }
+    };
+  }
+}
+
+function wireScenes(change) {
   const sectionId = scriptViewState.activeSectionId;
-  const script = applicationState.script;
-  const existing = script.section_scripts.find(s => s.section_id === sectionId);
-  if (existing) existing.body = currentText;
-  else script.section_scripts.push({ section_id: sectionId, body: currentText });
 
-  requestJsonFromApi(projectApiPath("/script"), {
-    method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(script),
-  }).catch(saveFailure => {
-    console.error("flush save failed", saveFailure);
-    showStageNotice("bad", `Could not save the last edit — ${saveFailure.message}`);
+  document.querySelectorAll("[data-scene-field]").forEach(field => {
+    field.addEventListener("input", () => {
+      // Memory is updated at once and the save debounced. Re-rendering while
+      // typing would move the caret, so the counts are updated in place.
+      const entry = ensureSectionScript(applicationState.script, sectionId);
+      const scene = entry.scenes[Number(field.dataset.sceneIndex)];
+      if (!scene) return;
+      scene[field.dataset.sceneField] = field.value;
+      if (scriptViewState.savePromise) scriptViewState.typedWhileSaving = true;
+      refreshCounts(entry);
+      scheduleSave();
+    });
+    field.addEventListener("blur", () => { flushPendingSave(); });
+  });
+
+  document.querySelectorAll("[data-add-scene]").forEach(button => {
+    button.onclick = () => {
+      change(script => {
+        ensureSectionScript(script, sectionId).scenes.push({
+          id: newItemIdentifier(), narration: "", brief: "",
+        });
+      });
+    };
+  });
+
+  document.querySelectorAll("[data-move-scene]").forEach(button => {
+    button.onclick = () => {
+      const from = Number(button.dataset.moveScene);
+      const to = from + Number(button.dataset.direction);
+      change(script => {
+        const scenes = ensureSectionScript(script, sectionId).scenes;
+        if (to < 0 || to >= scenes.length) return;
+        [scenes[from], scenes[to]] = [scenes[to], scenes[from]];
+      });
+    };
+  });
+
+  document.querySelectorAll("[data-delete-scene]").forEach(button => {
+    button.onclick = () => {
+      const index = Number(button.dataset.deleteScene);
+      const scene = ensureSectionScript(applicationState.script, sectionId).scenes[index];
+      if ((scene?.narration.trim() || scene?.brief.trim())
+          && !window.confirm("Delete this scene and its text?")) {
+        return;
+      }
+      change(script => {
+        ensureSectionScript(script, sectionId).scenes.splice(index, 1);
+      });
+    };
+  });
+}
+
+function refreshCounts(entry) {
+  const words = countWords(entry.scenes.map(scene => scene.narration).join(" "));
+  const counter = select("#section-word-count");
+  if (counter) counter.textContent = `Words ${words}`;
+  const section = applicationState.script.plan_sections
+    .find(s => s.id === scriptViewState.activeSectionId);
+  const length = select("#section-length");
+  if (length && section) {
+    length.textContent = `~${secondsFor(words)}s of ${section.estimated_seconds}s planned`;
+    length.classList.toggle("over", secondsFor(words) > section.estimated_seconds * 1.25);
+  }
+  entry.scenes.forEach((scene, index) => {
+    const label = document.querySelector(`[data-scene-length="${index}"]`);
+    if (label) label.textContent = `~${secondsFor(countWords(scene.narration))}s`;
+  });
+}
+
+/** Save what has been typed, without redrawing.
+ *
+ *  A redraw would move the caret, so this passes no redraw at all. If more is
+ *  typed while the save is on its way, the page's copy is kept rather than
+ *  replaced by the server's reply, and saved again. */
+function saveTyping() {
+  if (scriptViewState.savePromise) {
+    scriptViewState.saveAgain = true;
+    return scriptViewState.savePromise;
+  }
+  scriptViewState.savePromise = (async () => {
+    try {
+      do {
+        scriptViewState.saveAgain = false;
+        scriptViewState.typedWhileSaving = false;
+        await editStageDocument({
+          documentKind: "script", apiPathSuffix: "/script", silent: true,
+          applyEdit: () => {}, rerender: async () => {}, buildPayload: scriptPayload,
+          onSaved: saved => {
+            if (scriptViewState.typedWhileSaving) return applicationState.script;
+            showSaveHint("saved");
+            return saved;
+          },
+        });
+      } while (scriptViewState.saveAgain);
+    } finally {
+      scriptViewState.savePromise = null;
+    }
+  })();
+  return scriptViewState.savePromise;
+}
+
+function scheduleSave() {
+  clearTimeout(scriptViewState.pendingSaveTimer);
+  scriptViewState.pendingSaveTimer = setTimeout(() => {
+    scriptViewState.pendingSaveTimer = null;
+    saveTyping();
+  }, SCRIPT_AUTOSAVE_DELAY_MS);
+}
+
+/** Save typing still waiting on its debounce, and wait until it is saved.
+ *
+ *  Awaited before anything that redraws or changes the script another way. A
+ *  redraw loads the script from the server, so without this, switching section
+ *  within the debounce window would discard the last keystrokes -- the quiet
+ *  data loss that is hardest to notice. */
+async function flushPendingSave() {
+  if (scriptViewState.pendingSaveTimer) {
+    clearTimeout(scriptViewState.pendingSaveTimer);
+    scriptViewState.pendingSaveTimer = null;
+    saveTyping();
+  }
+  if (scriptViewState.savePromise) await scriptViewState.savePromise;
+}
+
+function wireSectionContext(rerender) {
+  const sectionId = scriptViewState.activeSectionId;
+
+  const toggle = select("#toggle-source-button");
+  if (toggle) {
+    toggle.onclick = async () => {
+      if (scriptViewState.sourceShownFor === sectionId) {
+        scriptViewState.sourceShownFor = null;
+        await rerender();
+        return;
+      }
+      if (!scriptViewState.sourceCache[sectionId]) {
+        try {
+          scriptViewState.sourceCache[sectionId] = await requestJsonFromApi(
+            projectApiPath(`/script/sections/${encodeURIComponent(sectionId)}/source`));
+        } catch (sourceFailure) {
+          showStageNotice("bad", `Could not load the source — ${sourceFailure.message}`);
+          return;
+        }
+      }
+      scriptViewState.sourceShownFor = sectionId;
+      await rerender();
+    };
+  }
+
+  const keep = select("#confirm-narration-button");
+  if (keep) {
+    keep.onclick = () => runScriptAction({
+      path: `/script/sections/${encodeURIComponent(sectionId)}/confirm`, rerender,
+      done: "Recorded: this narration still matches its section and source.",
+    });
+  }
+}
+
+function wireStrandedNarration(change) {
+  document.querySelectorAll("[data-attach-orphan]").forEach(picker => {
+    picker.onchange = () => {
+      const targetId = picker.value;
+      if (!targetId) return;
+      const script = applicationState.script;
+      const targetHasNarration = script.section_scripts
+        .some(s => s.section_id === targetId && s.body?.trim());
+      if (targetHasNarration
+          && !window.confirm("That section already has narration. Replace it with this?")) {
+        picker.value = "";
+        return;
+      }
+      scriptViewState.activeSectionId = targetId;
+      change(edited => {
+        edited.section_scripts = edited.section_scripts.filter(s => s.section_id !== targetId);
+        const orphan = edited.section_scripts
+          .find(s => s.section_id === picker.dataset.attachOrphan);
+        if (orphan) orphan.section_id = targetId;
+      });
+    };
+  });
+
+  document.querySelectorAll("[data-delete-orphan]").forEach(button => {
+    button.onclick = () => {
+      if (!window.confirm("Delete this narration? It is not attached to any section.")) return;
+      change(script => {
+        script.section_scripts = script.section_scripts
+          .filter(s => s.section_id !== button.dataset.deleteOrphan);
+      });
+    };
   });
 }
 

@@ -1584,8 +1584,11 @@ input:focus, textarea:focus, select:focus {
 
 /* --- the drop zone is the loudest thing on an empty page ---------------- */
 
-.dropzone { background: var(--c-yellow-soft); }
-.dropzone:hover { background: var(--c-yellow); }
+/* Full yellow at rest, not only under the pointer. With the colour no longer
+   changing on hover, hover lifts the box instead, so it still answers the
+   pointer; dragging files over it turns it green. */
+.dropzone { background: var(--c-yellow); transition: background .15s, box-shadow .15s; }
+.dropzone:hover { background: var(--c-yellow); box-shadow: var(--shadow-sm); }
 .dropzone.over, .dropzone.hot { background: var(--c-green); }
 .cloud { color: var(--line); }
 
@@ -1879,3 +1882,317 @@ input:focus, textarea:focus, select:focus {
 .run-bar.stale .run-icon {
   background: var(--surface); border: var(--edge) solid var(--line); color: var(--text);
 }
+
+
+/* --- options that are declared but not built ------------------------------ */
+
+.not-built {
+  display: inline-block; margin-left: 6px; vertical-align: middle;
+  font-size: 9.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+  padding: 1px 7px; border-radius: 99px;
+  border: 1.5px solid var(--line); background: var(--c-yellow-soft); color: var(--text);
+}
+.option.inert select, .toggle-row.inert { opacity: .55; cursor: not-allowed; }
+.option.inert .help { opacity: .7; }
+.toggle-row.inert .not-built { margin-left: auto; opacity: 1; }
+
+
+/* --- review: advisories that are not comments ---------------------------- */
+
+.ready-card.check { background: var(--c-yellow); }
+.ready-card.check .mark {
+  background: var(--surface); border: var(--edge) solid var(--line); color: var(--text);
+}
+.ready-card .text .ready-checks {
+  margin: 5px 0 0; padding-left: 18px; color: var(--text); font-size: 12.5px;
+}
+.ready-card .text .ready-checks li { margin-bottom: 2px; }
+
+
+/* --- extraction: files left out ------------------------------------------ */
+
+
+
+/* --- extraction: action first, preview in place --------------------------- */
+
+/* Two columns rather than three: files and options stack, and the preview --
+   the thing being checked -- gets the width. */
+.extraction-workbench { grid-template-columns: 290px minmax(0, 1fr); }
+.workbench-side { display: grid; gap: 16px; align-content: start; min-width: 0; }
+
+/* The preview scrolls inside itself. Extracted text used to grow the page to
+   twenty thousand pixels, carrying the file list and options away with it. */
+.preview-panel { display: flex; flex-direction: column; min-width: 0; }
+.preview-panel .preview-stage {
+  height: max(440px, calc(100vh - 360px));
+  overflow: auto; align-content: start;
+}
+.preview-panel .preview-stage:not(.raw):not(.scrolls) { align-content: center; }
+.preview-panel .doc-stage { max-height: none; }
+.preview-head .seg { flex: none; }
+.preview-head .seg button { white-space: nowrap; }
+
+/* File cards: the whole name, which file is on screen, and what the run made
+   of it. A file name has no natural break points, so it may break anywhere. */
+.file-card { align-items: flex-start; }
+.file-card .meta .name {
+  white-space: normal; overflow-wrap: anywhere; line-height: 1.3;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.file-card .meta .sub { display: block; margin-top: 2px; }
+.file-card .checkbox { margin-top: 2px; }
+
+.file-status {
+  display: inline-block; margin-top: 5px; padding: 1px 8px; border-radius: 99px;
+  border: 1.5px solid var(--line); font-size: 10.5px; font-weight: 800;
+  letter-spacing: .02em;
+}
+.file-status.ok { background: var(--c-green-soft); }
+.file-status.warn { background: var(--c-yellow); }
+.file-status.muted { background: var(--surface); color: var(--text-dim); }
+
+.file-card.selected, .file-card.left-out.selected {
+  background: var(--c-blue-soft);
+  box-shadow: inset 5px 0 0 var(--c-blue), var(--shadow-sm);
+}
+.file-card.left-out:not(.selected) { background: var(--surface-raised); }
+.file-card.left-out .file-badge { opacity: .45; }
+.file-card.left-out .meta .name { color: var(--text-dim); }
+
+/* Options nothing reads yet: present, so the plan is visible, but folded. */
+.planned-options {
+  margin-top: 10px; border-top: var(--edge) dashed var(--line); padding-top: 10px;
+}
+.planned-options summary {
+  cursor: pointer; font-size: 12.5px; font-weight: 800; list-style-position: inside;
+}
+.planned-options summary .count {
+  display: inline-grid; place-items: center; min-width: 20px; height: 20px;
+  margin-left: 4px; border-radius: 99px; border: 1.5px solid var(--line);
+  font-size: 10.5px; background: var(--surface);
+}
+.planned-options[open] summary { margin-bottom: 10px; }
+.planned-options .toggle-row .not-built,
+.planned-options .option .not-built { display: none; }
+
+
+/* --- planning against the extraction -------------------------------------- */
+
+.plan-bar { flex-wrap: wrap; }
+.plan-bar .run-text { min-width: 260px; }
+.run-bar.pending { background: var(--c-purple-soft); }
+.run-bar.working { background: var(--c-blue-soft); }
+.run-bar.pending .run-icon, .run-bar.working .run-icon {
+  background: var(--surface); border: var(--edge) solid var(--line); color: var(--text);
+}
+.run-bar.working .run-icon { animation: working 1s steps(2, end) infinite; }
+.plan-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.draft-instruction {
+  width: 240px; max-width: 100%; padding: 8px 11px; border-radius: 9px;
+  border: var(--edge) solid var(--line); background: var(--surface); color: var(--text);
+  font: inherit; font-size: 12.5px;
+}
+
+/* Facts under a section: how it is shown, what it draws on, what it serves. */
+.section-facts { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+.fact {
+  display: inline-flex; align-items: center; padding: 1px 8px; border-radius: 99px;
+  border: 1.5px solid var(--line); background: var(--surface);
+  font-size: 10.5px; font-weight: 800; letter-spacing: .02em; white-space: nowrap;
+}
+.fact.muted { color: var(--text-dim); font-weight: 700; }
+.fact.ok { background: var(--c-green-soft); }
+.fact.warn { background: var(--c-yellow); }
+.fact.bad { background: var(--c-red); color: #fff; }
+.fact.approach.composition { background: var(--c-blue-soft); }
+.fact.approach.plot { background: var(--c-teal-soft); }
+.fact.approach.simulation { background: var(--c-orange-soft); }
+.fact.approach.code { background: var(--c-purple-soft); }
+.fact.approach.still { background: var(--c-yellow-soft); }
+
+.outline-row.has-missing { background: var(--c-red-soft); }
+.outline-row { align-items: flex-start; }
+.outline-row .outline-num, .outline-row .grip, .outline-row .btn-icon { margin-top: 1px; }
+
+/* The section editor's extra fields. */
+.outline-edit .edit-field { display: grid; gap: 5px; }
+.outline-edit .edit-field > label { font-weight: 800; color: var(--text); }
+.outline-edit select {
+  width: 100%; background: var(--surface); color: var(--text); font: inherit; font-size: 12.5px;
+  border: var(--edge) solid var(--line); border-radius: 8px; padding: 7px 9px;
+}
+.edit-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 8px; }
+@media (max-width: 1250px) { .edit-pair { grid-template-columns: minmax(0, 1fr); } }
+.edit-hint { font-size: 12px; margin: 0; }
+.source-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.source-chip {
+  display: inline-flex; align-items: center; gap: 6px; max-width: 100%;
+  padding: 3px 4px 3px 10px; border-radius: 99px; border: 1.5px solid var(--line);
+  background: var(--c-teal-soft); font-size: 11.5px; font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.draft-section .source-chip { padding-right: 10px; }
+.source-chip button {
+  border: 1.5px solid var(--line); background: var(--surface); border-radius: 99px;
+  width: 18px; height: 18px; line-height: 1; padding: 0; cursor: pointer; font-weight: 800;
+}
+.edit-objectives { display: grid; gap: 4px; }
+.outline-edit .edit-objective {
+  display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; color: var(--text);
+}
+.edit-objective input { width: auto; margin-top: 3px; }
+
+.objective-number {
+  flex: none; min-width: 18px; font-family: var(--mono); font-size: 11.5px;
+  font-weight: 800; color: var(--text-dim); margin-top: 1px;
+}
+.objective-row .fact { margin-top: 1px; }
+
+/* A drafted plan, next to the current one. */
+.draft-panel { background: var(--c-purple-soft); }
+.draft-actions { display: flex; gap: 8px; margin-bottom: 12px; }
+.draft-notice { margin-bottom: 10px; }
+.draft-notes { margin-bottom: 10px; font-size: 12.5px; }
+.draft-notes summary { cursor: pointer; font-weight: 800; }
+.draft-notes ul { margin: 6px 0 0; padding-left: 18px; }
+.draft-notes li { margin-bottom: 3px; }
+.draft-objectives { font-size: 12.5px; margin-bottom: 10px; }
+.draft-objectives ol { margin: 4px 0 0; padding-left: 20px; }
+.draft-themes { margin-bottom: 12px; }
+.draft-sections { display: grid; gap: 8px; }
+.draft-section {
+  background: var(--surface); border: var(--edge) solid var(--line); border-radius: 10px;
+  padding: 10px 12px;
+}
+.draft-section.added { background: var(--c-green-soft); }
+.draft-section-head { display: flex; align-items: center; gap: 9px; }
+.draft-section .summary { font-size: 12.5px; color: var(--text-dim); margin: 6px 0; }
+.draft-approach { font-size: 12px; margin: 0 0 6px; display: flex; gap: 6px; align-items: baseline; }
+.draft-section-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
+
+
+/* --- scripting in scenes --------------------------------------------------- */
+
+/* The title is a span: without `display` the old ellipsis never applied and long
+   titles ran out of the card. Two lines, then clipped; the full title is the
+   tooltip. */
+.section-row { align-items: flex-start; }
+.section-row .outline-num, .section-row .written-dot { margin-top: 2px; }
+.section-row .title {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+  white-space: normal; overflow: hidden; overflow-wrap: anywhere; line-height: 1.35;
+}
+.section-row .sub { display: block; margin-top: 2px; }
+.section-row .sub.over { color: var(--text); font-weight: 800; }
+.section-flags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+
+.scene-list { display: grid; gap: 10px; }
+.scene-card {
+  background: var(--surface); border: var(--edge) solid var(--line);
+  border-radius: 10px; padding: 10px 12px; display: grid; gap: 5px;
+}
+.scene-head { display: flex; align-items: center; gap: 8px; }
+.scene-head .spacer { flex: 1; }
+.scene-head .btn-icon { padding: 4px; }
+.scene-label {
+  font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--text-dim);
+}
+.scene-card textarea {
+  width: 100%; resize: vertical; font: inherit; color: var(--text);
+  border: var(--edge) solid var(--line); border-radius: 8px; padding: 8px 10px;
+}
+.scene-card textarea.scene-narration {
+  min-height: 96px; font-size: 13.5px; line-height: 1.6; background: var(--surface-raised);
+}
+.scene-card textarea.scene-brief {
+  min-height: 52px; font-size: 12.5px; line-height: 1.5; background: var(--c-yellow-soft);
+}
+.scenes-empty {
+  border: 1.5px dashed var(--line); border-radius: 10px; padding: 16px;
+  display: grid; gap: 10px; font-size: 13px;
+}
+.scenes-empty p { margin: 0; color: var(--text-dim); }
+
+.scene-preview { white-space: normal; display: grid; gap: 12px; align-content: start; }
+.preview-scene p { margin: 3px 0 0; white-space: pre-wrap; }
+.preview-brief {
+  margin-top: 6px; padding: 6px 9px; font-size: 12.5px; border-radius: 8px;
+  border: 1.5px solid var(--line); background: var(--c-yellow-soft); white-space: pre-wrap;
+}
+.editor-foot { flex-wrap: wrap; }
+.editor-foot .spacer { flex: 1; }
+.editor-foot .over { color: var(--text); background: var(--c-yellow); padding: 0 5px; border-radius: 4px; }
+
+/* What the section was planned with. */
+.section-context { background: var(--c-teal-soft); font-size: 12.5px; }
+.context-notice { display: grid; gap: 8px; margin-bottom: 10px; font-size: 12.5px; }
+.context-notice .btn { justify-self: start; }
+.context-summary { margin: 0 0 10px; line-height: 1.5; }
+.context-facts {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 5px 10px; margin: 0 0 12px;
+}
+.context-facts dt { font-weight: 800; }
+.context-facts dd { margin: 0; overflow-wrap: anywhere; }
+.context-facts ul { margin: 0; padding-left: 16px; }
+.context-sources { display: grid; gap: 7px; }
+.context-sources .btn { justify-self: start; }
+.source-text { display: grid; gap: 8px; max-height: 420px; overflow-y: auto; }
+.source-part pre {
+  margin: 3px 0 0; padding: 8px; white-space: pre-wrap; overflow-wrap: anywhere;
+  font-family: var(--mono); font-size: 11.5px; line-height: 1.5;
+  background: var(--surface); border: 1.5px solid var(--line); border-radius: 8px;
+}
+.context-comments {
+  display: grid; gap: 6px; margin-bottom: 10px; padding: 8px 10px;
+  background: var(--c-red-soft); border: 1.5px solid var(--line); border-radius: 8px;
+}
+.context-comment { display: flex; gap: 8px; align-items: baseline; }
+
+/* Narration that no plan section points at. */
+.stranded-panel { background: var(--c-orange-soft); margin-bottom: 14px; }
+.stranded-row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 8px 10px; margin-bottom: 7px; border-radius: 10px;
+  background: var(--surface); border: var(--edge) solid var(--line);
+}
+.stranded-text { flex: 1; min-width: 220px; display: grid; gap: 2px; font-size: 12.5px; }
+.stranded-text span { color: var(--text-dim); overflow-wrap: anywhere; }
+.stranded-row select {
+  max-width: 260px; background: var(--surface); color: var(--text); font: inherit;
+  font-size: 12.5px; border: var(--edge) solid var(--line); border-radius: 8px; padding: 6px 8px;
+}
+
+
+/* --- conversations with the Orchestrator ---------------------------------- */
+
+/* The head is one row on a 350px panel: a title, a note and a close button
+   already fill it, so the thread controls get their own row underneath. */
+.drawer-tools {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 13px; border-bottom: var(--edge) solid var(--line);
+  background: var(--surface-raised);
+}
+.drawer-tools .spacer { flex: 1; }
+.drawer-tools .btn { padding: 6px 10px; font-size: 11.5px; gap: 5px; }
+.conversation-list {
+  border-bottom: var(--edge) solid var(--line); background: var(--c-purple-soft);
+  padding: 8px; display: grid; gap: 6px; max-height: 40vh; overflow-y: auto;
+}
+.conversation-row {
+  display: flex; align-items: stretch; gap: 6px;
+  background: var(--surface); border: var(--edge) solid var(--line); border-radius: 9px;
+  padding: 4px 6px 4px 4px;
+}
+.conversation-row.active { background: var(--c-yellow-soft); }
+.conversation-open {
+  flex: 1; min-width: 0; display: grid; gap: 2px; text-align: left;
+  background: none; border: none; padding: 6px 7px; cursor: pointer; color: var(--text);
+}
+.conversation-title {
+  font-size: 12.5px; font-weight: 700; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+.conversation-meta { font-size: 11px; color: var(--text-faint); font-family: var(--mono); }
+.conversation-row .btn-icon { align-self: center; padding: 5px; }
+.conversation-empty { font-size: 12px; margin: 4px 6px; }

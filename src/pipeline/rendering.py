@@ -25,6 +25,7 @@ generic non-zero exit.
 from __future__ import annotations
 
 import logging
+import re
 import shutil
 import subprocess
 import textwrap
@@ -171,27 +172,51 @@ def _draw_frame(lines: list[str], subtitle: str, accent_text: str, font_size: in
     return image
 
 
+# The whitespace after a sentence's closing punctuation, or after a closing
+# quote or bracket that follows it. Only the whitespace is consumed: the
+# punctuation and the quote stay with their sentence.
+SENTENCE_BOUNDARY = re.compile(
+    r"(?:(?<=[.!?\u2026])|(?<=[.!?\u2026][\"'\u201d\u2019)]))\s+"
+)
+
+
 def _slides_for_narration(narration: str) -> list[str]:
     """Split narration into slide-sized chunks, breaking on sentences.
 
     Sentence boundaries rather than a fixed character count: a slide that cuts
     mid-clause is harder to read than one that is slightly too long.
     """
-    sentences = [s.strip() for s in narration.replace("\n", " ").split(". ") if s.strip()]
+    # Split *after* the punctuation, keeping it. Splitting on ". " consumed the
+    # full stop, and rejoining with a space ran every sentence on a slide into
+    # the next: "only a few microvolts Filters remove unwanted noise An
+    # analog-to-digital converter..." -- on screen, in the subtitles and in the
+    # Studio timeline. Only the last sentence of a slide got a period back, and
+    # a question at the end of a slide became "Why?.".
+    #
+    # Blank lines split first: a script's scenes are joined by one, so a slide
+    # never runs across the end of one scene into the next.
     slides: list[str] = []
-    current = ""
-
-    for sentence in sentences:
-        candidate = f"{current} {sentence}".strip()
-        if len(candidate) > CHARACTERS_PER_SLIDE and current:
-            slides.append(current if current.endswith(".") else current + ".")
-            current = sentence
-        else:
-            current = candidate
-
-    if current:
-        slides.append(current if current.endswith(".") else current + ".")
+    for paragraph in re.split(r"\n\s*\n", narration):
+        flattened = " ".join(paragraph.split())
+        if not flattened:
+            continue
+        current = ""
+        for sentence in (s for s in SENTENCE_BOUNDARY.split(flattened) if s):
+            candidate = f"{current} {sentence}".strip()
+            if len(candidate) > CHARACTERS_PER_SLIDE and current:
+                slides.append(_as_finished_sentence(current))
+                current = sentence
+            else:
+                current = candidate
+        if current:
+            slides.append(_as_finished_sentence(current))
     return slides or [narration]
+
+
+def _as_finished_sentence(text: str) -> str:
+    """A slide ends like a sentence: its own punctuation if it has some."""
+    unquoted = text.rstrip("\"'\u201d\u2019)")
+    return text if unquoted.endswith((".", "!", "?", "\u2026")) else text + "."
 
 
 def _format_timestamp(milliseconds: int) -> str:

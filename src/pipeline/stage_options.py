@@ -46,6 +46,12 @@ class StageOption:
     default: Any
     help_text: str = ""
     choices: tuple[OptionChoice, ...] = ()
+    # False for an option nothing reads yet. It is still declared, so the page
+    # can show what is planned -- but marked, and not operable, because a
+    # control that saves a value and changes nothing is indistinguishable from a
+    # broken one. Every option on the Extraction and Planning pages was exactly
+    # that until the first two below were wired in.
+    implemented: bool = True
 
     def coerce(self, raw_value: Any) -> Any:
         """Force a stored or submitted value into a valid one.
@@ -68,6 +74,7 @@ class StageOption:
             "label": self.label,
             "default": self.default,
             "help_text": self.help_text,
+            "implemented": self.implemented,
             "choices": [
                 {"value": c.value, "label": c.label, "help_text": c.help_text}
                 for c in self.choices
@@ -89,6 +96,7 @@ EXTRACTION_OPTIONS: tuple[StageOption, ...] = (
             OptionChoice("thorough", "Thorough",
                          "Slowest. Full layout analysis; best for dense or scanned pages."),
         ),
+        implemented=False,
     ),
     StageOption(
         key="output_format",
@@ -103,15 +111,26 @@ EXTRACTION_OPTIONS: tuple[StageOption, ...] = (
             OptionChoice("blocks", "Positioned blocks (JSON)",
                          "Keeps each block's page and coordinates."),
         ),
+        implemented=False,
     ),
     StageOption("extract_tables", OptionKind.TOGGLE, "Extract tables", True,
                 "Tables become structured rows rather than run-together text."),
     StageOption("extract_images", OptionKind.TOGGLE, "Extract images (with captions)", True,
-                "Registers embedded figures as assets Graphics can reuse."),
+                "Saves embedded figures as images later stages can show."),
+    StageOption("extract_layout", OptionKind.TOGGLE, "Extract slide layout", True,
+                "For decks: where each title, picture and text box sits on the "
+                "slide, so the video can place things the way the slide did."),
+    StageOption("extract_design", OptionKind.TOGGLE, "Extract design (background, theme, fonts)",
+                True,
+                "For decks: slide backgrounds, the theme's colours and its fonts, "
+                "so the video can look like the deck rather than the renderer's "
+                "defaults."),
     StageOption("detect_key_fields", OptionKind.TOGGLE, "Detect key fields (auto)", True,
-                "Pulls out labelled values — dates, references, totals."),
+                "Pulls out labelled values — dates, references, totals.",
+                implemented=False),
     StageOption("handwriting_ocr", OptionKind.TOGGLE, "Use handwriting recognition (OCR)", False,
-                "Much slower. Only worth enabling for handwritten source pages."),
+                "Much slower. Only worth enabling for handwritten source pages.",
+                implemented=False),
 )
 
 
@@ -126,6 +145,7 @@ PLANNING_OPTIONS: tuple[StageOption, ...] = (
             OptionChoice("7-10", "7-10 minutes", "A chapter with room for an example."),
             OptionChoice("12-18", "12-18 minutes", "A full module. Expect 8-12 sections."),
         ),
+        implemented=False,
     ),
     StageOption(
         key="tone",
@@ -140,6 +160,7 @@ PLANNING_OPTIONS: tuple[StageOption, ...] = (
             OptionChoice("academic", "Academic",
                          "Formal, careful with qualifiers, heavier on terminology."),
         ),
+        implemented=False,
     ),
     StageOption(
         key="language",
@@ -151,6 +172,7 @@ PLANNING_OPTIONS: tuple[StageOption, ...] = (
             OptionChoice("hi", "Hindi", "Narration voice availability varies by language."),
             OptionChoice("te", "Telugu", "Narration voice availability varies by language."),
         ),
+        implemented=False,
     ),
 )
 

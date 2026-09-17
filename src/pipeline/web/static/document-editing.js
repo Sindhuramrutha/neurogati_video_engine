@@ -16,7 +16,9 @@
  */
 
 import { requestJsonFromApi } from "/static/shared-client.js";
-import { applicationState, projectApiPath, showStageNotice } from "/static/ui-kit.js";
+import {
+  applicationState, projectApiPath, refreshProjectSummary, showStageNotice,
+} from "/static/ui-kit.js";
 
 /** Short id for a new list item. One definition; it was previously inlined as
  *  `crypto.randomUUID().replace(...)` in nine places. */
@@ -72,13 +74,23 @@ export async function editStageDocument({
 
   const documentBeforeEdit = structuredClone(applicationState[documentKind]);
   applyEdit(applicationState[documentKind]);
+
+  // The body is fixed *here*, straight after the edit and before any redraw.
+  // Every stage's render loads its document from the server, and the payload
+  // used to be built after the optimistic redraw -- from a document that redraw
+  // had just replaced with the unedited server copy. So every click-edit on
+  // Planning, Scripting, Studio and Reviewing was sent back unchanged and
+  // silently lost: choosing an audience, a scenario, hiding a track. Only typing
+  // survived, because it saves without redrawing.
+  const payload = JSON.stringify(buildPayload(structuredClone(applicationState[documentKind])));
+
   if (!silent) await rerender();
 
   try {
     const savedDocument = await requestJsonFromApi(projectApiPath(apiPathSuffix), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(buildPayload(applicationState[documentKind])),
+      body: payload,
     });
 
     // The project can be switched while a request is in flight. Applying this
@@ -94,6 +106,12 @@ export async function editStageDocument({
     applicationState[documentKind] = onSaved
       ? onSaved(savedDocument, documentBeforeEdit)
       : savedDocument;
+
+    // What the document now says about its stage -- how much is written, whether
+    // it is ready -- is shown in the chrome, which would otherwise keep the
+    // answer it had when the project was opened. Skipped while typing: that
+    // saves every second, and the chip can wait for the next click.
+    if (!silent) await refreshProjectSummary();
   } catch (saveFailure) {
     console.error(`${documentKind} save failed`, saveFailure);
     if (applicationState.selectedProject?.slug === projectSlugAtEditTime) {
@@ -119,6 +137,15 @@ export async function editStageDocument({
 export async function loadStageDocument(documentKind, apiPathSuffix) {
   const projectSlugAtRequestTime = applicationState.selectedProject?.slug;
   if (!projectSlugAtRequestTime) return null;
+
+  // While a save of this document is in flight, the edited copy in memory is the
+  // truth, and the server still holds the old one. Fetching here would redraw
+  // the page back to its state before the click until the save came back.
+  if (inFlightSavesByDocumentKind.has(documentKind)
+      && applicationState[documentKind]
+      && applicationState.documentsLoadedForSlug === projectSlugAtRequestTime) {
+    return applicationState[documentKind];
+  }
 
   const loadedDocument = await requestJsonFromApi(projectApiPath(apiPathSuffix));
 

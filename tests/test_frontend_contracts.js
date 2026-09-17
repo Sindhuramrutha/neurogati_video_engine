@@ -13,7 +13,10 @@ const staticDirectory = join(
   dirname(fileURLToPath(import.meta.url)), "..", "src", "pipeline", "web", "static");
 
 const javascriptFiles = readdirSync(staticDirectory).filter(name => name.endsWith(".js"));
-const readModule = name => readFileSync(join(staticDirectory, name), "utf8");
+// Line endings are normalised away: this repo checks out CRLF on Windows and LF
+// elsewhere, and a contract about what the code does must not depend on which.
+const readModule = name =>
+  readFileSync(join(staticDirectory, name), "utf8").replace(/\r\n/g, "\n");
 
 let failureCount = 0;
 function check(description, assertion) {
@@ -62,6 +65,20 @@ check("every project-scoped state field is cleared on project switch", () => {
     assert.ok(scopedBlock.includes(`${documentKind}:`),
       `${documentKind} is not cleared when the project changes`);
   }
+});
+
+check("a save sends the edited document, not whatever a redraw reloaded", () => {
+  // Every stage's render reloads its document from the server. When the body
+  // was built after the optimistic redraw, it was built from that reloaded,
+  // unedited copy, and every click-edit on four stages was silently lost.
+  const editing = readModule("document-editing.js");
+  const payloadAt = editing.indexOf("const payload = JSON.stringify(buildPayload(");
+  const redrawAt = editing.indexOf("if (!silent) await rerender();");
+  assert.ok(payloadAt > 0, "the payload must be captured into a variable");
+  assert.ok(redrawAt > 0, "the optimistic redraw moved; re-check this contract");
+  assert.ok(payloadAt < redrawAt, "the payload is built after the redraw that reloads the document");
+  assert.ok(editing.includes("inFlightSavesByDocumentKind.has(documentKind)\n      && applicationState[documentKind]"),
+    "a load during a save must return the edited copy, not the server's old one");
 });
 
 check("saves verify the project has not changed mid-request", () => {

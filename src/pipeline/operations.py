@@ -19,6 +19,8 @@ opt out of them by picking a different interface.
 
 from __future__ import annotations
 
+import hashlib
+import json
 import logging
 import shutil
 from dataclasses import dataclass
@@ -32,10 +34,17 @@ from pipeline.extraction import (
     AssetSink,
     Extraction,
     ExtractionStore,
+    SourceSelectionStore,
     SourceUnreadable,
     extract_document,
 )
-from pipeline.planning import Plan, PlanSection, PlanStore
+from pipeline.planning import (
+    LearningObjective,
+    Plan,
+    PlanDraftStore,
+    PlanSection,
+    PlanStore,
+)
 from pipeline.projects import Project, ProjectStore
 from pipeline.rendering import (
     TITLE_CARD_MS,
@@ -46,7 +55,13 @@ from pipeline.rendering import (
     write_subtitles,
 )
 from pipeline.review import Comment, Review, ReviewStore, chapters_from_plan
-from pipeline.scripting import Script, ScriptStore, SectionScript
+from pipeline.scripting import (
+    Script,
+    ScriptScene,
+    ScriptStore,
+    SectionScript,
+    over_budget_warning,
+)
 from pipeline.speech import SpeechFailed, describe_voice_providers, synthesise_narration
 from pipeline.stages import STAGES, Stage
 from pipeline.storage.documents import JsonDocumentStore
@@ -167,20 +182,71 @@ def present_artifact(project: Project, artifact_name: str, document: Any) -> dic
     -- a warning that was pure noise and would have sent someone hunting a bug in
     their own data.
     """
+    if artifact_name == "plan":
+        extraction = ExtractionStore(project.root).load()
+        freshness = plan_freshness(document, extraction)
+        presented = document.to_dict()
+        presented["warnings"] = [*presented["warnings"], *freshness["warnings"]]
+        return presented | {
+            "freshness": freshness,
+            "source_outline": source_outline(extraction),
+            "has_pending_draft": PlanDraftStore(project.root).load() is not None,
+        }
+
     if artifact_name == "script":
         plan = PlanStore(project.root).load()
-        return document.to_dict([section.id for section in plan.sections]) | {
+        section_ids = [section.id for section in plan.sections]
+        budgets = {section.id: section.estimated_seconds for section in plan.sections}
+        titles = {section.id: section.title for section in plan.sections}
+        ordered = document.in_plan_order(section_ids)
+        presented = ordered.to_dict(section_ids, budgets, titles)
+
+        extraction = ExtractionStore(project.root).load()
+        out_of_date = narration_freshness(plan, ordered, extraction)
+        if out_of_date:
+            presented["warnings"] = [*presented["warnings"], (
+                f"{len(out_of_date)} section(s) were written against an earlier version "
+                f"of their plan section or source content"
+            )]
+
+        return presented | {
+            # Everything the writer needs next to the editor. The page used to get
+            # a title and a summary, so narration was written without the target
+            # length, the objectives or the source it was meant to come from.
             "plan_sections": [
-                {"id": s.id, "title": s.title, "summary": s.summary,
-                 "estimated_seconds": s.estimated_seconds}
-                for s in plan.sections
+                section.model_dump(mode="json", include={
+                    "id", "title", "summary", "estimated_seconds", "sources",
+                    "rendering_approach", "rendering_reason", "objective_ids",
+                })
+                for section in plan.sections
             ],
+            "plan_objectives": [
+                {"id": o.id, "text": o.text}
+                for o in plan.learning_objectives if o.is_included
+            ],
+            "selected_audience": plan.selected_audience,
+            "out_of_date": out_of_date,
+            "comments_by_section": _open_comments_by_section(project, plan, Stage.SCRIPTING),
+            "measured_seconds": _measured_narration_seconds(project, plan),
         }
 
     if artifact_name == "review":
         plan = PlanStore(project.root).load()
         script = ScriptStore(project.root).load()
-        return document.to_dict() | {
+        presented = document.to_dict()
+        # Reviewing is the last gate before export, so it repeats what Scripting
+        # found about length. A review reading "no warnings" over a section half
+        # as long again as planned was how that went unnoticed.
+        budget_audit = script.audit(
+            [section.id for section in plan.sections],
+            {section.id: section.estimated_seconds for section in plan.sections},
+            {section.id: section.title for section in plan.sections},
+        )
+        presented["warnings"] = [
+            *presented["warnings"],
+            *(over_budget_warning(section) for section in budget_audit["over_budget"]),
+        ]
+        return presented | {
             "plan_sections": [
                 {"id": s.id, "title": s.title, "estimated_seconds": s.estimated_seconds}
                 for s in plan.sections
@@ -189,7 +255,7 @@ def present_artifact(project: Project, artifact_name: str, document: Any) -> dic
                 {
                     "section_id": section.id,
                     "title": section.title,
-                    "body": script.resolve(script.body_for(section.id)),
+                    "body": script.spoken_text(section.id),
                     # Measured from the render when there is one. Computing these
                     # in the page from `estimated_seconds` put the last line of an
                     # 8-minute video 109 seconds from where it is actually spoken.
@@ -243,7 +309,16 @@ def save_artifact(slug: str, artifact_name: str, document: Any) -> dict[str, Any
     project = require_project(slug)
     binding = require_artifact(artifact_name)
     _mark_as_hand_edited(document)
+    if artifact_name == "script":
+        document = _script_in_plan_order(project, document)
+        _stamp_rewritten_narration(project, document)
     return present_artifact(project, artifact_name, binding.store(project).save(document))
+
+
+def _script_in_plan_order(project: Project, script: Script) -> Script:
+    """Stored in plan order, so the file reads the way the video plays."""
+    plan = PlanStore(project.root).load()
+    return script.in_plan_order([section.id for section in plan.sections])
 
 
 def _mark_as_hand_edited(document: Any) -> None:
@@ -261,6 +336,240 @@ def _mark_as_hand_edited(document: Any) -> None:
         document.chapters_generated_from_render_at = ""
 
 
+# --- planning against the extraction ----------------------------------------
+
+
+def source_outline(extraction: Extraction) -> list[dict[str, Any]]:
+    """Every extracted document's headings: what a section can point at."""
+    return [
+        {
+            "file_name": document.file_name,
+            "words": document.word_count,
+            "headings": document.heading_outline(),
+        }
+        for document in extraction.documents
+    ]
+
+
+def plan_freshness(plan: Plan, extraction: Extraction) -> dict[str, Any]:
+    """Whether this plan still matches the extracted content it was made from.
+
+    Three separate questions, because they need different answers:
+
+    - **stale**: the extraction changed since the plan was drafted or confirmed.
+      Something may be new, gone or reworded; the plan might still be fine.
+    - **missing sources**: a section points at a location that is no longer in
+      the extraction. That section is definitely teaching from nothing.
+    - **unlinked**: a plan with sections and no record of what they are based
+      on. A real plan was in exactly this state -- describing a chapter the
+      extraction no longer held -- and nothing could notice.
+    """
+    current = extraction.content_fingerprint()
+    is_linked = bool(plan.extraction_fingerprint)
+    is_stale = is_linked and bool(current) and plan.extraction_fingerprint != current
+
+    missing = []
+    for section in plan.sections:
+        gone = [
+            reference.label for reference in section.sources
+            if not extraction.has_location(reference.file_name, reference.heading_path)
+        ]
+        if gone:
+            missing.append({"section_id": section.id, "title": section.title, "missing": gone})
+
+    uses_sources = is_linked or any(section.sources for section in plan.sections)
+    without_sources = [s.id for s in plan.sections if not s.sources] if uses_sources else []
+    is_unlinked = bool(plan.sections) and not uses_sources and bool(extraction.documents)
+
+    warnings = []
+    if is_stale:
+        warnings.append("the extraction has changed since this plan was drafted")
+    if missing:
+        warnings.append(
+            f"{len(missing)} section(s) point at content that is no longer in the extraction"
+        )
+    if is_unlinked:
+        warnings.append("this plan is not linked to the extracted content")
+
+    return {
+        "has_extraction": bool(extraction.documents),
+        "extraction_fingerprint": current,
+        "is_linked": is_linked,
+        "is_stale": is_stale,
+        "is_unlinked": is_unlinked,
+        "sections_with_missing_sources": missing,
+        "sections_without_sources": without_sources,
+        "warnings": warnings,
+    }
+
+
+def confirm_plan_matches_extraction(slug: str) -> dict[str, Any]:
+    """Record that someone checked this plan against the current extraction.
+
+    The way out of "out of date" without redrafting: the extraction changed, a
+    person looked, and the plan still holds. Refused when there is nothing
+    extracted to confirm against.
+    """
+    project = require_project(slug)
+    extraction = ExtractionStore(project.root).load()
+    if not extraction.documents:
+        raise OperationFailed("Nothing has been extracted yet, so there is nothing to confirm.")
+
+    store = PlanStore(project.root)
+    plan = store.load()
+    plan.extraction_fingerprint = extraction.content_fingerprint()
+    return present_artifact(project, "plan", store.save(plan))
+
+
+def read_plan_draft(slug: str) -> dict[str, Any]:
+    """The pending drafted plan, with what accepting it would do."""
+    project = require_project(slug)
+    draft = PlanDraftStore(project.root).load()
+    if draft is None:
+        return {"is_pending": False}
+
+    current = PlanStore(project.root).load()
+    script = ScriptStore(project.root).load()
+    narrated = {s.section_id for s in script.section_scripts if s.body.strip()}
+    proposed = Plan.model_validate(draft.get("plan", {}))
+    extraction = ExtractionStore(project.root).load()
+
+    return draft | {
+        "is_pending": True,
+        "plan": proposed.to_dict(),
+        # Accepting all replaces the sections, and narration is attached to
+        # section ids: say how much written narration would be left unattached
+        # before anyone clicks, not after.
+        "replaces_narrated_sections": sum(1 for s in current.sections if s.id in narrated),
+        "is_behind_extraction": (
+            draft.get("extraction_fingerprint", "") != extraction.content_fingerprint()
+        ),
+    }
+
+
+def accept_plan_draft(slug: str, section_ids: list[str] | None = None) -> dict[str, Any]:
+    """Take a drafted plan in whole, or some of its sections.
+
+    **All** replaces the sections, objectives and key themes, keeps the chosen
+    audience, and records the extraction the draft was made from.
+
+    **Some** appends just those sections to the current plan. Their learning
+    objectives come with them -- matched by wording against the plan's own, so
+    the same objective is never added twice -- and the rest of the plan is left
+    exactly as it was. Partly accepting a draft is not a claim that the plan
+    matches the extraction, so the plan's record of that is not changed.
+    """
+    project = require_project(slug)
+    drafts = PlanDraftStore(project.root)
+    draft = drafts.load()
+    if draft is None:
+        raise OperationFailed("There is no drafted plan to accept.")
+
+    proposed = Plan.model_validate(draft.get("plan", {}))
+    store = PlanStore(project.root)
+    plan = store.load()
+
+    if section_ids is None:
+        plan.sections = proposed.sections
+        plan.learning_objectives = proposed.learning_objectives
+        plan.key_themes = proposed.key_themes or plan.key_themes
+        plan.extraction_fingerprint = draft.get("extraction_fingerprint", "")
+        saved = store.save(plan)
+        drafts.clear()
+        return present_artifact(project, "plan", saved)
+
+    by_id = {section.id: section for section in proposed.sections}
+    unknown = [sid for sid in section_ids if sid not in by_id]
+    if unknown:
+        raise OperationFailed(f"The draft has no section(s) {', '.join(unknown)}.")
+
+    proposed_objectives = {o.id: o for o in proposed.learning_objectives}
+    existing_by_wording = {o.text.strip().lower(): o.id for o in plan.learning_objectives}
+
+    for section_id in section_ids:
+        section = by_id[section_id].model_copy(deep=True)
+        linked = []
+        for objective_id in section.objective_ids:
+            objective = proposed_objectives.get(objective_id)
+            if objective is None:
+                continue
+            wording = objective.text.strip().lower()
+            if wording not in existing_by_wording:
+                added = LearningObjective(text=objective.text)
+                plan.learning_objectives.append(added)
+                existing_by_wording[wording] = added.id
+            linked.append(existing_by_wording[wording])
+        # A fresh id each time, so adding the same proposed section twice gives
+        # two sections rather than two entries sharing one identity.
+        section.id = PlanSection().id
+        section.objective_ids = linked
+        plan.sections.append(section)
+
+    saved = store.save(plan)
+
+    accepted = sorted(set(draft.get("accepted_section_ids", [])) | set(section_ids))
+    if set(accepted) >= set(by_id):
+        drafts.clear()
+    else:
+        drafts.save(draft | {"accepted_section_ids": accepted})
+    return present_artifact(project, "plan", saved)
+
+
+def discard_plan_draft(slug: str) -> dict[str, Any]:
+    project = require_project(slug)
+    return {"discarded": PlanDraftStore(project.root).clear()}
+
+
+def excluded_sources(project: Project) -> list[str]:
+    """Source files left out of extraction by choice, that still exist."""
+    on_disk = {source["name"] for source in project.sources()}
+    return [name for name in SourceSelectionStore(project.root).load() if name in on_disk]
+
+
+def set_excluded_sources(slug: str, excluded: list[str]) -> dict[str, Any]:
+    """Choose which source files extraction leaves out. Runs nothing.
+
+    Names are checked against the project's files: an unknown name is a typo or
+    a stale page, and saving it would exclude a file that does not exist -- and
+    then, silently, whatever is uploaded under that name later.
+    """
+    project = require_project(slug)
+    on_disk = {source["name"] for source in project.sources()}
+    unknown = sorted(set(excluded) - on_disk)
+    if unknown:
+        raise OperationFailed(
+            f"{project.name} has no source file(s) named {', '.join(unknown)}."
+        )
+
+    saved = SourceSelectionStore(project.root).save(list(excluded))
+    return {"excluded": saved, "freshness": extraction_freshness(project)}
+
+
+def forget_excluded_source(project: Project, file_name: str) -> None:
+    """Drop a deleted file from the selection, so re-uploading it includes it."""
+    store = SourceSelectionStore(project.root)
+    current = store.load()
+    if file_name in current:
+        store.save([name for name in current if name != file_name])
+
+
+def implemented_extraction_options(project: Project) -> dict[str, bool]:
+    """The Extraction options that actually change a run, as saved for this project.
+
+    Only these. The page also shows options that are declared but not built, and
+    recording those here would let a toggle that does nothing mark an extraction
+    as out of date.
+    """
+    from pipeline.stage_options import StageSettingsStore, options_for
+
+    saved = StageSettingsStore(project.root).load(Stage.EXTRACTION).values
+    return {
+        option.key: bool(saved[option.key])
+        for option in options_for(Stage.EXTRACTION)
+        if option.implemented
+    }
+
+
 def extraction_freshness(project: Project) -> dict[str, Any]:
     """Whether the extracted content still matches the files on disk.
 
@@ -276,18 +585,40 @@ def extraction_freshness(project: Project) -> dict[str, Any]:
     """
     extraction = ExtractionStore(project.root).load()
     if not extraction.documents:
-        return {"has_run": False, "is_stale": False, "added": [], "removed": []}
+        return {
+            "has_run": False, "is_stale": False,
+            "added": [], "removed": [], "options_changed": [],
+            "excluded": excluded_sources(project), "newly_excluded": [],
+        }
 
     on_disk = {source["name"] for source in project.sources()}
     extracted = {document.file_name for document in extraction.documents}
 
-    added = sorted(on_disk - extracted)
+    # Left out by choice is not "not extracted". Without this, ticking a box off
+    # would have reported that file as missing forever.
+    excluded = set(excluded_sources(project))
+    added = sorted(on_disk - extracted - excluded)
     removed = sorted(extracted - on_disk)
+    # Still in the extraction, but unticked since: the next run drops it, and
+    # until then later stages are reading a document someone chose to leave out.
+    newly_excluded = sorted(extracted & excluded)
+
+    # An extraction made before options were recorded has none; it cannot be
+    # judged against them, so it is not called stale on that basis.
+    current_options = implemented_extraction_options(project)
+    options_changed = sorted(
+        key for key, value in current_options.items()
+        if key in extraction.options_used and extraction.options_used[key] != value
+    )
+
     return {
         "has_run": True,
-        "is_stale": bool(added or removed),
+        "is_stale": bool(added or removed or options_changed or newly_excluded),
         "added": added,
         "removed": removed,
+        "options_changed": options_changed,
+        "excluded": sorted(excluded),
+        "newly_excluded": newly_excluded,
         "extracted_at": extraction.extracted_at,
     }
 
@@ -305,15 +636,24 @@ def run_extraction(slug: str) -> dict[str, Any]:
     "extraction failed" is not.
     """
     project = require_project(slug)
-    sources = project.sources()
+    all_sources = project.sources()
 
-    if not sources:
+    if not all_sources:
         raise OperationFailed(
             f"{project.name} has no source documents yet. Upload one first."
         )
 
+    left_out = set(excluded_sources(project))
+    sources = [source for source in all_sources if source["name"] not in left_out]
+    if not sources:
+        raise OperationFailed(
+            f"Every source file in {project.name} is left out of extraction. "
+            f"Tick at least one to extract it."
+        )
+
     documents = []
     unreadable: list[str] = []
+    options = implemented_extraction_options(project)
 
     # Figures are written beside the extracted text, addressed relative to the
     # project root so the stored path survives the project being moved.
@@ -324,7 +664,16 @@ def run_extraction(slug: str) -> dict[str, Any]:
     for source in sources:
         path = project.sources_dir / source["name"]
         try:
-            documents.append(extract_document(path, assets))
+            documents.append(extract_document(
+                path,
+                # A deck's backgrounds are pictures too, so the sink is needed
+                # for the design pass even when figures themselves are off.
+                assets if (options["extract_images"] or options["extract_design"]) else None,
+                keep_tables=options["extract_tables"],
+                keep_figures=options["extract_images"],
+                capture_layout=options["extract_layout"],
+                capture_design=options["extract_design"],
+            ))
         except SourceUnreadable as failure:
             logger.warning("extraction skipped a source: %s", failure)
             unreadable.append(str(failure))
@@ -338,6 +687,7 @@ def run_extraction(slug: str) -> dict[str, Any]:
     saved = store.save(Extraction(
         documents=documents,
         extracted_at=datetime.now(UTC).isoformat(timespec="seconds"),
+        options_used=options,
     ))
 
     # Only now that the new extraction is on disk: pruning first and then
@@ -427,10 +777,13 @@ def render_video(
             f"{project.name} has no plan sections yet, so there is nothing to render."
         )
 
-    script = read_artifact(slug, "script")
-    narration_by_section = {
-        entry["section_id"]: entry["body"] for entry in script["section_scripts"]
-    }
+    # The spoken text, variables filled in. The render used to take the raw body,
+    # so "{{COURSE}}" reached the voice, the subtitles and the Studio timeline
+    # while the review transcript showed the substituted value.
+    script_document = ScriptStore(project.root).load()
+    undefined_variables = script_document.audit(
+        [section["id"] for section in plan["sections"]]
+    )["undefined_variables"]
 
     chosen_provider = voice_provider or describe_voice_providers()["recommended"]
 
@@ -450,11 +803,14 @@ def render_video(
     working_directory = output_directory / "frames" / render_id
 
     sections: list[RenderedSection] = []
-    warnings: list[str] = []
+    warnings: list[str] = [
+        f"{{{{{name}}}}} is not defined, so it is spoken as written"
+        for name in undefined_variables
+    ]
     cursor_ms = 0
 
     for index, plan_section in enumerate(plan["sections"]):
-        narration = (narration_by_section.get(plan_section["id"]) or "").strip()
+        narration = script_document.spoken_text(plan_section["id"]).strip()
         section = RenderedSection(
             section_id=plan_section["id"],
             title=plan_section["title"],
@@ -703,14 +1059,192 @@ def write_section_script(slug: str, section_id: str, body: str) -> dict[str, Any
     store = ScriptStore(project.root)
     script = store.load()
 
-    for section_script in script.section_scripts:
-        if section_script.section_id == section_id:
-            section_script.body = body
-            break
-    else:
-        script.section_scripts.append(SectionScript(section_id=section_id, body=body))
+    # One scene holding the whole body. Assigning `body` alone would be undone
+    # on the next load: the scenes are the narration, and they would still hold
+    # the old text.
+    replacement = SectionScript(section_id=section_id, scenes=[ScriptScene(narration=body)])
+    script.section_scripts = [
+        s for s in script.section_scripts if s.section_id != section_id
+    ] + [replacement]
 
-    return present_artifact(project, "script", store.save(script))
+    ordered = _script_in_plan_order(project, script)
+    _stamp_rewritten_narration(project, ordered)
+    return present_artifact(project, "script", store.save(ordered))
+
+
+# --- narration against the plan and the source ---------------------------------
+
+
+def _fingerprint(value: Any) -> str:
+    encoded = json.dumps(value, ensure_ascii=False, sort_keys=True).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()[:16]
+
+
+def narration_fingerprints(section: PlanSection, extraction: Extraction) -> dict[str, str]:
+    """What a section's narration is written against: the plan section's content
+    and the text of the sources it covers.
+
+    Length and presentation are left out on purpose. A new target duration or a
+    different rendering approach does not make what was said wrong; a changed
+    summary, different sources, or reworded source material might.
+    """
+    source_text = []
+    for reference in section.sources:
+        document = extraction.document(reference.file_name)
+        source_text.append(document.text_under(reference.heading_path) if document else "")
+    return {
+        "plan": _fingerprint([
+            section.title, section.summary,
+            [[r.file_name, r.heading_path] for r in section.sources],
+        ]),
+        "source": _fingerprint(source_text),
+    }
+
+
+def narration_freshness(
+    plan: Plan, script: Script, extraction: Extraction
+) -> list[dict[str, Any]]:
+    """Sections whose narration was written against something that has changed.
+
+    Narration with no record of what it was written from is not judged: there is
+    nothing to compare, and calling all of it out of date would be noise.
+    """
+    by_id = {s.section_id: s for s in script.section_scripts}
+    found = []
+    for section in plan.sections:
+        written = by_id.get(section.id)
+        if written is None or not written.body.strip() or not written.written_from:
+            continue
+        current = narration_fingerprints(section, extraction)
+        reasons = []
+        if written.written_from.get("plan") != current["plan"]:
+            reasons.append("the plan section changed")
+        if written.written_from.get("source") != current["source"]:
+            reasons.append("its source content changed")
+        if reasons:
+            found.append({"section_id": section.id, "title": section.title, "reasons": reasons})
+    return found
+
+
+def _stamp_rewritten_narration(project: Project, script: Script) -> None:
+    """Record what each section's narration was written against, when it changes.
+
+    Only sections whose words or briefs actually changed are stamped: saving the
+    whole script after editing one section must not declare every other section
+    freshly checked against the current plan.
+    """
+    plan = PlanStore(project.root).load()
+    sections = {section.id: section for section in plan.sections}
+    extraction = ExtractionStore(project.root).load()
+    stored = {s.section_id: s for s in ScriptStore(project.root).load().section_scripts}
+
+    for section_script in script.section_scripts:
+        section = sections.get(section_script.section_id)
+        if section is None:
+            continue
+        before = stored.get(section_script.section_id)
+        content_now = [(s.narration.strip(), s.brief) for s in section_script.scenes]
+        content_before = [(s.narration.strip(), s.brief) for s in before.scenes] if before else []
+        if content_now != content_before and section_script.body.strip():
+            section_script.written_from = narration_fingerprints(section, extraction)
+
+
+def confirm_section_narration(slug: str, section_id: str) -> dict[str, Any]:
+    """Record that this section's narration was checked against the current plan
+    and source, without changing a word of it."""
+    project = require_project(slug)
+    plan = PlanStore(project.root).load()
+    section = next((s for s in plan.sections if s.id == section_id), None)
+    if section is None:
+        raise OperationFailed(f"The plan has no section {section_id!r}.")
+
+    store = ScriptStore(project.root)
+    script = store.load()
+    written = next((s for s in script.section_scripts if s.section_id == section_id), None)
+    if written is None or not written.body.strip():
+        raise OperationFailed("That section has no narration to confirm.")
+
+    written.written_from = narration_fingerprints(section, ExtractionStore(project.root).load())
+    return present_artifact(project, "script", store.save(_script_in_plan_order(project, script)))
+
+
+def section_source_material(slug: str, section_id: str) -> dict[str, Any]:
+    """The full text of the content a plan section records, for reading while writing."""
+    from pipeline.plan_drafting import MAXIMUM_SECTION_SOURCE_CHARACTERS
+
+    project = require_project(slug)
+    plan = PlanStore(project.root).load()
+    section = next((s for s in plan.sections if s.id == section_id), None)
+    if section is None:
+        raise OperationFailed(f"The plan has no section {section_id!r}.")
+
+    extraction = ExtractionStore(project.root).load()
+    parts, missing = [], []
+    for reference in section.sources:
+        document = extraction.document(reference.file_name)
+        if document is None or not document.has_location(reference.heading_path):
+            missing.append(reference.label)
+            continue
+        parts.append({"label": reference.label,
+                      "text": document.text_under(reference.heading_path)})
+
+    total = sum(len(part["text"]) for part in parts)
+    return {
+        "section_id": section_id,
+        "has_sources": bool(section.sources),
+        "parts": parts,
+        "missing": missing,
+        "characters": total,
+        "longer_than_an_agent_reads": total > MAXIMUM_SECTION_SOURCE_CHARACTERS,
+    }
+
+
+def _open_comments_by_section(project: Project, plan: Plan, stage: Stage) -> dict[str, list]:
+    """Open review comments routed to a stage, placed on the section they fall in.
+
+    Placed by time: a comment is anchored where it was made in the video, and
+    each section starts where its title card does (measured once rendered).
+    """
+    review = ReviewStore(project.root).load()
+    routed = [c for c in review.comments if c.is_open and c.routed_to_stage is stage]
+    if not routed or not plan.sections:
+        return {}
+
+    starts = section_start_times(project, plan)
+    placed: dict[str, list] = {}
+    for comment in sorted(routed, key=lambda c: c.at_ms):
+        index = max((i for i, start in enumerate(starts) if start <= comment.at_ms), default=0)
+        placed.setdefault(plan.sections[index].id, []).append({
+            "id": comment.id, "author": comment.author, "body": comment.body,
+            "at_ms": comment.at_ms,
+        })
+    return placed
+
+
+def _measured_narration_seconds(project: Project, plan: Plan) -> dict[str, float]:
+    """How long each section's narration actually ran in the last render.
+
+    Only while the Studio timeline is still the render's own: once someone edits
+    it, its clips no longer say how long the render was, and a stale number is
+    worse than none.
+    """
+    from pipeline.composition import TrackKind
+
+    composition = CompositionStore(project.root).load()
+    if not composition.generated_from_render_at:
+        return {}
+
+    starts = section_start_times(project, plan)
+    audio_clips = [
+        clip for track in composition.tracks if track.kind is TrackKind.AUDIO
+        for clip in track.clips
+    ]
+    measured = {}
+    for section, start in zip(plan.sections, starts, strict=False):
+        clip = next((c for c in audio_clips if c.start_ms == start + TITLE_CARD_MS), None)
+        if clip is not None:
+            measured[section.id] = round(clip.duration_ms / 1000, 1)
+    return measured
 
 
 def add_clip(

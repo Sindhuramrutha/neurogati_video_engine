@@ -22,8 +22,8 @@ import { renderReviewingStage } from "/static/stage-reviewing.js";
 import { renderStudioStage } from "/static/stage-studio.js";
 import {
   ICON, applicationState, clearProjectScopedState, escapeHtml, fileTypeBadge,
-  formatFileSize, icon, projectApiPath, select, showStageNotice, sortedSources,
-  stageIcon, stageStateFor,
+  formatFileSize, icon, onProjectSummaryRefreshed, projectApiPath, select, showStageNotice,
+  sortedSources, stageIcon, stageStateFor,
 } from "/static/ui-kit.js";
 
 /* ---- boot --------------------------------------------------------------- */
@@ -152,8 +152,17 @@ async function refreshProjects() {
   // documents -- the same corruption path as switching by hand.
   if (applicationState.selectedProject?.slug !== previouslySelectedSlug) {
     clearProjectScopedState();
+    resetConversationPanel();
   }
 }
+
+/** Redraw the chrome when a stage changes what the project's status says.
+ *  Only the chrome: the stage view owns its own body and redraws itself. */
+onProjectSummaryRefreshed(() => {
+  renderSidebar();
+  const pill = select(".status-pill");
+  if (pill) pill.innerHTML = statusPillContents(stageStateFor(applicationState.activeStageKey));
+});
 
 /** The single way to change stage. Stage views call this rather than reaching
  *  into the sidebar, so navigation stays one behaviour. */
@@ -231,16 +240,19 @@ function renderMain() {
   (stageRenderers[stage.key] ?? (() => renderAgentStage(stage)))();
 }
 
+function statusPillContents(state) {
+  return `
+    <span class="dot ${state.status === "ready" ? "ready" : ""}"></span>
+    ${escapeHtml(state.detail || state.status)}`;
+}
+
 function renderBreadcrumb(state) {
   return `
     <div class="breadcrumb">
       <span>Project</span><span>&rsaquo;</span>
       <span class="current">${escapeHtml(applicationState.selectedProject.name)}</span>
       <div class="spacer"></div>
-      <span class="status-pill">
-        <span class="dot ${state.status === "ready" ? "ready" : ""}"></span>
-        ${escapeHtml(state.detail || state.status)}
-      </span>
+      <span class="status-pill">${statusPillContents(state)}</span>
     </div>`;
 }
 
@@ -397,8 +409,6 @@ async function uploadSourceFiles(stage, fileList) {
       projectApiPath("/sources"), { method: "POST", body: formData });
 
     applicationState.selectedProject = uploadResult.project;
-    // New files default into the selection on the next stage.
-    applicationState.selectedSourceNames = null;
     renderSidebar();
     renderMain();
     reportUploadOutcome(uploadResult);
@@ -439,8 +449,8 @@ async function deleteSourceFile(stage, fileName) {
       projectApiPath(`/sources/${encodeURIComponent(fileName)}`), { method: "DELETE" });
 
     applicationState.selectedProject = deleteResult.project;
-    // A deleted file must not linger in the extraction selection or preview.
-    applicationState.selectedSourceNames?.delete(fileName);
+    // A deleted file must not linger in the preview. (The server drops it from
+    // the extraction selection itself.)
     if (applicationState.previewFileName === fileName) {
       applicationState.previewFileName = null;
     }
@@ -630,14 +640,22 @@ select("#project-select").onchange = event => {
   if (chosenProject) rememberSelectedProject(chosenProject.slug);
   writeAddress();
   // Everything loaded for the previous project is now wrong, and leaving it in
-  // place would let a save write one project's document into another.
+  // place would let a save write one project's document into another. The
+  // Orchestrator's thread goes with it: it is about the other project's work.
   clearProjectScopedState();
+  resetConversationPanel();
   renderSidebar();
   renderMain();
 };
 
 const drawer = select("#drawer");
-select("#toggle-drawer-button").onclick = () => drawer.classList.toggle("open");
+select("#toggle-drawer-button").onclick = () => {
+  const opening = !drawer.classList.contains("open");
+  drawer.classList.toggle("open");
+  // The thread is in `applicationState`, so it survives the panel closing; what
+  // may have changed while it was shut is the list of threads.
+  if (opening) refreshConversationList();
+};
 select("#close-drawer-button").onclick = () => drawer.classList.remove("open");
 
 // Both panels slide in from the same edge, so opening one closes the other
@@ -674,6 +692,9 @@ async function askTheAgent() {
     return;
   }
 
+  select("#drawer-intro")?.remove();
+  hideConversationList();
+
   log.insertAdjacentHTML("beforeend", `<div class="msg mine">${escapeHtml(question)}</div>`);
   input.value = "";
 
@@ -693,11 +714,17 @@ async function askTheAgent() {
     const reply = await requestJsonFromApi(projectApiPath("/orchestrator/ask"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question }),
+      // The thread this question belongs to, so the agent is told what was
+      // already said. Empty means "start a new one", and the reply says which.
+      body: JSON.stringify({
+        question, conversation_id: applicationState.agentConversationId ?? "",
+      }),
     });
     working.remove();
+    applicationState.agentConversationId = reply.conversation_id;
     log.insertAdjacentHTML("beforeend", renderOrchestratorReply(reply));
     wireConsultedAgents(log);
+    refreshConversationList();
   } catch (askFailure) {
     console.error("orchestrator ask failed", askFailure);
     working.remove();
@@ -766,6 +793,149 @@ function wireConsultedAgents(log) {
   });
 }
 
+/* ---- conversations with the Orchestrator -------------------------------- */
+
+/**
+ * The panel keeps threads, rather than one exchange that dies with the drawer.
+ *
+ * Closing the panel used to throw the conversation away: the log lived in the
+ * DOM and nothing was written down, so a question and its answer were gone the
+ * moment the drawer was shut, and the agent itself was never told what had
+ * already been said.
+ */
+const INTRO_MESSAGE = `
+  <div class="msg muted" id="drawer-intro">
+    This is the <b>Orchestrator</b> — the master agent, above all six stages.
+    Ask it anything about this project from any tab; it works out which stage
+    agents can answer, puts several of them to work at once, and replies from
+    what they send back.
+    <br><br>Every reply lists the agents it consulted, and you can open any of
+    them to read what that agent actually said. It never writes to the project.
+  </div>`;
+
+/** Timestamps are stored in UTC; a list that says 08:27 for something you asked
+ *  at 13:57 reads as the wrong conversation. */
+function whenItWas(isoTimestamp) {
+  const when = new Date(isoTimestamp);
+  if (Number.isNaN(when.getTime())) return isoTimestamp.slice(0, 16).replace("T", " ");
+  const today = new Date().toDateString() === when.toDateString();
+  return when.toLocaleString(undefined, today
+    ? { hour: "2-digit", minute: "2-digit" }
+    : { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
+function resetConversationPanel() {
+  applicationState.agentConversationId = null;
+  select("#drawer-log").innerHTML = INTRO_MESSAGE;
+  hideConversationList();
+}
+
+function startNewConversation() {
+  resetConversationPanel();
+  select("#drawer-input").focus();
+}
+
+function hideConversationList() {
+  select("#conversation-list").hidden = true;
+  select("#conversation-history-button").setAttribute("aria-expanded", "false");
+}
+
+async function refreshConversationList() {
+  if (!applicationState.selectedProject) return;
+  try {
+    const listed = await requestJsonFromApi(projectApiPath("/conversations"));
+    applicationState.agentConversations = listed.conversations;
+  } catch (listFailure) {
+    console.warn("could not list conversations", listFailure);
+    return;
+  }
+  if (!select("#conversation-list").hidden) renderConversationList();
+}
+
+function renderConversationList() {
+  const list = select("#conversation-list");
+  const conversations = applicationState.agentConversations ?? [];
+
+  list.innerHTML = conversations.length
+    ? conversations.map(conversation => `
+        <div class="conversation-row ${
+          conversation.id === applicationState.agentConversationId ? "active" : ""}">
+          <button class="conversation-open" data-conversation="${escapeHtml(conversation.id)}">
+            <span class="conversation-title">${escapeHtml(conversation.title)}</span>
+            <span class="conversation-meta">${conversation.turn_count} message${
+              conversation.turn_count === 1 ? "" : "s"} · ${
+              escapeHtml(whenItWas(conversation.updated_at))}</span>
+          </button>
+          <button class="btn-icon danger" data-forget-conversation="${escapeHtml(conversation.id)}"
+                  title="Delete this conversation" aria-label="Delete this conversation">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>`).join("")
+    : `<p class="muted conversation-empty">No earlier conversations for this project.</p>`;
+
+  list.querySelectorAll("[data-conversation]").forEach(button => {
+    button.onclick = () => openConversation(button.dataset.conversation);
+  });
+  list.querySelectorAll("[data-forget-conversation]").forEach(button => {
+    button.onclick = async () => {
+      if (!window.confirm("Delete this conversation? The project itself is untouched.")) return;
+      const conversationId = button.dataset.forgetConversation;
+      try {
+        const left = await requestJsonFromApi(
+          projectApiPath(`/conversations/${encodeURIComponent(conversationId)}`),
+          { method: "DELETE" });
+        applicationState.agentConversations = left.conversations;
+      } catch (forgetFailure) {
+        console.error("could not delete the conversation", forgetFailure);
+        return;
+      }
+      if (applicationState.agentConversationId === conversationId) startNewConversation();
+      renderConversationList();
+    };
+  });
+}
+
+/** Reopen a thread and show it as it was, so it can be continued. */
+async function openConversation(conversationId) {
+  const log = select("#drawer-log");
+  log.innerHTML = `<div class="msg muted">Opening…</div>`;
+  hideConversationList();
+
+  let conversation;
+  try {
+    conversation = await requestJsonFromApi(
+      projectApiPath(`/conversations/${encodeURIComponent(conversationId)}`));
+  } catch (openFailure) {
+    console.error("could not open the conversation", openFailure);
+    log.innerHTML = `<div class="msg bad">${escapeHtml(openFailure.message)}</div>`;
+    return;
+  }
+
+  applicationState.agentConversationId = conversation.id;
+  log.innerHTML = conversation.turns.map(turn => `
+    <div class="msg mine">${escapeHtml(turn.question)}</div>
+    ${renderOrchestratorReply({
+      agent: "Orchestrator", agent_source: "default", answer: turn.answer,
+      consulted: turn.consulted, artifacts_read: turn.artifacts_read,
+    })}`).join("");
+  wireConsultedAgents(log);
+  log.scrollTop = log.scrollHeight;
+}
+
+select("#new-conversation-button").onclick = startNewConversation;
+
+select("#conversation-history-button").onclick = async () => {
+  const list = select("#conversation-list");
+  const showing = list.hidden;
+  select("#conversation-history-button").setAttribute("aria-expanded", String(showing));
+  list.hidden = !showing;
+  if (!showing) return;
+  list.innerHTML = `<p class="muted conversation-empty">Loading…</p>`;
+  await refreshConversationList();
+  renderConversationList();
+};
+
 select("#drawer-send-button").onclick = askTheAgent;
 
 select("#drawer-input").addEventListener("keydown", event => {
@@ -832,6 +1002,7 @@ window.addEventListener("popstate", async () => {
     rememberSelectedProject(wantedProject.slug);
     select("#project-select").value = wantedProject.slug;
     clearProjectScopedState();
+    resetConversationPanel();
   }
 
   const known = applicationState.stageDefinitions.some(stage => stage.key === stageKey);

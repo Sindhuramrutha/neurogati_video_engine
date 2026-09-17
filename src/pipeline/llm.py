@@ -106,6 +106,44 @@ def _build_client(base_url: str, api_key: str, purpose: str):
     )
 
 
+def _what_went_wrong(call_failure: Exception) -> str:
+    """Name the cause when it is not the model's answer.
+
+    A dropped connection surfaced as "The model did not return a valid
+    OrchestratorTurn after 2 retries: InstructorRetryException: Connection
+    error." -- which blames the model and the schema for a network problem and
+    tells the reader nothing they can act on. The retry wrappers bury the real
+    error in the cause chain, so it is looked for there.
+    """
+    import openai
+
+    causes: list[BaseException] = []
+    seen: set[int] = set()
+    cause: BaseException | None = call_failure
+    while cause is not None and id(cause) not in seen:
+        seen.add(id(cause))
+        causes.append(cause)
+        cause = cause.__cause__ or cause.__context__
+
+    for cause in causes:
+        if isinstance(cause, openai.AuthenticationError | openai.PermissionDeniedError):
+            return ("The model provider rejected the API key. Check it in the API keys "
+                    "panel.")
+        if isinstance(cause, openai.RateLimitError):
+            return ("The model provider is rate limiting these requests. Wait a moment "
+                    "and try again.")
+        if isinstance(cause, openai.APITimeoutError):
+            return ("The model provider did not answer in time. Try again; if it keeps "
+                    "happening the model may be overloaded.")
+        if isinstance(cause, openai.APIConnectionError):
+            return ("Could not reach the model provider. Check your internet connection "
+                    "and try again.")
+    if any("Connection error" in str(cause) for cause in causes):
+        return ("Could not reach the model provider. Check your internet connection and "
+                "try again.")
+    return ""
+
+
 def complete_text(system_prompt: str, user_prompt: str, *, max_tokens: int = 2000) -> str:
     """Ask for prose. Used where the answer is for a person to read.
 
@@ -125,7 +163,10 @@ def complete_text(system_prompt: str, user_prompt: str, *, max_tokens: int = 200
         )
     except Exception as call_failure:
         logger.exception("text completion failed")
-        raise ModelCallFailed(f"{type(call_failure).__name__}: {call_failure}") from call_failure
+        raise ModelCallFailed(
+            _what_went_wrong(call_failure)
+            or f"{type(call_failure).__name__}: {call_failure}"
+        ) from call_failure
 
     choices = getattr(response, "choices", None)
     if not choices:
@@ -182,6 +223,7 @@ def complete_structured[ModelType: BaseModel](
     except Exception as call_failure:
         logger.exception("structured completion failed")
         raise ModelCallFailed(
-            f"The model did not return a valid {response_model.__name__} after "
-            f"{MAXIMUM_SCHEMA_RETRIES} retries: {type(call_failure).__name__}: {call_failure}"
+            _what_went_wrong(call_failure)
+            or f"The model did not return a valid {response_model.__name__} after "
+               f"{MAXIMUM_SCHEMA_RETRIES} retries: {type(call_failure).__name__}: {call_failure}"
         ) from call_failure

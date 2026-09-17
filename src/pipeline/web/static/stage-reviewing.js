@@ -100,6 +100,11 @@ function renderReadinessCard(review) {
   const openCount = review.audit.open_comment_count;
   const byStage = review.audit.by_stage;
   const isReady = review.is_ready_to_export;
+  // With no open comments, any warning left is an advisory -- a section far over
+  // its planned length, versions that share one file. They do not block export,
+  // but they are not "nothing": this card used to show a green tick over them.
+  const warnings = review.warnings ?? [];
+  const hasChecks = isReady && warnings.length > 0;
 
   // Where the open comments cluster is the useful signal: six routed to Scripting
   // means the script is the problem, not the timeline.
@@ -110,15 +115,22 @@ function renderReadinessCard(review) {
     .join(" ");
 
   return `
-    <div class="ready-card ${isReady ? "ready" : "blocked"}">
-      <span class="mark">${icon(isReady ? ICON.check : ICON.alert, 17, isReady ? 2.4 : 2)}</span>
+    <div class="ready-card ${hasChecks ? "check" : isReady ? "ready" : "blocked"}">
+      <span class="mark">${icon(isReady && !hasChecks ? ICON.check : ICON.alert, 17,
+                                isReady && !hasChecks ? 2.4 : 2)}</span>
       <span class="text">
-        <b>${isReady ? "Nothing outstanding" : `${openCount} comment(s) still open`}</b>
-        <span>${isReady
-          ? (review.versions.some(v => v.is_rendered)
+        <b>${!isReady
+          ? `${openCount} comment(s) still open`
+          : hasChecks
+            ? `No open comments — ${warnings.length} thing${warnings.length === 1 ? "" : "s"} to check`
+            : "Nothing outstanding"}</b>
+        <span>${!isReady
+          ? `Where the work is: ${clusters}`
+          : hasChecks
+            ? `<ul class="ready-checks">${warnings.map(w => `<li>${escapeHtml(w)}</li>`).join("")}</ul>`
+            : review.versions.some(v => v.is_rendered)
               ? "No open feedback, and a render exists. Re-render to pick up any changes."
-              : "No open feedback. Render the video to watch it here.")
-          : `Where the work is: ${clusters}`}</span>
+              : "No open feedback. Render the video to watch it here."}</span>
       </span>
       <button class="btn btn-accent" id="render-button"
               title="Synthesise narration and render the video">

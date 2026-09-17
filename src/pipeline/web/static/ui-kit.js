@@ -6,7 +6,7 @@
  * imports this — not editing the shell.
  */
 
-import { escapeHtml, showNoticeIn } from "/static/shared-client.js";
+import { escapeHtml, requestJsonFromApi, showNoticeIn } from "/static/shared-client.js";
 
 export { escapeHtml };
 export const select = selector => document.querySelector(selector);
@@ -29,9 +29,8 @@ export const applicationState = {
   isUploadInFlight: false,
   isDeleteInFlight: false,
 
-  // Extraction workbench. Selection is per-session rather than persisted:
-  // which files you are looking at is a view concern, unlike the saved options.
-  selectedSourceNames: null,   // null means "all"; an empty Set means "none"
+  // Extraction workbench. Which file is previewed is a view concern and lives
+  // here; which files are *extracted* is saved with the project on the server.
   previewFileName: null,
   previewTab: "preview",
   stageSettings: {},           // stage key -> { values, options }
@@ -87,6 +86,19 @@ export const ICON = {
 };
 
 /* ---- formatting --------------------------------------------------------- */
+
+/** A label for an option the pipeline declares but does not read yet.
+ *
+ *  The control is shown, so the plan is visible, and disabled, so nobody spends
+ *  time choosing a setting that changes nothing. Every Extraction and Planning
+ *  option was operable and inert until this existed.
+ */
+export function notBuiltYet(option) {
+  return option.implemented === false
+    ? `<span class="not-built" title="Saved values are kept, but no stage reads this yet."
+         >not built yet</span>`
+    : "";
+}
 
 export function formatFileSize(sizeInBytes) {
   if (sizeInBytes < 1024) return `${sizeInBytes} B`;
@@ -190,13 +202,50 @@ export const projectApiPath = suffix =>
   `/api/projects/${applicationState.selectedProject.slug}${suffix}`;
 
 /**
+ * Re-read the selected project's summary: its stage statuses and their details.
+ *
+ * The chrome renders from `selectedProject.stages`, loaded when the project was
+ * opened. Without this, every stage chip stated the project as it was on
+ * arrival -- "1 of 4 sections written" after drafting the other three -- until
+ * the page was reloaded.
+ *
+ * The shell registers what to redraw, so stage views say what changed and stay
+ * out of the chrome.
+ */
+let redrawChrome = null;
+
+export function onProjectSummaryRefreshed(callback) {
+  redrawChrome = callback;
+}
+
+export async function refreshProjectSummary() {
+  const slugAtRequestTime = applicationState.selectedProject?.slug;
+  if (!slugAtRequestTime) return;
+
+  let summary;
+  try {
+    summary = await requestJsonFromApi(`/api/projects/${slugAtRequestTime}`);
+  } catch (refreshFailure) {
+    // The stage's own work succeeded; a stale chip is not worth an error.
+    console.warn("could not refresh the project summary", refreshFailure);
+    return;
+  }
+  if (applicationState.selectedProject?.slug !== slugAtRequestTime) return;
+
+  applicationState.selectedProject = summary;
+  const listed = applicationState.availableProjects
+    .findIndex(project => project.slug === slugAtRequestTime);
+  if (listed !== -1) applicationState.availableProjects[listed] = summary;
+  redrawChrome?.();
+}
+
+/**
  * Every field in `applicationState` scoped to one project.
  *
  * Listed once, here, so a new per-project document cannot be added to the state
  * object and then forgotten when the project changes.
  */
 const PROJECT_SCOPED_STATE_DEFAULTS = {
-  selectedSourceNames: null,
   previewFileName: null,
   previewTab: "preview",
   stageSettings: {},
@@ -204,6 +253,11 @@ const PROJECT_SCOPED_STATE_DEFAULTS = {
   script: null,
   composition: null,
   review: null,
+
+  // The Orchestrator's thread is about one project's work, so it must not
+  // follow you into another project.
+  agentConversationId: null,
+  agentConversations: [],
 };
 
 /**

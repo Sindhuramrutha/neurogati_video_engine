@@ -159,7 +159,19 @@ class Review(BaseModel):
             later.id for earlier, later in zip(ordered, ordered[1:], strict=False)
             if earlier.start_ms == later.start_ms
         ]
+        # Renders made before each got its own file name all wrote the same
+        # path. Those versions are listed separately but play one video -- the
+        # last of them -- so choosing an earlier one plays the wrong cut.
+        versions_by_file: dict[str, list[str]] = {}
+        for version in self.versions:
+            if version.file_path:
+                versions_by_file.setdefault(version.file_path, []).append(version.id)
+        shared_file_version_ids = [
+            ids for ids in versions_by_file.values() if len(ids) > 1
+        ]
+
         return {
+            "shared_file_version_ids": shared_file_version_ids,
             "open_comment_count": len(self.open_comments),
             "unrouted_comment_ids": [
                 c.id for c in self.open_comments if c.routed_to_stage is None
@@ -199,6 +211,11 @@ class Review(BaseModel):
             found.append(f"{len(audit['untitled_chapter_ids'])} chapter(s) have no title")
         if audit["duplicate_chapter_ids"]:
             found.append("two chapters start at the same time")
+        for ids in audit["shared_file_version_ids"]:
+            found.append(
+                f"{len(ids)} versions share one video file, so each of them plays "
+                f"the most recent of those renders"
+            )
         return found
 
 

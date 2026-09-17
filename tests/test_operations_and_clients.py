@@ -752,3 +752,46 @@ def test_two_renders_in_the_same_second_are_still_separate_versions(project_root
     assert paths[0] != paths[1], "both versions point at the same file"
     for path in paths:
         assert Path(path).exists(), f"{path} was overwritten by the other render"
+
+
+# --- what a failed model call says ------------------------------------------------------
+
+
+def _connection_error():
+    import httpx
+    import openai
+
+    return openai.APIConnectionError(request=httpx.Request("POST", "https://example.invalid"))
+
+
+def test_a_dropped_connection_is_reported_as_one_not_as_a_bad_answer():
+    """The retry wrappers hide the cause, and the message blamed the schema:
+    "The model did not return a valid OrchestratorTurn after 2 retries:
+    InstructorRetryException: Connection error." blames the model for the
+    network and tells the reader nothing they can do."""
+    from pipeline.llm import _what_went_wrong
+
+    buried = RuntimeError("InstructorRetryException: Connection error.")
+    buried.__cause__ = _connection_error()
+
+    assert "Could not reach the model provider" in _what_went_wrong(buried)
+
+
+def test_a_rejected_key_names_the_key():
+    import httpx
+    import openai
+
+    from pipeline.llm import _what_went_wrong
+
+    request = httpx.Request("POST", "https://example.invalid")
+    rejected = openai.AuthenticationError(
+        "Unauthorized", response=httpx.Response(401, request=request), body=None)
+
+    assert "API key" in _what_went_wrong(rejected)
+
+
+def test_an_answer_that_does_not_fit_the_schema_keeps_the_schema_message():
+    """Only failures that are *not* about the answer are re-explained."""
+    from pipeline.llm import _what_went_wrong
+
+    assert _what_went_wrong(ValueError("body.sections.0.title: field required")) == ""

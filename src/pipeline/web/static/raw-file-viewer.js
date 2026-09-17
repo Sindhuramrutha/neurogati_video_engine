@@ -148,12 +148,43 @@ async function openDocument(fileName, stage) {
       className: "docx", inWrapper: true, ignoreWidth: false,
       breakPages: true, experimental: true,
     });
+    fitDocumentToWidth(stage);
   } catch (documentFailure) {
     console.error("document render failed", documentFailure);
     stage.innerHTML = `<p class="muted" style="margin:0">
       This document could not be drawn — ${escapeHtml(documentFailure.message)}.
       Use <b>Open in a tab</b> or <b>Download</b> to read it.</p>`;
   }
+}
+
+/** Scale a rendered Word document down to the width it has been given.
+ *
+ *  The renderer draws pages at their real width, about 816 pixels. In a narrower
+ *  panel the page was centred and overflowed on both sides, and the left margin
+ *  -- where every line begins -- could not be scrolled to. Scaling keeps the
+ *  page's own layout, which is the point of showing the file rather than text.
+ *  Refitted when the panel changes size, and never enlarged past real size.
+ */
+function fitDocumentToWidth(stage) {
+  const wrapper = stage.querySelector(".docx-wrapper");
+  if (!wrapper) return;
+
+  const fit = () => {
+    wrapper.style.zoom = "1";
+    // The widest page plus the wrapper's padding -- not `scrollWidth`. The pages
+    // are centred, so they overflow on both sides, and scrollWidth only counts
+    // overflow to the right: it reported 680 pixels for a page needing 830, and
+    // the scaled page was still cut off on the left.
+    const padding = getComputedStyle(wrapper);
+    const natural = Math.max(0, ...[...wrapper.children].map(page => page.offsetWidth))
+      + parseFloat(padding.paddingLeft) + parseFloat(padding.paddingRight);
+    const available = stage.clientWidth;
+    if (natural > 0 && available > 0 && natural > available) {
+      wrapper.style.zoom = String(Math.max(0.35, available / natural));
+    }
+  };
+  fit();
+  new ResizeObserver(() => { if (stage.isConnected) fit(); }).observe(stage);
 }
 
 /** Markdown and plain text are already text: show the bytes, not a reading of

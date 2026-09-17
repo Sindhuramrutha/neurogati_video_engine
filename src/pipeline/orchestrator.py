@@ -39,8 +39,9 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from pipeline.agent_runtime import AGENTS_DIR, ask_stage_agent
+from pipeline.agent_runtime import AGENTS_DIR, artifact_for_agents, ask_stage_agent
 from pipeline.agents import Agent, AgentRegistry
+from pipeline.conversations import ConversationStore, ConversationTurn
 from pipeline.llm import ModelCallFailed, ModelNotConfigured, complete_structured
 from pipeline.operations import (
     ARTIFACTS,
@@ -179,6 +180,17 @@ def pipeline_snapshot(project: Project) -> str:
         lines.extend(
             f"  extracted but since removed: {name}" for name in freshness["removed"]
         )
+        lines.extend(
+            f"  extracted but since left out: {name}" for name in freshness["newly_excluded"]
+        )
+
+    # Said even when nothing is stale, so a deliberately unticked file is not
+    # reported to the person as a document the pipeline failed to read.
+    if freshness["excluded"]:
+        lines.append("")
+        lines.append(
+            "Left out of extraction by choice: " + ", ".join(freshness["excluded"])
+        )
 
     return "\n".join(lines)
 
@@ -293,11 +305,12 @@ def run_reads(slug: str, names: list[str]) -> list[dict[str, Any]]:
             continue
 
         try:
-            document = read_artifact(slug, name)
+            # The artifact as agents read it -- not as the page receives it, with
+            # heading lists and freshness flags filling the space.
+            rendered = artifact_for_agents(project, name)
         except OperationFailed as failure:
             found.append({"artifact": name, "ok": False, "content": f"({failure})"})
             continue
-        rendered = json.dumps(document, indent=2, ensure_ascii=False)
         if len(rendered) > MAXIMUM_ARTIFACT_CHARACTERS:
             rendered = rendered[:MAXIMUM_ARTIFACT_CHARACTERS] + "\n... (truncated)"
         found.append({"artifact": name, "ok": True, "content": rendered})
@@ -318,27 +331,77 @@ def _render_findings(
     return "\n\n".join(parts)
 
 
-def ask_the_orchestrator(slug: str, question: str) -> dict[str, Any]:
+def list_conversations(slug: str) -> dict[str, Any]:
+    """Every thread with the Orchestrator for this project, newest first."""
+    project = require_project(slug)
+    log = ConversationStore(project.root).load()
+    return {"conversations": [c.summary() for c in log.newest_first()]}
+
+
+def read_conversation(slug: str, conversation_id: str) -> dict[str, Any]:
+    """One thread in full, so it can be reopened and continued."""
+    project = require_project(slug)
+    conversation = ConversationStore(project.root).load().find(conversation_id)
+    if conversation is None:
+        raise OperationFailed(f"This project has no conversation {conversation_id!r}.")
+    return conversation.to_dict()
+
+
+def forget_conversation(slug: str, conversation_id: str) -> dict[str, Any]:
+    """Delete one thread. The artifacts it discussed are untouched."""
+    project = require_project(slug)
+    store = ConversationStore(project.root)
+    log = store.load()
+    if log.find(conversation_id) is None:
+        raise OperationFailed(f"This project has no conversation {conversation_id!r}.")
+    log.conversations = [c for c in log.conversations if c.id != conversation_id]
+    store.save(log)
+    return {"conversations": [c.summary() for c in log.newest_first()]}
+
+
+def ask_the_orchestrator(
+    slug: str, question: str, conversation_id: str = ""
+) -> dict[str, Any]:
     """Answer a question about the project, using whichever agents it takes.
 
-    Writes nothing. Returns the answer along with every agent consulted and what
-    each one said, so an answer can be traced to the agents that produced it
-    rather than taken on trust.
+    Changes no artifact. It does append to the conversation it was asked in, so
+    the thread survives closing the panel and a follow-up like "and why is that?"
+    has something to refer to. Returns the answer along with every agent
+    consulted and what each one said, so an answer can be traced to the agents
+    that produced it rather than taken on trust.
     """
     project = require_project(slug)
     agent = resolve_orchestrator(project)
 
+    store = ConversationStore(project.root)
+    log = store.load()
+    conversation = log.find(conversation_id) if conversation_id else None
+    history = conversation.history_for_model() if conversation else ""
+
     system_prompt = build_system_prompt(agent, project)
-    transcript: list[str] = [
-        pipeline_snapshot(project),
-        f"\n--- the person asks ---\n{question}",
-    ]
+    transcript: list[str] = [pipeline_snapshot(project)]
+    if history:
+        transcript.append(
+            f"\n--- earlier in this conversation ---\n{history}\n"
+            "(Answer the new question below. Do not repeat what you already said "
+            "unless it is asked for again.)"
+        )
+    transcript.append(f"\n--- the person asks ---\n{question}")
 
     consulted: list[dict[str, Any]] = []
     artifacts_read: list[str] = []
     rounds = 0
 
     def finished(answer: str) -> dict[str, Any]:
+        # Recorded here rather than at the call site: every way out of the loop
+        # is an answer the person saw, and one that is shown but not kept would
+        # break the thread the next time they ask.
+        turn = ConversationTurn(
+            question=question, answer=answer,
+            consulted=consulted, artifacts_read=artifacts_read,
+        )
+        thread = log.record(conversation_id, turn)
+        store.save(log)
         return {
             "agent": agent.name,
             "agent_source": agent.source,
@@ -348,6 +411,9 @@ def ask_the_orchestrator(slug: str, question: str) -> dict[str, Any]:
             "rounds": rounds,
             "consulted": consulted,
             "artifacts_read": artifacts_read,
+            "conversation_id": thread.id,
+            "conversation_title": thread.display_title,
+            "turn_id": turn.id,
         }
 
     try:

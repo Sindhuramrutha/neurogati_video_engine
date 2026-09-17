@@ -29,22 +29,19 @@ import json
 import logging
 from typing import Any
 
-from pydantic import BaseModel, Field
-
 from pipeline.agents import Agent, AgentRegistry
 from pipeline.config import REPO_ROOT
+from pipeline.extraction import ExtractionStore
 from pipeline.llm import (
     ModelCallFailed,
     ModelNotConfigured,
-    complete_structured,
     complete_text,
 )
 from pipeline.operations import (
     OperationFailed,
+    excluded_sources,
     extracted_content_as_markdown,
-    read_artifact,
     require_project,
-    write_section_script,
 )
 from pipeline.planning import Plan
 from pipeline.projects import Project
@@ -78,7 +75,7 @@ def resolve_agent(project: Project, stage: Stage) -> Agent:
     return agent
 
 
-def stage_context(project: Project, stage: Stage) -> str:
+def stage_context(project: Project, stage: Stage, include_source: bool = True) -> str:
     """The project state this stage is accountable for, as JSON.
 
     Each stage sees its own artifact and the one it consumes -- not the whole
@@ -93,27 +90,27 @@ def stage_context(project: Project, stage: Stage) -> str:
         Stage.REVIEWING: ["plan", "script", "composition", "review"],
     }
 
+    # Files left out of extraction are named as such. Listed plainly, a stage
+    # agent reported an unticked deck as a document that "was never extracted".
+    left_out = set(excluded_sources(project))
+    listed_sources = ", ".join(
+        f"{s['name']} (left out of extraction by choice)" if s["name"] in left_out
+        else s["name"]
+        for s in project.sources()
+    )
     parts: list[str] = [
         f"Project: {project.name} (slug: {project.slug})",
-        f"Source documents: "
-        f"{', '.join(s['name'] for s in project.sources()) or 'none uploaded yet'}",
+        f"Source documents: {listed_sources or 'none uploaded yet'}",
     ]
 
     for artifact_name in upstream_by_stage.get(stage, []):
-        try:
-            document = read_artifact(project.slug, artifact_name)
-        except OperationFailed:
-            continue
-        rendered = json.dumps(document, indent=2, ensure_ascii=False)
-        if len(rendered) > MAXIMUM_CONTEXT_CHARACTERS:
-            rendered = rendered[:MAXIMUM_CONTEXT_CHARACTERS] + "\n... (truncated)"
-        parts.append(f"\n--- {artifact_name}.json ---\n{rendered}")
+        parts.append(f"\n--- {artifact_name} ---\n{artifact_for_agents(project, artifact_name)}")
 
     # Extraction, Planning and Scripting get the source text itself. Without it
     # the Planning agent saw only file names, which is a guarantee of invention:
     # asked to plan a video about a document it cannot read, a model writes a
     # plausible plan about the title. This is the most important block here.
-    if stage in (Stage.EXTRACTION, Stage.PLANNING, Stage.SCRIPTING):
+    if include_source and stage in (Stage.EXTRACTION, Stage.PLANNING, Stage.SCRIPTING):
         source_text = extracted_content_as_markdown(project)
         if source_text:
             if len(source_text) > MAXIMUM_SOURCE_CHARACTERS:
@@ -130,12 +127,90 @@ def stage_context(project: Project, stage: Stage) -> str:
 
     if stage is Stage.PLANNING:
         parts.append("\nThe current plan is below; propose changes against it.")
-        try:
-            parts.append(json.dumps(read_artifact(project.slug, "plan"), indent=2))
-        except OperationFailed:
-            pass
+        parts.append(artifact_for_agents(project, "plan"))
 
     return "\n".join(parts)
+
+
+# --- artifacts, as an agent reads them ----------------------------------------
+
+# A compact plan is small -- a twelve-section plan is a few thousand characters --
+# so this only bounds the pathological case.
+MAXIMUM_PLAN_CHARACTERS_FOR_AGENTS = 30_000
+
+
+def _capped(text: str, limit: int) -> str:
+    return text if len(text) <= limit else text[:limit] + "\n... (truncated)"
+
+
+def compact_plan_text(plan: Plan, marked_section_id: str | None = None) -> str:
+    """The plan as an agent needs it: every section, in order, and nothing else.
+
+    Agents used to be handed the plan exactly as the page receives it -- with the
+    extraction's full heading list, freshness flags and warnings -- then cut at
+    12,000 characters. A real twelve-section plan came to 23,000, so the Scripting
+    agent could see only ten of its sections.
+    """
+    numbers = {o.id: n for n, o in enumerate(plan.learning_objectives, start=1)}
+    lines = [f"Audience: {plan.selected_audience or 'not chosen'}"]
+    if plan.learning_objectives:
+        lines.append("Learning objectives:")
+        lines.extend(f"  {numbers[o.id]}. {o.text}" for o in plan.learning_objectives
+                     if o.is_included)
+    if plan.key_themes:
+        lines.append(f"Key themes: {'; '.join(plan.key_themes)}")
+    lines.append("Sections, in order:")
+    for number, section in enumerate(plan.sections, start=1):
+        marker = "  <- this section" if section.id == marked_section_id else ""
+        lines.append(f"  {number}. {section.title or 'Untitled'} "
+                     f"(~{section.estimated_seconds} s){marker}")
+        if section.summary:
+            lines.append(f"     Summary: {section.summary}")
+        if section.rendering_approach:
+            lines.append(f"     Shown as: {section.rendering_approach}"
+                         f"{' -- ' + section.rendering_reason if section.rendering_reason else ''}")
+        if section.sources:
+            lines.append("     Sources: " + "; ".join(r.label for r in section.sources))
+        served = [str(numbers[oid]) for oid in section.objective_ids if oid in numbers]
+        if served:
+            lines.append(f"     Objectives: {', '.join(served)}")
+    return _capped("\n".join(lines), MAXIMUM_PLAN_CHARACTERS_FOR_AGENTS)
+
+
+def artifact_for_agents(project: Project, artifact_name: str) -> str:
+    """One artifact as text an agent reads, without anything only the page needs."""
+    from pipeline.composition import CompositionStore
+    from pipeline.planning import PlanStore
+    from pipeline.review import ReviewStore
+    from pipeline.scripting import ScriptStore
+
+    if artifact_name == "plan":
+        return compact_plan_text(PlanStore(project.root).load())
+
+    if artifact_name == "script":
+        plan = PlanStore(project.root).load()
+        script = ScriptStore(project.root).load()
+        lines = []
+        for number, section in enumerate(plan.sections, start=1):
+            spoken = script.spoken_text(section.id)
+            lines.append(f"{number}. {section.title} -- "
+                         f"{len(spoken.split())} words" if spoken else
+                         f"{number}. {section.title} -- not written yet")
+            if spoken:
+                lines.append(spoken)
+        return _capped("\n".join(lines), MAXIMUM_CONTEXT_CHARACTERS)
+
+    if artifact_name == "extraction":
+        return _capped(ExtractionStore(project.root).load().as_markdown(),
+                       MAXIMUM_CONTEXT_CHARACTERS)
+
+    stores = {"composition": CompositionStore, "review": ReviewStore}
+    if artifact_name in stores:
+        document = stores[artifact_name](project.root).load().model_dump(mode="json")
+        return _capped(json.dumps(document, indent=2, ensure_ascii=False),
+                       MAXIMUM_CONTEXT_CHARACTERS)
+
+    raise OperationFailed(f"No artifact {artifact_name!r}.")
 
 
 def build_system_prompt(agent: Agent) -> str:
@@ -198,119 +273,44 @@ def ask_stage_agent(slug: str, stage_key: str, question: str) -> dict[str, Any]:
 def draft_plan_with_agent(slug: str, instruction: str) -> dict[str, Any]:
     """Have the Planning agent draft a plan as a validated `Plan` object.
 
-    **Returns a proposal; saves nothing.** The caller decides. An agent that
-    overwrote a hand-built plan the moment someone asked it a question would be
-    the single most destructive thing in this pipeline.
+    **Never changes the plan.** The proposal is kept as a pending draft for
+    someone to accept or discard. An agent that overwrote a hand-built plan the
+    moment someone asked it a question would be the single most destructive thing
+    in this pipeline.
 
     Structured output rather than prose is the point ([ADR 0002]): the result is
     either a `Plan` that satisfies the schema, or an error raised right here.
     There is no parsing step downstream that can misread it.
     """
-    project = require_project(slug)
-    agent = resolve_agent(project, Stage.PLANNING)
+    # Drafting reads the whole extraction in two passes -- every heading first,
+    # then each section from its own text -- instead of the first 40,000
+    # characters, which left the end of a long source out of every plan. See
+    # `pipeline.plan_drafting`. Imported here to avoid a cycle: that module is
+    # built on this one.
+    from pipeline.plan_drafting import draft_plan
 
-    system_prompt = (
-        f"{build_system_prompt(agent)}\n\n"
-        f"Return a plan as structured data. Every section needs a title that says "
-        f"what it teaches, and an estimated spoken duration in seconds -- 45 to 120 "
-        f"is the usual range. Do not invent facts that are not in the material you "
-        f"were given."
-    )
-
-    try:
-        drafted = complete_structured(
-            Plan,
-            system_prompt,
-            f"{stage_context(project, Stage.PLANNING)}\n\n--- instruction ---\n{instruction}",
-        )
-    except ModelNotConfigured as not_configured:
-        raise OperationFailed(str(not_configured)) from not_configured
-    except ModelCallFailed as call_failure:
-        raise OperationFailed(f"The model call failed. {call_failure}") from call_failure
-
-    return {
+    draft = draft_plan(slug, instruction)
+    return draft | {
         "stage": Stage.PLANNING.value,
-        "agent": agent.name,
-        "agent_source": agent.source,
-        "instruction": instruction,
         "is_saved": False,
         "note": (
-            "This is a proposal. Nothing was written. Save it with "
-            "`write_artifact(project, 'plan', proposed_plan)` if you want it."
+            "Kept as a pending draft; the plan was not changed. Accept it whole or by "
+            "section with `accept_plan_draft`, or discard it with `discard_plan_draft`."
         ),
-        "proposed_plan": drafted.to_dict(),
+        "proposed_plan": draft.get("plan", {}),
     }
-
-
-class DraftedNarration(BaseModel):
-    """The Scripting agent's output for one section.
-
-    A model rather than a string so the agent has to commit to a word count it
-    then has to satisfy -- and so a response that is a refusal or a preamble
-    fails validation here rather than being stored as narration.
-    """
-
-    narration: str = Field(min_length=1)
-    word_count: int = 0
 
 
 def draft_section_script_with_agent(
     slug: str, section_id: str, extra_instruction: str = ""
 ) -> dict[str, Any]:
-    """Write narration for one plan section, and save it.
+    """Write one plan section's narration, as scenes, and save it.
 
     This one *does* write, unlike `draft_plan_with_agent`, and the asymmetry is
-    deliberate: a section's narration is addressed by id, so writing it replaces
-    only that section and leaves every other word in the script untouched. A plan
-    is a single document, and rewriting it wholesale could discard an hour of
-    structuring.
+    deliberate: a section's narration is addressed by section id, so writing it
+    replaces only that section and leaves every other word in the script
+    untouched. See `pipeline.script_drafting`; imported here to avoid a cycle.
     """
-    project = require_project(slug)
-    agent = resolve_agent(project, Stage.SCRIPTING)
+    from pipeline.script_drafting import draft_section
 
-    plan = read_artifact(slug, "plan")
-    section = next((s for s in plan["sections"] if s["id"] == section_id), None)
-    if section is None:
-        listed = ", ".join(f"{s['id']} ({s['title']})" for s in plan["sections"]) or "none"
-        raise OperationFailed(f"The plan has no section {section_id!r}. Sections: {listed}.")
-
-    target_words = max(20, int(section["estimated_seconds"] * WORDS_PER_SECOND_OF_SPEECH))
-
-    system_prompt = (
-        f"{build_system_prompt(agent)}\n\n"
-        f"Write the spoken narration for ONE section of the video. It is read "
-        f"aloud, so write for the ear: short sentences, no bullet points, no "
-        f"headings, no stage directions, no markdown. Around {target_words} words "
-        f"to fill {section['estimated_seconds']} seconds. Every fact must come "
-        f"from the source material provided -- do not add examples, numbers or "
-        f"analogies that are not in it."
-    )
-
-    user_prompt = (
-        f"{stage_context(project, Stage.SCRIPTING)}\n\n"
-        f"--- write narration for this section ---\n"
-        f"Title: {section['title']}\n"
-        f"Summary: {section.get('summary') or '(none given)'}\n"
-        f"Target: {section['estimated_seconds']} seconds, about {target_words} words.\n"
-        f"{extra_instruction}"
-    )
-
-    try:
-        drafted = complete_structured(DraftedNarration, system_prompt, user_prompt)
-    except ModelNotConfigured as not_configured:
-        raise OperationFailed(str(not_configured)) from not_configured
-    except ModelCallFailed as call_failure:
-        raise OperationFailed(f"The model call failed. {call_failure}") from call_failure
-
-    script = write_section_script(slug, section_id, drafted.narration)
-
-    return {
-        "stage": Stage.SCRIPTING.value,
-        "agent": agent.name,
-        "section_id": section_id,
-        "section_title": section["title"],
-        "target_words": target_words,
-        "written_words": len(drafted.narration.split()),
-        "is_saved": True,
-        "script": script,
-    }
+    return draft_section(slug, section_id, extra_instruction)
