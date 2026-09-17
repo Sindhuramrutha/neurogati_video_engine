@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from pipeline import operations
+from pipeline import operations, render_run
 from pipeline.operations import OperationFailed
 
 
@@ -444,7 +444,7 @@ def test_render_writes_its_structure_onto_an_empty_timeline(project_root, tmp_pa
     audio = tmp_path / "section-00.mp3"
     audio.write_bytes(b"x")
 
-    note = operations._write_timeline_from_render(project, [_rendered_section(audio)])
+    note = render_run._write_timeline_from_render(project, [_rendered_section(audio)])
     composition = operations.read_artifact("timeline-fill", "composition")
 
     assert note == ""
@@ -468,7 +468,7 @@ def test_render_never_overwrites_hand_made_clips(project_root, tmp_path):
     audio = tmp_path / "section-00.mp3"
     audio.write_bytes(b"x")
     project = operations.require_project("hand-made")
-    note = operations._write_timeline_from_render(project, [_rendered_section(audio)])
+    note = render_run._write_timeline_from_render(project, [_rendered_section(audio)])
 
     after = operations.read_artifact("hand-made", "composition")
     labels = [c["label"] for t in after["tracks"] for c in t["clips"]]
@@ -482,9 +482,9 @@ def test_a_render_generated_timeline_is_replaced_by_the_next_render(project_root
     audio = tmp_path / "section-00.mp3"
     audio.write_bytes(b"x")
 
-    operations._write_timeline_from_render(project, [_rendered_section(audio)])
+    render_run._write_timeline_from_render(project, [_rendered_section(audio)])
     first_count = operations.read_artifact("rerender", "composition")["clip_count"]
-    note = operations._write_timeline_from_render(project, [_rendered_section(audio)])
+    note = render_run._write_timeline_from_render(project, [_rendered_section(audio)])
 
     assert note == ""
     assert operations.read_artifact("rerender", "composition")["clip_count"] == first_count, \
@@ -545,7 +545,7 @@ def test_chapters_follow_the_rendered_video_not_the_plan_estimate(project_root, 
         RenderedSection("b", "Two", "Another sentence.", audio_path=audio,
                         audio_duration_ms=40_000, start_ms=92_500),
     ]
-    operations._write_timeline_from_render(project, sections)
+    render_run._write_timeline_from_render(project, sections)
 
     chapters = operations.chapters_for(project)
     assert [c.start_ms for c in chapters] == [0, 92_500], "chapters must use measured positions"
@@ -596,7 +596,7 @@ def test_transcript_times_come_from_the_render(project_root, tmp_path):
 
     audio = tmp_path / "section-00.mp3"
     audio.write_bytes(b"x")
-    operations._write_timeline_from_render(
+    render_run._write_timeline_from_render(
         operations.require_project("transcript-times"),
         [
             RenderedSection("a", "One", "Narration.", audio_path=audio,
@@ -795,3 +795,77 @@ def test_an_answer_that_does_not_fit_the_schema_keeps_the_schema_message():
     from pipeline.llm import _what_went_wrong
 
     assert _what_went_wrong(ValueError("body.sections.0.title: field required")) == ""
+
+
+# --- the shape of the core itself ---------------------------------------------------
+
+
+PIPELINE = Path(__file__).resolve().parents[1] / "src" / "pipeline"
+
+# The order the modules behind `operations` are allowed to depend in. A module may
+# import from those above it and never from those below, which is what keeps the
+# graph acyclic without anyone having to hold it in their head.
+LAYERS = [
+    "core",
+    "freshness",
+    "presentation",
+    "extraction_run",
+    "authoring",
+    "render_run",
+]
+
+
+def test_the_core_is_a_surface_not_a_file():
+    """`operations.py` reached 1,704 lines and 58 functions -- "one core" had
+    become "one file everything is in", which is the failure the module exists to
+    prevent, arrived at from the other direction. It is now the surface: imports
+    and `__all__`, with the verbs in modules beside it."""
+    source = (PIPELINE / "operations.py").read_text(encoding="utf-8")
+
+    assert "def " not in source, "operations.py defines a verb again; it is the surface"
+    assert len(source.splitlines()) < 300
+
+
+def test_every_module_behind_the_core_stays_small_enough_to_read():
+    for name in LAYERS:
+        lines = (PIPELINE / f"{name}.py").read_text(encoding="utf-8").splitlines()
+        assert len(lines) < 450, f"{name}.py is {len(lines)} lines; split it before it grows"
+
+
+def test_the_modules_behind_the_core_depend_in_one_direction():
+    """A cycle here would be invisible until an import failed at a call site far
+    away, and the usual fix -- a function-level import -- hides the cycle instead
+    of removing it."""
+    for position, name in enumerate(LAYERS):
+        source = (PIPELINE / f"{name}.py").read_text(encoding="utf-8")
+        for below in LAYERS[position + 1:]:
+            assert f"from pipeline.{below} import" not in source, (
+                f"{name}.py imports {below}.py, which is below it"
+            )
+
+
+def test_nothing_behind_the_core_imports_the_core_back():
+    """The surface re-exports the modules; a module importing the surface would
+    make the two mutually dependent and the import order load-bearing."""
+    for name in [*LAYERS, "assets", "exporting"]:
+        source = (PIPELINE / f"{name}.py").read_text(encoding="utf-8")
+        assert "from pipeline.operations import" not in source, f"{name}.py imports the surface"
+        assert "import pipeline.operations" not in source, f"{name}.py imports the surface"
+
+
+def test_the_surface_exports_everything_the_clients_import():
+    """A verb that moved module but was left out of `__all__` would break one
+    client and not the others -- exactly the drift this module prevents."""
+    from pipeline import operations
+
+    for client in ("cli.py", "mcp_server.py", "web/routes_project.py"):
+        source = (PIPELINE / client).read_text(encoding="utf-8")
+        for line in source.splitlines():
+            line = line.strip()
+            if not line.startswith("from pipeline.operations import "):
+                continue
+            wanted = line.removeprefix("from pipeline.operations import ").strip("( ")
+            for name in (part.strip().strip(",") for part in wanted.split(",")):
+                if not name or name == "(":
+                    continue
+                assert hasattr(operations, name), f"{client} imports {name}, which is not exported"

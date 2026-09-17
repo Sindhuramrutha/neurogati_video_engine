@@ -438,14 +438,29 @@ working.
 
 ## Architecture
 
-**One core, three clients.** All behaviour lives in `pipeline.operations`. The
-web app, the command line and the MCP server are thin clients of it, so a rule
-enforced in one place (validation, hand-edit protection, audits) applies to
+**One core, three clients.** All behaviour lives behind `pipeline.operations`.
+The web app, the command line and the MCP server are thin clients of it, so a
+rule enforced in one place (validation, hand-edit protection, audits) applies to
 every client.
+
+`operations.py` itself is the *surface*: imports and `__all__`, no logic. It once
+held seventeen hundred lines and fifty-eight functions, at which point "one core"
+had become "one file everything is in" — the failure it exists to prevent,
+reached from the other direction. The verbs now sit in modules beside it, in a
+strict dependency order (core → freshness → presentation → the stage verbs), and
+tests enforce both that order and that nothing imports the surface back. Clients
+still import from `pipeline.operations` and never need to know which module a
+verb lives in.
 
 ```text
 src/pipeline/
-├── operations.py        the shared core every client calls
+├── operations.py        the surface every client imports: re-exports, no logic
+│   ├── core.py          finding a project and its artifacts
+│   ├── freshness.py     whether an artifact still matches what it was built from
+│   ├── presentation.py  how an artifact is handed to a client, with its audit
+│   ├── extraction_run.py  running extraction and the settings behind it
+│   ├── authoring.py     the verbs that edit an artifact on your behalf
+│   └── render_run.py    rendering, and everything measured from the narration
 ├── web/                 Litestar app, routes, and the browser UI (static/)
 ├── cli.py               the `pipeline` command
 ├── mcp_server.py        MCP tools over the same operations

@@ -23,12 +23,14 @@ Stored at `projects/<slug>/assets/library.json`.
 from __future__ import annotations
 
 import logging
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
-from pipeline.extraction import BlockKind, Extraction
+from pipeline.core import OperationFailed, require_project
+from pipeline.extraction import BlockKind, Extraction, ExtractionStore
 from pipeline.stages import Stage
 from pipeline.storage.documents import JsonDocumentStore, new_identifier
 from pipeline.storage.layout import artifact_path
@@ -272,3 +274,57 @@ def rebuild_library(
         look = fresh.model_copy(update={"use_source_styling": look.use_source_styling})
 
     return AssetLibrary(figures=figures, look=look)
+
+
+# --- what a client calls -----------------------------------------------------
+
+
+def read_asset_library(slug: str) -> dict[str, Any]:
+    """The library as it stands, without rebuilding it."""
+    project = require_project(slug)
+    return AssetLibraryStore(project.root).load().to_dict()
+
+def refresh_asset_library(slug: str) -> dict[str, Any]:
+    """Bring the library in step with the current extraction, keeping decisions."""
+    project = require_project(slug)
+    extraction = ExtractionStore(project.root).load()
+    if not extraction.documents:
+        raise OperationFailed(
+            f"{project.name} has nothing extracted yet, so there are no pictures "
+            f"to gather. Run extraction first."
+        )
+
+    store = AssetLibraryStore(project.root)
+    rebuilt = rebuild_library(project.root, extraction, store.load())
+    rebuilt.refreshed_at = datetime.now(UTC).isoformat(timespec="seconds")
+    return store.save(rebuilt).to_dict()
+
+def decide_figure(
+    slug: str, figure_id: str, use: str, note: str | None = None
+) -> dict[str, Any]:
+    """Say whether a picture should be used, and why."""
+    if use not in {FigureUse.USE, FigureUse.SKIP, FigureUse.UNDECIDED}:
+        raise OperationFailed(
+            f"{use!r} is not a decision. Use one of: "
+            f"{FigureUse.USE}, {FigureUse.SKIP}, {FigureUse.UNDECIDED}."
+        )
+
+    project = require_project(slug)
+    store = AssetLibraryStore(project.root)
+    library = store.load()
+    figure = next((f for f in library.figures if f.id == figure_id), None)
+    if figure is None:
+        raise OperationFailed(f"This library has no picture {figure_id!r}.")
+
+    figure.use = use
+    if note is not None:
+        figure.note = note
+    return store.save(library).to_dict()
+
+def set_project_look(slug: str, use_source_styling: bool) -> dict[str, Any]:
+    """Whether the video follows the source deck's colours and fonts."""
+    project = require_project(slug)
+    store = AssetLibraryStore(project.root)
+    library = store.load()
+    library.look.use_source_styling = bool(use_source_styling)
+    return store.save(library).to_dict()

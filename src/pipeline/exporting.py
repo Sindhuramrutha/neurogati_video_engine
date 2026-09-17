@@ -21,11 +21,20 @@ Stored at `projects/<slug>/export/manifest.json`, beside the files it describes.
 from __future__ import annotations
 
 import logging
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel, Field
 
+from pipeline.composition import CompositionStore
+from pipeline.core import require_project
+from pipeline.freshness import cut_freshness
+from pipeline.planning import Plan, PlanStore
+from pipeline.presentation import section_start_times
+from pipeline.projects import Project
+from pipeline.review import CommentStatus, ReviewStore
+from pipeline.scripting import Script, ScriptStore
 from pipeline.stages import Stage
 from pipeline.storage.documents import JsonDocumentStore, write_text_atomically
 from pipeline.storage.layout import artifact_path
@@ -153,3 +162,121 @@ def write_export_files(
             bytes=path.stat().st_size, note=note,
         ))
     return written
+
+
+# --- what a client calls -----------------------------------------------------
+
+
+def _export_sections(project: Project, plan: Plan, script: Script) -> list[dict[str, Any]]:
+    starts = section_start_times(project, plan)
+    return [
+        {
+            "id": section.id,
+            "title": section.title,
+            "body": script.spoken_text(section.id),
+            "start_ms": start_ms,
+        }
+        for section, start_ms in zip(plan.sections, starts, strict=False)
+    ]
+
+def export_readiness(project: Project) -> tuple[list[str], list[str]]:
+    """What stops this project being handed over, and what merely ought to be known.
+
+    Blockers are the things that make the files wrong: no plan, no narration, no
+    render, or a cut built from a script that is no longer current. Everything
+    else is a warning, because "one comment is still open" is a judgement and
+    this stage does not get to make it.
+    """
+    plan = PlanStore(project.root).load()
+    script = ScriptStore(project.root).load()
+    review = ReviewStore(project.root).load()
+    composition = CompositionStore(project.root).load()
+
+    blockers: list[str] = []
+    warnings: list[str] = []
+
+    if not plan.sections:
+        blockers.append("The plan has no sections.")
+    unwritten = [s.title for s in plan.sections if not script.body_for(s.id).strip()]
+    if unwritten:
+        shown = ", ".join(unwritten[:3])
+        more = "..." if len(unwritten) > 3 else ""
+        blockers.append(f"{len(unwritten)} section(s) have no narration: {shown}{more}.")
+    if not review.versions:
+        blockers.append("Nothing has been rendered yet.")
+
+    blockers.extend(cut_freshness(plan, composition)["warnings"])
+
+    open_comments = [
+        comment for comment in review.comments
+        if comment.status == CommentStatus.OPEN
+    ]
+    if open_comments:
+        warnings.append(f"{len(open_comments)} review comment(s) are still open.")
+    stranded = script.audit([s.id for s in plan.sections])["orphaned_section_ids"]
+    if stranded:
+        warnings.append(
+            f"{len(stranded)} piece(s) of narration are not attached to any section."
+        )
+    return blockers, warnings
+
+def build_export(slug: str) -> dict[str, Any]:
+    """Write the transcript, chapters and description, and list what is ready.
+
+    Refuses nothing: a project with problems still gets its manifest, with the
+    problems named in it. Withholding the files would not make the video better,
+    and someone checking what is wrong needs the transcript to do it.
+    """
+    project = require_project(slug)
+    plan = PlanStore(project.root).load()
+    script = ScriptStore(project.root).load()
+    review = ReviewStore(project.root).load()
+
+    blockers, warnings = export_readiness(project)
+    sections = _export_sections(project, plan, script)
+    files = write_export_files(project.root, project.name, plan.to_dict(), sections)
+
+    version = next(
+        (v for v in review.versions if v.id == review.active_version_id),
+        review.versions[-1] if review.versions else None,
+    )
+    if version is not None:
+        video = Path(version.file_path)
+        if video.exists():
+            files.append(ExportedFile(
+                name=video.name, kind="video",
+                path=str(video.relative_to(project.root)).replace("\\", "/"),
+                bytes=video.stat().st_size,
+                note=version.label or "The rendered video.",
+            ))
+            for subtitle in sorted(video.parent.glob(video.stem + "*.vtt")):
+                files.append(ExportedFile(
+                    name=subtitle.name, kind="subtitles",
+                    path=str(subtitle.relative_to(project.root)).replace("\\", "/"),
+                    bytes=subtitle.stat().st_size,
+                    note="Subtitles, timed to the narration.",
+                ))
+        else:
+            blockers.append(f"The rendered video is missing from disk: {video.name}")
+
+    manifest = ExportManifest(
+        built_at=datetime.now(UTC).isoformat(timespec="seconds"),
+        video_version_id=version.id if version else "",
+        title=project.name,
+        duration_ms=version.duration_ms if version else 0,
+        files=files,
+        blockers=blockers,
+        warnings=warnings,
+    )
+    return ExportStore(project.root).save(manifest).to_dict()
+
+def read_export(slug: str) -> dict[str, Any]:
+    """The last export, with today's blockers rather than the ones it was built with."""
+    project = require_project(slug)
+    manifest = ExportStore(project.root).load()
+    blockers, warnings = export_readiness(project)
+    return manifest.to_dict() | {
+        "blockers_now": blockers,
+        "warnings_now": warnings,
+        "is_ready_now": not blockers,
+    }
