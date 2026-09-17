@@ -28,6 +28,12 @@ from pipeline.composition import Composition, CompositionStore
 from pipeline.config import REPO_ROOT, get_settings
 from pipeline.credentials import describe_credentials, save_credentials
 from pipeline.extraction import ExtractionStore
+from pipeline.extraction_review import (
+    acknowledge_finding,
+    read_extraction_review,
+    replace_figure,
+    review_extraction,
+)
 from pipeline.llm import describe_model
 from pipeline.operations import (
     OperationFailed,
@@ -104,6 +110,12 @@ class AgentEdit(BaseModel):
 
 class StageSettingsEdit(BaseModel):
     values: dict[str, Any]
+
+
+class ReviewRequest(BaseModel):
+    # The checks always run; the agent's reading pass is a model call, so it is
+    # asked for rather than assumed.
+    ask_agent: bool = True
 
 
 class AgentQuestion(BaseModel):
@@ -794,6 +806,64 @@ def confirm_section_narration_route(
     """Record that a section's narration still matches its plan section and source."""
     try:
         return confirm_section_narration(slug, section_id)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@post("/api/projects/{slug:str}/extraction/review")
+async def review_extraction_route(
+    slug: FromPath[str], data: ReviewRequest
+) -> dict[str, Any]:
+    """Check every extracted picture, and have the Extraction agent read the text.
+
+    Off the event loop: opening a few hundred images and one model call.
+    """
+    import anyio
+
+    try:
+        return await anyio.to_thread.run_sync(review_extraction, slug, data.ask_agent)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@get("/api/projects/{slug:str}/extraction/review", sync_to_thread=False)
+def get_extraction_review(slug: FromPath[str]) -> dict[str, Any]:
+    """The last review, with whether it is out of date."""
+    try:
+        return read_extraction_review(slug)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@post(
+    "/api/projects/{slug:str}/extraction/findings/{finding_id:str}/acknowledge",
+    sync_to_thread=False,
+)
+def acknowledge_extraction_finding(
+    slug: FromPath[str], finding_id: FromPath[str]
+) -> dict[str, Any]:
+    """Record that a finding has been looked at, so it stops being reported."""
+    try:
+        return acknowledge_finding(slug, finding_id)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@post("/api/projects/{slug:str}/extraction/figures/{block_id:str}/picture")
+async def replace_extracted_figure(
+    slug: FromPath[str],
+    block_id: FromPath[str],
+    data: Annotated[dict[str, Any], Body(media_type=RequestEncodingType.MULTI_PART)],
+) -> dict[str, Any]:
+    """Put a picture the person supplies where the extracted one should have been."""
+    uploaded = next(iter(data.values()), None)
+    if uploaded is None:
+        raise ClientException(detail="No file was sent.")
+
+    file_name = getattr(uploaded, "filename", "") or "replacement.png"
+    content = await uploaded.read()
+    try:
+        return replace_figure(slug, block_id, content, Path(file_name).suffix or ".png")
     except OperationFailed as failure:
         raise ClientException(detail=str(failure)) from failure
 

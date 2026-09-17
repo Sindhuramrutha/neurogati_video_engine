@@ -2196,3 +2196,37 @@ input:focus, textarea:focus, select:focus {
 .conversation-meta { font-size: 11px; color: var(--text-faint); font-family: var(--mono); }
 .conversation-row .btn-icon { align-self: center; padding: 5px; }
 .conversation-empty { font-size: 12px; margin: 4px 6px; }
+
+
+/* --- reviewing what extraction produced ----------------------------------- */
+
+.review-panel { background: var(--c-lime-soft); }
+.review-panel.warn { background: var(--c-yellow-soft); }
+.review-panel.bad { background: var(--c-red-soft); }
+.review-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.review-ask-agent {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 700; color: var(--text-dim);
+}
+.review-ask-agent input { width: auto; margin: 0; }
+
+.finding {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 9px 10px; margin-bottom: 8px; border-radius: 10px;
+  background: var(--surface); border: var(--edge) solid var(--line);
+}
+.finding.error { border-color: var(--bad); }
+.finding-thumb {
+  width: 54px; height: 54px; flex: none; object-fit: contain;
+  background: #FFF; border: 1.5px solid var(--line); border-radius: 8px;
+}
+.finding-thumb.empty {
+  display: flex; align-items: center; justify-content: center; color: var(--text-faint);
+}
+.finding-body { flex: 1; min-width: 0; display: grid; gap: 3px; font-size: 12.5px; }
+.finding-body b { line-height: 1.4; overflow-wrap: anywhere; }
+.finding-where { font-size: 11px; color: var(--text-faint); font-family: var(--mono); }
+.finding-suggestion { color: var(--text-dim); }
+.finding-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 5px; }
+.finding-actions .btn { padding: 5px 9px; font-size: 11.5px; }
+.upload-replacement { cursor: pointer; }

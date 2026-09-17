@@ -39,7 +39,7 @@ timing is measured from the narration audio rather than estimated.
 | Stage | What happens | Produces |
 | --- | --- | --- |
 | **Inputs** | Upload source documents: `.pdf`, `.docx`, `.pptx`, `.md`, `.txt`. Up to 512 MB per file, streamed to disk. Each file can be opened and viewed as itself: decks slide by slide, Word documents with their layout, PDFs in the browser's viewer. | `sources/` |
-| **Extraction** | Parses the sources into structured blocks: headings, paragraphs, lists, tables and figures, in document order and filed under the heading they belong to. No model is involved; it is parsing. Embedded images are saved as figures. For decks it can also capture the **slide layout** (where each title, picture and text box sits) and the **design** (slide backgrounds, theme colours and fonts). | `extraction/content.json`, `extraction/assets/` |
+| **Extraction** | Parses the sources into structured blocks: headings, paragraphs, lists, tables and figures, in document order and filed under the heading they belong to. No model is involved; it is parsing. Embedded images are saved as figures. For decks it can also capture the **slide layout** (where each title, picture and text box sits), the **background images** behind the slides, and the **styling** (theme colours and fonts). Its agent reviews what came out: every picture is opened and measured, and the agent reads the text for what the checks cannot see. | `extraction/content.json`, `extraction/assets/` |
 | **Planning** | Sections, learning objectives, audience and key themes. Each section records the extracted content it covers, how it should be shown and why, and which objectives it serves. The Planning agent drafts a plan from the whole extraction; the draft is reviewed next to your plan and accepted whole or section by section. Warns when the extraction has changed since the plan was made. | `planning/plan.json` |
 | **Scripting** | Each plan section written as **scenes**: what is said, and a brief of what is on screen while it is said. The Scripting agent drafts one section or every unwritten one at once, from that section's own source text. Beside the editor sit the section's plan details, its source text and any review comments. Flags narration written against a plan section or source that has changed since, and narration whose section the plan no longer has. `{{VARIABLES}}` are filled everywhere they are spoken or shown. | `scripting/script.json` |
 | **Studio** | A multi-track timeline with playback, seeking and clip properties. Rendering synthesises the narration, measures each section's real audio length, and cuts the picture to fit. | `studio/composition.json` |
@@ -122,12 +122,24 @@ view is the file that moves on to the next stages.
 - **Extract slide layout** records, for every slide in a deck, where each
   title, picture and text box sits -- as fractions of the slide, so it survives
   into a video of any shape -- along with font size, weight and stacking order.
-- **Extract design** records each slide's background (a colour or a picture,
-  looked up the way PowerPoint looks it up: slide, then layout, then master,
-  then the theme), plus the theme's colour scheme and its heading and body
-  fonts.
+- **Extract background images** records what is behind each slide — a picture,
+  saved like any other image, or a colour — looked up the way PowerPoint looks
+  it up: slide, then layout, then master, then the theme.
+- **Extract styling** records the theme's colour scheme, its heading and body
+  fonts, and the slide proportions.
 - **Options marked "not built yet"** are declared but not read by anything yet,
   so they are disabled. Everything else on this page works.
+- **Extraction review** is the Extraction agent checking its own output. Every
+  extracted picture is opened and measured first — missing, corrupt, blank,
+  tiny and hairline images are facts, found without a model and identically
+  every run. Then, if you leave *Have the agent read it* ticked, the agent reads
+  the extracted text for what measuring cannot see: a section that stops
+  mid-sentence, a table that lost its shape, a reference to a figure nobody
+  extracted.
+- **Each finding says where it is** and shows the picture itself. **Upload a
+  picture** puts your own image in place of a broken one — the next extraction
+  run takes it from the source document again. **It is fine** dismisses a
+  finding for good, and re-reviewing does not raise it again.
 
 **Planning.**
 
@@ -351,6 +363,7 @@ projects/<project>/
 ├── sources/                    uploaded documents, unchanged
 ├── extraction/
 │   ├── content.json            structured blocks per document
+│   ├── review.json             what the checks and the agent found wrong
 │   └── assets/                 extracted figures, stored once per image
 ├── planning/plan.json
 ├── scripting/script.json
@@ -385,6 +398,7 @@ src/pipeline/
 ├── stages.py            the six stages: order, blurbs, what each produces
 ├── sources.py           upload validation and streaming
 ├── extraction.py        document readers (pdf, docx, pptx, md, txt) and figures
+├── extraction_review.py checks on what was extracted, and the agent's reading of it
 ├── planning.py          plan model and store
 ├── scripting.py         script, scenarios, variables, length checks
 ├── composition.py       tracks and clips
@@ -480,13 +494,18 @@ This is an early working version. Things to know before relying on it:
 - **Stage agents advise and draft; they do not act.** Their declared tools are
   not executable yet. The Planning agent drafts plans (kept as a draft until you
   accept it); the Scripting agent writes narration straight into the script,
-  one section or every unwritten one, from the page or from a client.
+  one section or every unwritten one, from the page or from a client; the
+  Extraction agent reviews what was extracted and can flag it, but the only
+  repair it offers is a picture you upload.
+- **Nothing generates a picture.** A broken figure can be replaced by one you
+  supply; generating a replacement would need an image model, and none is
+  configured. The button says so rather than being hidden.
 - **A section's rendering approach is recorded but not yet used.** The renderer
   still draws every section as text slides, whatever the plan chooses.
-- **Slide layout and design are captured but not yet drawn.** Extraction records
-  where everything sits on a slide, the backgrounds, the theme colours and the
-  fonts; nothing renders from them yet, and a scene's on-screen brief is text
-  the renderer does not read either.
+- **Slide layout, backgrounds and styling are captured but not yet drawn.**
+  Extraction records where everything sits on a slide, what is behind it, the
+  theme colours and the fonts; nothing renders from them yet, and a scene's
+  on-screen brief is text the renderer does not read either.
 - **Planning does not target a duration.** The plan's lengths are whatever the
   plan says; Scripting and Reviewing warn when narration runs well over them.
 - **PDF extraction is text-only.** Figures are extracted from Word and

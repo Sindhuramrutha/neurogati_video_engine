@@ -314,6 +314,12 @@ class Extraction(BaseModel):
             "slide_background_count": sum(
                 1 for d in self.documents for s in d.slides if s.background is not None
             ),
+            # Pictures, not colours: a colour behind a slide is styling, while a
+            # background image is a picture the video can actually show.
+            "background_image_count": sum(
+                1 for d in self.documents for s in d.slides
+                if s.background is not None and s.background.asset_path
+            ),
             "themed_document_names": [
                 d.file_name for d in self.documents if d.design and d.design.theme_name
             ],
@@ -923,7 +929,8 @@ def read_pptx_design(
     assets: AssetSink | None = None,
     *,
     capture_layout: bool = True,
-    capture_design: bool = True,
+    capture_backgrounds: bool = True,
+    capture_styling: bool = True,
     store_pictures: bool = True,
 ) -> tuple[list[SlideLayout], DocumentDesign | None]:
     """How a deck is put together: where things sit, and how it is styled.
@@ -940,10 +947,14 @@ def read_pptx_design(
     slide_width = presentation.slide_width or 0
     slide_height = presentation.slide_height or 0
 
+    # The theme is read whenever either option is on: a slide that sets no
+    # background of its own has the theme's light colour behind it, so resolving
+    # a background needs the colour scheme even when the styling is not kept.
     design = None
     colours: dict[str, str] = {}
-    if capture_design:
+    if capture_styling or capture_backgrounds:
         theme_name, colours, major, minor = _deck_theme(presentation)
+    if capture_styling:
         design = DocumentDesign(
             aspect_ratio=_aspect_ratio(slide_width, slide_height),
             slide_width_emu=slide_width, slide_height_emu=slide_height,
@@ -952,7 +963,7 @@ def read_pptx_design(
         )
 
     slides: list[SlideLayout] = []
-    if not capture_layout and not capture_design:
+    if not capture_layout and not capture_backgrounds:
         return slides, design
     if not slide_width or not slide_height:
         return slides, design
@@ -989,7 +1000,7 @@ def read_pptx_design(
             layout_name=getattr(slide.slide_layout, "name", "") or "",
             shapes=shapes,
             background=(
-                _slide_background(slide, assets, colours) if capture_design else None
+                _slide_background(slide, assets, colours) if capture_backgrounds else None
             ),
         ))
 
@@ -1012,7 +1023,8 @@ def extract_document(
     keep_tables: bool = True,
     keep_figures: bool = True,
     capture_layout: bool = False,
-    capture_design: bool = False,
+    capture_backgrounds: bool = False,
+    capture_styling: bool = False,
 ) -> ExtractedDocument:
     reader = READERS_BY_SUFFIX.get(path.suffix.lower())
     if reader is None:
@@ -1056,11 +1068,13 @@ def extract_document(
 
     slides: list[SlideLayout] = []
     design: DocumentDesign | None = None
-    if reader is read_pptx and (capture_layout or capture_design):
+    if reader is read_pptx and (capture_layout or capture_backgrounds or capture_styling):
         try:
             slides, design = read_pptx_design(
                 path, assets,
-                capture_layout=capture_layout, capture_design=capture_design,
+                capture_layout=capture_layout,
+                capture_backgrounds=capture_backgrounds,
+                capture_styling=capture_styling,
                 store_pictures=keep_figures,
             )
         except Exception as design_failure:

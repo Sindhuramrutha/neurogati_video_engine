@@ -53,6 +53,10 @@ export const applicationState = {
 
   // Reviewing. Comments, chapters and version history for the cut.
   review: null,
+
+  // Whether an extraction review also asks the stage's agent to read the text.
+  // A preference, not project data: it says how you like to work.
+  reviewAsksTheAgent: true,
 };
 
 /* ---- icons -------------------------------------------------------------- */
@@ -258,6 +262,9 @@ const PROJECT_SCOPED_STATE_DEFAULTS = {
   // follow you into another project.
   agentConversationId: null,
   agentConversations: [],
+
+  // What the last extraction review found, for the panel on that page.
+  extractionReview: null,
 };
 
 /**

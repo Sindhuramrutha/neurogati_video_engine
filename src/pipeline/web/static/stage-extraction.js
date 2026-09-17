@@ -57,6 +57,18 @@ export async function renderExtractionStage(stage, navigateToStage, renderAgentS
     console.error("extraction load failed", extractionFailure);
   }
 
+  // Loaded with the page: a review of a previous run is worth showing straight
+  // away, and it is a file read rather than any work.
+  let review = null;
+  if (!extraction.is_empty) {
+    try {
+      review = await requestJsonFromApi(projectApiPath("/extraction/review"));
+    } catch (reviewFailure) {
+      console.warn("extraction review load failed", reviewFailure);
+    }
+  }
+  applicationState.extractionReview = review;
+
   const selected = includedSourceNames(sources, extraction);
   if (!applicationState.previewFileName && sources.length) {
     applicationState.previewFileName = sources[0].name;
@@ -80,6 +92,7 @@ export async function renderExtractionStage(stage, navigateToStage, renderAgentS
       <div class="workbench extraction-workbench">
         <div class="workbench-side">
           ${renderFilePanel(sources, selected, extraction)}
+          ${renderReviewPanel(review)}
           ${renderOptionsPanel(settings)}
         </div>
         ${renderPreviewPanel(sources, extraction, selected)}
@@ -391,8 +404,10 @@ function renderRunBar(selectedCount, totalCount, extraction) {
       // nothing looks exactly like one that was never switched on.
       + (extraction.audit.slide_layout_count
         ? ` - layout for ${extraction.audit.slide_layout_count} slide(s)` : "")
+      + (extraction.audit.background_image_count
+        ? ` - ${extraction.audit.background_image_count} slide background(s)` : "")
       + (extraction.audit.themed_document_names?.length
-        ? ` - ${extraction.audit.themed_document_names.length} deck design(s)` : "")
+        ? ` - styling for ${extraction.audit.themed_document_names.length} deck(s)` : "")
       + (totalCount > selectedCount ? ` - ${totalCount - selectedCount} left out` : "")
       + ` - ${extraction.total_word_count} words (~${
           extraction.estimated_narration_minutes} min narrated)`
@@ -448,6 +463,7 @@ function wireExtractionStage(stage, sources, navigateToStage, renderAgentStage) 
   };
 
   openPreviewedFile();
+  wireReviewPanel(rerender);
 
   document.querySelectorAll("[data-preview]").forEach(card => {
     card.onclick = event => {
@@ -498,6 +514,164 @@ function wireExtractionStage(stage, sources, navigateToStage, renderAgentStage) 
         persistOption(stage, optionKey, !currentValue, rerender);
       };
     }
+  });
+}
+
+
+/* ---- what the extraction got wrong ---------------------------------------
+ *
+ * Extraction fails quietly: a diagram comes out blank, a picture is a 3-pixel
+ * rule, a chapter promises "Figure 2.1" and nothing was saved. The checks find
+ * that without a model; the stage's own agent reads the text for the rest.
+ */
+
+function renderReviewPanel(review) {
+  if (!review) return "";
+
+  const open = review.findings.filter(finding => !finding.acknowledged);
+  const tone = review.error_count ? "bad" : open.length ? "warn" : "ok";
+  const headline = !review.reviewed_at
+    ? "Not reviewed yet"
+    : open.length
+      ? `${open.length} thing(s) to look at`
+      : "Nothing wrong found";
+
+  return `
+    <div class="panel review-panel ${tone}">
+      <div class="panel-head">
+        <h3>Extraction review</h3>
+        <div class="spacer"></div>
+        ${review.reviewed_at ? `<span class="plan-total">${
+          review.asked_the_agent ? "checks + agent" : "checks only"}</span>` : ""}
+      </div>
+      <p class="panel-sub">${escapeHtml(headline)}${
+        review.is_stale ? " · the extraction has changed since this review" : ""}</p>
+
+      <div class="review-actions">
+        <button class="btn btn-accent" id="review-extraction-button">
+          ${review.reviewed_at ? "Review again" : "Review extraction"}
+        </button>
+        <label class="review-ask-agent">
+          <input type="checkbox" id="review-ask-agent"
+                 ${applicationState.reviewAsksTheAgent === false ? "" : "checked"}>
+          Have the agent read it
+        </label>
+      </div>
+
+      ${review.notes?.length ? `<p class="edit-hint muted">${
+        review.notes.map(escapeHtml).join(" · ")}</p>` : ""}
+
+      ${open.map(finding => `
+        <div class="finding ${escapeHtml(finding.severity)}">
+          ${finding.asset_path ? `
+            <img class="finding-thumb" alt="" loading="lazy"
+                 src="${projectApiPath(`/extraction/assets/${
+                   encodeURIComponent(finding.asset_path.split("/").pop())}`)}">`
+            : `<span class="finding-thumb empty">${icon(ICON.alert, 16, 2)}</span>`}
+          <div class="finding-body">
+            <b>${escapeHtml(finding.what)}</b>
+            <span class="finding-where">${escapeHtml(finding.where)}${
+              finding.found_by === "agent" ? " · found by the agent" : ""}</span>
+            ${finding.suggestion
+              ? `<span class="finding-suggestion">${escapeHtml(finding.suggestion)}</span>` : ""}
+            <div class="finding-actions">
+              ${finding.block_id ? `
+                <label class="btn upload-replacement">
+                  Upload a picture
+                  <input type="file" accept="image/*" hidden
+                         data-replace-figure="${escapeHtml(finding.block_id)}">
+                </label>` : ""}
+              <button class="btn" disabled
+                      title="Generating a picture needs an image model; none is configured.">
+                Generate a picture
+              </button>
+              <button class="btn" data-acknowledge="${escapeHtml(finding.id)}">
+                It is fine
+              </button>
+            </div>
+          </div>
+        </div>`).join("")}
+
+      ${review.reviewed_at && !open.length
+        ? `<p class="edit-hint muted">Every picture opened cleanly${
+            review.asked_the_agent ? " and the agent found nothing to report" : ""}.</p>`
+        : ""}
+    </div>`;
+}
+
+async function runExtractionReview(rerender) {
+  const button = select("#review-extraction-button");
+  // Remembered, not read fresh from a checkbox the last redraw reset: someone
+  // who turned the agent off meant it for more than one run.
+  const askAgent = applicationState.reviewAsksTheAgent !== false;
+  button.disabled = true;
+  button.textContent = askAgent ? "Checking and reading…" : "Checking…";
+
+  try {
+    const review = await requestJsonFromApi(projectApiPath("/extraction/review"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ask_agent: askAgent }),
+    });
+    applicationState.extractionReview = review;
+    showStageNotice(review.error_count ? "warn" : "ok",
+      review.open_count
+        ? `${review.open_count} thing(s) to look at.`
+        : "Nothing wrong found in the extraction.");
+  } catch (reviewFailure) {
+    console.error("extraction review failed", reviewFailure);
+    showStageNotice("bad", reviewFailure.message);
+  } finally {
+    await rerender();
+  }
+}
+
+function wireReviewPanel(rerender) {
+  const askAgent = select("#review-ask-agent");
+  if (askAgent) {
+    askAgent.onchange = () => { applicationState.reviewAsksTheAgent = askAgent.checked; };
+  }
+
+  const reviewButton = select("#review-extraction-button");
+  if (reviewButton) reviewButton.onclick = () => runExtractionReview(rerender);
+
+  document.querySelectorAll("[data-acknowledge]").forEach(button => {
+    button.onclick = async () => {
+      try {
+        applicationState.extractionReview = await requestJsonFromApi(
+          projectApiPath(`/extraction/findings/${
+            encodeURIComponent(button.dataset.acknowledge)}/acknowledge`),
+          { method: "POST" });
+      } catch (acknowledgeFailure) {
+        console.error("acknowledge failed", acknowledgeFailure);
+        showStageNotice("bad", acknowledgeFailure.message);
+        return;
+      }
+      await rerender();
+    };
+  });
+
+  document.querySelectorAll("[data-replace-figure]").forEach(input => {
+    input.onchange = async () => {
+      const [chosen] = input.files ?? [];
+      if (!chosen) return;
+      const body = new FormData();
+      body.append("file", chosen, chosen.name);
+      try {
+        await requestJsonFromApi(
+          projectApiPath(`/extraction/figures/${
+            encodeURIComponent(input.dataset.replaceFigure)}/picture`),
+          { method: "POST", body });
+        showStageNotice("ok",
+          "Picture replaced. Running extraction again will take it from the source document.");
+        // The finding it fixes is only gone once the checks run again.
+        await runExtractionReview(rerender);
+      } catch (uploadFailure) {
+        console.error("figure replacement failed", uploadFailure);
+        showStageNotice("bad", uploadFailure.message);
+        await rerender();
+      }
+    };
   });
 }
 

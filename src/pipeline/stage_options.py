@@ -120,11 +120,15 @@ EXTRACTION_OPTIONS: tuple[StageOption, ...] = (
     StageOption("extract_layout", OptionKind.TOGGLE, "Extract slide layout", True,
                 "For decks: where each title, picture and text box sits on the "
                 "slide, so the video can place things the way the slide did."),
-    StageOption("extract_design", OptionKind.TOGGLE, "Extract design (background, theme, fonts)",
+    StageOption("extract_backgrounds", OptionKind.TOGGLE, "Extract background images", True,
+                "For decks: the picture or colour behind each slide, saved like "
+                "any other image — a background is a picture in its own right, "
+                "not a detail of the styling."),
+    StageOption("extract_styling", OptionKind.TOGGLE, "Extract styling (theme colours and fonts)",
                 True,
-                "For decks: slide backgrounds, the theme's colours and its fonts, "
-                "so the video can look like the deck rather than the renderer's "
-                "defaults."),
+                "For decks: the theme's colour scheme, its heading and body fonts, "
+                "and the slide proportions, so the video can look like the deck "
+                "rather than the renderer's defaults."),
     StageOption("detect_key_fields", OptionKind.TOGGLE, "Detect key fields (auto)", True,
                 "Pulls out labelled values — dates, references, totals.",
                 implemented=False),

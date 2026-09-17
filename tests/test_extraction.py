@@ -362,7 +362,10 @@ def test_only_options_that_change_a_run_are_marked_as_built():
     from pipeline.stages import Stage
 
     built = {option.key for option in options_for(Stage.EXTRACTION) if option.implemented}
-    assert built == {"extract_tables", "extract_images", "extract_layout", "extract_design"}
+    assert built == {
+        "extract_tables", "extract_images", "extract_layout",
+        "extract_backgrounds", "extract_styling",
+    }
 
     # Nothing in Planning reads its preferences yet.
     assert not [option for option in options_for(Stage.PLANNING) if option.implemented]
@@ -680,7 +683,9 @@ def test_layout_and_design_are_captured_only_when_asked(tmp_path):
     plain = extract_document(deck_path)
     assert plain.slides == [] and plain.design is None
 
-    with_layout = extract_document(deck_path, capture_layout=True, capture_design=True)
+    with_layout = extract_document(
+        deck_path, capture_layout=True,
+        capture_backgrounds=True, capture_styling=True)
     assert len(with_layout.slides) == 1 and with_layout.design is not None
     assert "layout captured for 1 slide(s)" in with_layout.extraction_note
 
@@ -692,7 +697,9 @@ def test_capturing_a_decks_layout_does_not_change_its_text(tmp_path):
     deck_path = _deck_with_a_picture(tmp_path)
 
     plain = extract_document(deck_path)
-    styled = extract_document(deck_path, capture_layout=True, capture_design=True)
+    styled = extract_document(
+        deck_path, capture_layout=True,
+        capture_backgrounds=True, capture_styling=True)
 
     assert [b.text for b in styled.blocks] == [b.text for b in plain.blocks]
 
@@ -705,7 +712,8 @@ def test_an_unreadable_deck_design_does_not_fail_the_extraction(tmp_path, monkey
 
     monkeypatch.setattr(extraction, "read_pptx_design", explode)
     document = extraction.extract_document(
-        _deck_with_a_picture(tmp_path), capture_layout=True, capture_design=True)
+        _deck_with_a_picture(tmp_path), capture_layout=True,
+        capture_backgrounds=True, capture_styling=True)
 
     assert document.blocks, "the words must still be extracted"
     assert document.slides == []
@@ -736,7 +744,7 @@ def test_layout_capture_does_not_copy_pictures_when_figures_are_off(tmp_path):
     sink = AssetSink(tmp_path / "assets")
     document = extract_document(
         _deck_with_a_picture(tmp_path), sink,
-        keep_figures=False, capture_layout=True, capture_design=True)
+        keep_figures=False, capture_layout=True, capture_backgrounds=True, capture_styling=True)
 
     picture = next(shape for shape in document.slides[0].shapes if shape.kind == "picture")
     assert picture.asset_path == "", "the geometry is layout; the file is a figure"
@@ -750,9 +758,29 @@ def test_a_design_only_run_does_not_claim_layout_was_captured(tmp_path):
     from pipeline.extraction import Extraction, extract_document
 
     document = extract_document(
-        _deck_with_a_picture(tmp_path), capture_layout=False, capture_design=True)
+        _deck_with_a_picture(tmp_path), capture_layout=False,
+        capture_backgrounds=True, capture_styling=True)
     audit = Extraction(documents=[document]).audit()
 
     assert document.slides and document.slides[0].background is not None
     assert audit["slide_layout_count"] == 0
     assert audit["slide_background_count"] == 1
+
+
+def test_backgrounds_and_styling_are_separate_switches(tmp_path):
+    """A background is a picture in its own right, not a detail of the styling:
+    someone who wants the slide images does not have to take the theme too."""
+    from pipeline.extraction import extract_document
+
+    deck_path = _deck_with_a_picture(tmp_path)
+
+    backgrounds_only = extract_document(
+        deck_path, capture_backgrounds=True, capture_styling=False)
+    assert backgrounds_only.design is None
+    assert backgrounds_only.slides[0].background.colour == "#FFFFFF", \
+        "the theme still has to be read to know what is behind a plain slide"
+
+    styling_only = extract_document(
+        deck_path, capture_backgrounds=False, capture_styling=True)
+    assert styling_only.design.theme_name
+    assert all(slide.background is None for slide in styling_only.slides)

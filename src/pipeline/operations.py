@@ -666,13 +666,15 @@ def run_extraction(slug: str) -> dict[str, Any]:
         try:
             documents.append(extract_document(
                 path,
-                # A deck's backgrounds are pictures too, so the sink is needed
-                # for the design pass even when figures themselves are off.
-                assets if (options["extract_images"] or options["extract_design"]) else None,
+                # A slide background is a picture too, so the sink is needed for
+                # that pass even when figures themselves are switched off.
+                assets if (options["extract_images"] or options["extract_backgrounds"])
+                else None,
                 keep_tables=options["extract_tables"],
                 keep_figures=options["extract_images"],
                 capture_layout=options["extract_layout"],
-                capture_design=options["extract_design"],
+                capture_backgrounds=options["extract_backgrounds"],
+                capture_styling=options["extract_styling"],
             ))
         except SourceUnreadable as failure:
             logger.warning("extraction skipped a source: %s", failure)
