@@ -1,0 +1,88 @@
+/** Studio — the timeline, its tracks and clips, and the preview. */
+
+/* The live Studio preview: the frame at the playhead, drawn from the clips
+   under it. Styled like the rendered frames so the two read as the same video. */
+.studio-stage { position: absolute; inset: 0; display: grid; place-items: center; }
+
+.track-lane { cursor: crosshair; }
+
+/* timeline */
+.timeline {
+  background: var(--surface); border: var(--edge) solid var(--line);
+  border-radius: var(--radius); padding: 12px; margin-bottom: 14px;
+}
+
+.timeline-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+
+.track-row { display: flex; align-items: stretch; gap: 8px; margin-bottom: 6px; }
+
+.track-head {
+  width: 104px; flex: none; display: flex; align-items: center; gap: 6px;
+  font-size: 11.5px; color: var(--text-dim);
+}
+
+.track-head .track-label { flex: 1; font-family: var(--mono); }
+
+.track-head button { padding: 3px; }
+
+.track-head button.off { color: var(--text-faint); opacity: .5; }
+
+.track-lane {
+  flex: 1; position: relative; height: 40px;
+  background: var(--surface-raised); border: var(--edge) solid var(--line);
+  border-radius: 7px; overflow: hidden;
+}
+
+.track-lane.locked { opacity: .55; }
+
+.clip {
+  position: absolute; top: 4px; bottom: 4px;
+  border-radius: 6px; padding: 0 8px;
+  display: flex; align-items: center; overflow: hidden;
+  font-size: 11.5px; white-space: nowrap; text-overflow: ellipsis;
+  border: 1px solid transparent; cursor: pointer;
+  background: var(--clip-bg, var(--surface-hover)); color: var(--text);
+}
+
+.clip:hover { filter: brightness(1.12); }
+
+.clip .clip-label { overflow: hidden; text-overflow: ellipsis; }
+
+.playhead {
+  position: absolute; top: 0; bottom: 0; width: 2px;
+  pointer-events: none; z-index: 5;
+}
+
+.timeline { background: var(--surface); border: var(--edge) solid var(--line);
+            border-radius: 14px; box-shadow: var(--shadow-sm); padding: 14px; }
+
+/* --- timeline ------------------------------------------------------------ */
+.track-lane { border: var(--edge) solid var(--line); background: #F2ECE2; border-radius: 9px; }
+
+.clip {
+  border: var(--edge) solid var(--line) !important;
+  border-radius: 8px; font-weight: 800; color: var(--line);
+  box-shadow: 3px 3px 0 var(--line);
+}
+
+.clip.colliding { outline: 3px solid var(--bad); outline-offset: 2px; }
+
+/*
+ * A clip whose duration is a fraction of the video is a sliver on a timeline
+ * this wide. Given a real width it can be clicked; raised above its neighbour
+ * so the clip after it does not swallow the click. Its label is dropped -- at
+ * this size it renders as one truncated character, and the tooltip carries the
+ * whole of it.
+ */
+.clip.narrow { min-width: 10px; padding: 0; z-index: 3; }
+.clip.narrow .clip-label { display: none; }
+
+.clip-label { font-weight: 800; }
+
+.playhead { width: 3px; background: var(--line); }
+
+.ruler { border-bottom: var(--edge) solid var(--line); }
+
+.track-label { font-weight: 800; }
+
+.studio-top > .panel:last-child { background: var(--c-orange-soft); }

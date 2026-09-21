@@ -2,8 +2,12 @@
 
 ## Status
 
-**Proposed — gated on a porting test.** See *Validation* below. This is the one
-decision in the set that should not be accepted on argument alone.
+**Accepted, in the routing form** — see *Validation — what happened* below. Both
+targets are built and both are used; which one draws a given scene is decided
+per scene kind by `pipeline.scene_renderers`, from probes that actually ran on
+the machine doing the rendering. The ADR's own fallback ("if simulation is
+awkward but composition is good, the answer is routing") is what the evidence
+supported, though not for the reason it expected.
 
 ## Context
 
@@ -80,9 +84,62 @@ Assess:
 If simulation is awkward but composition is good, the answer is routing — Revideo
 for the ~56%, Manim for the ~20% — not abandoning either.
 
-**This ADR stays Proposed until that test is done.** It is the same standard
+**This ADR stayed Proposed until that test was done.** It is the same standard
 applied to [Q1 and Q2](../open-questions.md#suggested-order): decide from evidence,
-not argument.
+not argument. What the evidence said is recorded below.
+
+## Validation — what happened
+
+Both backends were built out rather than one being ported to: fifteen scene
+kinds in `renderers/manim_scenes.py`, nine of them also in
+`renderers/revideo/scene.tsx`, each probed by drawing the smallest real example
+of itself and recording the result (`renderers/.self-test.json`).
+
+**Manim draws all fifteen kinds here, in 27 seconds for the whole set.** Flow,
+compare, stack, cycle, tree, graph, plot, bars, timeline, table, counter,
+formula, the source's own figure, morph, code.
+
+**Revideo needed three separate fixes before it drew a single frame**, and none
+of them reported itself:
+
+1. `renderVideo`'s default settings carry the only exporter that works without a
+   side-channel ffmpeg server. Defaults are *replaced*, not merged, so passing
+   any settings at all silently removed it.
+2. Its JSX settings come from `tsconfig.json`. Without that file esbuild used
+   the classic transform, the scene compiled to `React.createElement`, and the
+   module threw as it loaded.
+3. `initBrowserAndServer` pushes `--single-process` into Chrome's arguments
+   unconditionally, which crashes the tab on Windows. That one cannot be
+   configured away, so `renderers/revideo/render.mjs` drives vite and puppeteer
+   itself instead of calling `renderVideo`.
+
+All three surfaced as `Navigating frame was detached`, which is what puppeteer
+reports when the page dies while it is waiting. They were found by reading
+Revideo's own source, which is why it is cloned into `vendor/`.
+
+### What this changes about the decision
+
+- **The expected split did not hold.** The ADR expected Revideo for the ~56% that
+  is composition and Manim for the ~20% that is simulation. In practice Manim
+  draws every compositional kind well, and Revideo's real advantage is narrower
+  and different: it typesets with **MathJax in the page**, so a machine with no
+  TeX distribution still gets real mathematics. Manim's `MathTex` needs `latex`
+  on `PATH`; this machine has none, and most will not.
+- **"Duration is declared" is a property of how you use the tool, not of the
+  tool.** Revideo's `spring()` runs until it settles: a two-second scene came
+  out as an eleven-second clip. Both backends now use timed easing with a known
+  length, which is the same discipline the ADR credits to Revideo's model.
+- **Operating cost is the other way round.** A Manim probe takes about two
+  seconds; a Revideo probe takes about forty, because it starts a vite server
+  and a browser per clip. For a video of twenty scenes that is the difference
+  between a minute and a quarter of an hour.
+- **The reversibility argument held exactly as written.** The typed boundary is
+  `DiagramSpec`; both backends consume it, and adding the second one changed no
+  pipeline code beyond the registry.
+
+The remaining questions the ADR set — whether `<Player/>` collapses the review
+loop, and how a `physical-system` scene ports — are untouched. Neither is needed
+to decide routing, and neither is answered here.
 
 ## Consequences
 

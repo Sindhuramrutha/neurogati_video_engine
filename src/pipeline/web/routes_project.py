@@ -35,6 +35,11 @@ from pipeline.extraction_review import (
     replace_figure,
     review_extraction,
 )
+from pipeline.generation import (
+    plan_visuals,
+    read_visuals,
+    set_scene_visual,
+)
 from pipeline.llm import describe_model
 from pipeline.operations import (
     OperationFailed,
@@ -48,6 +53,7 @@ from pipeline.operations import (
     extraction_freshness,
     forget_excluded_source,
     list_voice_providers,
+    plan_from_slides,
     present_artifact,
     preview_source,
     read_asset_library,
@@ -60,6 +66,7 @@ from pipeline.operations import (
     section_source_material,
     set_excluded_sources,
     set_project_look,
+    slide_coverage,
 )
 from pipeline.orchestrator import (
     ask_the_orchestrator,
@@ -70,6 +77,7 @@ from pipeline.orchestrator import (
 from pipeline.planning import Plan, PlanStore
 from pipeline.projects import Project, ProjectStore
 from pipeline.review import Review, ReviewStore, chapters_from_plan
+from pipeline.scene_renderers import describe_scene_renderers, verify_scene_renderer
 from pipeline.scripting import Script, ScriptStore
 from pipeline.sources import (
     SourceFileRejected,
@@ -78,6 +86,7 @@ from pipeline.sources import (
 )
 from pipeline.stage_options import StageSettingsStore
 from pipeline.stages import STAGES, Stage, downstream_of
+from pipeline.visual_build import build_visuals
 
 AGENTS_DIR = REPO_ROOT / "agents"
 
@@ -134,6 +143,17 @@ class FigureDecision(BaseModel):
 
 class LookChoice(BaseModel):
     use_source_styling: bool = False
+
+
+class BuildRequest(BaseModel):
+    # False builds only what is missing or stale, which is what a second press
+    # of the button should do.
+    rebuild: bool = False
+
+
+class VisualChoice(BaseModel):
+    kind: str | None = None
+    motion: str | None = None
 
 
 class ReviewRequest(BaseModel):
@@ -713,6 +733,28 @@ def discard_plan_draft_route(slug: FromPath[str]) -> dict[str, Any]:
         raise ClientException(detail=str(failure)) from failure
 
 
+@post("/api/projects/{slug:str}/plan/from-slides", sync_to_thread=False)
+def build_plan_from_slides(slug: FromPath[str]) -> dict[str, Any]:
+    """Replace the plan with one section per slide, in the deck's order.
+
+    Destructive and deliberately so: its whole purpose is to impose the deck's
+    order rather than negotiate with whatever sectioning was there.
+    """
+    try:
+        return plan_from_slides(slug)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@get("/api/projects/{slug:str}/plan/slide-coverage", sync_to_thread=False)
+def get_slide_coverage(slug: FromPath[str]) -> dict[str, Any]:
+    """Whether the video still follows the deck: every slide, in order."""
+    try:
+        return slide_coverage(slug)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
 @post("/api/projects/{slug:str}/plan/confirm-extraction", sync_to_thread=False)
 def confirm_plan_route(slug: FromPath[str]) -> dict[str, Any]:
     """Record that the plan was checked against the current extraction."""
@@ -1007,6 +1049,119 @@ def download_export_file(slug: FromPath[str], file_name: FromPath[str]) -> Respo
     )
 
 
+@get("/api/projects/{slug:str}/visuals", sync_to_thread=False)
+def get_scene_visuals(slug: FromPath[str]) -> dict[str, Any]:
+    """What each scene shows, and which scenes were rewritten since."""
+    try:
+        return read_visuals(slug)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@post("/api/projects/{slug:str}/visuals/plan", sync_to_thread=False)
+def plan_scene_visuals(slug: FromPath[str]) -> dict[str, Any]:
+    """Decide what every scene shows. Calls no model and produces no picture."""
+    try:
+        return plan_visuals(slug)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@post("/api/projects/{slug:str}/visuals/build")
+async def build_scene_visuals(slug: FromPath[str], data: BuildRequest) -> dict[str, Any]:
+    """Make the pictures: draw the charts, and ask the image model for the rest.
+
+    Off the event loop: one image call per scene that needs one.
+    """
+    import anyio
+
+    try:
+        return await anyio.to_thread.run_sync(build_visuals, slug, data.rebuild)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@post("/api/projects/{slug:str}/visuals/{visual_id:str}", sync_to_thread=False)
+def change_scene_visual(
+    slug: FromPath[str], visual_id: FromPath[str], data: VisualChoice
+) -> dict[str, Any]:
+    """Change what one scene shows, or how the camera moves over it."""
+    try:
+        return set_scene_visual(slug, visual_id, data.kind, data.motion)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@get("/api/projects/{slug:str}/visuals/slides/{file_name:str}", sync_to_thread=False)
+def read_composed_slide(
+    slug: FromPath[str], file_name: FromPath[str],
+    projects: NamedDependency[ProjectService],
+) -> Response:
+    """A slide of a source deck, composed as a frame.
+
+    Its own route because it is its own folder: these are drawn from the deck
+    rather than made by the image model, and serving both from one path would
+    mean a request could not say which it meant. The name is reduced to a bare
+    file name first, so a crafted request cannot walk out of the folder.
+    """
+    project = projects.require(slug)
+    path = project.root / "generation" / "slides" / reduce_to_bare_file_name(file_name)
+    if not path.is_file():
+        raise NotFoundException(detail=f"no composed slide named {file_name}")
+    return Response(
+        content=path.read_bytes(),
+        media_type=MEDIA_TYPES_BY_SUFFIX.get(path.suffix.lower(), "image/png"),
+    )
+
+
+@get("/api/projects/{slug:str}/visuals/assets/{file_name:str}", sync_to_thread=False)
+def read_generated_asset(
+    slug: FromPath[str], file_name: FromPath[str],
+    projects: NamedDependency[ProjectService],
+) -> Response:
+    """A picture this stage made, by name.
+
+    Its own route rather than the extraction's: these files were produced here,
+    and serving both from one path would mean a request could not say which it
+    meant. The name is reduced to a bare file name first, so a crafted request
+    cannot walk out of the folder.
+    """
+    project = projects.require(slug)
+    path = project.root / "generation" / "assets" / reduce_to_bare_file_name(file_name)
+    if not path.is_file():
+        raise NotFoundException(detail=f"no generated picture named {file_name}")
+    return Response(
+        content=path.read_bytes(),
+        media_type=MEDIA_TYPES_BY_SUFFIX.get(path.suffix.lower(), "image/png"),
+    )
+
+
+@get("/api/scene-renderers", sync_to_thread=False)
+def get_scene_renderers() -> dict[str, Any]:
+    """Every scene renderer, with whether it is installed and whether it works.
+
+    Installed and working are different questions, and only the second one
+    matters: a renderer whose dependencies are all present can still fail on
+    this machine, and a page that showed it as available would be promising
+    animation that never arrives.
+    """
+    return describe_scene_renderers()
+
+
+@post("/api/scene-renderers/{key:str}/verify")
+async def verify_renderer(key: FromPath[str]) -> dict[str, Any]:
+    """Ask a renderer to draw a two-node diagram, and remember what happened.
+
+    Off the event loop: it starts a real renderer and waits for a real clip.
+    """
+    import anyio
+
+    try:
+        return await anyio.to_thread.run_sync(verify_scene_renderer, key)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
 @get("/api/voices", sync_to_thread=False)
 def get_voice_providers() -> dict[str, Any]:
     """Every text-to-speech provider, with whether it is usable right now."""
@@ -1176,6 +1331,36 @@ async def read_extracted_asset(
 
     if not candidate.is_file() or assets_directory not in candidate.parents:
         raise NotFoundException(detail=f"no such extracted asset: {file_name}")
+
+    return media_response(candidate, request, {
+        "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; sandbox",
+        "x-content-type-options": "nosniff",
+    })
+
+
+@get("/api/projects/{slug:str}/assets/prepared/{file_name:str}")
+async def read_prepared_asset(
+    slug: FromPath[str],
+    file_name: FromPath[str],
+    request: Request,
+    projects: NamedDependency[ProjectService],
+) -> Response:
+    """Serve the trimmed copy of a source figure.
+
+    Its own route because it is its own file. The library trims the slide
+    background off each figure and keeps the result beside the original, and
+    that copy is what the video draws -- so it is also what a thumbnail has to
+    show, or the page displays a picture the render will not use.
+
+    Same headers as an extracted asset, for the same reason: these bytes came
+    out of somebody's document.
+    """
+    project = projects.require(slug)
+    prepared_directory = (project.root / "assets" / "prepared").resolve()
+    candidate = (prepared_directory / reduce_to_bare_file_name(file_name)).resolve()
+
+    if not candidate.is_file() or prepared_directory not in candidate.parents:
+        raise NotFoundException(detail=f"no such prepared asset: {file_name}")
 
     return media_response(candidate, request, {
         "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; sandbox",

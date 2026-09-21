@@ -18,6 +18,7 @@ import {
 import { renderAssetsStage } from "/static/stage-assets.js";
 import { renderExportStage } from "/static/stage-export.js";
 import { renderExtractionStage } from "/static/stage-extraction.js";
+import { renderGenerationStage } from "/static/stage-generation.js";
 import { renderScenePlanStage } from "/static/stage-scene-plan.js";
 import { renderScriptStagingStage } from "/static/stage-script-staging.js";
 import { renderReviewingStage } from "/static/stage-reviewing.js";
@@ -188,12 +189,7 @@ function renderSidebar() {
       </button>`;
   }).join("");
 
-  select("#sidebar").innerHTML = navigationItems + `
-    <div class="help-card">
-      <h4>${icon(`<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>`, 15)}
-        Need help?</h4>
-      <p>Each stage is run by an agent whose instructions you can read and edit.</p>
-    </div>`;
+  select("#sidebar").innerHTML = navigationItems;
 
   document.querySelectorAll(".nav-item").forEach(item => {
     item.onclick = () => navigateToStage(item.dataset.stage);
@@ -231,6 +227,7 @@ function renderMain() {
     assets: () => renderAssetsStage(stage, navigateToStage, renderAgentStage),
     "scene-plan": () => renderScenePlanStage(stage, navigateToStage, renderAgentStage),
     "script-staging": () => renderScriptStagingStage(stage, navigateToStage, renderAgentStage),
+    generation: () => renderGenerationStage(stage, navigateToStage, renderAgentStage),
     studio: () => renderStudioStage(stage, navigateToStage, renderAgentStage),
     reviewing: () => renderReviewingStage(stage, navigateToStage, renderAgentStage),
     export: () => renderExportStage(stage, navigateToStage, renderAgentStage),

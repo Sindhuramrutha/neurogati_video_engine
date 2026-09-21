@@ -149,7 +149,6 @@ SCENE_PLAN_OPTIONS: tuple[StageOption, ...] = (
             OptionChoice("7-10", "7-10 minutes", "A chapter with room for an example."),
             OptionChoice("12-18", "12-18 minutes", "A full module. Expect 8-12 sections."),
         ),
-        implemented=False,
     ),
     StageOption(
         key="tone",
@@ -164,7 +163,6 @@ SCENE_PLAN_OPTIONS: tuple[StageOption, ...] = (
             OptionChoice("academic", "Academic",
                          "Formal, careful with qualifiers, heavier on terminology."),
         ),
-        implemented=False,
     ),
     StageOption(
         key="language",
@@ -176,7 +174,6 @@ SCENE_PLAN_OPTIONS: tuple[StageOption, ...] = (
             OptionChoice("hi", "Hindi", "Narration voice availability varies by language."),
             OptionChoice("te", "Telugu", "Narration voice availability varies by language."),
         ),
-        implemented=False,
     ),
 )
 
@@ -255,3 +252,104 @@ class StageSettingsStore:
             self._path_for(stage), json.dumps(coerced_values, indent=2))
 
         return StageSettings(stage=stage, values=coerced_values)
+
+
+# --- what the Scene Plan's preferences actually mean ---------------------------------
+
+# The spoken length each choice is asking for, as (shortest, longest) seconds.
+# A range rather than a number: "about eight minutes" is the real intent, and a
+# plan that lands at 7:40 has not missed.
+TARGET_DURATIONS: dict[str, tuple[int, int]] = {
+    "3-5": (180, 300),
+    "7-10": (420, 600),
+    "12-18": (720, 1080),
+}
+
+# What a tone means, written as an instruction rather than an adjective: an agent
+# told "conversational" guesses, and told "use the second person" does not.
+TONE_GUIDANCE: dict[str, str] = {
+    "professional": (
+        "Measured and precise. Full sentences, no filler, no exclamation marks. "
+        "Assume the viewer is here to learn and does not need warming up."
+    ),
+    "conversational": (
+        "Warm and direct, without losing rigour. Address the viewer as \"you\", "
+        "use short sentences and contractions, and let one idea lead into the "
+        "next. Never chatty for its own sake: no jokes, no filler openers."
+    ),
+    "academic": (
+        "Formal and careful. Keep the field's terminology and define it on first "
+        "use, qualify claims the source qualifies, and prefer the passive where "
+        "the source uses it. Do not simplify away precision."
+    ),
+}
+
+# Each language, and the voice each provider has for it. A language with no voice
+# is still a language: the narration is written in it and the render says plainly
+# that it could not be spoken.
+LANGUAGES: dict[str, dict[str, str]] = {
+    "en": {"name": "English", "edge": "en-US-AriaNeural", "openai": "alloy"},
+    "hi": {"name": "Hindi", "edge": "hi-IN-SwaraNeural"},
+    "te": {"name": "Telugu", "edge": "te-IN-ShrutiNeural"},
+}
+
+
+@dataclass(frozen=True)
+class VideoPreferences:
+    """The Scene Plan's three choices, resolved into what each stage needs.
+
+    Read together because they are decided together and each is used by more
+    than one stage: the duration steers drafting and is checked against the
+    finished plan, the tone reaches the narration, and the language reaches both
+    the narration and the voice that speaks it.
+    """
+
+    target_duration: str
+    tone: str
+    language: str
+
+    @property
+    def target_seconds(self) -> tuple[int, int]:
+        return TARGET_DURATIONS.get(self.target_duration, TARGET_DURATIONS["7-10"])
+
+    @property
+    def target_phrase(self) -> str:
+        shortest, longest = self.target_seconds
+        return f"{shortest // 60} to {longest // 60} minutes"
+
+    @property
+    def tone_sentence(self) -> str:
+        return TONE_GUIDANCE.get(self.tone, TONE_GUIDANCE["professional"])
+
+    @property
+    def language_name(self) -> str:
+        return LANGUAGES.get(self.language, LANGUAGES["en"])["name"]
+
+    def voice_for(self, provider_key: str) -> str:
+        """The provider's voice for this language, or empty if it has none."""
+        return LANGUAGES.get(self.language, {}).get(provider_key, "")
+
+    def to_dict(self) -> dict[str, Any]:
+        shortest, longest = self.target_seconds
+        return {
+            "target_duration": self.target_duration,
+            "target_seconds": [shortest, longest],
+            "target_phrase": self.target_phrase,
+            "tone": self.tone,
+            "language": self.language,
+            "language_name": self.language_name,
+        }
+
+
+def video_preferences(project_root: Path) -> VideoPreferences:
+    """The preferences saved for this project, with every value coerced.
+
+    Read from the same settings file the page writes, so there is no second
+    place a preference can be stored and no chance of the two disagreeing.
+    """
+    saved = StageSettingsStore(project_root).load(Stage.SCENE_PLAN).values
+    return VideoPreferences(
+        target_duration=str(saved.get("target_duration", "7-10")),
+        tone=str(saved.get("tone", "professional")),
+        language=str(saved.get("language", "en")),
+    )

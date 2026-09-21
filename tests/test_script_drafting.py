@@ -424,7 +424,9 @@ def test_the_script_carries_each_sections_plan_details(project_root):
     first = script["plan_sections"][0]
 
     assert first["rendering_approach"] == "plot"
-    assert first["sources"] == [{"file_name": "chapter.docx", "heading_path": ["Signals"]}]
+    assert first["sources"] == [
+        {"file_name": "chapter.docx", "heading_path": ["Signals"], "slide_number": 0},
+    ]
     assert first["objective_ids"] == [script["plan_objectives"][0]["id"]]
     assert script["selected_audience"] == "Students new to the topic"
 

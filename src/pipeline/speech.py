@@ -236,11 +236,76 @@ def resolve_provider(provider_key: str) -> VoiceProvider:
 
 
 @dataclass(frozen=True)
+class WordTiming:
+    """When one word is spoken, from the voice itself.
+
+    Not an estimate. A provider that reports word boundaries is telling the
+    renderer exactly where every word lands in the file it just produced, which
+    is the difference between a slide that changes on a word and one that
+    changes on a share of the characters.
+    """
+
+    text: str
+    start_ms: int
+    duration_ms: int
+
+    @property
+    def end_ms(self) -> int:
+        return self.start_ms + self.duration_ms
+
+    def to_dict(self) -> dict:
+        return {"text": self.text, "start_ms": self.start_ms,
+                "duration_ms": self.duration_ms}
+
+
+@dataclass(frozen=True)
 class SpeechResult:
     audio_path: Path
     duration_ms: int
     provider_key: str
     voice: str
+
+    # Empty for every provider that does not report them, which is most of
+    # them; the renderer falls back to splitting by text length.
+    words: tuple[WordTiming, ...] = ()
+
+
+def word_timings_path(audio_path: Path) -> Path:
+    return audio_path.with_suffix(audio_path.suffix + ".words.json")
+
+
+def save_word_timings(audio_path: Path, words: tuple[WordTiming, ...]) -> None:
+    """Keep the timings beside the audio they describe.
+
+    Beside it rather than in the render result because the audio outlives the
+    render: a later cut, or the Studio timeline, can read where the words fell
+    without paying for the voice again.
+    """
+    if not words:
+        return
+    import json
+
+    word_timings_path(audio_path).write_text(
+        json.dumps([word.to_dict() for word in words]), encoding="utf-8")
+
+
+def load_word_timings(audio_path: Path) -> tuple[WordTiming, ...]:
+    import json
+
+    path = word_timings_path(audio_path)
+    if not path.exists():
+        return ()
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as unreadable:
+        logger.warning("word timings for %s could not be read: %s", audio_path.name, unreadable)
+        return ()
+    return tuple(
+        WordTiming(text=str(entry.get("text", "")),
+                   start_ms=int(entry.get("start_ms", 0)),
+                   duration_ms=int(entry.get("duration_ms", 0)))
+        for entry in raw if isinstance(entry, dict)
+    )
 
 
 def _write_silence(output_path: Path, duration_ms: int) -> None:
@@ -301,16 +366,44 @@ def _speak_silent(text: str, output_path: Path, voice: str) -> None:
     _write_silence(output_path, estimate_duration_ms(text))
 
 
-def _speak_edge(text: str, output_path: Path, voice: str) -> None:
+def _speak_edge(text: str, output_path: Path, voice: str) -> list[WordTiming]:
+    """edge-tts, streamed rather than saved, to keep the word boundaries.
+
+    `Communicate.save` writes the audio and throws the `WordBoundary` events
+    away. Streaming costs nothing extra -- the events arrive on the same
+    connection as the audio -- and they are the only exact timing anything in
+    this pipeline has ever had.
+    """
     import asyncio
 
     import edge_tts
 
+    words: list[WordTiming] = []
+
     async def run() -> None:
-        communicate = edge_tts.Communicate(text, voice or "en-US-AriaNeural")
-        await communicate.save(str(output_path))
+        # Asked for explicitly: the default is sentence boundaries, which are
+        # too coarse to put a label on the word it names. An older edge-tts
+        # without the argument still speaks; it just reports nothing.
+        try:
+            communicate = edge_tts.Communicate(
+                text, voice or "en-US-AriaNeural", boundary="WordBoundary")
+        except TypeError:
+            communicate = edge_tts.Communicate(text, voice or "en-US-AriaNeural")
+        with open(output_path, "wb") as handle:
+            async for chunk in communicate.stream():
+                if chunk["type"] == "audio":
+                    handle.write(chunk["data"])
+                elif chunk["type"] == "WordBoundary":
+                    # Reported in 100-nanosecond ticks, the way Windows speech
+                    # has always counted.
+                    words.append(WordTiming(
+                        text=str(chunk.get("text", "")),
+                        start_ms=int(chunk["offset"]) // 10_000,
+                        duration_ms=int(chunk["duration"]) // 10_000,
+                    ))
 
     asyncio.run(run())
+    return words
 
 
 def _speak_kokoro(text: str, output_path: Path, voice: str) -> None:
@@ -435,7 +528,7 @@ def synthesise_narration(
     backend = BACKENDS[provider.key]
 
     try:
-        backend(text, output_path, voice or provider.default_voice)
+        spoken_words = backend(text, output_path, voice or provider.default_voice) or ()
     except SpeechFailed:
         raise
     except Exception as synthesis_failure:
@@ -447,9 +540,12 @@ def synthesise_narration(
     if not output_path.exists() or output_path.stat().st_size == 0:
         raise SpeechFailed(f"{provider.label} produced no audio file.")
 
+    words = tuple(spoken_words)
+    save_word_timings(output_path, words)
     return SpeechResult(
         audio_path=output_path,
         duration_ms=measure_audio_duration_ms(output_path),
         provider_key=provider.key,
         voice=voice or provider.default_voice,
+        words=words,
     )

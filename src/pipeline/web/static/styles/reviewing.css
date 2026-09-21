@@ -1,0 +1,23 @@
+/** Reviewing — the player, chapters, comments and versions. */
+
+.comment-form { display: grid; gap: 8px; margin-bottom: 14px; }
+
+.comment-form textarea {
+  width: 100%; min-height: 62px; background: var(--surface-raised); color: var(--text);
+  border: var(--edge) solid var(--line); border-radius: 9px; padding: 9px 11px;
+  font-size: 13px; resize: vertical;
+}
+
+.comment-form .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+.comment-form input, .comment-form select {
+  background: var(--surface-raised); color: var(--text);
+  border: var(--edge) solid var(--line); border-radius: 8px; padding: 6px 9px; font-size: 12.5px;
+}
+
+.stage-chip.unrouted { background: var(--warn); }
+
+.stage-chip.unrouted { background: var(--warn); border-color: var(--line); }
+
+.avatar { background: var(--row, var(--c-purple)); border: var(--edge) solid var(--line);
+          color: var(--line); font-weight: 800; }

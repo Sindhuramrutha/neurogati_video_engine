@@ -44,7 +44,7 @@ MAXIMUM_REASONABLE_SECTION_SECONDS = 600
 
 
 class RenderingApproach(StrEnum):
-    """How a section should be shown. The same five choices the Planning agent's
+    """How a section should be shown. The same choices the Scene Plan agent's
     instructions describe, so what it is told to choose and what it can record
     are the same list."""
 
@@ -53,6 +53,13 @@ class RenderingApproach(StrEnum):
     SIMULATION = "simulation"
     CODE = "code"
     STILL = "still"
+
+    # The source's own slide, drawn as the deck drew it. Not one of the original
+    # five: those all describe something the pipeline *composes*, and this one
+    # describes showing what somebody already designed. A deck-driven plan uses
+    # it for every section, and it is what stops a designed slide being
+    # re-typeset into the renderer's template.
+    SLIDE = "slide"
 
 
 class SourceReference(BaseModel):
@@ -66,9 +73,16 @@ class SourceReference(BaseModel):
     file_name: str = ""
     heading_path: list[str] = Field(default_factory=list)
 
+    # The slide this section is about, 1-based, when the source is a deck. A
+    # heading path alone cannot say: for a deck it is just the slide's title, so
+    # two slides titled the same are one location. The number is what lets a
+    # video follow the deck's own order and cover every slide.
+    slide_number: int = 0
+
     @property
     def label(self) -> str:
-        return " › ".join([self.file_name, *self.heading_path])
+        named = " › ".join([self.file_name, *self.heading_path])
+        return f"{named} (slide {self.slide_number})" if self.slide_number else named
 
 
 class PlanSection(BaseModel):

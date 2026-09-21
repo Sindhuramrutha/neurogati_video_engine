@@ -27,6 +27,7 @@ class Stage(StrEnum):
     ASSETS = "assets"
     SCENE_PLAN = "scene-plan"
     SCRIPT_STAGING = "script-staging"
+    GENERATION = "generation"
     STUDIO = "studio"
     REVIEWING = "reviewing"
     EXPORT = "export"
@@ -108,6 +109,16 @@ STAGES: tuple[StageSpec, ...] = (
         has_agent=True,
         produces="script-staging/script.json",
         color="#A3E635",
+    ),
+    StageSpec(
+        Stage.GENERATION,
+        "Generation",
+        "Make what each scene shows: the author's own figures, a chart of the "
+        "source's numbers, or a picture drawn for the brief — and how the camera "
+        "moves over it.",
+        has_agent=True,
+        produces="generation/visuals.json",
+        color="#38D89B",
     ),
     StageSpec(
         Stage.STUDIO,

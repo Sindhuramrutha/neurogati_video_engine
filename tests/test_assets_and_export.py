@@ -9,7 +9,7 @@ can be stopped had no checks on it at all.
 import io
 
 import pytest
-from PIL import Image
+from PIL import Image, ImageDraw
 
 from pipeline import operations
 from pipeline.assets import AssetLibraryStore, FigureUse
@@ -40,9 +40,19 @@ def project_root(tmp_path, monkeypatch):
     get_settings.cache_clear()
 
 
-def picture_bytes(colour="blue", size=(200, 150)):
+def picture_bytes(colour="blue", size=(480, 360)):
+    """Something shaped like a figure: content inside a margin.
+
+    Not a flat block with one stray pixel. The library now opens each picture,
+    trims its border and says what is in it, and a flat block is a divider rule.
+    """
     image = Image.new("RGB", size, colour)
-    image.putpixel((0, 0), (0, 0, 0))
+    draw = ImageDraw.Draw(image)
+    inset = (max(1, size[0] // 8), max(1, size[1] // 8))
+    draw.rectangle([inset, (size[0] - inset[0], size[1] - inset[1])],
+                   outline=(0, 0, 0), width=max(1, size[0] // 80))
+    draw.line([inset, (size[0] - inset[0], size[1] - inset[1])],
+              fill=(255, 255, 255), width=2)
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
     return buffer.getvalue()
@@ -341,3 +351,207 @@ def test_the_library_and_the_export_are_separate_artifacts(project_root):
 
     assert project_with.document_path.name == "library.json"
     assert ExportStore(project.root).document_path.name == "manifest.json"
+
+
+# --- the video is made of the source material -----------------------------------------
+
+
+def _figure_block(caption, heading_path, asset_path, origin="source"):
+    return ContentBlock(kind=BlockKind.FIGURE, text=caption, heading_path=list(heading_path),
+                        asset_path=asset_path, asset_origin=origin)
+
+
+def project_with_sourced_sections(project_root):
+    """Two plan sections, each pointing at its own heading, each with a figure."""
+    from pipeline.planning import SourceReference
+
+    slug = operations.create_project("Illustrated")["slug"]
+    project = operations.require_project(slug)
+    (project.root / "extraction" / "assets").mkdir(parents=True, exist_ok=True)
+    for name, colour in (("one.png", "blue"), ("two.png", "green"), ("loose.png", "red")):
+        (project.root / "extraction" / "assets" / name).write_bytes(picture_bytes(colour))
+
+    ExtractionStore(project.root).save(Extraction(documents=[ExtractedDocument(
+        file_name="chapter.docx",
+        blocks=[
+            ContentBlock(kind=BlockKind.HEADING, text="Signals", heading_path=["Signals"]),
+            _figure_block("Figure 1", ["Signals"], "extraction/assets/one.png"),
+            ContentBlock(kind=BlockKind.HEADING, text="Electrodes", heading_path=["Electrodes"]),
+            _figure_block("Figure 2", ["Electrodes"], "extraction/assets/two.png"),
+            ContentBlock(kind=BlockKind.HEADING, text="Appendix", heading_path=["Appendix"]),
+            _figure_block("Figure 3", ["Appendix"], "extraction/assets/loose.png"),
+        ],
+    )], extracted_at="2026-09-17T00:00:00+00:00"))
+
+    PlanStore(project.root).save(Plan(sections=[
+        PlanSection(id="s1", title="Signals", estimated_seconds=30,
+                    sources=[SourceReference(file_name="chapter.docx", heading_path=["Signals"])]),
+        PlanSection(id="s2", title="Electrodes", estimated_seconds=30,
+                    sources=[SourceReference(file_name="chapter.docx",
+                                             heading_path=["Electrodes"])]),
+    ]))
+    return slug, project
+
+
+def test_a_section_shows_the_pictures_from_its_own_source(project_root):
+    """The whole point: a diagram appears beside the words it belongs to. Before
+    this, sixty-three extracted pictures sat on disk and the video was text."""
+    from pipeline.render_run import pictures_for_sections
+
+    slug, project = project_with_sourced_sections(project_root)
+    chosen = pictures_for_sections(project, operations.read_artifact(slug, "plan"))
+
+    assert [p.name for p in chosen["s1"]] == ["one.png"]
+    assert [p.name for p in chosen["s2"]] == ["two.png"]
+    assert all("loose.png" not in [p.name for p in pictures] for pictures in chosen.values()), \
+        "a figure under a heading no section covers belongs to no section"
+
+
+def test_skipping_a_picture_in_the_library_keeps_it_out_of_the_video(project_root):
+    from pipeline.render_run import pictures_for_sections
+
+    slug, project = project_with_sourced_sections(project_root)
+    operations.refresh_asset_library(slug)
+    first = next(f for f in operations.read_asset_library(slug)["figures"]
+                 if f["asset_path"].endswith("one.png"))
+    operations.decide_figure(slug, first["id"], FigureUse.SKIP)
+
+    chosen = pictures_for_sections(project, operations.read_artifact(slug, "plan"))
+
+    assert chosen["s1"] == []
+    # Its trimmed copy, not the file as the deck stored it: the margin around a
+    # figure is not part of the figure, and drawing it wastes the frame.
+    assert [p.stem.split("-")[0] for p in chosen["s2"]] == ["two"]
+
+
+def test_a_trimmed_figure_is_what_the_video_actually_draws(project_root):
+    """A deck's figure comes out with the slide background around it. Until the
+    library opened one, that margin went on the frame at full size."""
+    from pipeline.render_run import pictures_for_sections
+
+    slug, project = project_with_sourced_sections(project_root)
+    library = operations.refresh_asset_library(slug)
+
+    trimmed = next(f for f in library["figures"] if f["asset_path"].endswith("two.png"))
+    assert trimmed["prepared_path"], "a picture with a margin should have a trimmed copy"
+    assert trimmed["trimmed_fraction"] > 0.1
+    assert trimmed["width"] == 480, "the stored size is still what the deck held"
+    assert trimmed["prepared_width"] < trimmed["width"]
+    assert (project.root / trimmed["prepared_path"]).exists()
+
+    chosen = pictures_for_sections(project, operations.read_artifact(slug, "plan"))
+    assert chosen["s2"] == [project.root / trimmed["prepared_path"]]
+
+
+def test_a_picture_with_nothing_in_it_is_not_proposed_for_the_video(project_root):
+    """A divider rule is one flat tone from edge to edge. It was offered as a
+    figure because nothing had ever opened it."""
+    slug, project = project_with_pictures("Rules", [("Figure 1", (400, 300), "source")])
+    flat = project.root / "extraction" / "assets" / "pic0.png"
+    Image.new("RGB", (400, 300), (210, 210, 210)).save(flat)
+
+    library = operations.refresh_asset_library(slug)
+    figure = library["figures"][0]
+
+    assert "blank" in figure["flags"]
+    assert figure["is_unfit"] and figure["why_unfit"]
+    assert library["audit"]["unfit_count"] == 1
+    assert any("unfit to show" in warning for warning in library["warnings"])
+
+    # Still choosable: the measurement is a default, not a veto.
+    operations.decide_figure(slug, figure["id"], FigureUse.USE)
+    from pipeline.assets import AssetLibraryStore
+
+    assert len(AssetLibraryStore(project.root).load().usable()) == 1
+
+
+def test_the_video_keeps_the_app_look_until_the_project_asks_for_the_deck_s(project_root):
+    from pipeline.render_run import render_style_for
+    from pipeline.rendering import DEFAULT_STYLE
+
+    slug, project = project_with_sourced_sections(project_root)
+    extraction = ExtractionStore(project.root).load()
+    extraction.documents[0].design = DocumentDesign(
+        aspect_ratio="16:9", theme_name="Office Theme",
+        colours={"lt1": "#FFFFFF", "accent1": "#4472C4"},
+        major_font="Calibri Light", minor_font="Calibri")
+    ExtractionStore(project.root).save(extraction)
+    operations.refresh_asset_library(slug)
+
+    assert render_style_for(project) is DEFAULT_STYLE
+
+    operations.set_project_look(slug, True)
+    style = render_style_for(project)
+
+    assert style.background_colour == (255, 255, 255)
+    assert style.accent_colour == (68, 114, 196)
+    assert style.heading_font == "Calibri Light"
+    assert style.is_light and style.text_colour != DEFAULT_STYLE.text_colour, \
+        "text has to darken on a white deck or the video is unreadable"
+
+
+def test_a_frame_actually_contains_the_picture(project_root):
+    """Not "was passed a path" -- drawn. The pixels are the deliverable."""
+    from pipeline.rendering import RenderStyle, _draw_frame
+
+    picture = project_root / "diagram.png"
+    picture.write_bytes(picture_bytes("blue", size=(400, 300)))
+    style = RenderStyle(background_colour=(255, 255, 255))
+
+    with_picture = _draw_frame("What a neuron does", ["threshold", "weights"],
+                               "Signals", "Section 1", style, picture=picture)
+    without = _draw_frame("What a neuron does", ["threshold", "weights"],
+                          "Signals", "Section 1", style)
+
+    blues = sum(1 for pixel in with_picture.getdata() if pixel[2] > 200 > pixel[0])
+    assert blues > 50_000, f"the picture is not on the frame ({blues} of its pixels)"
+    assert with_picture.tobytes() != without.tobytes()
+
+
+def test_a_frame_draws_the_headline_and_its_labels_not_the_narration(project_root):
+    """The words are being spoken. Printing them as well is what made this read
+    as slides with a voice over them."""
+    from pipeline.rendering import (
+        RenderStyle,
+        _draw_frame,
+        _draw_point_layer,
+        _words_layout,
+    )
+
+    style = RenderStyle(background_colour=(255, 255, 255))
+    points = ["threshold", "weights"]
+
+    bare = _draw_frame("What a neuron does", points, "Signals", "Section 1", style)
+    with_first = _draw_frame("What a neuron does", points, "Signals", "Section 1",
+                             style, revealed=1)
+    with_both = _draw_frame("What a neuron does", points, "Signals", "Section 1",
+                            style, revealed=2)
+
+    assert bare.tobytes() != with_first.tobytes(), "a revealed label must be drawn"
+    assert with_first.tobytes() != with_both.tobytes()
+
+    # The overlay a label arrives on has to land where the frame would have
+    # drawn it, or a build jumps as each one appears.
+    layout = _words_layout("What a neuron does", points, style, False, False)
+    layer_path = project_root / "layer.png"
+    _draw_point_layer("What a neuron does", points, 0, style, False, layer_path)
+
+    from PIL import Image
+
+    with Image.open(layer_path) as layer:
+        drawn = layer.convert("RGBA").getbbox()
+    _text, left, top = layout.point_rows[0]
+    assert drawn is not None and drawn[0] >= left - 2 and abs(drawn[1] - top) < 60
+
+
+def test_an_unreadable_picture_does_not_stop_the_render(project_root):
+    """A broken figure is exactly what the extraction review exists to find; it
+    must not also take the whole video down."""
+    from pipeline.rendering import _draw_frame
+
+    broken = project_root / "broken.png"
+    broken.write_bytes(b"this is not an image")
+
+    frame = _draw_frame("What a neuron does", [], "Signals", "Section 1", picture=broken)
+
+    assert frame.size == (1920, 1080)

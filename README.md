@@ -6,8 +6,7 @@ edit, and every stage but Inputs is run by an AI agent whose instructions are a
 markdown file you can change.
 
 ```text
-Inputs → Extraction → Assets & Design → Scene Plan → Script & Staging →
-Studio → Reviewing → Export
+Inputs → Extraction → Assets & Design → Scene Plan → Script & Staging → Generation → Studio → Reviewing → Export
 ```
 
 The pipeline never hides work inside a model call. Every stage's output is a
@@ -18,20 +17,22 @@ timing is measured from the narration audio rather than estimated.
 
 ## Contents
 
-- [What it does today](#what-it-does-today)
-- [Requirements](#requirements)
-- [Quick start](#quick-start)
-- [Using the app](#using-the-app)
-- [Configuration](#configuration)
-- [Narration voices](#narration-voices)
-- [Command line](#command-line)
-- [MCP server](#mcp-server)
-- [Agents](#agents)
-- [Where project data lives](#where-project-data-lives)
-- [Architecture](#architecture)
-- [Development](#development)
-- [Documentation](#documentation)
-- [Status and known limits](#status-and-known-limits)
+- [Academic Explainer Video Pipeline](#academic-explainer-video-pipeline)
+  - [Contents](#contents)
+  - [What it does today](#what-it-does-today)
+  - [Requirements](#requirements)
+  - [Quick start](#quick-start)
+  - [Using the app](#using-the-app)
+  - [Configuration](#configuration)
+  - [Narration voices](#narration-voices)
+  - [Command line](#command-line)
+  - [MCP server](#mcp-server)
+  - [Agents](#agents)
+  - [Where project data lives](#where-project-data-lives)
+  - [Architecture](#architecture)
+  - [Development](#development)
+  - [Documentation](#documentation)
+  - [Status and known limits](#status-and-known-limits)
 
 ---
 
@@ -42,9 +43,10 @@ timing is measured from the narration audio rather than estimated.
 | **Inputs** | Upload source documents: `.pdf`, `.docx`, `.pptx`, `.md`, `.txt`. Up to 512 MB per file, streamed to disk. Each file can be opened and viewed as itself: decks slide by slide, Word documents with their layout, PDFs in the browser's viewer. | `sources/` |
 | **Extraction** | Parses the sources into structured blocks: headings, paragraphs, lists, tables and figures, in document order and filed under the heading they belong to. No model is involved; it is parsing. Embedded images are saved as figures. For decks it can also capture the **slide layout** (where each title, picture and text box sits), the **background images** behind the slides, and the **styling** (theme colours and fonts). Its agent reviews what came out: every picture is opened and measured, and the agent reads the text for what the checks cannot see. | `extraction/content.json`, `extraction/assets/` |
 | **Assets & Design** | Every extracted picture, with what it measures and where it came from — the source, a person or a model — and a decision about each: use it or skip it. Decisions are keyed by the picture itself, so re-extracting never loses them. Also holds **the look**: the source deck's colours, fonts and proportions, and whether the video should follow them. | `assets/library.json` |
-| **Scene Plan** | Sections, learning objectives, audience and key themes. Each section records the extracted content it covers, how it should be shown and why, and which objectives it serves. The Planning agent drafts a plan from the whole extraction; the draft is reviewed next to your plan and accepted whole or section by section. Warns when the extraction has changed since the plan was made. | `planning/plan.json` |
-| **Script & Staging** | Each plan section written as **scenes**: what is said, and a brief of what is on screen while it is said. The Scripting agent drafts one section or every unwritten one at once, from that section's own source text. Beside the editor sit the section's plan details, its source text and any review comments. Flags narration written against a plan section or source that has changed since, and narration whose section the plan no longer has. `{{VARIABLES}}` are filled everywhere they are spoken or shown. | `scripting/script.json` |
-| **Studio** | A multi-track timeline with playback, seeking and clip properties. Rendering synthesises the narration, measures each section's real audio length, and cuts the picture to fit. | `studio/composition.json` |
+| **Scene Plan** | Sections, learning objectives, audience and key themes. Each section records the extracted content it covers, how it should be shown and why, and which objectives it serves. The Planning agent drafts a plan from the whole extraction; the draft is reviewed next to your plan and accepted whole or section by section. Warns when the extraction has changed since the plan was made. | `scene-plan/plan.json` |
+| **Script & Staging** | Each plan section written as **scenes**: what is said, and a brief of what is on screen while it is said. The Scripting agent drafts one section or every unwritten one at once, from that section's own source text. Beside the editor sit the section's plan details, its source text and any review comments. Flags narration written against a plan section or source that has changed since, and narration whose section the plan no longer has. `{{VARIABLES}}` are filled everywhere they are spoken or shown. | `script-staging/script.json` |
+| **Generation** | One *shot* per scene: the few words that are on screen while it is spoken, the picture beside them, and how it moves. A headline and up to four labels, composed from the brief — never the narration. Then a picture: the author's own figure, a diagram drawn from the source's own terms and built up as it is described, a chart of the numbers the source states, a picture from an image model, or the words alone. Every shot records where it came from, and a drawn one keeps its prompt. | `generation/visuals.json`, `generation/assets/` |
+| **Studio** | A multi-track timeline with playback, seeking and clip properties. Rendering synthesises the narration, measures each section's real audio length, and cuts the picture to fit. Each section is drawn with its own extracted pictures, and — when the project asks for it — the source deck's background, colours and fonts. | `studio/composition.json` |
 | **Reviewing** | Plays the rendered video with chapters and subtitles, keeps every render as a separate version, and collects comments routed back to the stage that should fix them. | `reviewing/review.json`, `reviewing/output/` |
 | **Export** | The video and everything that travels with it: a transcript, chapter marks a video host can read, a description built from the plan, and the subtitles. Every file is derived, never hand-written. Says plainly what would make the hand-over wrong — a cut built from an abandoned script, a section nobody narrated, a missing video file. | `export/manifest.json`, `export/` |
 
@@ -94,8 +96,10 @@ Open <http://127.0.0.1:8000>, then:
    (or build the plan by hand).
 6. On **Script & Staging**, click **Draft all unwritten** to have the agent
    write every section as scenes, then edit what it wrote.
-7. **Render video** from Studio or Reviewing.
-8. On **Export**, click **Build export** for the transcript, chapters and
+7. On **Generation**, click **Decide what to show**, look at the shots, then
+   **Make what is missing**.
+8. **Render video** from Studio or Reviewing.
+9. On **Export**, click **Build export** for the transcript, chapters and
    description — and for a straight answer about whether it is ready.
 
 Rendering in the app uses the recommended voice, which out of the box is Edge
@@ -153,6 +157,14 @@ view is the file that moves on to the next stages.
 
 **Scene Plan.**
 
+- **Video preferences** are read by the stages they belong to. **Target
+  duration** is given to the agent when it drafts, and the finished draft is
+  measured against it — a draft that runs long says so rather than padding or
+  dropping material to hit a number. **Tone** becomes an instruction in the
+  narration prompt (*"address the viewer as you"*, not the word
+  "conversational"). **Language** decides what the narration and every on-screen
+  brief are written in, and which voice speaks them; a provider with no voice
+  for that language says so at render time instead of reading Hindi in English.
 - **Draft plan** has the Scene Plan agent read the whole extraction in two passes:
   every heading of every document first (with a few words of any untitled slide
   or page), then each section from its own full text. Optional guidance steers
@@ -184,6 +196,57 @@ view is the file that moves on to the next stages.
 - **The look** is the source deck's own: its colours, heading and body fonts,
   proportions and background. It is off by default — a video that silently
   adopted a client's brand colours would be worse than one that asked.
+
+**Scene Plan, from a deck.**
+
+- **Follow the deck** builds the plan mechanically: **one section per slide, in
+  the deck's order, every slide.** No model call and nothing to review, because
+  whoever made the deck already decided the order and the divisions, and a video
+  that regroups them is worse than one that follows.
+- Scenes may outnumber slides -- a dense slide is narrated in two or three beats
+  -- but never the reverse, and a slide is never skipped or moved. The bar says
+  so, and keeps saying so: a re-plan or a hand edit that drops slide 23 is
+  reported rather than silently rendered.
+
+**Generation.**
+
+- **Decide what to show** walks every scene and picks a shot, cheaply and with
+  no model call, so you can review the choices before paying for any of them.
+  The author's own figure first, then a chart of the source's own numbers, then
+  a drawn picture, then the words alone.
+- **Make what is missing** composes what the viewer *reads* and then draws it.
+  Per scene: a headline of a few words and up to four labels, taken from the
+  brief and the source — and the shape the material already has, if it has one.
+  Fifteen shapes are available (a sequence, a comparison, layers, a loop, a
+  hierarchy, a network, a curve, bars, a timeline, a table, a counting number, a
+  formula, the source's own figure, one thing becoming another, code), and only
+  the ones a renderer on this machine has *proved* it can draw are offered.
+- **The narration is never on screen.** It is being spoken; printing it as well
+  is what made earlier output read as slides with a voice over them, and a
+  viewer who is reading has stopped listening.
+- **A diagram is data, not a picture of one.** Its nodes are the source's own
+  terms, so whatever draws it cannot add a step — the difference between this
+  and asking an image model for "a diagram of the acquisition chain", which
+  produces something plausible that nobody can check.
+- **What can animate here is shown, and provable.** The panel at the top of the
+  page lists each renderer, whether it is installed, whether it *works*, and
+  which of the fifteen kinds it has drawn. **Verify** makes it draw the smallest
+  real example of every kind and records what happened. Installed and working
+  are different questions, and only the second one decides anything.
+- **A slide is shown, not rebuilt.** Where a section is a slide of a source
+  deck, the shot *is* that slide: its own background art, its own pictures, its
+  own heading and body text, at the deck's own positions and in its own fonts,
+  drawn edge to edge with nothing of the renderer's over it. Nothing is
+  paraphrased and nothing is generated -- the deck's design was made by people
+  and the video shows it.
+- **Every shot says where it came from.** A drawn picture keeps the prompt that
+  produced it, under *What was asked for*, because a picture nobody can trace is
+  a claim nobody can check.
+- **Rewriting a scene marks its shot out of date** rather than leaving a picture
+  of what the scene used to say.
+- **The camera move** is per scene and alternates by default — a push that ends
+  where the next one begins reads as one long zoom. A chart holds still, because
+  panning across numbers makes them harder to read.
 
 **Script & Staging.**
 
@@ -411,6 +474,9 @@ projects/<project>/
 ├── assets/library.json         which pictures to use, and the video's look
 ├── scene-plan/plan.json
 ├── script-staging/script.json
+├── generation/
+│   ├── visuals.json            one shot per scene: what it shows, how it moves
+│   └── assets/                 the charts and drawn pictures this stage made
 ├── studio/composition.json
 ├── reviewing/
 │   ├── review.json             comments, chapters, versions
@@ -472,6 +538,7 @@ src/pipeline/
 ├── planning.py          the Scene Plan's model and store
 ├── scripting.py         the script: scenes, variables, length checks
 ├── assets.py            the picture library and the video's look
+├── generation.py        one shot per scene: choosing it, making it, moving it
 ├── exporting.py         the transcript, chapters and description
 ├── composition.py       tracks and clips
 ├── review.py            comments, chapters, versions
@@ -496,7 +563,11 @@ src/pipeline/
 Narration is synthesised first and measured; one timing function then drives the
 picture, the subtitles and the Studio timeline, so the three cannot disagree.
 
-**The browser UI** is plain ES modules with no build step. Viewing documents
+**The browser UI** is plain ES modules with no build step. One stylesheet per
+page sits in `web/static/styles/`, loaded after the base they share — a request
+each, deliberately, because knowing where to change a page's look is worth more
+here than the request is. The base keeps any rule a later shared rule overrides,
+so splitting the stylesheet did not change a single pixel. Viewing documents
 uses three vendored libraries under `web/static/vendor/`: pptx-preview 1.0.7
 (ISC), [docx-preview](https://github.com/VolodymyrBaydalka/docxjs) (Apache 2.0)
 and JSZip 3.10.2 (MIT or GPLv3). They are vendored rather than loaded from a CDN
@@ -548,7 +619,7 @@ the last column says only what the code shows today.
 | [0004](docs/decisions/0004-mechanical-checks-before-human-review.md) | Mechanical checks before human review | — |
 | [0005](docs/decisions/0005-files-as-source-of-truth.md) | Files as the source of truth | No database; every artifact is a JSON file. |
 | [0006](docs/decisions/0006-langgraph-as-backbone.md) | LangGraph as the orchestration backbone | Installed as a dependency, not imported anywhere. |
-| [0007](docs/decisions/0007-revideo-as-rendering-target.md) | Revideo as the rendering target | Not built; rendering uses Pillow and ffmpeg. |
+| [0007](docs/decisions/0007-revideo-as-rendering-target.md) | Revideo as the rendering target | Built, in the routing form: Manim draws fifteen scene kinds, Revideo nine, chosen per kind from probes that actually ran. Frames are still composited with Pillow and ffmpeg. |
 
 ---
 
@@ -556,13 +627,23 @@ the last column says only what the code shows today.
 
 This is an early working version. Things to know before relying on it:
 
-- **Videos are plain.** Each section is a title card followed by its narration
-  as text slides, which is honest about the content but not yet visual. Figures
-  are extracted but not yet placed in the video, and the Studio graphics track
-  is empty.
+- **Animation depends on what is installed.** A scene whose shape can be drawn
+  is a real clip that assembles as the narration describes it — a step arriving
+  as it is named, a curve traced, a number counting up. That needs Manim
+  (`uv sync --extra animation`) or Revideo (`cd renderers/revideo && npm
+  install`); with neither, the same diagram is drawn from the same nodes as a
+  still and held, and Generation says so rather than claiming otherwise. Labels
+  arrive on the word that names them where the voice reports word timings
+  (edge-tts does); otherwise they are spread across the shot. The Studio
+  graphics track is still empty.
+- **One backend is much cheaper than the other.** A Manim clip takes a couple of
+  seconds; a Revideo clip takes about forty, because it starts a vite server and
+  a browser each time. Revideo is worth it for one thing in particular: it
+  typesets formulas with MathJax in the page, so a machine with no TeX
+  distribution still gets real mathematics.
 - **Some options are placeholders.** Extraction mode, output format, key-field
-  detection, handwriting OCR, and every Scene Plan preference (duration, tone,
-  language) are shown as "not built yet" and change nothing.
+  detection and handwriting OCR are shown as "not built yet" and change nothing.
+  The Scene Plan's three preferences are read.
 - **Stage agents advise and draft; they do not act.** Their declared tools are
   not executable yet. The Scene Plan agent drafts plans (kept as a draft until you
   accept it); the Script & Staging agent writes narration straight into the script,
@@ -575,12 +656,15 @@ This is an early working version. Things to know before relying on it:
   pictures on its own.
 - **A section's rendering approach is recorded but not yet used.** The renderer
   still draws every section as text slides, whatever the plan chooses.
-- **Slide layout, backgrounds and styling are captured but not yet drawn.**
-  Extraction records where everything sits on a slide, what is behind it, the
-  theme colours and the fonts; nothing renders from them yet, and a scene's
-  on-screen brief is text the renderer does not read either.
-- **The Scene Plan does not target a duration.** The plan's lengths are whatever the
-  plan says; Script & Staging and Reviewing warn when narration runs well over them.
+- **Slide *layout* is captured but not yet drawn.** The video uses the
+  extracted pictures, the background, the theme colours and the fonts; where
+  each shape sat on its original slide is recorded and not yet used, and a
+  scene's on-screen brief is text the renderer does not read either.
+- **A duration target steers, it does not enforce.** The agent is told the
+  target and a drafted plan is measured against it, but nothing cuts or pads
+  material to fit: a 28-minute chapter asked to be 5 minutes produces an honest
+  note, not a shorter plan. Script & Staging and Reviewing warn when narration
+  runs well over its section's estimate.
 - **PDF extraction is text-only.** Figures are extracted from Word and
   PowerPoint files.
 - **Not every feature is in every client**, as listed under

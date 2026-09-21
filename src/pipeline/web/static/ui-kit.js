@@ -67,6 +67,7 @@ const ICON_PATHS = {
   assets: `<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.8"/><path d="m4 17 5-5 4 4 3-3 4 4"/>`,
   "scene-plan": `<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/>`,
   "script-staging": `<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>`,
+  generation: `<path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/><circle cx="12" cy="12" r="3.5"/>`,
   studio: `<rect x="2" y="5" width="14" height="14" rx="2"/><path d="m22 8-6 4 6 4V8z"/>`,
   export: `<path d="M12 3v12M8 11l4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>`,
   reviewing: `<path d="M9 11l3 3 8-8"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>`,
@@ -258,8 +259,9 @@ const PROJECT_SCOPED_STATE_DEFAULTS = {
   plan: null,
   script: null,
 
-  // Assets & Design and Export, both per project.
+  // Assets & Design, Generation and Export, all per project.
   assetLibrary: null,
+  sceneVisuals: null,
   exportManifest: null,
   composition: null,
   review: null,

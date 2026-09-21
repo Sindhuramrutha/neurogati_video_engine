@@ -339,16 +339,31 @@ def chapters_for(project: Project) -> list:
 
     composition = CompositionStore(project.root).load()
     if composition.generated_from_render_at:
-        title_cards = [
-            clip
-            for track in composition.tracks if track.kind is TrackKind.VIDEO
-            for clip in track.clips if clip.kind is ClipKind.SCENE
-        ]
-        if title_cards:
-            return [
-                Chapter(title=clip.text or clip.label, start_ms=clip.start_ms)
-                for clip in sorted(title_cards, key=lambda c: c.start_ms)
-            ]
+        scenes = sorted(
+            (clip
+             for track in composition.tracks if track.kind is TrackKind.VIDEO
+             for clip in track.clips if clip.kind is ClipKind.SCENE),
+            key=lambda clip: clip.start_ms,
+        )
+        # One chapter per section, at its first clip. The video track carries a
+        # clip per *scene* now, so taking a chapter from each one turned a
+        # six-section video into forty-one chapters named after scenes -- and a
+        # chapter list that long is not navigation.
+        #
+        # Grouped by the section a clip names where it has one, and otherwise by
+        # a run of clips sharing a title, which is what a timeline written
+        # before clips recorded their section looks like.
+        chapters: list = []
+        seen: set[str] = set()
+        for clip in scenes:
+            name = clip.text or clip.label
+            key = clip.section_id or name
+            if key in seen:
+                continue
+            seen.add(key)
+            chapters.append(Chapter(title=name, start_ms=clip.start_ms))
+        if chapters:
+            return chapters
 
     plan = PlanStore(project.root).load()
     return chapters_from_plan([

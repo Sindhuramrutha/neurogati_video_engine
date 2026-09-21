@@ -1,0 +1,29 @@
+{
+  "//": [
+    "Without this file the scene does not run, and it does not say so.",
+    "",
+    "vite reads the JSX settings for esbuild out of tsconfig. With no tsconfig,",
+    "esbuild uses the classic transform, so `<Rect/>` compiles to a call to",
+    "`React.createElement` -- which does not exist in the page -- and the scene",
+    "module throws while it loads. The browser tab dies, and puppeteer reports",
+    "the only thing it can see: 'Navigating frame was detached'. Hours of that",
+    "error point at Chrome, at sandboxing and at the headless flags; none of it",
+    "is the cause.",
+    "",
+    "`jsxImportSource` has to be `@revideo/2d/lib`, matching the pragma at the",
+    "top of the scene: it is the built JS, and the bare package points at source."
+  ],
+  "extends": "@revideo/2d/tsconfig.project.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "@revideo/2d/lib",
+    "types": ["node"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ESNext",
+    "strict": false,
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": ["scene.tsx", "project.ts"]
+}

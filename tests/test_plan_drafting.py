@@ -305,7 +305,10 @@ def test_a_draft_records_sources_approach_reason_and_objectives(project_root, mo
     draft = plan_drafting.draft_plan(slug)
     section = draft["plan"]["sections"][0]
 
-    assert section["sources"] == [{"file_name": "chapter.docx", "heading_path": ["Electrodes"]}]
+    assert section["sources"] == [
+        # `slide_number` is 0 for a source that is not a deck.
+        {"file_name": "chapter.docx", "heading_path": ["Electrodes"], "slide_number": 0},
+    ]
     assert section["rendering_approach"] == "composition"
     assert section["rendering_reason"] == "A labelled diagram shows the parts."
     assert section["estimated_seconds"] == 75

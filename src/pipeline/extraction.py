@@ -46,6 +46,15 @@ MAXIMUM_BLOCKS_PER_DOCUMENT = 5000
 MAXIMUM_SHAPES_PER_SLIDE = 60
 MAXIMUM_SHAPE_TEXT_LENGTH = 300
 
+# A slide heading is large text near the top. Below this it is body copy, and
+# past this length it is a paragraph that happens to be set big.
+SMALLEST_HEADING_POINTS = 18.0
+MAXIMUM_HEADING_LENGTH = 120
+
+# Two text sizes this close are one hierarchy level -- a kicker over a title --
+# and the longer of them is the title.
+NEAR_TIE_RATIO = 0.92
+
 # Extracted figures are a copy of the pictures inside the source files, so a
 # picture-heavy deck can approach the size of the deck itself. This is a ceiling
 # against the pathological case -- a folder of large decks quietly filling the
@@ -89,6 +98,12 @@ class ContentBlock(BaseModel):
     # A drawn picture is not the author's diagram, and a video that shows one as
     # if it were is making a claim about the source material that is not true.
     asset_origin: str = "source"   # source | uploaded | generated
+
+    # Which slide or page this came from, 1-based, or 0 for a source that has
+    # neither. The heading path was the only clue before, and for a deck it is
+    # just the slide's title -- so two slides with the same title collapsed into
+    # one location, and a video could not be built to follow the deck's order.
+    slide_number: int = 0
 
     @field_validator("text")
     @classmethod
@@ -676,11 +691,12 @@ def read_pptx(path: Path, assets: AssetSink | None = None) -> list[ContentBlock]
         title_element = _title_element(slide)
         if slide.shapes.title is not None and slide.shapes.title.has_text_frame:
             title = slide.shapes.title.text.strip()
-        heading = title or f"Slide {number}"
+        heading = title or _headline_of(slide) or f"Slide {number}"
         heading_path = [heading]
 
         blocks.append(ContentBlock(
             kind=BlockKind.HEADING, level=2, text=heading, heading_path=list(heading_path),
+            slide_number=number,
         ))
 
         for shape in slide.shapes:
@@ -695,12 +711,14 @@ def read_pptx(path: Path, assets: AssetSink | None = None) -> list[ContentBlock]
                     kind = BlockKind.LIST_ITEM if paragraph.level else BlockKind.PARAGRAPH
                     blocks.append(ContentBlock(
                         kind=kind, text=line, heading_path=list(heading_path),
+                        slide_number=number,
                     ))
             elif getattr(shape, "has_table", False):
                 rendered = _render_table(shape.table)
                 if rendered:
                     blocks.append(ContentBlock(
                         kind=BlockKind.TABLE, text=rendered, heading_path=list(heading_path),
+                        slide_number=number,
                     ))
             else:
                 # A picture. Slides carry most of their meaning in diagrams, so a
@@ -715,6 +733,7 @@ def read_pptx(path: Path, assets: AssetSink | None = None) -> list[ContentBlock]
                     text=f"{caption or 'Figure'} (slide {number})",
                     heading_path=list(heading_path),
                     asset_path=assets.store(image.blob, f".{image.ext}") if assets else "",
+                    slide_number=number,
                 ))
 
         if slide.has_notes_slide:
@@ -723,6 +742,7 @@ def read_pptx(path: Path, assets: AssetSink | None = None) -> list[ContentBlock]
                 blocks.append(ContentBlock(
                     kind=BlockKind.PARAGRAPH, text=f"[speaker notes] {notes}",
                     heading_path=list(heading_path),
+                    slide_number=number,
                 ))
 
     return blocks
@@ -769,6 +789,39 @@ def _shape_box(shape, slide, slide_width: int, slide_height: int) -> tuple[float
         (width or 0) / slide_width,
         (height or 0) / slide_height,
     )
+
+
+def _headline_of(slide) -> str:
+    """The slide's heading when it is not in a title placeholder.
+
+    Designed decks routinely set their headings as plain text boxes, so
+    `shapes.title` is None and every slide came through as "Slide 7" -- which
+    made the heading path useless, gave the plan forty identical section names,
+    and lost the one piece of text the author most wanted kept.
+
+    The heading is the largest text in the upper part of the slide. Where two
+    sizes are within a hair of each other -- a small kicker above a title, like
+    "4.Chapter" over "Networks that Learn" -- the longer line wins, because the
+    kicker is a label and the title is the sentence.
+    """
+    candidates: list[tuple[float, str]] = []
+    for shape in slide.shapes:
+        if not shape.has_text_frame or shape.top is None or shape.height is None:
+            continue
+        written = shape.text_frame.text.strip()
+        line = written.splitlines()[0].strip() if written else ""
+        if not line or len(line) > MAXIMUM_HEADING_LENGTH:
+            continue
+        size, _bold, _align = _first_run_style(shape)
+        if size < SMALLEST_HEADING_POINTS:
+            continue
+        candidates.append((size, line))
+
+    if not candidates:
+        return ""
+    largest = max(size for size, _line in candidates)
+    close = [line for size, line in candidates if size >= largest * NEAR_TIE_RATIO]
+    return max(close, key=len)
 
 
 def _title_element(slide):

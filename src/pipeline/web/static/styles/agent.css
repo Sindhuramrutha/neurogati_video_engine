@@ -1,0 +1,238 @@
+/** The agent surfaces: each stage's instructions, and the Orchestrator panel. */
+
+.agent-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+
+textarea.agent-body {
+  width: 100%; min-height: 420px;
+  background: var(--surface-raised); color: var(--text);
+  border: var(--edge) solid var(--line); border-radius: 10px; padding: 13px;
+  font-family: var(--mono); font-size: 12.5px; line-height: 1.6;
+  resize: vertical; white-space: pre; overflow-wrap: normal; overflow-x: auto;
+}
+
+textarea.agent-body:focus-visible { outline: 2px solid var(--accent-line); outline-offset: 1px; }
+
+/* ---- agent drawer ------------------------------------------------------- */
+.drawer {
+  position: fixed; right: 0; top: 0; bottom: 0; width: 350px;
+  background: var(--surface); border-left: var(--edge) solid var(--line);
+  display: flex; flex-direction: column;
+  transform: translateX(100%); transition: transform .2s ease; z-index: 30;
+}
+
+.drawer-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 13px 16px; border-bottom: var(--edge) solid var(--line);
+}
+
+.drawer-log { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 11px; }
+
+.msg { padding: 10px 13px; border-radius: 10px; background: var(--surface-raised); font-size: 13px; line-height: 1.5; }
+
+.msg.mine { border: var(--edge) solid var(--line); align-self: flex-end; max-width: 88%; }
+
+.drawer-composer { padding: 13px; border-top: var(--edge) solid var(--line); display: flex; gap: 8px; }
+
+.drawer-composer input {
+  flex: 1; background: var(--surface-raised); color: var(--text);
+  border: var(--edge) solid var(--line); border-radius: 9px; padding: 8px 11px;
+}
+
+/* ---- API keys panel ----------------------------------------------------- */
+/* Reuses .drawer so there is one slide-in panel in the app, not two that drift.
+   Only the extra width and the scrolling body are new. */
+.drawer.wide { width: 420px; }
+
+.drawer-scroll { flex: 1; overflow-y: auto; padding: 16px; }
+
+/* The stored key, shown as a mask with the only destructive action beside it. */
+.cred-current {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 7px;
+  background: var(--surface-raised); border: var(--edge) solid var(--line);
+  border-radius: 8px; padding: 6px 7px 6px 11px;
+}
+
+.cred-current code { flex: 1; font-size: 12.5px; color: var(--text-dim); letter-spacing: .06em; }
+
+.cred-footer {
+  border-top: var(--edge) solid var(--line); padding-top: 13px; margin-top: 4px;
+}
+
+.cred-footer p {
+  display: flex; align-items: flex-start; gap: 7px;
+  font-size: 11.5px; color: var(--text-faint); margin: 0 0 7px; line-height: 1.5;
+}
+
+.cred-footer svg { flex: none; margin-top: 2px; }
+
+.cred-footer code { font-size: 11px; word-break: break-all; }
+
+/* --- panels that slide in ------------------------------------------------ */
+.drawer {
+  border-left: var(--edge-bold) solid var(--line);
+  background: var(--surface);
+  box-shadow: -10px 0 0 rgba(20, 17, 15, .12);
+}
+
+.drawer-head {
+  border-bottom: var(--edge) solid var(--line);
+  background: var(--accent);
+  font-weight: 900; padding: 15px 17px;
+}
+
+.msg { border: var(--edge) solid var(--line); border-radius: 12px; font-weight: 600; }
+
+.msg.mine { background: var(--accent-soft); }
+
+.drawer-composer { border-top: var(--edge) solid var(--line); }
+
+/* --- API keys ------------------------------------------------------------ */
+.cred-current { border: var(--edge) solid var(--line); background: var(--surface-raised);
+                border-radius: 10px; }
+
+.cred-badge.set { background: var(--ok); }
+
+.cred-badge.unset { background: #EFE9DF; }
+
+.cred-badge.env { background: var(--warn); }
+
+.cred-footer { border-top: var(--edge) solid var(--line); }
+
+/* --- the agent panel ----------------------------------------------------- */
+.msg { white-space: pre-wrap; }
+
+.msg-who {
+  display: block; margin-bottom: 6px;
+  font-size: 10.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.drawer-composer input { font-weight: 600; }
+
+/* --- the orchestrator panel ---------------------------------------------- */
+.head-note {
+  font-size: 10.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--text); opacity: .7; margin-left: 8px;
+}
+
+/* Something has to move while several agents are thinking: a still panel for a
+   minute reads as a hang, and people press Send again. */
+.working-dot {
+  display: inline-block; width: 9px; height: 9px; margin-right: 8px;
+  border-radius: 99px; background: var(--c-pink);
+  border: 2px solid var(--line); vertical-align: middle;
+  animation: working 1s steps(2, end) infinite;
+}
+
+.consulted {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px;
+  padding-top: 11px; border-top: var(--edge) dashed var(--line);
+}
+
+.agent-chip {
+  font: inherit; font-size: 11px; font-weight: 800; letter-spacing: .03em;
+  cursor: pointer; padding: 4px 10px; border-radius: 99px;
+  border: var(--edge) solid var(--line); background: var(--c-lime-soft);
+  color: var(--text); box-shadow: 2px 2px 0 var(--line);
+}
+
+/* The same rotation the rest of the page uses, so five consulted agents are
+   five colours rather than five identical pills. */
+.agent-chip:nth-child(9n + 1) { background: var(--c-blue-soft); }
+
+.agent-chip:nth-child(9n + 2) { background: var(--c-lime-soft); }
+
+.agent-chip:nth-child(9n + 3) { background: var(--c-orange-soft); }
+
+.agent-chip:nth-child(9n + 4) { background: var(--c-purple-soft); }
+
+.agent-chip:nth-child(9n + 5) { background: var(--c-yellow-soft); }
+
+.agent-chip:nth-child(9n + 6) { background: var(--c-teal-soft); }
+
+.agent-chip:nth-child(9n + 7) { background: var(--c-pink-soft); }
+
+.agent-chip:nth-child(9n + 8) { background: var(--c-green-soft); }
+
+.agent-chip:nth-child(9n + 9) { background: var(--c-red-soft); }
+
+.agent-chip:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--line); }
+
+.agent-chip.open { background: var(--c-yellow); }
+
+.agent-chip.failed { background: var(--c-red); color: #fff; }
+
+.consulted-answer {
+  margin-top: 10px; padding: 11px 12px; border-radius: 10px;
+  border: var(--edge) solid var(--line); background: var(--surface);
+  font-size: 12.5px; white-space: pre-wrap;
+}
+
+.consulted-question { margin: 0 0 8px; font-style: italic; opacity: .75; }
+
+/* --- a model's answer, as prose ------------------------------------------ */
+/* `pre-wrap` is right for a raw file and wrong for an answer: with real
+   paragraphs the blank lines double up. */
+.answer-body { white-space: normal; }
+
+.answer-body > :first-child { margin-top: 0; }
+
+.answer-body > :last-child { margin-bottom: 0; }
+
+.answer-body p { margin: 0 0 9px; }
+
+.answer-body ul { margin: 0 0 9px; padding-left: 19px; }
+
+.answer-body li { margin-bottom: 4px; }
+
+.answer-body code {
+  font-family: var(--mono); font-size: .92em;
+  background: var(--c-yellow-soft); border: 1.5px solid var(--line);
+  border-radius: 5px; padding: 0 4px;
+}
+
+.answer-body hr {
+  border: 0; border-top: var(--edge) dashed var(--line); margin: 11px 0;
+}
+
+/* --- conversations with the Orchestrator ---------------------------------- */
+/* The head is one row on a 350px panel: a title, a note and a close button
+   already fill it, so the thread controls get their own row underneath. */
+.drawer-tools {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 13px; border-bottom: var(--edge) solid var(--line);
+  background: var(--surface-raised);
+}
+
+.drawer-tools .spacer { flex: 1; }
+
+.drawer-tools .btn { padding: 6px 10px; font-size: 11.5px; gap: 5px; }
+
+.conversation-list {
+  border-bottom: var(--edge) solid var(--line); background: var(--c-purple-soft);
+  padding: 8px; display: grid; gap: 6px; max-height: 40vh; overflow-y: auto;
+}
+
+.conversation-row {
+  display: flex; align-items: stretch; gap: 6px;
+  background: var(--surface); border: var(--edge) solid var(--line); border-radius: 9px;
+  padding: 4px 6px 4px 4px;
+}
+
+.conversation-row.active { background: var(--c-yellow-soft); }
+
+.conversation-open {
+  flex: 1; min-width: 0; display: grid; gap: 2px; text-align: left;
+  background: none; border: none; padding: 6px 7px; cursor: pointer; color: var(--text);
+}
+
+.conversation-title {
+  font-size: 12.5px; font-weight: 700; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+
+.conversation-meta { font-size: 11px; color: var(--text-faint); font-family: var(--mono); }
+
+.conversation-row .btn-icon { align-self: center; padding: 5px; }
+
+.conversation-empty { font-size: 12px; margin: 4px 6px; }

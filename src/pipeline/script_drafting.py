@@ -45,6 +45,7 @@ from pipeline.operations import (
 from pipeline.plan_drafting import MAXIMUM_SECTION_SOURCE_CHARACTERS, section_source_text
 from pipeline.planning import Plan, PlanSection, PlanStore
 from pipeline.scripting import Script, ScriptScene, ScriptStore, SectionScript
+from pipeline.stage_options import video_preferences
 from pipeline.stages import Stage
 
 logger = logging.getLogger(__name__)
@@ -90,7 +91,9 @@ def draft_section(slug: str, section_id: str, instruction: str = "") -> dict[str
     agent = resolve_agent(project, Stage.SCRIPT_STAGING)
 
     try:
-        written, notes = _write_section(agent, plan, script, extraction, section, instruction)
+        written, notes = _write_section(
+            agent, plan, script, extraction, section, instruction,
+            video_preferences(project.root))
     except ModelNotConfigured as not_configured:
         raise OperationFailed(str(not_configured)) from not_configured
     except ModelCallFailed as call_failure:
@@ -134,10 +137,12 @@ def draft_unwritten_sections(slug: str, instruction: str = "") -> dict[str, Any]
 
     extraction = ExtractionStore(project.root).load()
     agent = resolve_agent(project, Stage.SCRIPT_STAGING)
+    preferences = video_preferences(project.root)
 
     def draft(section: PlanSection):
         try:
-            return section, *_write_section(agent, plan, script, extraction, section, instruction)
+            return section, *_write_section(
+                agent, plan, script, extraction, section, instruction, preferences)
         except (ModelCallFailed, ModelNotConfigured) as failure:
             logger.warning("drafting %s failed: %s", section.title, failure)
             return section, None, [f'"{section.title}" could not be drafted: {failure}']
@@ -186,6 +191,7 @@ def _write_section(
     extraction: Extraction,
     section: PlanSection,
     instruction: str,
+    preferences,
 ) -> tuple[SectionScript, list[str]]:
     """Ask for this section's scenes. Returns the section, unsaved, and any notes."""
     notes: list[str] = []
@@ -200,7 +206,11 @@ def _write_section(
         f"briefs. About {target_words} words of narration in total, to fill about "
         f"{section.estimated_seconds} seconds. Every fact must come from the "
         f"source material provided; do not add examples, numbers or analogies "
-        f"that are not in it. Open where the previous section left off."
+        f"that are not in it. Open where the previous section left off.\n\n"
+        f"Tone: {preferences.tone_sentence}\n"
+        f"Write the narration, and every brief, in {preferences.language_name}. "
+        f"Keep technical terms and proper nouns in the form the source uses, "
+        f"even where the rest of the sentence is not in English."
     )
 
     source, source_note = _source_for(extraction, section)

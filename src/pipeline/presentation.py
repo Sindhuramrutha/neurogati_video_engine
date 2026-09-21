@@ -294,9 +294,15 @@ def _measured_narration_seconds(project: Project, plan: Plan) -> dict[str, float
         clip for track in composition.tracks if track.kind is TrackKind.AUDIO
         for clip in track.clips
     ]
+    by_section = {clip.section_id: clip for clip in audio_clips if clip.section_id}
+
     measured = {}
     for section, start in zip(plan.sections, starts, strict=False):
-        clip = next((c for c in audio_clips if c.start_ms == start + TITLE_CARD_MS), None)
+        clip = by_section.get(section.id)
+        if clip is None:
+            # A timeline written before clips recorded their section. Its
+            # narration sat one title card in, because every section had one.
+            clip = next((c for c in audio_clips if c.start_ms == start + TITLE_CARD_MS), None)
         if clip is not None:
             measured[section.id] = round(clip.duration_ms / 1000, 1)
     return measured
@@ -312,7 +318,7 @@ def section_start_times(project: Project, plan) -> list[int]:
 
     composition = CompositionStore(project.root).load()
     if composition.generated_from_render_at:
-        title_cards = sorted(
+        scenes = sorted(
             (
                 clip
                 for track in composition.tracks if track.kind is TrackKind.VIDEO
@@ -320,8 +326,19 @@ def section_start_times(project: Project, plan) -> list[int]:
             ),
             key=lambda clip: clip.start_ms,
         )
-        if len(title_cards) == len(plan.sections):
-            return [clip.start_ms for clip in title_cards]
+        # A section begins at its first scene. The video track carries one clip
+        # per scene, so counting clips would say a four-scene section is four
+        # sections; the clip says which section it belongs to instead.
+        earliest: dict[str, int] = {}
+        for clip in scenes:
+            if clip.section_id and clip.section_id not in earliest:
+                earliest[clip.section_id] = clip.start_ms
+        if plan.sections and all(section.id in earliest for section in plan.sections):
+            return [earliest[section.id] for section in plan.sections]
+        # A timeline written before clips recorded their section: it had exactly
+        # one clip per section, so their order is the answer.
+        if len(scenes) == len(plan.sections):
+            return [clip.start_ms for clip in scenes]
 
     starts: list[int] = []
     running_ms = 0

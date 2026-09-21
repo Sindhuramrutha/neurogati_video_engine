@@ -90,10 +90,11 @@ from pipeline.freshness import (
     plan_freshness,
     source_outline,
 )
-
-# `_script_in_plan_order` is private to the pipeline rather than to one module:
-# drafting a plan section and drafting its narration both reorder the script the
-# same way, and a second implementation of that is how two orderings appear.
+from pipeline.generation import (
+    plan_visuals,
+    read_visuals,
+    set_scene_visual,
+)
 from pipeline.presentation import (
     _script_in_plan_order,
     present_artifact,
@@ -102,7 +103,14 @@ from pipeline.presentation import (
     section_start_times,
     write_artifact,
 )
-from pipeline.render_run import chapters_from_sections, list_voice_providers, render_video
+from pipeline.render_records import chapters_from_sections
+from pipeline.render_run import list_voice_providers, render_video
+
+# `_script_in_plan_order` is private to the pipeline rather than to one module:
+# drafting a plan section and drafting its narration both reorder the script the
+# same way, and a second implementation of that is how two orderings appear.
+from pipeline.slide_plan import plan_from_slides, slide_coverage
+from pipeline.visual_build import build_visuals
 
 __all__ = [
     "ARTIFACTS",
@@ -112,8 +120,11 @@ __all__ = [
     "accept_plan_draft",
     "add_clip",
     "add_plan_section",
+    "plan_from_slides",
+    "slide_coverage",
     "add_review_comment",
     "build_export",
+    "build_visuals",
     "chapters_for",
     "chapters_from_sections",
     "clear_timeline",
@@ -136,6 +147,7 @@ __all__ = [
     "narration_fingerprints",
     "narration_freshness",
     "plan_freshness",
+    "plan_visuals",
     "present_artifact",
     "preview_source",
     "project_store",
@@ -143,6 +155,7 @@ __all__ = [
     "read_artifact",
     "read_asset_library",
     "read_export",
+    "read_visuals",
     "read_plan_draft",
     "refresh_asset_library",
     "render_video",
@@ -155,6 +168,7 @@ __all__ = [
     "seed_review_chapters",
     "set_excluded_sources",
     "set_project_look",
+    "set_scene_visual",
     "source_outline",
     "write_artifact",
     "write_section_script",

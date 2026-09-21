@@ -68,6 +68,15 @@ class Clip(BaseModel):
     # Source trim, for clips backed by timed media.
     source_in_ms: int = 0
 
+    # Which plan section a render wrote this clip from. Empty for a clip
+    # somebody made by hand, and for timelines written before this existed.
+    #
+    # Recorded rather than inferred: where each section starts used to be read
+    # back out of the *shape* of the timeline -- one scene clip per section --
+    # so changing how a section is drawn silently moved every measured number
+    # anything read out of it.
+    section_id: str = ""
+
     @field_validator("start_ms")
     @classmethod
     def _clamp_start(cls, value: int) -> int:

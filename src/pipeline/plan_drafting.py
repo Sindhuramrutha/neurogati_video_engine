@@ -48,6 +48,7 @@ from pipeline.planning import (
     RenderingApproach,
     SourceReference,
 )
+from pipeline.stage_options import video_preferences
 from pipeline.stages import Stage
 
 logger = logging.getLogger(__name__)
@@ -258,6 +259,7 @@ def draft_plan(slug: str, instruction: str = "") -> dict[str, Any]:
         )
 
     agent = resolve_agent(project, Stage.SCENE_PLAN)
+    preferences = video_preferences(project.root)
     current_plan = PlanStore(project.root).load()
     audience = current_plan.selected_audience or "a general audience"
     notes: list[str] = []
@@ -272,7 +274,8 @@ def draft_plan(slug: str, instruction: str = "") -> dict[str, Any]:
     notes.extend(outline_notes)
 
     try:
-        outline = _outline_pass(agent, audience, instruction, outline_text)
+        outline = _outline_pass(
+            agent, audience, instruction, outline_text, preferences)
     except ModelNotConfigured as not_configured:
         raise OperationFailed(str(not_configured)) from not_configured
     except ModelCallFailed as call_failure:
@@ -315,6 +318,18 @@ def draft_plan(slug: str, instruction: str = "") -> dict[str, Any]:
     _detail_pass(agent, audience, instruction, extraction, sections, objectives, notes)
     notes.extend(_uncovered_parts(extraction, sections))
 
+    # Measured after the detail pass, which is where the real per-section
+    # estimates come from. Reported rather than corrected: the honest answer to
+    # "this is longer than you asked for" is that the material is what it is.
+    shortest, longest = preferences.target_seconds
+    drafted_seconds = sum(section.estimated_seconds for section in sections)
+    if drafted_seconds and not shortest <= drafted_seconds <= longest:
+        notes.append(
+            f"This draft runs about {round(drafted_seconds / 60)} minutes, against your "
+            f"target of {preferences.target_phrase}. Change the target on this page, or "
+            f"cut sections yourself -- nothing here pads or drops material to hit a number."
+        )
+
     plan = Plan(
         sections=sections,
         learning_objectives=objectives,
@@ -338,7 +353,9 @@ def draft_plan(slug: str, instruction: str = "") -> dict[str, Any]:
     return read_plan_draft(slug)
 
 
-def _outline_pass(agent, audience: str, instruction: str, outline_text: str) -> DraftOutline:
+def _outline_pass(
+    agent, audience: str, instruction: str, outline_text: str, preferences
+) -> DraftOutline:
     system_prompt = (
         f"{build_system_prompt(agent)}\n\n"
         f"---\nThis is the first of two passes: the OUTLINE only.\n"
@@ -354,7 +371,11 @@ def _outline_pass(agent, audience: str, instruction: str, outline_text: str) -> 
         f"Cover every part that teaches something. Leave out title slides, contents "
         f"pages, reference lists and acknowledgements. Never invent a section for "
         f"material that is not listed. A later pass writes each section's summary "
-        f"from its full text, so do not summarise here."
+        f"from its full text, so do not summarise here.\n"
+        f"The whole video should run about {preferences.target_phrase}, so the "
+        f"lengths you estimate should add up to roughly that. Never pad a section "
+        f"or leave material out to hit it: if the source needs longer, estimate "
+        f"honestly and say so."
     )
     instruction_line = f"Instruction: {instruction.strip()}\n" if instruction.strip() else ""
     user_prompt = f"Audience: {audience}\n{instruction_line}\nSource outline:{outline_text}"

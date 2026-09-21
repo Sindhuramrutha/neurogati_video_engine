@@ -118,6 +118,12 @@ TOOLS: tuple[Tool, ...] = (
     Tool("write_export", ToolKind.WRITE,
          "Write the transcript, chapter marks and description beside the video."),
 
+    # generation
+    Tool("draw_chart", ToolKind.WRITE,
+         "Chart the quantities a source states, using its own values."),
+    Tool("choose_motion", ToolKind.WRITE,
+         "Decide how the camera moves over a shot."),
+
     # studio
     Tool("search_asset_library", ToolKind.READ,
          "Find an existing asset before making a new one.", ("asset-library",)),

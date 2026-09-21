@@ -21,6 +21,12 @@ import {
 
 /** View-only state. The playhead and selection are not part of the saved
  *  composition — reopening the stage should not restore a caret position. */
+// Below this share of the timeline a clip is too few pixels wide to hit. The
+// stylesheet widens these to a usable target; the cost is a few pixels of
+// overlap with the clip after them, which is worth paying for a clip that can
+// be selected.
+const NARROWEST_CLICKABLE_PERCENT = 0.8;
+
 const studioViewState = {
   selectedClipId: null,
   playheadMs: 0,
@@ -673,9 +679,16 @@ function renderTrack(track, composition, totalMs) {
           const leftPercent = (clip.start_ms / totalMs) * 100;
           const widthPercent = (clip.duration_ms / totalMs) * 100;
           const label = clip.label || clip.text || clip.kind;
+          // A clip's width is its share of the whole video, so on a 21-minute
+          // timeline a 1.8-second title card is under two pixels wide: its
+          // neighbour takes every click aimed at it, and it cannot be selected
+          // at all. Marked here so the stylesheet can give it a reachable
+          // width and put it above the clip beside it.
+          const isNarrow = widthPercent < NARROWEST_CLICKABLE_PERCENT;
           return `
             <div class="clip ${studioViewState.selectedClipId === clip.id ? "selected" : ""}
-                        ${collidingIds.has(clip.id) ? "colliding" : ""}"
+                        ${collidingIds.has(clip.id) ? "colliding" : ""}
+                        ${isNarrow ? "narrow" : ""}"
                  data-clip="${clip.id}"
                  style="left:${leftPercent}%;width:${widthPercent}%;
                         --clip-bg:${CLIP_COLOURS[clip.kind] ?? "#475569"}"

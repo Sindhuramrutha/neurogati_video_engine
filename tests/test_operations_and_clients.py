@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from pipeline import operations, render_run
+from pipeline import operations, render_records
 from pipeline.operations import OperationFailed
 
 
@@ -405,11 +405,16 @@ def test_section_segments_are_one_exact_clock():
     while subtitles assumed it started after, and sections overrunning by 2-6s.
     By the end of an 8-minute video the captions were ~20 seconds off.
     """
-    from pipeline.rendering import TITLE_CARD_MS, RenderedSection, section_segments
+    from pipeline.rendering import (
+        SECTION_TAIL_MS,
+        TITLE_CARD_MS,
+        RenderedSection,
+        section_segments,
+    )
 
     narration = "First point here. A second, noticeably longer sentence follows it. Third. " * 8
     section = RenderedSection("s1", "A title", narration,
-                              audio_duration_ms=64_703, start_ms=12_345)
+                              audio_duration_ms=64_703, start_ms=12_345, is_opening=True)
     segments = section_segments(section)
 
     assert segments[0].kind == "title"
@@ -418,7 +423,142 @@ def test_section_segments_are_one_exact_clock():
     assert all(a.end_ms == b.start_ms for a, b in zip(segments, segments[1:], strict=False)), \
         "segments must be contiguous"
     assert segments[-1].end_ms == 12_345 + section.total_ms, "must end on the section length"
-    assert sum(s.duration_ms for s in segments if s.kind == "slide") == 64_703
+    assert sum(s.duration_ms for s in segments if s.kind == "slide") \
+        == 64_703 + SECTION_TAIL_MS
+
+
+def test_only_the_opening_section_holds_a_title_card():
+    """A card before every section was 2.5 seconds of silence each time -- on a
+    ten-section video, most of a minute spent reading names that are already on
+    the frames."""
+    from pipeline.rendering import RenderedSection, section_segments
+
+    narration = "A sentence of narration. And one more after it."
+    later = RenderedSection("s2", "Later", narration,
+                            audio_duration_ms=6_000, start_ms=30_000)
+    segments = section_segments(later)
+
+    assert "title" not in [s.kind for s in segments], "no card before a later section"
+    assert segments[0].start_ms == 30_000, "the voice starts the moment the section does"
+    assert later.total_ms < 6_000 + 1_000, "no card, so almost nothing but the narration"
+
+
+def test_the_cues_break_where_the_voice_says_they_do():
+    """A provider that reports word boundaries is telling us exactly where each
+    word landed. Splitting by character count instead put the cut up to a
+    sentence away from the word it belongs to."""
+    from pipeline.rendering import RenderedSection, section_segments
+    from pipeline.speech import WordTiming
+
+    # Two sentences, each long enough to need a cue of its own, and the same
+    # length so a character-count split would put the break at the halfway mark.
+    first = " ".join(["alpha"] * 30) + "."
+    second = " ".join(["beta"] * 30) + "."
+    narration = f"{first} {second}"
+    words = narration.replace(".", "").split()
+
+    # The voice hurried the first sentence and dwelt on the second, so where it
+    # really broke is nowhere near the middle of the audio.
+    timings = tuple(
+        WordTiming(text=word, start_ms=at * 100 if at < 30 else 3_000 + (at - 30) * 300,
+                   duration_ms=80)
+        for at, word in enumerate(words)
+    )
+    section = RenderedSection("s1", "Counting", narration,
+                              audio_duration_ms=12_000, words=timings)
+    cues = [s for s in section_segments(section) if s.kind == "slide"]
+
+    assert len(cues) == 2
+    # The second cue starts on its own first word, at three seconds -- not at
+    # the share of the characters, which would have put it at six.
+    assert cues[1].start_ms == 3_000
+    assert cues[0].duration_ms == 3_000
+
+
+def test_bad_word_timings_fall_back_to_the_text_rather_than_breaking_the_clock():
+    """Timings that disagree with the narration would slide every cue along by
+    the difference, which is worse than not using them."""
+    from pipeline.rendering import RenderedSection, section_segments
+    from pipeline.speech import WordTiming
+
+    narration = "One two three. Four five six seven eight nine ten."
+    # Half the words, as a provider that split differently would report.
+    timings = tuple(WordTiming(text="x", start_ms=at * 500, duration_ms=200)
+                    for at in range(5))
+    section = RenderedSection("s1", "Counting", narration,
+                              audio_duration_ms=14_000, words=timings)
+    segments = section_segments(section)
+
+    assert all(s.duration_ms > 0 for s in segments)
+    assert segments[-1].end_ms == section.total_ms
+
+
+def test_one_scene_is_one_shot_however_many_cues_it_needs():
+    """The picture changes when the scene changes, not when the text does. Three
+    cues of one scene used to be three encodes with the camera restarting on
+    each, which is the carousel one level down."""
+    from pipeline.rendering import RenderedSection, section_segments, shot_windows
+
+    section = RenderedSection(
+        "s1", "Signals",
+        narration="A long first scene. " * 20 + "\n\nA second scene.",
+        audio_duration_ms=40_000,
+    )
+    cues = [s for s in section_segments(section) if s.kind == "slide"]
+    windows = shot_windows(section)
+
+    assert len([cue for cue in cues if cue.scene_index == 0]) > 1, \
+        "the first scene should need more than one cue"
+    assert [window.scene_index for window in windows] == [0, 1]
+    assert sum(window.duration_ms for window in windows) == section.total_ms
+    assert windows[0].duration_ms == sum(
+        cue.duration_ms for cue in cues if cue.scene_index == 0)
+
+
+def test_a_label_appears_on_the_word_that_names_it():
+    """The reason for having word timings at all: the label lands as it is said,
+    rather than all four arriving at once, which is a slide."""
+    from pipeline.rendering import RenderedSection, reveal_times, shot_windows
+    from pipeline.speech import WordTiming
+
+    narration = "The amplifier boosts it and the filter removes the noise."
+    words = narration.rstrip(".").split()
+    timings = tuple(WordTiming(text=word, start_ms=at * 500, duration_ms=400)
+                    for at, word in enumerate(words))
+    section = RenderedSection("s1", "Chain", narration,
+                              audio_duration_ms=len(words) * 500, words=timings)
+    window = shot_windows(section)[0]
+
+    at = reveal_times(section, window, ["amplifier", "filter"])
+
+    # "amplifier" is word 1 (500ms) and "filter" is word 6 (3000ms), each less
+    # the lead time.
+    assert at[0] == 500 - 120
+    assert at[1] == 3_000 - 120
+
+
+def test_labels_never_appear_out_of_order_or_after_the_shot_ends():
+    from pipeline.rendering import RenderedSection, reveal_times, shot_windows
+
+    section = RenderedSection("s1", "Chain", "A short scene here.",
+                              audio_duration_ms=2_000)
+    window = shot_windows(section)[0]
+
+    at = reveal_times(section, window, ["one", "two", "three", "four"])
+
+    assert at == sorted(at), "a label above one already on screen reads as a glitch"
+    assert all(when < window.duration_ms for when in at)
+
+
+def test_a_cross_fade_is_dropped_rather_than_made_a_flicker():
+    """Every shot is encoded a fade longer than its slot so the dissolve is paid
+    for; a shot too short for that is cut to instead."""
+    from pipeline.rendering import CROSS_FADE_MS, _cross_fade_ms
+
+    assert _cross_fade_ms([8_000]) == 0, "one shot has nothing to dissolve into"
+    assert _cross_fade_ms([8_000, 6_000]) == CROSS_FADE_MS
+    assert _cross_fade_ms([8_000, 600]) == 200, "shortened to fit the shortest shot"
+    assert _cross_fade_ms([8_000, 200]) == 0, "too short to be anything but a flicker"
 
 
 def test_a_section_without_narration_is_just_its_title_card():
@@ -444,7 +584,7 @@ def test_render_writes_its_structure_onto_an_empty_timeline(project_root, tmp_pa
     audio = tmp_path / "section-00.mp3"
     audio.write_bytes(b"x")
 
-    note = render_run._write_timeline_from_render(project, [_rendered_section(audio)])
+    note = render_records.write_timeline_from_render(project, [_rendered_section(audio)])
     composition = operations.read_artifact("timeline-fill", "composition")
 
     assert note == ""
@@ -468,7 +608,7 @@ def test_render_never_overwrites_hand_made_clips(project_root, tmp_path):
     audio = tmp_path / "section-00.mp3"
     audio.write_bytes(b"x")
     project = operations.require_project("hand-made")
-    note = render_run._write_timeline_from_render(project, [_rendered_section(audio)])
+    note = render_records.write_timeline_from_render(project, [_rendered_section(audio)])
 
     after = operations.read_artifact("hand-made", "composition")
     labels = [c["label"] for t in after["tracks"] for c in t["clips"]]
@@ -482,9 +622,9 @@ def test_a_render_generated_timeline_is_replaced_by_the_next_render(project_root
     audio = tmp_path / "section-00.mp3"
     audio.write_bytes(b"x")
 
-    render_run._write_timeline_from_render(project, [_rendered_section(audio)])
+    render_records.write_timeline_from_render(project, [_rendered_section(audio)])
     first_count = operations.read_artifact("rerender", "composition")["clip_count"]
-    note = render_run._write_timeline_from_render(project, [_rendered_section(audio)])
+    note = render_records.write_timeline_from_render(project, [_rendered_section(audio)])
 
     assert note == ""
     assert operations.read_artifact("rerender", "composition")["clip_count"] == first_count, \
@@ -545,7 +685,7 @@ def test_chapters_follow_the_rendered_video_not_the_plan_estimate(project_root, 
         RenderedSection("b", "Two", "Another sentence.", audio_path=audio,
                         audio_duration_ms=40_000, start_ms=92_500),
     ]
-    render_run._write_timeline_from_render(project, sections)
+    render_records.write_timeline_from_render(project, sections)
 
     chapters = operations.chapters_for(project)
     assert [c.start_ms for c in chapters] == [0, 92_500], "chapters must use measured positions"
@@ -596,7 +736,7 @@ def test_transcript_times_come_from_the_render(project_root, tmp_path):
 
     audio = tmp_path / "section-00.mp3"
     audio.write_bytes(b"x")
-    render_run._write_timeline_from_render(
+    render_records.write_timeline_from_render(
         operations.require_project("transcript-times"),
         [
             RenderedSection("a", "One", "Narration.", audio_path=audio,
@@ -681,6 +821,24 @@ def test_an_untouched_generated_timeline_is_still_rebuilt(project_root):
     assert second["clip_count"] == first["clip_count"]
 
 
+def test_a_chapter_is_a_section_even_though_a_clip_is_a_scene(project_root):
+    """The video track carries one clip per scene. Taking a chapter from each of
+    them turned a six-section video into forty-one chapters named after scenes,
+    and a chapter list that long is not navigation."""
+    _render_two_short_sections("chapters-per-section")
+
+    composition = operations.read_artifact("chapters-per-section", "composition")
+    scene_clips = [
+        clip for track in composition["tracks"] if track["kind"] == "video"
+        for clip in track["clips"]
+    ]
+    review = operations.read_artifact("chapters-per-section", "review")
+    sections = operations.read_artifact("chapters-per-section", "plan")["sections"]
+
+    assert len(scene_clips) > len(sections), "several clips to a section"
+    assert [c["title"] for c in review["chapters"]] == [s["title"] for s in sections]
+
+
 def test_the_first_render_seeds_chapters_from_measured_timing(project_root):
     """Chapters were seeded before the measured timeline existed, so they fell
     back to the plan's estimates -- pointing at 60s in a 15s video."""
@@ -688,11 +846,16 @@ def test_the_first_render_seeds_chapters_from_measured_timing(project_root):
 
     review = operations.read_artifact("measured-chapters", "review")
     composition = operations.read_artifact("measured-chapters", "composition")
-    measured = sorted(
-        clip["start_ms"]
-        for track in composition["tracks"] if track["kind"] == "video"
-        for clip in track["clips"]
-    )
+
+    # A chapter is a section, and the video track carries one clip per scene, so
+    # the section starts are where each section's first clip is.
+    earliest: dict[str, int] = {}
+    for track in composition["tracks"]:
+        if track["kind"] != "video":
+            continue
+        for clip in sorted(track["clips"], key=lambda c: c["start_ms"]):
+            earliest.setdefault(clip["section_id"], clip["start_ms"])
+    measured = sorted(earliest.values())
 
     assert [c["start_ms"] for c in review["chapters"]] == measured
     assert review["chapters"][-1]["start_ms"] < review["versions"][-1]["duration_ms"], \
@@ -809,6 +972,7 @@ LAYERS = [
     "core",
     "freshness",
     "presentation",
+    "render_records",
     "extraction_run",
     "authoring",
     "render_run",
@@ -824,6 +988,59 @@ def test_the_core_is_a_surface_not_a_file():
 
     assert "def " not in source, "operations.py defines a verb again; it is the surface"
     assert len(source.splitlines()) < 300
+
+
+# Every module that is already too long, with the length it is allowed to keep.
+# A ratchet, not a pass: a module in here may shrink and may not grow, and one
+# that is not in here may not reach the limit at all.
+#
+# It exists because the old rule guarded seven modules -- all of which complied
+# -- while the twelve that had actually grown were not listed, so nothing
+# stopped `routes_project.py` reaching 1,438 lines. Splitting all of them at
+# once is not the job; making the debt visible and unable to grow is.
+LONGEST_SENSIBLE_MODULE = 450
+
+MODULE_BUDGETS = {
+    "web/routes_project.py": 1438,
+    "rendering.py": 1283,
+    "extraction.py": 1154,
+    "scene_renderers.py": 758,
+    "slide_frame.py": 677,
+    "extraction_review.py": 648,
+    "generation.py": 556,
+    "speech.py": 551,
+    "visual_build.py": 501,
+    "plan_drafting.py": 476,
+    "orchestrator.py": 465,
+    "cli.py": 460,
+}
+
+
+def test_no_module_grows_past_the_length_it_is_allowed():
+    """The guard that was pointing at the wrong files.
+
+    It checked seven modules that were all well inside the limit and none of the
+    ones that had grown, so the rule read as enforced while the codebase drifted
+    past it. Now every module is checked, and the ones already over carry a
+    recorded budget they cannot exceed.
+    """
+    too_long = []
+    shrunk = []
+    for path in sorted(PIPELINE.rglob("*.py")):
+        if "__pycache__" in str(path):
+            continue
+        name = path.relative_to(PIPELINE).as_posix()
+        lines = len(path.read_text(encoding="utf-8").splitlines())
+        allowed = MODULE_BUDGETS.get(name, LONGEST_SENSIBLE_MODULE)
+        if lines > allowed:
+            too_long.append(f"{name}: {lines} lines, allowed {allowed}")
+        elif name in MODULE_BUDGETS and lines < allowed - 40:
+            shrunk.append(f"{name}: {lines} lines, budget still says {allowed}")
+
+    assert not too_long, "split these before they grow further: " + "; ".join(too_long)
+    assert not shrunk, (
+        "these shrank -- lower their budget so the ratchet holds: " + "; ".join(shrunk)
+    )
 
 
 def test_every_module_behind_the_core_stays_small_enough_to_read():

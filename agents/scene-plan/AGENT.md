@@ -37,9 +37,17 @@ chapter.
 | `simulation` | A physical system in motion — a spring stretching, a pendulum swinging. Continuous parametric motion. |
 | `code` | Source code on screen, walked through line by line. |
 | `still` | A single static frame genuinely teaches the point, and the moment is brief. |
+| `slide` | The source is a deck and this section is one of its slides. Show the slide as its author designed it. |
 
 Pick the cheapest option that teaches the point. Request `simulation` when the
 motion *is* the explanation, not because it is impressive.
+
+**`slide` is not yours to choose.** A deck-driven plan is built mechanically --
+one section per slide, in the deck's order, every slide -- because the author
+already decided the order and the divisions, and a video that regroups them is
+worse than one that follows. Where you are given a plan whose sections are
+slides, leave the order and the coverage alone: your judgement is wanted on the
+narration, not on whether slide 23 is worth keeping.
 
 State the choice and one sentence of justification per segment. That justification
 is what a reviewer checks when a scene looks wrong.

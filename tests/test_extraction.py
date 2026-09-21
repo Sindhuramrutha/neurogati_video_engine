@@ -367,8 +367,12 @@ def test_only_options_that_change_a_run_are_marked_as_built():
         "extract_backgrounds", "extract_styling",
     }
 
-    # Nothing in Planning reads its preferences yet.
-    assert not [option for option in options_for(Stage.SCENE_PLAN) if option.implemented]
+    # The Scene Plan's three preferences are read: the duration steers drafting
+    # and is checked against the finished plan, the tone reaches the narration,
+    # and the language reaches both the narration and the voice that speaks it.
+    assert {option.key for option in options_for(Stage.SCENE_PLAN) if option.implemented} == {
+        "target_duration", "tone", "language",
+    }
     assert all("implemented" in option.to_dict() for option in options_for(Stage.SCENE_PLAN))
 
 

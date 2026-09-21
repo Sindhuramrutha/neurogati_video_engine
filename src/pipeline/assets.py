@@ -71,6 +71,16 @@ class LibraryFigure(BaseModel):
     width: int = 0
     height: int = 0
 
+    # The trimmed copy, and what looking at the pixels found. A figure out of a
+    # deck is whatever rectangle the file held -- a diagram with two inches of
+    # slide around it, or a screenshot cropped through its own caption -- and
+    # until this, nothing opened one to find out.
+    prepared_path: str = ""
+    prepared_width: int = 0
+    prepared_height: int = 0
+    trimmed_fraction: float = 0.0
+    flags: list[str] = Field(default_factory=list)
+
     use: str = FigureUse.UNDECIDED
     note: str = ""
 
@@ -94,10 +104,29 @@ class LibraryFigure(BaseModel):
             self.width < SMALLEST_USABLE_PIXELS or self.height < SMALLEST_USABLE_PIXELS
         )
 
+    @property
+    def is_unfit(self) -> bool:
+        """Found to be blank, a sliver, unreadable, or too small once trimmed.
+
+        Not proposed for use -- but still choosable, because this is a
+        measurement and somebody looking at the picture knows more than it does.
+        """
+        from pipeline.figure_prep import DISQUALIFYING
+
+        return bool(DISQUALIFYING.intersection(self.flags))
+
+    @property
+    def why_unfit(self) -> str:
+        from pipeline.figure_prep import WHY
+
+        return " ".join(WHY[flag] for flag in self.flags if flag in WHY)
+
     def to_dict(self) -> dict[str, Any]:
         return self.model_dump() | {
             "where": self.where,
             "is_decoration": self.is_decoration,
+            "is_unfit": self.is_unfit,
+            "why_unfit": self.why_unfit,
         }
 
 
@@ -118,6 +147,15 @@ class ProjectLook(BaseModel):
     background_colour: str = ""
     background_asset_path: str = ""
 
+    # How to read a full-bleed wash a deck lays over its own background art.
+    # Decks write these inconsistently and the two readings look very different:
+    # "as_written" follows the spec and PowerPoint -- a pale background and
+    # legible text -- while "inverted" keeps the artwork vivid, which is how
+    # some viewers show it and can put the deck's dark text on a dark field.
+    # There is no answer in the file, so it is a choice, and it is here rather
+    # than hidden in the compositor.
+    slide_wash: str = "as_written"
+
     @property
     def is_available(self) -> bool:
         return bool(self.colours or self.heading_font or self.background_asset_path)
@@ -134,12 +172,18 @@ class AssetLibrary(BaseModel):
         return value[:MAXIMUM_FIGURES]
 
     def usable(self) -> list[LibraryFigure]:
-        """What the video may show: chosen, or undecided and not decoration."""
+        """What the video may show: chosen, or undecided and fit to show.
+
+        A chosen picture is always usable, whatever was found in it: the
+        measurement is a default, and someone who looked at the picture and said
+        "use it" has overruled it on purpose.
+        """
         return [
             figure for figure in self.figures
             if figure.in_extraction and (
                 figure.use == FigureUse.USE
-                or (figure.use == FigureUse.UNDECIDED and not figure.is_decoration)
+                or (figure.use == FigureUse.UNDECIDED
+                    and not figure.is_decoration and not figure.is_unfit)
             )
         ]
 
@@ -151,6 +195,8 @@ class AssetLibrary(BaseModel):
             "skipped_count": sum(1 for f in present if f.use == FigureUse.SKIP),
             "undecided_count": sum(1 for f in present if f.use == FigureUse.UNDECIDED),
             "decoration_count": sum(1 for f in present if f.is_decoration),
+            "unfit_count": sum(1 for f in present if f.is_unfit),
+            "trimmed_count": sum(1 for f in present if f.prepared_path),
             "usable_count": len(self.usable()),
             "gone_count": sum(1 for f in self.figures if not f.in_extraction),
             "generated_count": sum(1 for f in present if f.origin == "generated"),
@@ -164,6 +210,12 @@ class AssetLibrary(BaseModel):
             warnings.append(
                 f"{audit['gone_count']} picture(s) in this library are no longer in the "
                 f"extraction. Their decisions are kept in case they come back."
+            )
+        if audit["unfit_count"]:
+            warnings.append(
+                f"{audit['unfit_count']} picture(s) were opened and found unfit to show "
+                f"-- blank, a sliver, or too small once trimmed. They are not proposed "
+                f"for use; choose one anyway if it is worth showing."
             )
         if self.look.use_source_styling and not self.look.is_available:
             warnings.append(
@@ -230,7 +282,7 @@ def rebuild_library(
     dropped: deleting the decision would mean making it again if the file comes
     back.
     """
-    from pipeline.extraction_review import _describe_picture
+    from pipeline.figure_prep import prepare_figure
 
     decided = {figure.asset_path: figure for figure in existing.figures if figure.asset_path}
     figures: list[LibraryFigure] = []
@@ -244,7 +296,10 @@ def rebuild_library(
                 continue
             seen.add(block.asset_path)
 
-            measured = _describe_picture(project_root / block.asset_path)
+            # Opened, trimmed and judged. The measurement is what makes the
+            # difference between a library of file names and a library of
+            # pictures somebody could actually put on a frame.
+            prepared = prepare_figure(project_root, block.asset_path)
             previous = decided.get(block.asset_path)
             figures.append(LibraryFigure(
                 id=previous.id if previous else new_identifier(),
@@ -254,8 +309,13 @@ def rebuild_library(
                 heading_path=list(block.heading_path),
                 caption=block.text,
                 origin=block.asset_origin or "source",
-                width=measured.get("width", 0) if measured["readable"] else 0,
-                height=measured.get("height", 0) if measured["readable"] else 0,
+                width=prepared.width,
+                height=prepared.height,
+                prepared_path=prepared.prepared_path,
+                prepared_width=prepared.prepared_width,
+                prepared_height=prepared.prepared_height,
+                trimmed_fraction=prepared.trimmed_fraction,
+                flags=list(prepared.flags),
                 use=previous.use if previous else FigureUse.UNDECIDED,
                 note=previous.note if previous else "",
                 in_extraction=True,

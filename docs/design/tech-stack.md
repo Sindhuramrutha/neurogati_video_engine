@@ -159,10 +159,8 @@ SQLite handles four things, none of them source of truth:
 
 An upgrade over FastAPI without a conceptual change:
 
-- **Real dependency injection** — matters when wiring LangGraph, storage, and
-  renderers together
-- **Channels** — first-class pub/sub for websockets, which is exactly what
-  streaming LangGraph state to the UI needs
+- **Real dependency injection** — matters when wiring LangGraph, storage, and renderers together
+- **Channels** — first-class pub/sub for websockets, which is exactly what streaming LangGraph state to the UI needs
 - **DTOs and layered structure** — less ad-hoc as the app grows
 - **Faster**, with less runtime magic
 

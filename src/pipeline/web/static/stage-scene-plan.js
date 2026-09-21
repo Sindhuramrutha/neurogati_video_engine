@@ -81,6 +81,16 @@ export async function renderScenePlanStage(stage, navigateToStage, renderAgentSt
     return;
   }
 
+  // Whether the sources are a deck, and whether the plan still follows it. Its
+  // own request because a failure here should cost the slide controls and not
+  // the page.
+  let slides = null;
+  try {
+    slides = await requestJsonFromApi(projectApiPath("/plan/slide-coverage"));
+  } catch (coverageFailure) {
+    console.error("slide coverage load failed", coverageFailure);
+  }
+
   // The bar already speaks for the plan's relationship to the extraction, so
   // the notice carries only the plan's own problems.
   const freshnessWarnings = new Set(plan.freshness?.warnings ?? []);
@@ -99,7 +109,7 @@ export async function renderScenePlanStage(stage, navigateToStage, renderAgentSt
         </button>
       </div>
 
-      ${renderPlanBar(plan)}
+      ${renderPlanBar(plan, slides)}
 
       ${ownWarnings.length ? `
         <div class="notice warn" style="margin-bottom:14px">
@@ -126,8 +136,9 @@ export async function renderScenePlanStage(stage, navigateToStage, renderAgentSt
 
 /* ---- the plan against the extraction ------------------------------------ */
 
-function renderPlanBar(plan) {
+function renderPlanBar(plan, slides) {
   const freshness = plan.freshness ?? {};
+  const slideCount = slides?.slide_count ?? 0;
   const documents = plan.source_outline ?? [];
   const headingCount = documents.reduce((sum, d) => sum + d.headings.length, 0);
   const missing = freshness.sections_with_missing_sources ?? [];
@@ -145,7 +156,23 @@ function renderPlanBar(plan) {
            placeholder="Guidance for the draft (optional)"
            value="${escapeHtml(planViewState.draftInstruction)}"
            aria-label="Guidance for the draft">
-    <button class="btn btn-accent" id="draft-plan-button">${label}</button>`;
+    <button class="btn btn-accent" id="draft-plan-button">${label}</button>`
+    + deckButton;
+
+  /**
+   * Following the deck is a different kind of decision from drafting.
+   *
+   * A draft asks a model to group the material, which is right for a chapter or
+   * a paper. A deck has already been divided and ordered by whoever made it, so
+   * following it is mechanical: one section per slide, every slide, in order.
+   * Offered wherever a draft is, because it is the better answer whenever the
+   * source is a deck.
+   */
+  const deckButton = slideCount
+    ? `<button class="btn" id="plan-from-slides-button"
+               title="One section per slide, in the deck's order, every slide"
+        >Follow the deck (${slideCount} slides)</button>`
+    : "";
   const keepButton = `<button class="btn" id="confirm-plan-button"
       title="I have checked this plan against the current extraction">Keep plan as is</button>`;
 
@@ -193,6 +220,20 @@ function renderPlanBar(plan) {
     return bar("stale", ICON.alert,
       `${missing.length} section(s) point at content that is no longer extracted`,
       escapeHtml(missing.map(m => m.title || "Untitled").join(" · ")),
+      draftControls("Redraft"));
+  }
+
+  if (slides && slides.follows_the_deck) {
+    return bar("ready", ICON.check,
+      `Following the deck: all ${slides.slide_count} slides, in order`,
+      `${slides.scene_count} scene(s) across ${slides.slide_count} slide(s)`
+      + ` — ${slides.scenes_per_slide} per slide. Every slide is covered and none is`
+      + ` out of order.`,
+      draftControls("Redraft"));
+  }
+  if (slides && slides.warnings.length) {
+    return bar("stale", ICON.alert, "This plan no longer follows the deck",
+      slides.warnings.map(escapeHtml).join(" · "),
       draftControls("Redraft"));
   }
 
@@ -702,6 +743,26 @@ function wireScenePlanStage(stage, navigateToStage, renderAgentStage, draft) {
   });
 
   // --- the plan against the extraction ---
+  const fromSlides = document.querySelector("#plan-from-slides-button");
+  if (fromSlides) {
+    fromSlides.onclick = async () => {
+      fromSlides.disabled = true;
+      fromSlides.textContent = "Following the deck…";
+      try {
+        const built = await requestJsonFromApi(
+          projectApiPath("/plan/from-slides"), { method: "POST" });
+        showStageNotice("ok",
+          `${built.section_count} section(s) from ${built.slide_count} slide(s), in the`
+          + ` deck's order.`);
+        await refreshProjectSummary();
+      } catch (slideFailure) {
+        console.error("planning from slides failed", slideFailure);
+        showStageNotice("bad", slideFailure.message);
+      }
+      await rerender();
+    };
+  }
+
   const draftButton = select("#draft-plan-button");
   if (draftButton) draftButton.onclick = () => draftPlan(rerender);
   select("#draft-instruction")?.addEventListener("keydown", event => {

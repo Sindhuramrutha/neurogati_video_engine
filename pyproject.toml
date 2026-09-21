@@ -36,6 +36,9 @@ audio = [
     "kokoro>=0.9.4",
     "faster-whisper>=1.2",
 ]
+animation = [
+    "manim>=0.21.0",
+]
 
 [dependency-groups]
 dev = [

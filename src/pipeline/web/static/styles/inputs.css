@@ -1,0 +1,56 @@
+/** Inputs — the drop zone, the file list, and viewing a file as itself. */
+
+/* ---- dropzone ----------------------------------------------------------- */
+.dropzone {
+  border: 1.5px dashed var(--line); border-radius: var(--radius);
+  padding: 40px 20px; text-align: center;
+  transition: border-color .15s, background .15s;
+}
+
+.dropzone.busy { opacity: .55; pointer-events: none; }
+
+.dropzone .lead { font-size: 15px; margin-bottom: 4px; }
+
+.dropzone .or { color: var(--text-faint); font-size: 12.5px; margin: 8px 0 12px; }
+
+.transport { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+
+/* --- drop zone ----------------------------------------------------------- */
+.dropzone {
+  border: var(--edge-bold) dashed var(--line);
+  border-radius: 16px;
+  background: var(--stage-soft);
+  padding: 34px 20px;
+}
+
+.dropzone.hot { background: var(--stage); }
+
+.dropzone.over { background: var(--stage); }
+
+/* --- the drop zone is the loudest thing on an empty page ---------------- */
+/* Full yellow at rest, not only under the pointer. With the colour no longer
+   changing on hover, hover lifts the box instead, so it still answers the
+   pointer; dragging files over it turns it green. */
+.dropzone { background: var(--c-yellow); transition: background .15s, box-shadow .15s; }
+
+.dropzone:hover { background: var(--c-yellow); box-shadow: var(--shadow-sm); }
+
+.dropzone.over, .dropzone.hot { background: var(--c-green); }
+
+.slide-stage {
+  border: var(--edge) solid var(--line); border-radius: 10px;
+  background: #fff; overflow: auto; padding: 10px;
+  min-height: 220px; display: grid; place-items: center;
+}
+
+.slide-stage canvas, .slide-stage section, .slide-stage > div { max-width: 100%; }
+
+.deck-controls {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  margin-top: 10px;
+}
+
+.deck-count {
+  border: var(--edge) solid var(--line); border-radius: 99px;
+  background: var(--surface); padding: 5px 14px; font-weight: 800; font-size: 12.5px;
+}

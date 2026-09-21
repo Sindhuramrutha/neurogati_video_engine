@@ -27,7 +27,8 @@ def test_the_stages_are_defined_once_and_in_order():
 
     assert [s.key for s in STAGES] == [
         Stage.INPUTS, Stage.EXTRACTION, Stage.ASSETS, Stage.SCENE_PLAN,
-        Stage.SCRIPT_STAGING, Stage.STUDIO, Stage.REVIEWING, Stage.EXPORT,
+        Stage.SCRIPT_STAGING, Stage.GENERATION, Stage.STUDIO, Stage.REVIEWING,
+        Stage.EXPORT,
     ]
 
 
@@ -46,7 +47,8 @@ def test_editing_an_agent_invalidates_only_downstream():
     from pipeline.stages import Stage, downstream_of
 
     assert downstream_of(Stage.SCENE_PLAN) == [
-        Stage.SCRIPT_STAGING, Stage.STUDIO, Stage.REVIEWING, Stage.EXPORT,
+        Stage.SCRIPT_STAGING, Stage.GENERATION, Stage.STUDIO, Stage.REVIEWING,
+        Stage.EXPORT,
     ]
     assert downstream_of(Stage.EXPORT) == []
 
