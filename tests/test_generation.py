@@ -70,7 +70,7 @@ def scripted_project(name, *, figures=1, scenes=2, approach="", source_text="Wor
     ]
     for index in range(figures):
         stored = f"extraction/assets/fig{index}.png"
-        (project.root / stored).write_bytes(picture_bytes())
+        (project.root / stored).write_bytes(picture_bytes(("blue", "green", "red")[index % 3]))
         blocks.append(ContentBlock(
             kind=BlockKind.FIGURE, text=f"Figure {index + 1}", heading_path=["Signals"],
             asset_path=stored))
@@ -78,6 +78,10 @@ def scripted_project(name, *, figures=1, scenes=2, approach="", source_text="Wor
     ExtractionStore(project.root).save(Extraction(
         documents=[ExtractedDocument(file_name="chapter.docx", blocks=blocks)],
         extracted_at="2026-09-17T00:00:00+00:00"))
+    # The chain: the pictures are gathered and transferred before the plan.
+    from pipeline.assets_handoff import confirm_assets
+    operations.refresh_asset_library(slug)
+    confirm_assets(slug)
     PlanStore(project.root).save(Plan(sections=[PlanSection(
         id="s1", title="Signals", estimated_seconds=60, rendering_approach=approach,
         sources=[SourceReference(file_name="chapter.docx", heading_path=["Signals"])])]))
@@ -314,7 +318,8 @@ def test_the_render_shows_each_scene_what_generation_chose(project_root):
 
     shots = shots_for_sections(project, operations.read_artifact(slug, "plan"))
 
-    assert [shot.picture.name for shot in shots["s1"]] == ["fig0.png", "fig1.png"]
+    # The trimmed copies Assets & Design made, as the plan carried them.
+    assert [shot.picture.stem.split("-")[0] for shot in shots["s1"]] == ["fig0", "fig1"]
     assert {shot.motion for shot in shots["s1"]} != {"hold"}, "the camera has to move"
 
 

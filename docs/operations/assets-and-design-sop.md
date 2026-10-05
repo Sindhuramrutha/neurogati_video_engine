@@ -18,12 +18,18 @@ lets you set aside what you don't want, holds your brand assets, and sets how
 the video's own frames look.
 
 It does not judge pictures. Whether a picture is large and clear enough to be a
-scene's picture is decided in **Generation**, where a picture is chosen for a
-scene. Generation's Setup tab lists any handed-on picture it cannot use, and
-why.
+scene's picture is said where pictures are attached to sections, on the **Scene
+Plan**: one that cannot fill a frame is listed there with why, and cannot be
+attached.
 
-Generation and Render read what this layer **transferred**, never what is still
-being worked on.
+What this layer **transfers** goes to the Scene Plan, and only there. The plan
+attaches the pictures to its sections and carries them, the brand kit and the
+look on to every later layer. Script, Generation and Render never read this
+layer directly (`plan_pictures.py`). Transferring it again flags the Scene Plan,
+and through it everything after.
+
+A source with no pictures is still transferred: the Scene Plan cannot be
+transferred until this layer has been.
 
 ## Guarantees
 

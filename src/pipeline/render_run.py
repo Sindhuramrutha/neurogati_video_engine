@@ -67,8 +67,8 @@ def pictures_for_sections(project, plan: dict) -> dict[str, list[Path]]:
     pictures attached shows none rather than borrowing another section's.
     """
     from pipeline.figure_prep import showable_path
-    from pipeline.planning import Plan
     from pipeline.plan_pictures import assets_for_later_stages, pictures_of
+    from pipeline.planning import Plan
 
     library = assets_for_later_stages(project).library
     whole = Plan.model_validate({"sections": plan["sections"],

@@ -52,6 +52,11 @@ review and the export.
 6. **Before the first transfer**, later stages read the working plan, as they
    always did. Projects from before this step keep working unchanged. The Final
    tab says which one later stages are reading.
+7. **The plan carries Assets & Design.** Each section has pictures, attached
+   from what Assets & Design transferred. The transfer copies them, the brand kit
+   and the look into the transferred plan; every later layer uses those and
+   nothing else (`plan_pictures.py`). The plan cannot be transferred until
+   Assets & Design has been.
 
 ## The four tabs, in order
 
@@ -120,6 +125,20 @@ Choose **how to build the outline**. The code is `plan_approaches.py`.
   of date, not linked, or no longer following the deck. **Keep plan as is**
   records that you checked it against the current extraction.
 
+### Pictures, per section
+
+- By rule, a section gets every picture from its own slides (or under its own
+  headings) that is large and clear enough to fill a frame. The outline row shows
+  them, with **by rule** or **chosen**.
+- In the section editor, **Pictures it shows** lists every picture Assets &
+  Design handed on. Click one to attach or detach it; the section then keeps
+  exactly your choice. **Back to the rule** hands it back. A picture that cannot
+  fill a frame says why and cannot be attached.
+- When Assets & Design is transferred again, the rule's pictures follow it; a
+  chosen set keeps your choice, minus any picture no longer handed on.
+- The Script agent is told each section's pictures, and Generation shows only
+  these for the section's scenes.
+
 ### 3. Check
 
 | Check | Rule | Result if it breaks |
@@ -137,6 +156,7 @@ Choose **how to build the outline**. The code is `plan_approaches.py`.
 | Summaries | Each teaching section says in one line what the viewer learns | Warning |
 | Time for the material | The target neither stretches the material past ×1.5 nor squeezes it below ×0.6 | Warning |
 | Audience | One audience is chosen | Warning |
+| Assets transferred | Assets & Design is transferred; the plan carries its pictures, brand kit and look | **Fails** if never transferred; warning if it has changes not transferred |
 
 The Check tab shows a count badge: red if a check fails, orange if there are
 warnings.
@@ -156,7 +176,8 @@ warnings.
 
 ## Checks before transferring
 
-- [ ] The strip under the header names the source meant for this video.
+- [ ] Assets & Design is transferred, and each section shows the pictures it
+      should; attach or detach any that are wrong.
 - [ ] The audience, objectives and target duration are set.
 - [ ] The outline is built by the method that fits the source, and each section
       reads right.

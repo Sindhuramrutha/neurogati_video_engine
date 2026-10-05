@@ -469,21 +469,25 @@ const STAGE_INFO = {
     summary: "The inventory and the look: what exists, your brand assets, and how the video's frames look.",
     points: [
       "Extracted assets: every picture, in a box per file, with the slide it came from. Leave out what you "
-        + "don't want. Nothing is judged here; Generation decides which picture a scene shows.",
+        + "don't want. Nothing is judged here; the Scene Plan attaches pictures to sections.",
       "Brand assets: watermark, logo, intro and outro. Drag to place; set size, opacity, corners, shadow, "
         + "when it appears, trims and cross-fades. The preview is the image the render lays on.",
       "Look: a theme, three colours, fonts and the deck's background art, with a live preview and a "
         + "readability check.",
-      "Final & transfer: the video as it will look, and everything handed on, stated. No AI on this layer.",
+      "Final & transfer: the video as it will look, and everything handed on, stated. It goes to the "
+        + "Scene Plan, which carries it to every later layer. No AI on this layer.",
     ],
   },
   "scene-plan": {
     summary: "Shape the lesson: what is taught, in what order, for how long, and to what end.",
     points: [
-      "Brief: what Extraction handed on; the audience, objectives, lesson frame (Opening, Recap, Close) and preferences.",
-      "Outline: build it, then shape it -- time shared from the target, objective links and summaries proposed for you to accept.",
+      "Brief: what Extraction and Assets & Design handed on; the audience, objectives, lesson frame "
+        + "(Opening, Recap, Close) and preferences.",
+      "Outline: build it, then shape it -- time shared from the target, objective links and summaries "
+        + "proposed for you to accept. Each section gets the pictures from its own slides; attach or detach any.",
       "Check: fixed rules, each pass / warning / fails; a failing check blocks the transfer.",
-      "Final & transfer: once transferred, later stages read only the transferred plan.",
+      "Final & transfer: needs Assets & Design transferred first. Later stages read only the "
+        + "transferred plan, with the pictures, brand kit and look it carries.",
     ],
   },
   "script-staging": {

@@ -280,3 +280,36 @@
 .plan-approach-option { flex-wrap: wrap; }
 .plan-approach textarea { width: 100%; min-height: 70px; }
 .plan-approach #build-outline-button { margin-top: 14px; }
+
+/* ---- each section's pictures, from Assets & Design ---------------------------- */
+
+.section-pictures { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 6px; }
+.section-pictures img {
+  width: 54px; height: 34px; object-fit: contain; background: var(--surface);
+  border: 1.5px solid var(--line); border-radius: 4px;
+}
+.section-pictures .more { font-size: 11.5px; font-weight: 800; }
+
+.pictures-notice {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 10px;
+  padding: 9px 12px; border: 2px solid var(--line); border-radius: 6px;
+  background: var(--c-yellow-soft); font-size: 12.5px;
+}
+
+.picture-picker {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px;
+  max-height: 290px; overflow: auto; padding: 2px;
+}
+.picture-tile {
+  display: flex; flex-direction: column; gap: 3px; padding: 4px; text-align: left;
+  border: 2px solid var(--line); border-radius: 6px; background: var(--surface);
+  font: inherit; font-size: 11px; cursor: pointer; opacity: .62;
+}
+.picture-tile img { width: 100%; height: 62px; object-fit: contain; background: #fff; }
+.picture-tile span { font-weight: 700; overflow-wrap: anywhere; }
+.picture-tile em { font-style: normal; color: var(--c-red, #D92D20); }
+.picture-tile.on { opacity: 1; box-shadow: 3px 3px 0 var(--line); background: var(--c-teal-soft); }
+.picture-tile[disabled] { cursor: not-allowed; opacity: .45; }
+#edit-pictures-rule .btn { margin-left: 6px; }
+.picture-tile .tile-state { font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; }
+.picture-tile.on .tile-state { color: #0F7A4F; }

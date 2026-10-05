@@ -3,6 +3,7 @@ names what changed, and transferring the layer again clears it."""
 
 # ruff: noqa: F811
 from pipeline import operations
+from pipeline.assets_handoff import confirm_assets
 from pipeline.plan_handoff import read_plan_handoff, transfer_plan
 from pipeline.planning import PlanStore
 from pipeline.script_handoff import transfer_script
@@ -19,6 +20,8 @@ def change_the_deck(slug, project, slides):
 
 def planned_and_scripted(name, slides=3):
     slug, project = a_deck_project(name, slides=slides)
+    operations.refresh_asset_library(slug)
+    confirm_assets(slug)
     plan_from_slides(slug)
     transfer_plan(slug)
     for section in PlanStore(project.root).load().sections:
@@ -55,7 +58,11 @@ def test_a_new_transfer_flags_every_layer_after_it_and_says_what_changed(project
 def test_transferring_again_clears_the_flag_and_moves_it_down(project_root):
     slug, project = planned_and_scripted("Cleared", slides=3)
     change_the_deck(slug, project, slides=4)
+    assert "Assets & Design" in upstream_state(project)["scene-plan"]["behind"], \
+        "the plan is built on Assets & Design too, which is now behind"
 
+    operations.refresh_asset_library(slug)
+    confirm_assets(slug)
     resync_plan_with_deck(slug)
     transfer_plan(slug)
     state = upstream_state(project)

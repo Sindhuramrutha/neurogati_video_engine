@@ -438,14 +438,17 @@ def project_with_sourced_sections(project_root):
 def test_a_section_shows_the_pictures_from_its_own_source(project_root):
     """The whole point: a diagram appears beside the words it belongs to. Before
     this, sixty-three extracted pictures sat on disk and the video was text."""
+    from pipeline.assets_handoff import confirm_assets
     from pipeline.render_run import pictures_for_sections
 
     slug, project = project_with_sourced_sections(project_root)
+    operations.refresh_asset_library(slug)
+    confirm_assets(slug)
     chosen = pictures_for_sections(project, operations.read_artifact(slug, "plan"))
 
-    assert [p.name for p in chosen["s1"]] == ["one.png"]
-    assert [p.name for p in chosen["s2"]] == ["two.png"]
-    assert all("loose.png" not in [p.name for p in pictures] for pictures in chosen.values()), \
+    assert [p.stem.split("-")[0] for p in chosen["s1"]] == ["one"]
+    assert [p.stem.split("-")[0] for p in chosen["s2"]] == ["two"]
+    assert all("loose" not in p.name for pictures in chosen.values() for p in pictures), \
         "a figure under a heading no section covers belongs to no section"
 
 

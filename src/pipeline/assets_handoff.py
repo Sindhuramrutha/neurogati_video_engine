@@ -218,8 +218,11 @@ def handoff_state(project, library: AssetLibrary) -> dict[str, Any]:
     return {
         "has_confirmed": bool(confirmed.confirmed_at),
         "confirmed_at": confirmed.confirmed_at,
-        "pending": bool(library.figures or library.look.is_available or not brand.is_empty
-                        or not confirmed.brand.is_empty) and (
+        # Never transferred, once something is extracted: even a source with no
+        # pictures is transferred, so the plan knows there are none.
+        "pending": (not confirmed.confirmed_at and bool(extraction.documents)) or bool(
+            library.figures or library.look.is_available or not brand.is_empty
+            or not confirmed.brand.is_empty) and (
             # Compared with the transfer as it reads now, not with a digest stored
             # then: a model that has since gained a field reads both the same way.
             current != fingerprint(confirmed.library, confirmed.brand)

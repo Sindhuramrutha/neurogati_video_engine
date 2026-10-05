@@ -95,7 +95,7 @@ def draft_section(slug: str, section_id: str, instruction: str = "") -> dict[str
     try:
         written, notes = _write_section(
             agent, plan, script, extraction, section, instruction,
-            video_preferences(project.root))
+            video_preferences(project.root), section_pictures(project, plan))
     except ModelNotConfigured as not_configured:
         raise OperationFailed(str(not_configured)) from not_configured
     except ModelCallFailed as call_failure:
@@ -141,11 +141,12 @@ def draft_unwritten_sections(slug: str, instruction: str = "") -> dict[str, Any]
     extraction = ExtractionStore(project.root).load()
     agent = resolve_agent(project, Stage.SCRIPT_STAGING)
     preferences = video_preferences(project.root)
+    pictures = section_pictures(project, plan)
 
     def draft(section: PlanSection):
         try:
             return section, *_write_section(
-                agent, plan, script, extraction, section, instruction, preferences)
+                agent, plan, script, extraction, section, instruction, preferences, pictures)
         except (ModelCallFailed, ModelNotConfigured) as failure:
             logger.warning("drafting %s failed: %s", section.title, failure)
             return section, None, [f'"{section.title}" could not be drafted: {failure}']
@@ -195,6 +196,7 @@ def _write_section(
     section: PlanSection,
     instruction: str,
     preferences,
+    pictures: dict[str, list[str]] | None = None,
 ) -> tuple[SectionScript, list[str]]:
     """Ask for this section's scenes. Returns the section, unsaved, and any notes."""
     notes: list[str] = []
@@ -232,7 +234,8 @@ def _write_section(
         f"Audience: {plan.selected_audience or 'not chosen'}"
         + (f"\nInstruction: {instruction.strip()}" if instruction.strip() else ""),
         f"--- the whole plan ---\n{compact_plan_text(plan, marked_section_id=section.id)}",
-        f"--- the section you are writing ---\n{_section_brief(plan, section, target_words)}",
+        "--- the section you are writing ---\n" + _section_brief(
+            plan, section, target_words, (pictures or {}).get(section.id, [])),
         _neighbours(plan, script, section),
         f"--- source material for this section ---\n{source}",
     ) if part)
@@ -250,7 +253,20 @@ def _write_section(
     return written, notes
 
 
-def _section_brief(plan: Plan, section: PlanSection, target_words: int) -> str:
+def section_pictures(project, plan: Plan) -> dict[str, list[str]]:
+    """Each section's pictures, as the plan attached them, named for the agent:
+    the script is written knowing what the section will show."""
+    from pipeline.plan_pictures import assets_for_later_stages, pictures_of
+
+    library = assets_for_later_stages(project).library
+    return {section.id: [figure.name + (f" -- {figure.caption}" if figure.caption
+                                        and figure.caption not in figure.name else "")
+                         for figure in pictures_of(section, plan, library)]
+            for section in plan.sections}
+
+
+def _section_brief(plan: Plan, section: PlanSection, target_words: int,
+                   pictures: list[str] | None = None) -> str:
     from pipeline.lesson_plan import ROLE_GUIDE, summary_problem
 
     objectives = {o.id: o.text for o in plan.learning_objectives if o.is_included}
@@ -270,6 +286,10 @@ def _section_brief(plan: Plan, section: PlanSection, target_words: int) -> str:
         lines.append("Learning objectives it serves:\n" + "\n".join(f"- {o}" for o in served))
     if ROLE_GUIDE.get(section.role):
         lines.append(f"Its part in the lesson: {ROLE_GUIDE[section.role]}")
+    if pictures:
+        lines.append("Pictures from the source this section shows (a scene may be built "
+                     "around one; describe no picture that is not listed):\n"
+                     + "\n".join(f"- {name}" for name in pictures))
     return "\n".join(lines)
 
 

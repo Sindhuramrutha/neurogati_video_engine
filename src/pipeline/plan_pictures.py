@@ -58,8 +58,10 @@ def assets_for_later_stages(project) -> ConfirmedAssets:
 
 
 def _belongs(figure: LibraryFigure, reference: SourceReference) -> bool:
-    if reference.slide_number:
+    if reference.slide_number and figure.slide_number:
         return figure.slide_number == reference.slide_number
+    # A picture gathered before pictures recorded their slide: its heading is
+    # the slide's title, which is where it is.
     # A heading path is a location: a picture under a deeper heading is inside
     # the section, one above it is not.
     heading = list(reference.heading_path)

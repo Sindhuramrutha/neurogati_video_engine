@@ -135,8 +135,7 @@ def _check(key: str, name: str, rule: str, status: str, detail: str) -> dict[str
 
 
 def generation_checks(project, plan: VisualPlan) -> list[dict[str, str]]:
-    from pipeline.plan_handoff import TransferredPlanStore
-    from pipeline.plan_handoff import plan_for_later_stages
+    from pipeline.plan_handoff import TransferredPlanStore, plan_for_later_stages
 
     # Only scenes of sections the plan has: narration left over from sections
     # it dropped is never rendered, so it needs no shot.

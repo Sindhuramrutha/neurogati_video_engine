@@ -40,7 +40,7 @@ flowchart TD
         A1["Extracted assets: gather every picture by slide<br/>trim plain borders · flag cut crops<br/>you leave out what you don't want"]
         A2["Brand assets: watermark · logo · intro · outro<br/>placed, sized, timed, trimmed, cross-faded"]
         A3["Look: the deck's styling or the renderer's own<br/>theme · colours · fonts · background art"]
-        A4[/"Transfer → pictures · brand kit · look"/]
+        A4[/"Transfer → pictures · brand kit · look<br/>(to the Scene Plan only)"/]
         A1 --> A2 --> A3 --> A4
     end
 
@@ -49,14 +49,15 @@ flowchart TD
         P1["Brief: audience · learning objectives<br/>lesson frame · target length · tone · language"]
         P2["Build the outline by an approach<br/>follow the deck (rule) · group into ideas ·<br/>story first · concept first · question led (AI draft)"]
         P3["Shape the lesson: Opening · Teach · Story · Recap · Close<br/>time shared from the target · objective links suggested<br/>one-line summaries (AI, proposals)"]
-        P4["Fixed checks"]
-        P5[/"Transfer → the plan"/]
-        P1 --> P2 --> P3 --> P4 --> P5
+        P6["Attach pictures: each section gets the pictures<br/>from its own slides by rule · attach or detach by hand"]
+        P4["Fixed checks · Assets & Design must be transferred"]
+        P5[/"Transfer → the plan, carrying<br/>section pictures · brand kit · look"/]
+        P1 --> P2 --> P3 --> P6 --> P4 --> P5
     end
 
     subgraph SCRIPT["5 · Script & Staging"]
         direction TB
-        S1["Write each section as scenes (AI)<br/>narration in the teacher's own voice<br/>+ what is on screen while it is said"]
+        S1["Write each section as scenes (AI)<br/>narration in the teacher's own voice<br/>+ what is on screen while it is said<br/>told the section's own pictures"]
         S2["Edit by hand · redraft a section (AI)"]
         S3["Fixed checks: every section written,<br/>length fits, teacher's voice, variables"]
         S4[/"Transfer → the script"/]
@@ -65,7 +66,7 @@ flowchart TD
 
     subgraph GENERATION["6 · Generation"]
         direction TB
-        G1["Decide each scene's shot by fixed rules<br/>the deck's slide › a source picture › a chart ›<br/>a drawn picture (AI) › words on screen"]
+        G1["Decide each scene's shot by fixed rules<br/>the deck's slide › a picture attached to its section ›<br/>a chart › a drawn picture (AI) › words on screen"]
         G2["Or a scripted scene: the agent writes scene.py (AI)<br/>it is run, and 8 fixed checks decide if its clip is used"]
         G3["Make: on-screen words (AI) · pictures · diagrams · charts"]
         G4["Fixed checks"]
@@ -77,7 +78,7 @@ flowchart TD
         direction TB
         R1["Speak the narration (text-to-speech)<br/>the audio is the clock"]
         R2["Cut every shot to its narration · join the sections<br/>subtitles · timeline · chapters"]
-        R3["Brand pass: logo · watermark · intro · outro"]
+        R3["Brand pass: logo · watermark · intro · outro<br/>the brand kit and look the plan carried"]
         R4["A queue: halt · continue · discard"]
         R5[/"A video version: .mp4 + subtitles"/]
         R1 --> R2 --> R3 --> R4 --> R5
@@ -106,14 +107,13 @@ flowchart TD
 
     %% ------------------------------------------------- the spine, in the app's order
     %% A thick arrow is a transfer: the next layer reads only what was handed on.
+    %% Strict: nothing after the Scene Plan reads Assets & Design. The plan carries it.
     INPUTS == "the source file" ==> EXTRACTION
     EXTRACTION == "the extraction" ==> ASSETS
-    ASSETS ~~~ PLAN
-    EXTRACTION == "the extraction" ==> PLAN
-    PLAN == "the plan" ==> SCRIPT
-    SCRIPT == "the script" ==> GENERATION
-    ASSETS == "pictures · brand kit · look" ==> GENERATION
-    GENERATION == "frozen shots · the script" ==> RENDER
+    ASSETS == "pictures · brand kit · look" ==> PLAN
+    PLAN == "the plan · section pictures · brand kit · look" ==> SCRIPT
+    SCRIPT == "the script · the plan's pictures" ==> GENERATION
+    GENERATION == "frozen shots · the script · brand kit · look" ==> RENDER
     RENDER == "a video version" ==> STUDIO
     RENDER == "a video version" ==> REVIEW
     RENDER == "a video version" ==> EXPORT
@@ -141,6 +141,7 @@ flowchart TD
 |---|---|
 | One source file | A project is made from one file. It runs through every layer. Replacing it keeps later work and flags it out of date. |
 | Transfer to hand on | A layer's work reaches the next layer only when it is transferred. A failing check blocks the transfer. |
+| One chain | Extraction → Assets & Design → Scene Plan → Script → Generation → Render. Each layer reads only the one before it; the plan carries the pictures, brand kit and look on. Nothing after the plan reads Assets & Design. |
 | AI proposes, a person decides | Every AI action produces a proposal or a draft, said in advance with how many model calls it costs. Nothing changes until it is accepted. |
 | Fixed checks | Each layer's checks are fixed rules: the same work always gets the same results. |
 | Audio is the clock | The render measures the spoken narration and cuts every picture, subtitle and chapter to it. |
@@ -153,7 +154,7 @@ flowchart TD
 | Inputs | `sources/` | — |
 | Extraction | `extraction/collection.json` | `extraction/content.json` |
 | Assets & Design | `assets/library.json`, `brand.json` | `assets/library.confirmed.json` |
-| Scene Plan | `scene-plan/plan.json` | `scene-plan/plan.transferred.json` (after the first transfer) |
+| Scene Plan | `scene-plan/plan.json` | `scene-plan/plan.transferred.json`, with the assets it carries (after the first transfer) |
 | Script & Staging | `script-staging/script.json` | `script-staging/script.transferred.json` (after the first transfer) |
 | Generation | `generation/visuals.json`, `generation/scenes/` | `generation/visuals.transferred.json` (after the first transfer) |
 | Render | `reviewing/output/render-job.json` | a video version in `reviewing/output/` |

@@ -246,16 +246,18 @@ function renderSetup(visuals, handoff, renderers) {
     </section>`;
 }
 
-/** Which handed-on pictures can be a scene's picture. Judged here, where a
- *  picture is chosen for a scene; Assets & Design lists them and judges none. */
+/** The pictures the transferred plan carried, and which of them can be a
+ *  scene's picture. A scene shows only pictures attached to its own section. */
 function renderPicturesHandedOn(pictures) {
   if (!pictures || !pictures.handed_on) return "";
   const cannot = pictures.cannot_fill_a_frame;
   return `
     <div class="assets-source-row">
-      <span class="x-pick-name">Pictures handed on</span>
+      <span class="x-pick-name">Pictures the plan carried</span>
       <span class="file-status">${pictures.usable} of ${pictures.handed_on} can be a scene's picture</span>
     </div>
+    <p class="panel-sub">A scene shows only the pictures attached to its section on the Scene
+      Plan; change them there.</p>
     ${cannot.length ? `
       <p class="panel-sub">A scene's picture has to be large and clear enough to fill a frame.
         ${cannot.length === 1 ? "This one is not" : `These ${cannot.length} are not`}, so no rule

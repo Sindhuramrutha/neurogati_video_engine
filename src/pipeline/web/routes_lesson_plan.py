@@ -86,6 +86,17 @@ def resync_plan(slug: FromPath[str]) -> dict[str, Any]:
         raise ClientException(detail=str(failure)) from failure
 
 
+@post("/api/projects/{slug:str}/plan/sections/{section_id:str}/pictures", sync_to_thread=False)
+def choose_pictures(slug: FromPath[str], section_id: FromPath[str],
+                    data: dict[str, Any]) -> dict[str, Any]:
+    """Attach exactly these pictures to a section; `paths: null` hands it back to the rule."""
+    from pipeline.plan_pictures import choose_section_pictures
+
+    paths = data.get("paths")
+    return _plan_after(choose_section_pictures, slug, section_id,
+                       [str(p) for p in paths] if isinstance(paths, list) else None)
+
+
 @get("/api/projects/{slug:str}/upstream", sync_to_thread=False)
 def get_upstream_state(slug: FromPath[str]) -> dict[str, Any]:
     """For each layer: what changed before it since it was handed on."""
@@ -96,5 +107,5 @@ def get_upstream_state(slug: FromPath[str]) -> dict[str, Any]:
 
 LESSON_PLAN_ROUTES = [choose_lesson_frame, reshape_plan, write_summaries,
                       accept_summary_proposals, dismiss_summary_proposals, resync_plan,
-                      build_plan_outline,
+                      build_plan_outline, choose_pictures,
                       get_upstream_state]

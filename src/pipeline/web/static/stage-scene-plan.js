@@ -49,6 +49,9 @@ const currentPlanTab = () =>
 const planViewState = {
   editingSectionId: null,
   editingSources: [],
+  // The pictures being attached in the editor, and whether a person chose them.
+  editingPictures: [],
+  editingPicturesChosen: false,
   draggingSectionId: null,
   isDrafting: false,
   isActing: false,
@@ -188,6 +191,46 @@ export async function renderScenePlanStage(stage, navigateToStage, renderAgentSt
 
 /* ---- the plan against the extraction ------------------------------------ */
 
+/** A picture Assets & Design handed on, as the page can load it. */
+const pictureUrl = picture => picture.shown_path.startsWith("assets/prepared/")
+  ? projectApiPath(`/assets/prepared/${encodeURIComponent(picture.shown_path.split("/").pop())}`)
+  : projectApiPath(`/extraction/assets/${encodeURIComponent(picture.path.split("/").pop())}`);
+
+const offeredPicture = (plan, path) => (plan.pictures?.offered ?? []).find(p => p.path === path);
+
+/** A section's pictures in the outline: what every later layer will show for it. */
+function renderSectionPictures(section, plan) {
+  if (!plan.pictures?.has_assets) return "";
+  const pictures = (section.picture_paths ?? []).map(path => offeredPicture(plan, path))
+    .filter(Boolean);
+  if (!pictures.length) {
+    if (isFrame(section) && !section.pictures_chosen) return "";
+    return `<div class="section-pictures"><span class="fact muted"
+      title="Nothing from Assets & Design is attached to this section">no pictures${
+        section.pictures_chosen ? " · chosen" : ""}</span></div>`;
+  }
+  const shown = pictures.slice(0, 6);
+  return `
+    <div class="section-pictures" title="${escapeHtml(pictures.map(p => p.name).join("\n"))}">
+      ${shown.map(p => `<img alt="${escapeHtml(p.name)}" loading="lazy" src="${pictureUrl(p)}">`)
+        .join("")}
+      ${pictures.length > shown.length ? `<span class="more">+${pictures.length - shown.length}</span>` : ""}
+      <span class="fact ${section.pictures_chosen ? "" : "muted"}">${pictures.length}
+        picture${pictures.length === 1 ? "" : "s"} · ${section.pictures_chosen ? "chosen" : "by rule"}</span>
+    </div>`;
+}
+
+/** Where the plan's pictures come from, said once above the outline. */
+function renderPicturesNotice(plan) {
+  if (plan.pictures?.has_assets) return "";
+  return `<div class="pictures-notice">
+    <b>Assets & Design is not transferred yet.</b> The plan carries its pictures, brand kit
+    and look to every later layer, so sections have no pictures and the plan cannot be
+    transferred until it is.
+    <button class="btn" data-goto="assets">Go to Assets & Design</button>
+  </div>`;
+}
+
 function renderPlanBar(plan, slides) {
   const freshness = plan.freshness ?? {};
   const slideCount = slides?.slide_count ?? 0;
@@ -301,6 +344,7 @@ function renderOutlinePanel(plan) {
         <span class="plan-total">${plan.sections.length} sections ·
           ${formatDuration(plan.total_estimated_seconds)}</span>
       </div>
+      ${renderPicturesNotice(plan)}
       ${renderTimingStrip(plan)}
       ${renderLessonTools(plan)}
       <p class="panel-sub">Drag to reorder the body, or click a section to edit it. The
@@ -462,6 +506,7 @@ function renderOutlineRow(section, index, plan) {
             <button class="btn" data-dismiss-summary="${section.id}">Dismiss</button>
           </div>` : ""}
         ${renderSectionFacts(section, plan, { missing })}
+        ${renderSectionPictures(section, plan)}
         ${suggestions.length ? `
           <div class="objective-suggestions">${suggestions.map(suggestion => `
             <button class="suggestion-chip" data-link-section="${section.id}"
@@ -541,6 +586,15 @@ function renderSectionEditor(section, index, plan) {
             : `<p class="muted edit-hint">Nothing extracted yet to point at.</p>`}
         </div>
 
+        <div class="edit-field">
+          <label>Pictures it shows</label>
+          ${plan.pictures?.has_assets
+            ? `<p class="muted edit-hint" id="edit-pictures-rule"></p>
+               <div id="edit-pictures" class="picture-picker"></div>`
+            : `<p class="muted edit-hint">Assets & Design is not transferred yet, so there
+                 are no pictures to attach.</p>`}
+        </div>
+
         ${plan.learning_objectives.length && !frame ? `
           <div class="edit-field">
             <label>Learning objectives it serves</label>
@@ -591,6 +645,52 @@ function renderEditingSources() {
       renderEditingSources();
     };
   });
+}
+
+/** The picture picker, redrawn in place like the sources. Every picture Assets &
+ *  Design handed on is listed; one too small or unclear to fill a frame says why
+ *  and cannot be attached. */
+function renderEditingPictures() {
+  const host = select("#edit-pictures");
+  if (!host) return;
+  const plan = applicationState.plan;
+  const attached = new Set(planViewState.editingPictures);
+  const offered = plan.pictures?.offered ?? [];
+  select("#edit-pictures-rule").innerHTML = planViewState.editingPicturesChosen
+    ? `Chosen by you: the section keeps exactly these.
+       <button type="button" class="btn" id="pictures-by-rule">Back to the rule</button>`
+    : `By rule: every picture from this section's own slides or headings that can fill a
+       frame, as saved. Click a picture to choose them yourself.`;
+  host.innerHTML = offered.length ? offered.map(picture => `
+      <button type="button" class="picture-tile ${attached.has(picture.path) ? "on" : ""}"
+              data-picture="${escapeHtml(picture.path)}" ${picture.can_attach ? "" : "disabled"}
+              aria-pressed="${attached.has(picture.path)}"
+              title="${escapeHtml(picture.can_attach ? picture.name : `${picture.name}: ${picture.why_not}`)}">
+        <img alt="" loading="lazy" src="${pictureUrl(picture)}">
+        <span>${escapeHtml(picture.name)}</span>
+        ${picture.can_attach
+          ? `<b class="tile-state">${attached.has(picture.path) ? "✓ Attached" : "Not attached"}</b>`
+          : `<em>${escapeHtml(picture.why_not)}</em>`}
+      </button>`).join("")
+    : `<span class="muted edit-hint">Assets & Design handed on no pictures.</span>`;
+
+  host.querySelectorAll("[data-picture]").forEach(button => {
+    button.onclick = () => {
+      const path = button.dataset.picture;
+      const now = new Set(planViewState.editingPictures);
+      now.has(path) ? now.delete(path) : now.add(path);
+      // Kept in the source's order, as the rule orders them.
+      planViewState.editingPictures = offered.map(p => p.path).filter(p => now.has(p));
+      planViewState.editingPicturesChosen = true;
+      renderEditingPictures();
+    };
+  });
+  const byRule = select("#pictures-by-rule");
+  if (byRule) byRule.onclick = () => {
+    planViewState.editingPicturesChosen = false;
+    planViewState.editingPictures = [...(plan.pictures?.by_rule?.[planViewState.editingSectionId] ?? [])];
+    renderEditingPictures();
+  };
 }
 
 /* ---- a drafted plan, next to the current one ----------------------------- */
@@ -1150,12 +1250,14 @@ function wireScenePlanStage(stage, navigateToStage, renderAgentStage, draft) {
       id: newItemIdentifier(),
       title: "", summary: "", estimated_seconds: 60, role: "teach", pinned: false,
       summary_origin: "", sources: [], rendering_approach: "", rendering_reason: "",
-      objective_ids: [],
+      objective_ids: [], picture_paths: [], pictures_chosen: false,
     };
     const tail = plan.sections.findIndex(s => s.role === "recap" || s.role === "close");
     plan.sections.splice(tail < 0 ? plan.sections.length : tail, 0, newSection);
     planViewState.editingSectionId = newSection.id;
     planViewState.editingSources = [];
+    planViewState.editingPictures = [];
+    planViewState.editingPicturesChosen = false;
   });
 
   document.querySelectorAll("[data-edit-section]").forEach(button => {
@@ -1164,6 +1266,8 @@ function wireScenePlanStage(stage, navigateToStage, renderAgentStage, draft) {
         .find(s => s.id === button.dataset.editSection);
       planViewState.editingSectionId = button.dataset.editSection;
       planViewState.editingSources = structuredClone(section?.sources ?? []);
+      planViewState.editingPictures = [...(section?.picture_paths ?? [])];
+      planViewState.editingPicturesChosen = Boolean(section?.pictures_chosen);
       rerender();
     };
   });
@@ -1173,6 +1277,7 @@ function wireScenePlanStage(stage, navigateToStage, renderAgentStage, draft) {
     titleInput.focus();
     titleInput.setSelectionRange(titleInput.value.length, titleInput.value.length);
     renderEditingSources();
+    renderEditingPictures();
 
     const addSource = select("#edit-add-source");
     if (addSource) {
@@ -1210,6 +1315,9 @@ function wireScenePlanStage(stage, navigateToStage, renderAgentStage, draft) {
         sources: structuredClone(planViewState.editingSources),
         objective_ids: [...document.querySelectorAll("[data-edit-objective-link]:checked")]
           .map(box => box.dataset.editObjectiveLink),
+        // By rule, the server attaches them again from the saved sources.
+        picture_paths: [...planViewState.editingPictures],
+        pictures_chosen: planViewState.editingPicturesChosen,
       };
       planViewState.editingSectionId = null;
       planViewState.editingSources = [];

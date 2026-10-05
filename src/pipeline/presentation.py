@@ -64,8 +64,12 @@ def present_artifact(project: Project, artifact_name: str, document: Any) -> dic
     their own data.
     """
     if artifact_name == "plan":
-        from pipeline.lesson_plan import lesson_view
+        from pipeline.lesson_plan import lesson_view, save_plan
         from pipeline.plan_approaches import approach_view
+        from pipeline.plan_pictures import is_behind, pictures_view
+        if document.sections and is_behind(project, document):
+            # Assets & Design was transferred since: the rule's pictures follow it.
+            document = save_plan(project, document)
         extraction = ExtractionStore(project.root).load()
         freshness = plan_freshness(document, extraction)
         presented = document.to_dict()
@@ -75,6 +79,7 @@ def present_artifact(project: Project, artifact_name: str, document: Any) -> dic
             "source_outline": source_outline(extraction),
             "has_pending_draft": PlanDraftStore(project.root).load() is not None,
             "lesson": lesson_view(project, document),
+            "pictures": pictures_view(project, document),
             "approach_choices": approach_view(document, any(
                 b.slide_number for d in extraction.documents for b in d.blocks)),
         }

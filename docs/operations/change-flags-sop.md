@@ -29,10 +29,15 @@ flag says so on every one of them, and says what changed.
 | Layer | Flagged when this is transferred again |
 |---|---|
 | Assets & Design | Extraction |
-| Scene Plan | Extraction |
+| Scene Plan | Extraction, Assets & Design |
 | Script & Staging | Scene Plan, Extraction |
-| Generation | Script & Staging, Assets & Design |
-| Render | Generation, Script & Staging, Assets & Design |
+| Generation | Script & Staging, Scene Plan |
+| Render | Generation, Script & Staging, Scene Plan |
+
+Nothing after the Scene Plan reads Assets & Design: the plan carries its
+pictures, brand kit and look. A new Assets transfer flags the plan; once the plan
+is transferred again, the change ("the pictures, brand kit and look it
+carries") flags the layers after it.
 
 ## What you see
 

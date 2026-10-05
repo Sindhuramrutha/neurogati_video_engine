@@ -265,14 +265,17 @@ function renderFinal(page, stage) {
   const handedOn = page.figures.filter(figure => !figure.is_left_out);
   const leftOut = page.figures.filter(figure => figure.is_left_out);
   const brandNames = page.brand.slots.filter(slot => kit[slot.key]).map(slot => slot.name);
-  const [tone, title, detail] = page.is_empty && !look.is_available && !brandNames.length
-    ? ["blocked", "Nothing to transfer yet", "Gather the pictures on the Extracted assets tab."]
+  const [tone, title, detail] = !page.source.files.length && !brandNames.length
+    ? ["blocked", "Nothing to transfer yet", "Transfer the extraction first."]
     : !page.is_empty && !handoff.in_step
       ? ["stale", "Gather again first", "Extraction was transferred again since this was gathered."]
       : handoff.pending
         ? ["pending", "Ready to transfer", handoff.has_confirmed
             ? "This differs from what the next layer has. Transfer to hand it the changes."
-            : "Nothing reaches the next layer until you transfer it."]
+            : page.is_empty
+              ? "The source has no pictures. Transfer anyway: the Scene Plan needs this "
+                + "layer transferred, and learns there are none."
+              : "Nothing reaches the next layer until you transfer it."]
         : ["ready", "Transferred to the next layer",
            `The next layer has had exactly this since ${whenItWas(handoff.confirmed_at)}.`];
   const canTransfer = (handoff.in_step || page.is_empty) && handoff.pending;
@@ -330,7 +333,7 @@ function renderFinal(page, stage) {
           ${brandNames.length ? escapeHtml(brandNames.join(", ")) : "no brand assets"}</span>
       </span>
       ${tone === "ready" ? moveToNextLayerButton(stageNeighbours(stage).next, {
-          carries: "The transferred pictures and look go on." })
+          carries: "The transferred pictures, brand kit and look go to the Scene Plan, which carries them to every later layer." })
         : `<button class="btn btn-accent btn-transfer" data-assets-action="confirm"
                    ${canTransfer ? "" : "disabled"}>
              Transfer to the next layer ${icon(ICON.arrowRight)}</button>`}
@@ -404,7 +407,7 @@ function renderFooter(stage, page, tab) {
       <button class="btn btn-accent btn-move-next" data-assets-tab="${next[0]}">
         Move to ${next[1]} ${icon(ICON.arrowRight)}</button>` : null,
     next: {
-      carries: handoff.has_confirmed ? "The transferred pictures and look go on." : "",
+      carries: handoff.has_confirmed ? "The transferred pictures, brand kit and look go to the Scene Plan, which carries them to every later layer." : "",
       warning: !handoff.has_confirmed
         ? "Nothing has been transferred yet. Transfer on the Final & transfer tab first."
         : handoff.pending
