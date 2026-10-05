@@ -1,12 +1,9 @@
 # Academic Explainer Video Pipeline
 
-Turns written academic material (lecture notes, chapters, slide decks) into a
-narrated explainer video. Each stage produces one artifact you can read and
-edit, and every stage but Inputs is run by an AI agent whose instructions are a
-markdown file you can change.
+Turns written academic material (lecture notes, chapters, slide decks) into a narrated explainer video.
 
 ```text
-Inputs → Extraction → Assets & Design → Scene Plan → Script & Staging → Generation → Studio → Reviewing → Export
+Inputs → Extraction → Assets & Design → Scene Planning → Script & Staging → Content Generation → Editing Studio → Reviewing → Export
 ```
 
 The pipeline never hides work inside a model call. Every stage's output is a
@@ -641,9 +638,9 @@ This is an early working version. Things to know before relying on it:
   a browser each time. Revideo is worth it for one thing in particular: it
   typesets formulas with MathJax in the page, so a machine with no TeX
   distribution still gets real mathematics.
-- **Some options are placeholders.** Extraction mode, output format, key-field
-  detection and handwriting OCR are shown as "not built yet" and change nothing.
-  The Scene Plan's three preferences are read.
+- **Handwriting recognition needs a vision model.** Scanned or handwritten PDF
+  pages are read by the model named in `VISION_MODEL`; nothing else in extraction
+  calls a model. The Scene Plan's three preferences are read.
 - **Stage agents advise and draft; they do not act.** Their declared tools are
   not executable yet. The Scene Plan agent drafts plans (kept as a draft until you
   accept it); the Script & Staging agent writes narration straight into the script,

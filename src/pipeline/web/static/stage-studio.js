@@ -7,17 +7,18 @@
  *
  * The preview plays the timeline itself: press play and the playhead runs,
  * the frame at the playhead is drawn from the clips under it, and narration
- * clips play their audio. A rendered video is watched in Reviewing; this is
- * the editor's live view of what is on the timeline right now.
+ * clips play their audio. It can also show a rendered video instead -- Watch
+ * on the Render tab opens it here -- with a way back to the timeline.
  */
 
 import { editStageDocument, loadStageDocument, newItemIdentifier }
   from "/static/document-editing.js";
 import { requestJsonFromApi } from "/static/shared-client.js";
 import {
-  ICON, applicationState, escapeHtml, icon, projectApiPath, select,
-  showStageNotice, stageIcon,
+  ICON, applicationState, escapeHtml, footerNav, icon, projectApiPath, select,
+  showStageNotice, stageHeader, wireGotoButtons,
 } from "/static/ui-kit.js";
+import { addToRenderQueue } from "/static/render-dock.js";
 
 /** View-only state. The playhead and selection are not part of the saved
  *  composition — reopening the stage should not restore a caret position. */
@@ -46,7 +47,7 @@ const playback = {
 };
 
 /** Width of the track headers: lanes (and the ruler) start this far in. */
-const TRACK_HEAD_WIDTH_PX = 112;
+const TRACK_HEAD_WIDTH_PX = 120;   // the track header column, in studio.css
 
 const PLAY_ICON = `<path d="M5 3l14 9-14 9V3z"/>`;
 const PAUSE_ICON = `<path d="M7 4h3v16H7zM14 4h3v16h-3z"/>`;
@@ -54,17 +55,33 @@ const PAUSE_ICON = `<path d="M7 4h3v16H7zM14 4h3v16h-3z"/>`;
 /** Clip colour by kind, so a glance at the timeline reads as structure rather
  *  than as a row of identical blocks. */
 const CLIP_COLOURS = {
-  video: "#2563eb",
-  image: "#7c3aed",
-  text: "#db2777",
-  shape: "#0891b2",
-  audio: "#059669",
-  scene: "#ea580c",
+  video: "#3d6fb6",
+  image: "#6e5bb8",
+  text: "#9a4f8f",
+  shape: "#2f8a93",
+  audio: "#3c8a5c",
+  scene: "#b36a32",
 };
 
 const TRACK_KIND_LABELS = {
   video: "Video", text: "Text", graphics: "Graphics", audio: "Audio",
 };
+
+/** Timecode as an editor shows it: hours, minutes, seconds and frames. */
+function smpte(milliseconds, frameRate = 30) {
+  const totalFrames = Math.floor((milliseconds / 1000) * frameRate);
+  const frames = totalFrames % frameRate;
+  const totalSeconds = Math.floor(totalFrames / frameRate);
+  const parts = [Math.floor(totalSeconds / 3600), Math.floor(totalSeconds / 60) % 60,
+                 totalSeconds % 60, frames];
+  return parts.map(part => String(part).padStart(2, "0")).join(":");
+}
+
+/** A ruler step that gives about ten labelled ticks across the timeline. */
+function rulerStepMs(totalMs) {
+  const steps = [1, 2, 5, 10, 15, 30, 60, 120, 300, 600].map(seconds => seconds * 1000);
+  return steps.find(step => totalMs / step <= 12) ?? steps.at(-1);
+}
 
 function formatTimecode(milliseconds) {
   const totalSeconds = Math.floor(milliseconds / 1000);
@@ -98,21 +115,16 @@ export async function renderStudioStage(stage, navigateToStage, renderAgentStage
   }
 
   body.innerHTML = `
-    <div class="card">
-      <div class="card-head">
-        <span class="card-icon">${stageIcon("studio", 21)}</span>
-        <div>
-          <h2>Studio</h2>
-          <p>Compose the video: media, timeline, layers and rendering.</p>
-        </div>
+    ${stageHeader("studio", "Studio", {
+      actions: `
         <button class="btn" id="studio-render-button"
-                title="Synthesise narration and render the video">
+                title="Add this project to the render queue, on the Render tab">
           ${icon(`<path d="M5 3l14 9-14 9V3z"/>`, 13, 1.8)} Render video
-        </button>
-        <button class="btn" id="studio-agent-button">
-          ${icon(ICON.gear, 14, 1.8)} Agent &amp; instructions
-        </button>
-      </div>
+        </button>`,
+      agentButtonId: "studio-agent-button",
+    })}
+
+    <div class="card stage-content studio-suite">
 
       ${renderCutFreshness(composition)}
 
@@ -135,21 +147,42 @@ export async function renderStudioStage(stage, navigateToStage, renderAgentStage
 
 /* ---- preview ------------------------------------------------------------ */
 
+/** The rendered video Studio was asked to show, if it is this project's. */
+function watchedRender() {
+  const watch = applicationState.studioWatch;
+  return watch && watch.slug === applicationState.selectedProject?.slug ? watch : null;
+}
+
 function renderPreview(composition) {
   const contentMs = composition.duration_ms;
   const hasContent = contentMs > 0;
   const playedFraction = hasContent
     ? Math.min(1, studioViewState.playheadMs / contentMs) * 100 : 0;
+  // Watching a render, the timeline player is hidden rather than removed, so
+  // everything wired to it still finds its elements.
+  const watch = watchedRender();
 
   return `
-    <div class="panel">
+    <div class="panel nle-viewer">
+      <div class="nle-panel-title"><span>Viewer</span>
+        <span class="nle-panel-meta">${composition.frame_width}&times;${composition.frame_height}
+          · ${composition.frame_rate} fps</span></div>
+      ${watch ? `
+        <div class="studio-watch-head">
+          <span class="studio-watch-chip">Rendered video</span>
+          <span class="mono muted studio-watch-file">${escapeHtml(watch.label || watch.file)}</span>
+          <button class="btn" id="back-to-timeline" title="Show the timeline player again">
+            Back to the timeline</button>
+        </div>` : ""}
       <div class="preview-frame">
-        <div class="studio-stage" id="studio-stage">
+        <div class="studio-stage" id="studio-stage" ${watch ? "hidden" : ""}>
           ${renderStageFrame(composition, studioViewState.playheadMs)}
         </div>
+        ${watch ? `<video class="studio-watch-video" controls autoplay preload="metadata"
+            src="${projectApiPath(`/output/${encodeURIComponent(watch.file)}`)}"></video>` : ""}
       </div>
 
-      <div class="transport">
+      <div class="transport" ${watch ? "hidden" : ""}>
         <button class="btn-icon" id="playhead-start" title="Go to start (Home)"
                 aria-label="Go to start">
           ${icon(`<path d="M19 20 9 12l10-8v16zM5 19V5"/>`, 16, 1.8)}
@@ -168,8 +201,6 @@ function renderPreview(composition) {
           <div class="played" style="width:${playedFraction}%"></div>
           <div class="head" style="left:${playedFraction}%"></div>
         </div>
-        <span class="mono muted">${composition.frame_width}&times;${composition.frame_height}
-          · ${composition.frame_rate}fps</span>
       </div>
     </div>`;
 }
@@ -492,6 +523,8 @@ function wireStudioKeyboard() {
   document.addEventListener("keydown", event => {
     if (applicationState.activeStageKey !== "studio") return;
     if (!document.getElementById("studio-stage")) return;
+    // A rendered video is showing: its own player has the keys.
+    if (watchedRender()) return;
     const target = event.target;
     if (target.closest?.("input, textarea, select, button, [contenteditable]")) return;
 
@@ -526,16 +559,16 @@ function renderProperties(composition) {
 
   if (!found) {
     return `
-      <div class="panel">
-        <div class="panel-head"><h3>Properties</h3></div>
-        <p class="muted" style="font-size:12.5px;margin:0">
-          Select a clip on the timeline to edit it.</p>
+      <div class="panel nle-inspector">
+        <div class="nle-panel-title"><span>Inspector</span></div>
+        <p class="nle-empty">Select a clip on the timeline to edit it.</p>
       </div>`;
   }
 
   const { clip, track } = found;
   return `
-    <div class="panel">
+    <div class="panel nle-inspector">
+      <div class="nle-panel-title"><span>Inspector</span></div>
       <div class="panel-head">
         <h3>${escapeHtml(TRACK_KIND_LABELS[track.kind] ?? "Clip")} clip</h3>
         <div class="spacer"></div>
@@ -616,10 +649,17 @@ function renderCutFreshness(composition) {
 
 function renderTimeline(composition) {
   const totalMs = visibleDurationMs(composition);
-  const tickCount = 7;
+  const step = rulerStepMs(totalMs);
+  const ticks = [];
+  for (let atMs = 0; atMs <= totalMs; atMs += step / 5) {
+    ticks.push({ atMs, major: Math.round(atMs) % step === 0 });
+  }
 
   return `
     <div class="timeline">
+      <div class="nle-panel-title"><span>Timeline</span>
+        <span class="nle-panel-meta">${composition.clip_count} clip(s) ·
+          ${formatTimecode(composition.duration_ms)}</span></div>
       <div class="timeline-bar">
         <button class="btn-icon" id="add-clip-button" title="Add a clip to the selected track">
           ${icon(ICON.plus, 16)}
@@ -632,11 +672,10 @@ function renderTimeline(composition) {
       </div>
 
       <div class="ruler" id="timeline-ruler" title="Click or drag to seek">
-        ${Array.from({ length: tickCount }, (_, index) => {
-          const atMs = (totalMs / (tickCount - 1)) * index;
-          return `<span style="left:${(index / (tickCount - 1)) * 100}%"
-                   >${formatTimecode(atMs)}</span>`;
-        }).join("")}
+        ${ticks.map(tick => `
+          <i class="${tick.major ? "major" : ""}" style="left:${(tick.atMs / totalMs) * 100}%"></i>
+          ${tick.major ? `<span style="left:${(tick.atMs / totalMs) * 100}%"
+            >${smpte(tick.atMs, composition.frame_rate).slice(3, 8)}</span>` : ""}`).join("")}
       </div>
 
       <div style="position:relative">
@@ -653,7 +692,8 @@ function renderTrack(track, composition, totalMs) {
   return `
     <div class="track-row">
       <div class="track-head">
-        <span class="track-label">${escapeHtml(track.label || track.kind)}</span>
+        <span class="track-label">${(track.label || track.kind).split(" · ").map((part, index) =>
+          index ? `<small>${escapeHtml(part)}</small>` : `<b>${escapeHtml(part)}</b>`).join("")}</span>
         <button class="btn-icon ${track.is_visible ? "" : "off"}"
                 data-toggle-visible="${track.id}"
                 title="${track.is_visible ? "Hide track" : "Show track"}"
@@ -702,29 +742,13 @@ function renderTrack(track, composition, totalMs) {
 }
 
 function renderFooterNav(stage, composition) {
-  const { stageDefinitions } = applicationState;
-  const stageIndex = stageDefinitions.findIndex(s => s.key === stage.key);
-  const previousStage = stageDefinitions[stageIndex - 1];
-  const nextStage = stageDefinitions[stageIndex + 1];
-  const hasClips = composition.clip_count > 0;
-
-  return `
-    <div class="footer-nav">
-      ${previousStage ? `
-        <button class="btn" data-goto="${previousStage.key}">
-          ${icon(ICON.arrowLeft)} Back to ${escapeHtml(previousStage.title)}
-        </button>` : ""}
-      <span class="plan-total" style="margin-left:14px">
-        ${composition.clip_count} clip(s) · ${formatTimecode(composition.duration_ms)}
-      </span>
-      <div class="spacer"></div>
-      ${nextStage ? `
-        <button class="btn btn-accent" data-goto="${nextStage.key}"
-                ${hasClips ? "" : "disabled"}
-                title="${hasClips ? "" : "Add at least one clip first"}">
-          Next: ${escapeHtml(nextStage.title)} ${icon(ICON.arrowRight)}
-        </button>` : ""}
-    </div>`;
+  return footerNav(stage, {
+    next: {
+      disabled: !composition.clip_count,
+      disabledReason: "Add at least one clip first",
+      carries: `${composition.clip_count} clip(s) on the timeline go on to be reviewed.`,
+    },
+  });
 }
 
 /* ---- persistence -------------------------------------------------------- */
@@ -733,14 +757,19 @@ function renderFooterNav(stage, composition) {
 
 function wireStudioStage(stage, navigateToStage, renderAgentStage) {
   const rerender = () => renderStudioStage(stage, navigateToStage, renderAgentStage);
+  const backToTimeline = select("#back-to-timeline");
+  if (backToTimeline) {
+    backToTimeline.onclick = () => {
+      applicationState.studioWatch = null;
+      rerender();
+    };
+  }
   const change = applyEdit => editStageDocument({
     documentKind: "composition", apiPathSuffix: "/composition", applyEdit, rerender,
   });
   const composition = applicationState.composition;
 
-  document.querySelectorAll("[data-goto]").forEach(button => {
-    button.onclick = () => navigateToStage(button.dataset.goto);
-  });
+  wireGotoButtons(navigateToStage);
 
   const clearButton = select("#clear-timeline-button");
   if (clearButton) {
@@ -761,10 +790,10 @@ function wireStudioStage(stage, navigateToStage, renderAgentStage) {
   }
   select("#studio-agent-button").onclick = () => renderAgentStage(stage);
 
+  // Into the render queue at the bottom of the page: it renders there, one
+  // job at a time, and can be paused, resumed or deleted.
   const studioRenderButton = select("#studio-render-button");
-  if (studioRenderButton) {
-    studioRenderButton.onclick = () => renderFromStudio(studioRenderButton, navigateToStage);
-  }
+  if (studioRenderButton) studioRenderButton.onclick = () => addToRenderQueue(() => navigateToStage("render"));
 
   // --- selection: clicking a clip selects it and moves the playhead there ---
   document.querySelectorAll("[data-clip]").forEach(clipElement => {
@@ -926,44 +955,4 @@ function wireProperties(change) {
       }
     });
   };
-}
-
-
-/** Render, then send the user to Reviewing where the player is.
- *
- *  Rendering from Studio but watching in Reviewing would otherwise leave someone
- *  staring at a placeholder wondering whether it worked.
- */
-async function renderFromStudio(button, navigateToStage) {
-  const originalLabel = button.textContent;
-  button.disabled = true;
-  button.textContent = "Rendering...";
-
-  let voiceProvider = "";
-  try {
-    voiceProvider = (await requestJsonFromApi("/api/voices")).recommended;
-  } catch (voicesFailure) {
-    console.error("could not list voices", voicesFailure);
-  }
-
-  showStageNotice("warn",
-    `Rendering with the ${voiceProvider || "default"} voice. One synthesis call `
-    + "per section, then ffmpeg - this takes a few minutes.");
-
-  try {
-    const result = await requestJsonFromApi(projectApiPath("/render"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ voice_provider: voiceProvider, voice: "" }),
-    });
-    showStageNotice("ok",
-      `Rendered ${result.section_count} section(s), ${
-        Math.round(result.duration_ms / 1000)}s. Opening Reviewing to watch it.`);
-    navigateToStage("reviewing");
-  } catch (renderFailure) {
-    console.error("render failed", renderFailure);
-    button.disabled = false;
-    button.textContent = originalLabel;
-    showStageNotice("bad", `Render failed - ${renderFailure.message}`);
-  }
 }

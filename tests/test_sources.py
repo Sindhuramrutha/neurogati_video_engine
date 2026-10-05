@@ -98,7 +98,7 @@ def test_missing_file_name_is_rejected(tmp_path):
 
 
 def test_ordinary_file_names_survive_untouched(tmp_path):
-    accepted = validate_uploaded_source_file("Chapter 1.docx", b"x", tmp_path)
+    accepted = validate_uploaded_source_file("Chapter 1.docx", b"PK\x03\x04x", tmp_path)
     assert accepted.safe_file_name == "Chapter 1.docx"
     assert accepted.was_renamed is False
 
@@ -156,7 +156,7 @@ async def test_a_large_file_is_streamed_to_disk(tmp_path):
     """
     from pipeline.sources import UPLOAD_CHUNK_SIZE_IN_BYTES, store_uploaded_source_file
 
-    payload = b"x" * (UPLOAD_CHUNK_SIZE_IN_BYTES * 3 + 17)
+    payload = b"PK\x03\x04" + b"x" * (UPLOAD_CHUNK_SIZE_IN_BYTES * 3 + 17)
     accepted = await store_uploaded_source_file("big.pptx", _Stream(payload), tmp_path)
 
     assert accepted.size_in_bytes == len(payload)
@@ -172,7 +172,7 @@ async def test_an_oversized_upload_is_abandoned_without_filling_the_disk(tmp_pat
 
     with pytest.raises(sources.SourceFileRejected) as rejection:
         await sources.store_uploaded_source_file(
-            "huge.pdf", _Stream(b"y" * 40_000), tmp_path
+            "huge.pdf", _Stream(b"%PDF" + b"y" * 40_000), tmp_path
         )
 
     assert "larger than" in rejection.value.reason
@@ -193,7 +193,7 @@ async def test_an_interrupted_upload_leaves_no_half_file(tmp_path):
             if self._sent:
                 raise ConnectionResetError("the client went away")
             self._sent = True
-            return b"z" * 2048
+            return b"PK\x03\x04" + b"z" * 2048
 
     with pytest.raises(ConnectionResetError):
         await store_uploaded_source_file("dropped.docx", _Failing(), tmp_path)
@@ -224,6 +224,56 @@ async def test_an_empty_upload_is_refused(tmp_path):
 
     assert "empty" in rejection.value.reason
     assert list(tmp_path.iterdir()) == []
+
+
+# --- contents and identity ---------------------------------------------------
+
+
+@pytest.mark.parametrize("file_name, content", [
+    ("chapter.docx", b"%PDF-1.7 a PDF wearing a Word extension"),
+    ("deck.pptx", b"%PDF-1.4"),
+    ("notes.pdf", b"PK\x03\x04 a zip wearing a PDF extension"),
+    ("notes.md", b"PK\x03\x04\x00\x00 binary"),
+])
+async def test_contents_that_contradict_the_extension_are_refused(file_name, content, tmp_path):
+    """Passed by name, the file used to fail minutes later inside extraction
+    with an error about zip archives."""
+    from pipeline.sources import store_uploaded_source_file
+
+    with pytest.raises(SourceFileRejected) as rejection:
+        await store_uploaded_source_file(file_name, _Stream(content), tmp_path)
+
+    assert file_name.rsplit(".", 1)[1] in rejection.value.reason
+    assert list(tmp_path.iterdir()) == [], "a refused upload must leave nothing behind"
+
+
+def test_the_same_check_applies_when_the_bytes_are_already_in_hand(tmp_path):
+    with pytest.raises(SourceFileRejected):
+        validate_uploaded_source_file("chapter.docx", b"%PDF-1.7", tmp_path)
+
+
+async def test_a_pdf_header_after_leading_junk_is_still_a_pdf(tmp_path):
+    from pipeline.sources import store_uploaded_source_file
+
+    accepted = await store_uploaded_source_file(
+        "scan.pdf", _Stream(b"\r\n\xef\xbb\xbf%PDF-1.5 body"), tmp_path)
+    assert accepted.suffix == ".pdf"
+
+
+async def test_a_second_upload_under_the_same_name_is_reported_as_a_replacement(tmp_path):
+    """Two different files can sanitise to one name -- "Chapter 4: Networks" and
+    "Chapter 4_ Networks" -- and the loser used to vanish with an "accepted"."""
+    from pipeline.sources import store_uploaded_source_file
+
+    first = await store_uploaded_source_file(
+        "Chapter 4: Networks.md", _Stream(b"first"), tmp_path)
+    second = await store_uploaded_source_file(
+        "Chapter 4_ Networks.md", _Stream(b"second"), tmp_path)
+
+    assert first.safe_file_name == second.safe_file_name
+    assert first.was_replaced is False
+    assert second.was_replaced is True
+    assert (tmp_path / second.safe_file_name).read_bytes() == b"second"
 
 
 def test_the_request_limit_is_not_the_framework_default():

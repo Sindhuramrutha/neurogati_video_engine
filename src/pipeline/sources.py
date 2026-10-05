@@ -19,7 +19,12 @@ What this guards against, in order of severity:
    both a disk and a memory problem.
 3. **Unsupported types.** The UI advertises PDF/MD/TXT/DOCX/PPTX; without a check
    the API accepts anything, and the failure surfaces much later as a confusing
-   extraction error.
+   extraction error. The extension alone is not enough -- a PDF renamed to
+   `.docx` passed it -- so the first bytes are checked against the format too.
+4. **Silent replacement.** A second upload under a name already in the project
+   replaces the first. That is how a corrected deck gets back in, so it is
+   allowed, but it is reported: two different files can also sanitise to the
+   same name, and the one that loses should never vanish unannounced.
 """
 
 from __future__ import annotations
@@ -58,6 +63,14 @@ WINDOWS_RESERVED_FILE_STEMS: frozenset[str] = frozenset(
     | {f"LPT{digit}" for digit in range(1, 10)}
 )
 
+# What each format's bytes open with. OOXML is a zip archive; a PDF header may
+# sit after a little leading junk, which readers tolerate, so it is looked for
+# within the first kilobyte rather than at offset 0.
+_ZIP_SIGNATURE = b"PK\x03\x04"
+_PDF_SIGNATURE = b"%PDF"
+_PDF_HEADER_WINDOW = 1024
+_BINARY_SIGNATURES = {".pdf": "a PDF", ".docx": "a Word document", ".pptx": "a PowerPoint deck"}
+
 _UNSAFE_FILE_NAME_CHARACTERS = re.compile(r"[^A-Za-z0-9._ -]+")
 _REPEATED_SEPARATORS = re.compile(r"[-_ ]{2,}")
 
@@ -80,17 +93,29 @@ class AcceptedSourceFile:
     """An upload that passed every check, with the name it will be stored under.
 
     `safe_file_name` may differ from `original_file_name` -- the caller should
-    report both so a silently renamed file is never a surprise.
+    report both so a silently renamed file is never a surprise. `was_replaced`
+    says a file of that name was already there and has been overwritten.
     """
 
     original_file_name: str
     safe_file_name: str
     size_in_bytes: int
     suffix: str
+    was_replaced: bool = False
 
     @property
     def was_renamed(self) -> bool:
         return self.original_file_name != self.safe_file_name
+
+    def to_dict(self) -> dict[str, Any]:
+        """What the upload response reports for this file."""
+        return {
+            "file_name": self.safe_file_name,
+            "original_file_name": self.original_file_name,
+            "was_renamed": self.was_renamed,
+            "was_replaced": self.was_replaced,
+            "size_in_bytes": self.size_in_bytes,
+        }
 
 
 def reduce_to_bare_file_name(candidate_file_name: str) -> str:
@@ -174,6 +199,37 @@ def describe_size_limit() -> str:
     return f"{MAXIMUM_SOURCE_FILE_SIZE_IN_BYTES // (1024 * 1024)} MB"
 
 
+def check_source_file_content(original_file_name: str, suffix: str, head: bytes) -> None:
+    """Refuse a file whose first bytes contradict its extension.
+
+    A PDF renamed to `.docx` passes every name check and then fails inside
+    extraction, several stages and minutes later, with an error about zip
+    archives -- the confusing failure this module exists to prevent, arriving by
+    a different door. The signature is in the first chunk, so it costs nothing.
+    """
+    if suffix not in _BINARY_SIGNATURES:
+        # Markdown and text are read as UTF-8; a NUL byte means a binary file
+        # with a text extension, which would extract to noise.
+        if b"\x00" in head:
+            raise SourceFileRejected(
+                original_file_name,
+                f"the file is named {suffix} but is not plain text",
+            )
+        return
+
+    if suffix == ".pdf":
+        matches = _PDF_SIGNATURE in head[:_PDF_HEADER_WINDOW]
+    else:
+        matches = head.startswith(_ZIP_SIGNATURE)
+    if not matches:
+        raise SourceFileRejected(
+            original_file_name,
+            f"the file is named {suffix} but its contents are not "
+            f"{_BINARY_SIGNATURES[suffix]}. Check it opens, then save it again "
+            f"in that format.",
+        )
+
+
 def validate_uploaded_source_file(
     original_file_name: str,
     file_content: bytes,
@@ -198,11 +254,16 @@ def validate_uploaded_source_file(
             f"{describe_size_limit()} limit",
         )
 
+    suffix = Path(safe_file_name).suffix.lower()
+    check_source_file_content(
+        original_file_name, suffix, file_content[:UPLOAD_CHUNK_SIZE_IN_BYTES])
+
     return AcceptedSourceFile(
         original_file_name=original_file_name,
         safe_file_name=safe_file_name,
         size_in_bytes=len(file_content),
-        suffix=Path(safe_file_name).suffix.lower(),
+        suffix=suffix,
+        was_replaced=(destination_directory / safe_file_name).exists(),
     )
 
 
@@ -225,6 +286,7 @@ async def store_uploaded_source_file(
     safe_file_name = check_source_file_name(original_file_name, destination_directory)
     destination_directory.mkdir(parents=True, exist_ok=True)
 
+    suffix = Path(safe_file_name).suffix.lower()
     final_path = destination_directory / safe_file_name
     temporary_path = final_path.with_name(f"{safe_file_name}.{new_identifier()}.part")
 
@@ -235,6 +297,8 @@ async def store_uploaded_source_file(
                 chunk = await upload_stream.read(UPLOAD_CHUNK_SIZE_IN_BYTES)
                 if not chunk:
                     break
+                if not bytes_written:
+                    check_source_file_content(original_file_name, suffix, chunk)
                 bytes_written += len(chunk)
                 if bytes_written > MAXIMUM_SOURCE_FILE_SIZE_IN_BYTES:
                     raise SourceFileRejected(
@@ -246,6 +310,7 @@ async def store_uploaded_source_file(
         if bytes_written == 0:
             raise SourceFileRejected(original_file_name, "the file is empty")
 
+        was_replaced = final_path.exists()
         temporary_path.replace(final_path)
     except BaseException:
         temporary_path.unlink(missing_ok=True)
@@ -255,5 +320,6 @@ async def store_uploaded_source_file(
         original_file_name=original_file_name,
         safe_file_name=safe_file_name,
         size_in_bytes=bytes_written,
-        suffix=Path(safe_file_name).suffix.lower(),
+        suffix=suffix,
+        was_replaced=was_replaced,
     )

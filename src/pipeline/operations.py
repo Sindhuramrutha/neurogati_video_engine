@@ -74,14 +74,14 @@ from pipeline.core import (
 )
 from pipeline.exporting import build_export, export_readiness, read_export
 from pipeline.extraction_run import (
-    excluded_sources,
+    confirm_extraction,
     extracted_content_as_markdown,
     extraction_freshness,
-    forget_excluded_source,
+    extraction_page,
+    freshness_warnings,
     implemented_extraction_options,
     preview_source,
     run_extraction,
-    set_excluded_sources,
 )
 from pipeline.freshness import (
     cut_freshness,
@@ -128,6 +128,7 @@ __all__ = [
     "chapters_for",
     "chapters_from_sections",
     "clear_timeline",
+    "confirm_extraction",
     "confirm_plan_matches_extraction",
     "confirm_section_narration",
     "create_project",
@@ -136,11 +137,11 @@ __all__ = [
     "describe_project",
     "describe_stages",
     "discard_plan_draft",
-    "excluded_sources",
     "export_readiness",
     "extracted_content_as_markdown",
     "extraction_freshness",
-    "forget_excluded_source",
+    "extraction_page",
+    "freshness_warnings",
     "implemented_extraction_options",
     "list_projects",
     "list_voice_providers",
@@ -166,7 +167,6 @@ __all__ = [
     "section_source_material",
     "section_start_times",
     "seed_review_chapters",
-    "set_excluded_sources",
     "set_project_look",
     "set_scene_visual",
     "source_outline",

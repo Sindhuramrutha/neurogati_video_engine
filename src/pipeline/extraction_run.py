@@ -1,23 +1,36 @@
-"""Running extraction, and the settings that decide what it reads.
+"""Running extraction: one file at a time, into a collection, then confirmed.
 
-The options are inputs to the stage rather than part of its output, so they live
-beside the run instead of inside the extracted content -- see `stage_options`.
-What is left out is recorded per project too: a file someone unticked is left
-out of every later run and is never reported as missing.
+The flow the Extraction page follows, and the only one there is:
+
+1. **Extract one file.** Each source is read on its own and its result goes into
+   the *collection* -- replacing that file's previous result if it had one.
+   Only one file is extracted at a time per project; a second request while one
+   runs is refused rather than queued or raced.
+2. **Assemble the collection.** Files are added, re-extracted or removed until
+   the collection holds what the video should be made from.
+3. **Confirm it.** Confirming copies the collection into the extraction that
+   every later stage reads. Until then those stages see the last confirmed
+   collection, never one half-assembled.
+
+The options are inputs to a run rather than part of its output, so they live
+beside it -- see `stage_options` -- and each extracted file records the options
+it was read with, which is how a changed option is reported per file.
 """
 
 from __future__ import annotations
 
 import logging
+import threading
 from datetime import UTC, datetime
 from typing import Any
 
+from pipeline import progress
 from pipeline.core import OperationFailed, require_project
 from pipeline.extraction import (
     AssetSink,
     Extraction,
+    ExtractionCollectionStore,
     ExtractionStore,
-    SourceSelectionStore,
     SourceUnreadable,
     extract_document,
 )
@@ -27,44 +40,24 @@ from pipeline.stages import Stage
 
 logger = logging.getLogger(__name__)
 
+# One extraction at a time, per project. Two at once would each load the
+# collection, add their file, and save -- and whichever saved second would drop
+# the other's file without a word.
+_running: dict[str, threading.Lock] = {}
+_running_guard = threading.Lock()
 
-def excluded_sources(project: Project) -> list[str]:
-    """Source files left out of extraction by choice, that still exist."""
-    on_disk = {source["name"] for source in project.sources()}
-    return [name for name in SourceSelectionStore(project.root).load() if name in on_disk]
 
-def set_excluded_sources(slug: str, excluded: list[str]) -> dict[str, Any]:
-    """Choose which source files extraction leaves out. Runs nothing.
+def _extraction_lock(project: Project) -> threading.Lock:
+    with _running_guard:
+        return _running.setdefault(str(project.root.resolve()), threading.Lock())
 
-    Names are checked against the project's files: an unknown name is a typo or
-    a stale page, and saving it would exclude a file that does not exist -- and
-    then, silently, whatever is uploaded under that name later.
-    """
-    project = require_project(slug)
-    on_disk = {source["name"] for source in project.sources()}
-    unknown = sorted(set(excluded) - on_disk)
-    if unknown:
-        raise OperationFailed(
-            f"{project.name} has no source file(s) named {', '.join(unknown)}."
-        )
 
-    saved = SourceSelectionStore(project.root).save(list(excluded))
-    return {"excluded": saved, "freshness": extraction_freshness(project)}
+def _now() -> str:
+    return datetime.now(UTC).isoformat(timespec="seconds")
 
-def forget_excluded_source(project: Project, file_name: str) -> None:
-    """Drop a deleted file from the selection, so re-uploading it includes it."""
-    store = SourceSelectionStore(project.root)
-    current = store.load()
-    if file_name in current:
-        store.save([name for name in current if name != file_name])
 
 def implemented_extraction_options(project: Project) -> dict[str, bool]:
-    """The Extraction options that actually change a run, as saved for this project.
-
-    Only these. The page also shows options that are declared but not built, and
-    recording those here would let a toggle that does nothing mark an extraction
-    as out of date.
-    """
+    """The Extraction options that change a run, as saved for this project."""
     from pipeline.stage_options import StageSettingsStore, options_for
 
     saved = StageSettingsStore(project.root).load(Stage.EXTRACTION).values
@@ -74,100 +67,148 @@ def implemented_extraction_options(project: Project) -> dict[str, bool]:
         if option.implemented
     }
 
-def extraction_freshness(project: Project) -> dict[str, Any]:
-    """Whether the extracted content still matches the files on disk.
 
-    Nothing used to notice this. A source added after the last run simply was not
-    in the extraction, the Inputs page happily listed it, and every later stage
-    planned around a document the pipeline had never read -- the failure only
-    surfaced when an agent was asked directly and said a file "was never
-    extracted".
+def extraction_freshness(
+    project: Project,
+    collection: Extraction | None = None,
+    confirmed: Extraction | None = None,
+) -> dict[str, Any]:
+    """Where the collection stands against the files, the options and the hand-off.
+
+    Per file, because files are extracted one at a time:
+
+    - `added`: on disk but not in the collection -- not extracted yet. A choice,
+      not a fault, so it does not make the extraction stale.
+    - `removed`: in the collection, but the file is gone.
+    - `changed`: in the collection, but the file on disk is a different size --
+      it was replaced after it was extracted.
+    - `options_changed`: extracted with options that are no longer the current ones.
+    - `pending_confirmation`: the collection differs from what later stages read.
 
     Compared by name and size rather than by timestamp: a file re-uploaded with
     the same content should not force a re-run, and a file swapped for a
     different one of the same name must not pass as unchanged.
+
+    Pass the collection and the confirmed extraction when they are already
+    loaded; each is a multi-megabyte parse for a large deck.
     """
-    extraction = ExtractionStore(project.root).load()
-    if not extraction.documents:
-        return {
-            "has_run": False, "is_stale": False,
-            "added": [], "removed": [], "options_changed": [],
-            "excluded": excluded_sources(project), "newly_excluded": [],
-        }
+    collection = collection or ExtractionCollectionStore(project.root).load()
+    confirmed = confirmed or ExtractionStore(project.root).load()
+    sizes = {source["name"]: source.get("bytes", 0) for source in project.sources()}
+    current = implemented_extraction_options(project)
 
-    on_disk = {source["name"] for source in project.sources()}
-    extracted = {document.file_name for document in extraction.documents}
-
-    # Left out by choice is not "not extracted". Without this, ticking a box off
-    # would have reported that file as missing forever.
-    excluded = set(excluded_sources(project))
-    added = sorted(on_disk - extracted - excluded)
-    removed = sorted(extracted - on_disk)
-    # Still in the extraction, but unticked since: the next run drops it, and
-    # until then later stages are reading a document someone chose to leave out.
-    newly_excluded = sorted(extracted & excluded)
-
-    # An extraction made before options were recorded has none; it cannot be
-    # judged against them, so it is not called stale on that basis.
-    current_options = implemented_extraction_options(project)
-    options_changed = sorted(
-        key for key, value in current_options.items()
-        if key in extraction.options_used and extraction.options_used[key] != value
+    in_collection = {document.file_name: document for document in collection.documents}
+    removed = sorted(name for name in in_collection if name not in sizes)
+    changed = sorted(
+        name for name, document in in_collection.items()
+        if name in sizes and document.source_bytes and document.source_bytes != sizes[name]
     )
+    def read_with_other_options(document) -> bool:
+        # A file extracted before options were recorded per file falls back to
+        # the collection's; one with neither cannot be judged, so is not stale.
+        used = document.options_used or collection.options_used
+        return any(key in used and used[key] != value for key, value in current.items())
+
+    options_changed = sorted(
+        name for name, document in in_collection.items() if read_with_other_options(document))
+    pending = (bool(collection.documents or confirmed.documents)
+               and collection.extracted_at != confirmed.extracted_at)
 
     return {
-        "has_run": True,
-        "is_stale": bool(added or removed or options_changed or newly_excluded),
-        "added": added,
+        "has_run": bool(collection.documents),
+        "has_confirmed": bool(confirmed.documents),
+        "is_stale": bool(removed or changed or options_changed or pending),
+        "added": sorted(name for name in sizes if name not in in_collection),
         "removed": removed,
+        "changed": changed,
         "options_changed": options_changed,
-        "excluded": sorted(excluded),
-        "newly_excluded": newly_excluded,
-        "extracted_at": extraction.extracted_at,
+        "pending_confirmation": pending,
+        "extracted_at": collection.extracted_at,
+        "confirmed_at": confirmed.confirmed_at,
     }
 
-def run_extraction(slug: str) -> dict[str, Any]:
-    """Read every source document and store the structured result.
 
-    Not an agent and not a model call: this is parsing. A parser that is wrong
-    can be debugged against the file it misread, which is not true of a model
-    that invented a heading.
+def freshness_warnings(freshness: dict[str, Any]) -> list[str]:
+    """What the freshness means, in sentences, for a page or an agent."""
+    return [
+        *(f"{name} was extracted but is no longer in the project"
+          for name in freshness["removed"]),
+        *(f"{name} changed after it was extracted; extract it again"
+          for name in freshness["changed"]),
+        *(f"{name} was extracted with different options; extract it again"
+          for name in freshness["options_changed"]),
+        *(["the extracted data has changes that are not transferred yet, so the next layer "
+           "still reads what was last transferred"]
+          if freshness["pending_confirmation"] else []),
+    ]
 
-    One unreadable file does not fail the run. The others are extracted and the
-    failure is reported per file -- the same partial-success posture as upload,
-    for the same reason: "one of your five documents is a problem" is useful and
-    "extraction failed" is not.
+
+def extraction_page(
+    project: Project,
+    collection: Extraction | None = None,
+    confirmed: Extraction | None = None,
+) -> dict[str, Any]:
+    """The collection as the Extraction page shows it, with its freshness."""
+    collection = collection or ExtractionCollectionStore(project.root).load()
+    presented = present_artifact(project, "extraction", collection)
+    freshness = extraction_freshness(project, collection, confirmed)
+    presented["freshness"] = freshness
+    presented["warnings"] = [*presented["warnings"], *freshness_warnings(freshness)]
+    return presented
+
+
+def _prune_assets(sink: AssetSink, collection: Extraction, confirmed: Extraction) -> None:
+    """Drop stored pictures that neither the collection nor the confirmed
+    extraction points at. Only after both are saved."""
+    sink.prune_unreferenced(collection.asset_paths() | confirmed.asset_paths())
+
+
+def extraction_asset_sink(project: Project) -> AssetSink:
+    # Addressed relative to the project root so a stored path survives the
+    # project being moved.
+    return AssetSink(project.root / "extraction" / "assets", relative_to=project.root)
+
+
+def source_file_path(project: Project, file_name: str):
+    from pipeline.sources import reduce_to_bare_file_name
+
+    bare_name = reduce_to_bare_file_name(file_name)
+    path = (project.sources_dir / bare_name).resolve()
+    if not path.is_file() or not path.is_relative_to(project.sources_dir.resolve()):
+        raise OperationFailed(f"{project.name} has no source file {file_name!r}.")
+    return path
+
+
+def run_extraction(slug: str, file_name: str = "") -> dict[str, Any]:
+    """Extract the project's source file. The result is the whole extraction: a
+    project has one file, so a run replaces what was there rather than adding to it.
+
+    Not an agent and not a model call: this is parsing -- except the pages the
+    handwriting option sends to the vision model, which are marked as such. A
+    parser that is wrong can be debugged against the file it misread.
+
+    An unreadable file fails this call and leaves the collection as it was, so
+    a file that extracted fine last time keeps that result.
     """
     project = require_project(slug)
-    all_sources = project.sources()
+    if not file_name:
+        if project.source is None:
+            raise OperationFailed(f"{project.name} has no source file. Add one on Inputs.")
+        file_name = project.source["name"]
+    path = source_file_path(project, file_name)
 
-    if not all_sources:
+    lock = _extraction_lock(project)
+    if not lock.acquire(blocking=False):
         raise OperationFailed(
-            f"{project.name} has no source documents yet. Upload one first."
+            f"Another file is being extracted in {project.name}. "
+            f"Wait for it to finish, then extract {path.name}."
         )
-
-    left_out = set(excluded_sources(project))
-    sources = [source for source in all_sources if source["name"] not in left_out]
-    if not sources:
-        raise OperationFailed(
-            f"Every source file in {project.name} is left out of extraction. "
-            f"Tick at least one to extract it."
-        )
-
-    documents = []
-    unreadable: list[str] = []
-    options = implemented_extraction_options(project)
-
-    # Figures are written beside the extracted text, addressed relative to the
-    # project root so the stored path survives the project being moved.
-    assets = AssetSink(
-        project.root / "extraction" / "assets", relative_to=project.root
-    )
-
-    for source in sources:
-        path = project.sources_dir / source["name"]
+    progress.report(slug, "extraction", 0, 0, f"Extracting {path.name}")
+    try:
+        options = implemented_extraction_options(project)
+        assets = extraction_asset_sink(project)
         try:
-            documents.append(extract_document(
+            document = extract_document(
                 path,
                 # A slide background is a picture too, so the sink is needed for
                 # that pass even when figures themselves are switched off.
@@ -178,36 +219,67 @@ def run_extraction(slug: str) -> dict[str, Any]:
                 capture_layout=options["extract_layout"],
                 capture_backgrounds=options["extract_backgrounds"],
                 capture_styling=options["extract_styling"],
-            ))
+                transcribe_handwriting=options["handwriting_ocr"],
+            )
         except SourceUnreadable as failure:
-            logger.warning("extraction skipped a source: %s", failure)
-            unreadable.append(str(failure))
+            logger.warning("extraction could not read a source: %s", failure)
+            raise OperationFailed(str(failure)) from failure
 
-    if not documents:
-        raise OperationFailed(
-            "Nothing could be read from any source. " + " ".join(unreadable)
-        )
+        document = document.model_copy(update={"options_used": options})
 
-    store = ExtractionStore(project.root)
-    saved = store.save(Extraction(
-        documents=documents,
-        extracted_at=datetime.now(UTC).isoformat(timespec="seconds"),
-        options_used=options,
-    ))
+        store = ExtractionCollectionStore(project.root)
+        collection = store.save(Extraction(documents=[document], options_used=options))
 
-    # Only now that the new extraction is on disk: pruning first and then
-    # failing to save would lose the figures the old extraction still points at.
-    assets.prune_unreferenced()
+        # Only now that the collection is on disk: pruning first and then failing
+        # to save would lose the figures it still points at.
+        confirmed = ExtractionStore(project.root).load()
+        _prune_assets(assets, collection, confirmed)
+    finally:
+        progress.finish(slug, "extraction")
+        lock.release()
 
-    result = present_artifact(project, "extraction", saved)
-    if unreadable:
-        result["warnings"] = [*result["warnings"], *unreadable]
-    if assets.skipped_for_size:
-        result["warnings"] = [*result["warnings"], (
+    result = extraction_page(project, collection, confirmed)
+    # What this run found, apart from where the collection stands.
+    result["extracted"] = {
+        "file_name": path.name,
+        "block_count": len(document.blocks),
+        "word_count": document.word_count,
+        "warnings": [
             f"{assets.skipped_for_size} figure(s) were not extracted: this "
             f"project reached the extracted-image limit."
-        )]
+        ] if assets.skipped_for_size else [],
+    }
     return result
+
+
+def confirm_extraction(slug: str) -> dict[str, Any]:
+    """Hand the collection to later stages. The one step that changes what they read.
+
+    Refused while any file in it is out of date: confirming a result for a file
+    that has since been replaced, or read with options that are no longer set,
+    would hand on something that no longer matches what the page shows.
+    """
+    project = require_project(slug)
+    collection = ExtractionCollectionStore(project.root).load()
+    if not collection.documents:
+        raise OperationFailed(
+            f"The extraction collection for {project.name} is empty. "
+            f"Extract at least one file first."
+        )
+
+    freshness = extraction_freshness(project, collection)
+    out_of_date = [*freshness["removed"], *freshness["changed"], *freshness["options_changed"]]
+    if out_of_date:
+        raise OperationFailed(
+            "Extract these again or remove them before "
+            f"transferring to the next layer: {', '.join(sorted(set(out_of_date)))}."
+        )
+
+    confirmed = ExtractionStore(project.root).save(
+        collection.model_copy(update={"confirmed_at": _now()}))
+    _prune_assets(extraction_asset_sink(project), collection, confirmed)
+    return extraction_page(project, collection, confirmed)
+
 
 def preview_source(slug: str, file_name: str) -> dict[str, Any]:
     """Where a source file is and how it should be shown. Nothing is parsed.
@@ -220,14 +292,8 @@ def preview_source(slug: str, file_name: str) -> dict[str, Any]:
     The browser renders every format from the raw bytes, so what is on screen is
     the file on disk rather than a conversion of it.
     """
-    from pipeline.sources import reduce_to_bare_file_name
-
     project = require_project(slug)
-    bare_name = reduce_to_bare_file_name(file_name)
-    path = (project.sources_dir / bare_name).resolve()
-
-    if not path.is_file() or not path.is_relative_to(project.sources_dir.resolve()):
-        raise OperationFailed(f"{project.name} has no source file {file_name!r}.")
+    path = source_file_path(project, file_name)
 
     suffix = path.suffix.lower()
     # How the page should draw it. Each of these is the real file: a PDF in the
@@ -248,6 +314,12 @@ def preview_source(slug: str, file_name: str) -> dict[str, Any]:
         "viewer": viewer_by_suffix.get(suffix, "unsupported"),
     }
 
-def extracted_content_as_markdown(project: Project) -> str:
-    """The extracted source text, for an agent's context. Empty if not extracted."""
-    return ExtractionStore(project.root).load().as_markdown()
+
+def extracted_content_as_markdown(project: Project, *, collection: bool = False) -> str:
+    """The extracted source text, for an agent's context. Empty if not extracted.
+
+    Later stages read the confirmed extraction. The Extraction stage's own agent
+    reads the collection, which is what its page is showing.
+    """
+    store = ExtractionCollectionStore if collection else ExtractionStore
+    return store(project.root).load().as_markdown()

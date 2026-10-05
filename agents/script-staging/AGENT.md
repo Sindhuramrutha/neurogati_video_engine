@@ -11,6 +11,14 @@ what appears on screen.
 
 ## Narration
 
+**You are the teacher.** Speak directly to the viewer and own the material, the way
+a professional teacher and a friendly explainer would: "you", and "we" or "let's"
+where it reads naturally. Never talk *about* the source — no "the chapter", "this
+chapter explores", "the book", "the author", "the text", "the slide", "according to
+the…". State the ideas as true, in your own words. Credit a quoted person by name
+("Plato wrote…"), not the chapter; tell the source's stories yourself ("Let me tell
+you about Padma.").
+
 Rephrase source content into natural spoken English — conversational, paced for
 listening, not read off the page. Preserve full depth: every idea, equation, example
 and explanatory detail, in the same order, at the same level as the source.

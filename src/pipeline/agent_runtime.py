@@ -31,7 +31,7 @@ from typing import Any
 
 from pipeline.agents import Agent, AgentRegistry
 from pipeline.config import REPO_ROOT
-from pipeline.extraction import ExtractionStore
+from pipeline.extraction import ExtractionCollectionStore, ExtractionStore
 from pipeline.llm import (
     ModelCallFailed,
     ModelNotConfigured,
@@ -39,7 +39,6 @@ from pipeline.llm import (
 )
 from pipeline.operations import (
     OperationFailed,
-    excluded_sources,
     extracted_content_as_markdown,
     require_project,
 )
@@ -90,12 +89,14 @@ def stage_context(project: Project, stage: Stage, include_source: bool = True) -
         Stage.REVIEWING: ["plan", "script", "composition", "review"],
     }
 
-    # Files left out of extraction are named as such. Listed plainly, a stage
-    # agent reported an unticked deck as a document that "was never extracted".
-    left_out = set(excluded_sources(project))
+    # Files that are not in the extraction are named as such, so an agent does not
+    # take a deck nobody extracted for one it failed to read. The Extraction agent
+    # is asked about the collection its page shows; every other stage reads what
+    # was confirmed.
+    extracted_store = ExtractionCollectionStore if stage is Stage.EXTRACTION else ExtractionStore
+    extracted = {d.file_name for d in extracted_store(project.root).load().documents}
     listed_sources = ", ".join(
-        f"{s['name']} (left out of extraction by choice)" if s["name"] in left_out
-        else s["name"]
+        s["name"] if s["name"] in extracted else f"{s['name']} (not extracted)"
         for s in project.sources()
     )
     parts: list[str] = [
@@ -111,7 +112,8 @@ def stage_context(project: Project, stage: Stage, include_source: bool = True) -
     # asked to plan a video about a document it cannot read, a model writes a
     # plausible plan about the title. This is the most important block here.
     if include_source and stage in (Stage.EXTRACTION, Stage.SCENE_PLAN, Stage.SCRIPT_STAGING):
-        source_text = extracted_content_as_markdown(project)
+        source_text = extracted_content_as_markdown(
+            project, collection=stage is Stage.EXTRACTION)
         if source_text:
             if len(source_text) > MAXIMUM_SOURCE_CHARACTERS:
                 source_text = (
@@ -188,7 +190,9 @@ def artifact_for_agents(project: Project, artifact_name: str) -> str:
         return compact_plan_text(PlanStore(project.root).load())
 
     if artifact_name == "script":
-        plan = PlanStore(project.root).load()
+        from pipeline.plan_handoff import plan_for_later_stages
+
+        plan = plan_for_later_stages(project)
         script = ScriptStore(project.root).load()
         lines = []
         for number, section in enumerate(plan.sections, start=1):

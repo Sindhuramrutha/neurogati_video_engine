@@ -111,8 +111,8 @@ def build_visuals(slug: str, rebuild: bool = False) -> dict[str, Any]:
 
     stale = _stale_visual_ids(project)
     wanted = [
-        visual for visual in plan.visuals
-        if rebuild or visual.id in stale or not visual.is_built
+        visual for visual in plan.visuals   # a scripted scene is made by its own script
+        if visual.kind != "scripted" and (rebuild or visual.id in stale or not visual.is_built)
     ]
     if not wanted:
         return plan.to_dict(stale) | {"built_ids": [], "notes": [
@@ -157,13 +157,12 @@ def _workshop_for(project, wanted: list[SceneVisual]) -> Workshop:
     """Read everything the passes need, once."""
     from pipeline.extraction import ExtractionStore
     from pipeline.plan_drafting import section_source_text
-    from pipeline.planning import PlanStore
+    from pipeline.plan_handoff import plan_for_later_stages
     from pipeline.render_run import render_style_for
     from pipeline.scene_renderers import SCENE_KINDS, drawable_kinds
-    from pipeline.scripting import ScriptStore
-
-    script = ScriptStore(project.root).load()
-    sections = {s.id: s for s in PlanStore(project.root).load().sections}
+    from pipeline.script_handoff import script_for_later_stages
+    script = script_for_later_stages(project)
+    sections = {s.id: s for s in plan_for_later_stages(project).sections}
     extraction = ExtractionStore(project.root).load()
 
     source_texts: dict[str, str] = {}
@@ -282,14 +281,14 @@ def _make_slides(visuals: list[SceneVisual], shop: Workshop) -> list[str]:
     scene falls back to its words on screen, and the reason is reported. A deck
     of forty slides must not lose the whole video to one unreadable shape.
     """
-    from pipeline.assets import AssetLibraryStore
+    from pipeline.plan_pictures import assets_for_later_stages
     from pipeline.slide_frame import cached_slide_path, compose_slide
 
     wanted = [visual for visual in visuals if visual.slide_number]
     if not wanted:
         return []
 
-    wash = AssetLibraryStore(shop.project.root).load().look.slide_wash
+    wash = assets_for_later_stages(shop.project).library.look.slide_wash
     directory = shop.project.root / "generation" / "slides"
     built: list[str] = []
     drawn: dict[tuple[str, int], str] = {}
@@ -475,9 +474,9 @@ def _stored(project, path: Path) -> str:
 
 def _deck_for(project, visual: SceneVisual) -> Path | None:
     """The source file a slide scene came from, if it is still there."""
-    from pipeline.planning import PlanStore
+    from pipeline.plan_handoff import plan_for_later_stages
 
-    plan = PlanStore(project.root).load()
+    plan = plan_for_later_stages(project)
     section = next((s for s in plan.sections if s.id == visual.section_id), None)
     if section is None:
         return None

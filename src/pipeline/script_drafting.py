@@ -35,6 +35,7 @@ from pipeline.agent_runtime import (
 )
 from pipeline.extraction import Extraction, ExtractionStore
 from pipeline.llm import ModelCallFailed, ModelNotConfigured, complete_structured
+from pipeline.narration_voice import VOICE_RULE
 from pipeline.operations import (
     OperationFailed,
     _script_in_plan_order,
@@ -43,7 +44,7 @@ from pipeline.operations import (
     require_project,
 )
 from pipeline.plan_drafting import MAXIMUM_SECTION_SOURCE_CHARACTERS, section_source_text
-from pipeline.planning import Plan, PlanSection, PlanStore
+from pipeline.planning import Plan, PlanSection
 from pipeline.scripting import Script, ScriptScene, ScriptStore, SectionScript
 from pipeline.stage_options import video_preferences
 from pipeline.stages import Stage
@@ -78,8 +79,9 @@ class DraftedSection(BaseModel):
 
 def draft_section(slug: str, section_id: str, instruction: str = "") -> dict[str, Any]:
     """Draft one section's scenes and save them, replacing that section only."""
+    from pipeline.plan_handoff import plan_for_later_stages
     project = require_project(slug)
-    plan = PlanStore(project.root).load()
+    plan = plan_for_later_stages(project)
     section = next((s for s in plan.sections if s.id == section_id), None)
     if section is None:
         listed = ", ".join(f"{s.id} ({s.title})" for s in plan.sections) or "none"
@@ -128,8 +130,9 @@ def draft_unwritten_sections(slug: str, instruction: str = "") -> dict[str, Any]
     the drafts were being written: the script is read again before saving, and a
     section that gained words in the meantime keeps them.
     """
+    from pipeline.plan_handoff import plan_for_later_stages
     project = require_project(slug)
-    plan = PlanStore(project.root).load()
+    plan = plan_for_later_stages(project)
     script = ScriptStore(project.root).load()
     unwritten = [s for s in plan.sections if not script.body_for(s.id).strip()]
     if not unwritten:
@@ -207,13 +210,21 @@ def _write_section(
         f"{section.estimated_seconds} seconds. Every fact must come from the "
         f"source material provided; do not add examples, numbers or analogies "
         f"that are not in it. Open where the previous section left off.\n\n"
+        f"{VOICE_RULE}\n"
         f"Tone: {preferences.tone_sentence}\n"
         f"Write the narration, and every brief, in {preferences.language_name}. "
         f"Keep technical terms and proper nouns in the form the source uses, "
         f"even where the rest of the sentence is not in English."
     )
 
-    source, source_note = _source_for(extraction, section)
+    from pipeline.lesson_plan import FRAME_ROLES, frame_source
+
+    if section.role in FRAME_ROLES:
+        # Written from the plan -- and the recap and close from what the body
+        # said -- not from a source: an opening that re-read the source taught.
+        source, source_note = frame_source(plan, script, section), ""
+    else:
+        source, source_note = _source_for(extraction, section)
     if source_note:
         notes.append(f'"{section.title}": {source_note}')
 
@@ -240,11 +251,16 @@ def _write_section(
 
 
 def _section_brief(plan: Plan, section: PlanSection, target_words: int) -> str:
+    from pipeline.lesson_plan import ROLE_GUIDE, summary_problem
+
     objectives = {o.id: o.text for o in plan.learning_objectives if o.is_included}
     served = [objectives[oid] for oid in section.objective_ids if oid in objectives]
+    # A stand-in or raw source text is not a summary, and passing it on as one
+    # told the agent to read the slide out.
+    summary = section.summary if not summary_problem(section) else ""
     lines = [
         f"Title: {section.title}",
-        f"Summary: {section.summary or '(none given)'}",
+        f"Summary: {summary or '(none given)'}",
         f"Target: about {section.estimated_seconds} seconds, about {target_words} words",
     ]
     if section.rendering_approach:
@@ -252,6 +268,8 @@ def _section_brief(plan: Plan, section: PlanSection, target_words: int) -> str:
                      + (f" -- {section.rendering_reason}" if section.rendering_reason else ""))
     if served:
         lines.append("Learning objectives it serves:\n" + "\n".join(f"- {o}" for o in served))
+    if ROLE_GUIDE.get(section.role):
+        lines.append(f"Its part in the lesson: {ROLE_GUIDE[section.role]}")
     return "\n".join(lines)
 
 

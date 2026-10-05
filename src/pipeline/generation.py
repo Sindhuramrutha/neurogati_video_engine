@@ -339,27 +339,26 @@ def plan_visuals(slug: str) -> dict[str, Any]:
     first. A scene whose brief has since been rewritten is re-planned; one that
     has not is left exactly as it was, including a picture someone chose by hand.
     """
-
-    from pipeline.assets import AssetLibraryStore
     from pipeline.core import OperationFailed, require_project
     from pipeline.extraction import ExtractionStore
     from pipeline.llm import is_configured
     from pipeline.plan_drafting import section_source_text
-    from pipeline.planning import PlanStore
+    from pipeline.plan_handoff import plan_for_later_stages
+    from pipeline.plan_pictures import assets_for_later_stages
     from pipeline.render_run import pictures_for_sections
-    from pipeline.scripting import ScriptStore
+    from pipeline.slide_plan import scene_slide
 
     project = require_project(slug)
-    plan = PlanStore(project.root).load()
-    script = ScriptStore(project.root).load()
+    plan = plan_for_later_stages(project)
+    from pipeline.script_handoff import script_for_later_stages
+    script = script_for_later_stages(project)
     if not plan.sections:
         raise OperationFailed("The plan has no sections, so there are no scenes to show.")
 
     extraction = ExtractionStore(project.root).load()
-    library = AssetLibraryStore(project.root).load()
-    pictures = pictures_for_sections(project, {"sections": [
-        {"id": s.id, "sources": [r.model_dump() for r in s.sources]} for s in plan.sections
-    ]})
+    # The section's own pictures, as the transferred plan attached them.
+    library = assets_for_later_stages(project).library
+    pictures = pictures_for_sections(project, plan.model_dump(mode="json"))
     can_generate = is_configured()
 
     store = VisualPlanStore(project.root)
@@ -391,8 +390,7 @@ def plan_visuals(slug: str) -> dict[str, Any]:
                 continue
 
             kind, asset_path, origin, prompt, note = VisualKind.TEXT, "", "none", "", ""
-            slide_number = next(
-                (s.slide_number for s in section.sources if s.slide_number), 0)
+            slide_number = scene_slide(plan, section, number, len(scenes))
 
             if slide_number:
                 # The section is a slide of the deck, so the scene shows that
@@ -400,7 +398,7 @@ def plan_visuals(slug: str) -> dict[str, Any]:
                 # slide and recomposed on our own background is strictly worse
                 # than the slide it came from.
                 kind, origin = VisualKind.SLIDE, "source"
-                note = f"Slide {slide_number} of {section.sources[0].file_name}"
+                note = f"Slide {slide_number} of the deck"
             elif available:
                 # One picture per scene while they last, so a section with four
                 # diagrams shows four different things rather than one of them
@@ -411,11 +409,12 @@ def plan_visuals(slug: str) -> dict[str, Any]:
             elif section.rendering_approach == "plot" and len(numbers) >= SMALLEST_CHART:
                 kind, origin = VisualKind.CHART, "chart"
                 note = f"{len(numbers)} figure(s) stated in this section's source"
-            elif can_generate:
+            elif can_generate and section.role in ("teach", "story"):
                 kind, origin = VisualKind.GENERATED_IMAGE, "generated"
                 prompt = _prompt_for(section, scene.brief, scene.narration, source_text)
             else:
-                note = "No picture in the source, and no image model is configured."
+                note = ("No picture in the source, and no image model is configured."
+                        if section.role in ("teach", "story") else "The lesson frame: words.")
 
             visuals.append(SceneVisual(
                 id=was.id if was else new_identifier(),
@@ -435,8 +434,9 @@ def plan_visuals(slug: str) -> dict[str, Any]:
         notes.append("No model key is set, so nothing can be drawn for a scene "
                      "that has no picture.")
 
+    from pipeline.scene_lab import keep_scripted
     saved = store.save(VisualPlan(
-        visuals=visuals,
+        visuals=keep_scripted(existing, visuals),
         planned_at=_now(),
         built_at=store.load().built_at,
         notes=notes,
@@ -457,9 +457,9 @@ def _stale_visual_ids(project) -> set[str]:
     is what the video will say, and a picture of an older sentence is exactly
     what nobody notices.
     """
-    from pipeline.scripting import ScriptStore
 
-    script = ScriptStore(project.root).load()
+    from pipeline.script_handoff import script_for_later_stages
+    script = script_for_later_stages(project)
     current = {
         scene.id: brief_fingerprint(scene.brief, scene.narration)
         for entry in script.section_scripts for scene in entry.scenes
@@ -543,10 +543,7 @@ def set_scene_visual(
             # The old picture is not this scene's any more; it is not deleted,
             # because the same file may be another scene's source figure.
             visual.kind = kind
-            visual.asset_path = ""
-            visual.clip_path = ""
-            visual.drawn_by = ""
-            visual.built_at = ""
+            visual.asset_path = visual.clip_path = visual.drawn_by = visual.built_at = ""
             visual.origin = {"source_picture": "source", "chart": "chart",
                              "diagram": "diagram",
                              "generated_image": "generated"}.get(kind, "none")

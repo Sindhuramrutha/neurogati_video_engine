@@ -89,13 +89,8 @@ button { cursor: pointer; }
   flex: none;
 }
 
-.brand { display: flex; align-items: center; gap: 9px; font-weight: 600; }
 
-.brand-mark {
-  width: 26px; height: 26px; display: grid; place-items: center;
-  }
 
-.brand-sub { color: var(--text-faint); font-weight: 400; }
 
 .project-select {
   background: var(--surface-raised);
@@ -107,6 +102,45 @@ button { cursor: pointer; }
 }
 
 .project-select:focus-visible { outline: 2px solid var(--accent-line); outline-offset: 1px; }
+
+/* The project picker: a button, and a menu with a dustbin on each project. */
+.project-picker { position: relative; }
+
+#project-picker-button {
+  display: inline-flex; align-items: center; justify-content: space-between; gap: 10px;
+  min-width: 260px; max-width: 360px; cursor: pointer; font: inherit; font-weight: 800;
+}
+
+#project-picker-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.project-menu {
+  position: absolute; left: 0; top: calc(100% + 8px); z-index: 40;
+  width: max(100%, 340px); max-height: 60vh; overflow-y: auto; padding: 6px;
+  display: grid; gap: 4px; background: var(--surface);
+  border: 3px solid var(--stage-head-ink, #0E0B14); border-radius: 12px;
+  box-shadow: 5px 5px 0 var(--stage-head-ink, #0E0B14);
+}
+
+.project-menu[hidden] { display: none; }
+
+.project-row { display: flex; align-items: center; gap: 6px; border-radius: 8px; }
+
+.project-row.on { background: var(--c-yellow, #FFD93D); }
+
+.project-row-name {
+  flex: 1; min-width: 0; padding: 9px 10px; text-align: left; cursor: pointer;
+  background: none; border: none; color: inherit; font: inherit; font-weight: 700;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.project-row-trash {
+  flex: none; width: 34px; height: 34px; margin-right: 2px; padding: 0; cursor: pointer;
+  display: grid; place-items: center; color: var(--stage-head-ink, #0E0B14);
+  background: #fff; border: 2px solid var(--stage-head-ink, #0E0B14); border-radius: 8px;
+  box-shadow: 2px 2px 0 var(--stage-head-ink, #0E0B14);
+}
+
+.project-menu-empty { margin: 8px 10px; font-size: 13px; }
 
 .btn {
   background: var(--surface-raised);
@@ -255,15 +289,6 @@ button { cursor: pointer; }
 }
 
 .list-head h3 { margin: 0; font-size: 13.5px; font-weight: 600; }
-
-.list-head .sort { margin-left: auto; display: flex; align-items: center; gap: 8px; }
-
-.list-head .sort label { font-size: 12.5px; color: var(--text-faint); }
-
-.list-head select {
-  background: var(--surface-raised); color: var(--text);
-  border: var(--edge) solid var(--line); border-radius: 8px; padding: 5px 9px; font-size: 12.5px;
-}
 
 .file-row {
   display: flex; align-items: center; gap: 13px;
@@ -489,7 +514,6 @@ h3.section {
   transition: border-color .13s, background .13s;
 }
 
-.file-card:hover { background: var(--surface-hover); }
 
 .file-card:focus-visible { outline: 2px solid var(--accent-line); outline-offset: 1px; }
 
@@ -532,13 +556,6 @@ h3.section {
 .toggle-row .toggle-label { font-size: 13px; }
 
 .toggle-row[aria-describedby] { position: relative; }
-
-/* A file name has no break opportunities (underscores do not wrap), so it
-   must be allowed to shrink and end in an ellipsis instead of pushing out
-   of the panel. `min-width: 0` is what lets a flex child shrink at all. */
-.preview-head .mono {
-  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
 
 .seg {
   display: inline-flex; background: var(--surface-raised);
@@ -1050,15 +1067,8 @@ b, strong { font-weight: 800; }
   gap: 16px;
 }
 
-.brand { font-weight: 900; font-size: 19px; letter-spacing: -.04em; text-transform: uppercase; }
 
-.brand-sub { font-weight: 700; color: var(--text-dim); text-transform: none; letter-spacing: 0; }
 
-.brand-mark {
-  background: var(--accent); border: var(--edge) solid var(--line);
-  border-radius: 12px; box-shadow: var(--shadow-sm); color: var(--line);
-  padding: 5px; display: grid; place-items: center;
-}
 
 /* --- pressable ----------------------------------------------------------- */
 .btn, .btn-icon, .project-select, .pill, .checkbox, .seg {
@@ -1167,12 +1177,19 @@ b, strong { font-weight: 800; }
 
 .nav-item:hover { transform: translate(-2px, -2px); box-shadow: var(--shadow); }
 
+/* The active stage wears the page header's purple and its brutalist outline,
+   so the rail and the page you are on read as the same place. */
 .nav-item.active {
-  background: var(--accent-soft, #FFE1EC);
-  border-color: var(--line);
-  box-shadow: var(--shadow-sm);
-  transform: translate(-2px, -2px);
+  background: var(--stage-head-bg);
+  color: var(--stage-head-ink);
+  border: 3px solid var(--stage-head-ink);
+  box-shadow: 5px 5px 0 var(--stage-head-ink);
+  transform: translate(-3px, -3px);
 }
+
+.nav-item.active:hover { box-shadow: 6px 6px 0 var(--stage-head-ink); }
+
+.nav-item.active .nav-label { font-weight: 900; color: var(--stage-head-ink); }
 
 .nav-label { font-size: 14.5px; letter-spacing: -.01em; }
 
@@ -1186,7 +1203,6 @@ b, strong { font-weight: 800; }
 
 .nav-badge.done { background: var(--ok); color: var(--line); }
 
-.nav-item.active .nav-badge { background: var(--surface); }
 
 /* --- chips, pills, badges ------------------------------------------------ */
 .chip, .stage-chip, .stamp-chip, .cred-badge, .status-pill, .plan-total {
@@ -1524,8 +1540,6 @@ input:focus, textarea:focus, select:focus {
 
 .seg button.on { background: var(--c-blue); }
 
-#sort-select { background: var(--c-teal-soft); }
-
 .status-pill { background: var(--c-green-soft); }
 
 .plan-total, .card-note { background: var(--c-yellow-soft); }
@@ -1541,7 +1555,11 @@ input:focus, textarea:focus, select:focus {
   display: grid; place-items: center;
 }
 
-.nav-item.active .nav-icon { background: var(--surface); color: var(--line); }
+.nav-item.active .nav-icon,
+.nav-item.active .nav-badge {
+  background: var(--surface); color: var(--stage-head-ink);
+  border: 2.5px solid var(--stage-head-ink);
+}
 
 /* --- typed things get typed colours ------------------------------------- */
 .tool { border: var(--edge) solid var(--line); background: var(--c-blue-soft); font-weight: 700; }
@@ -1575,29 +1593,11 @@ input:focus, textarea:focus, select:focus {
 .empty { background: var(--c-blue-soft); }
 
 /* --- a file row that opens ----------------------------------------------- */
-/* The colour rotation moves to the wrapper, so a row and its preview share one
-   colour and the sequence still counts one entry per file. */
+/* Uploaded files are one list of the same thing, so every row wears the same
+   green rather than a rotating colour. */
 .file-entry { margin-bottom: 10px; }
 
-.file-entry .file-row { margin-bottom: 0; }
-
-.file-entry:nth-child(9n+1) .file-row { background: var(--c-yellow-soft); }
-
-.file-entry:nth-child(9n+2) .file-row { background: var(--c-blue-soft); }
-
-.file-entry:nth-child(9n+3) .file-row { background: var(--c-green-soft); }
-
-.file-entry:nth-child(9n+4) .file-row { background: var(--c-pink-soft); }
-
-.file-entry:nth-child(9n+5) .file-row { background: var(--c-purple-soft); }
-
-.file-entry:nth-child(9n+6) .file-row { background: var(--c-orange-soft); }
-
-.file-entry:nth-child(9n+7) .file-row { background: var(--c-teal-soft); }
-
-.file-entry:nth-child(9n+8) .file-row { background: var(--c-lime-soft); }
-
-.file-entry:nth-child(9n+9) .file-row { background: var(--c-red-soft); }
+.file-entry .file-row { margin-bottom: 0; background: var(--c-green-soft); }
 
 [data-preview] svg { transition: transform .15s ease; }
 
@@ -1612,13 +1612,6 @@ input:focus, textarea:focus, select:focus {
   margin: -6px 10px 0;
   padding: 14px;
 }
-
-.preview-meta {
-  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
-  font-size: 12px; font-weight: 700; color: var(--text-dim);
-}
-
-.preview-meta .btn { padding: 5px 11px; font-size: 12px; }
 
 .file-text {
   margin: 0; max-height: 420px; overflow: auto;
@@ -1694,8 +1687,6 @@ input:focus, textarea:focus, select:focus {
   place-items: initial;
 }
 
-.preview-stage.raw .preview-meta { flex-wrap: wrap; }
-
 .x-figure {
   margin: 10px; padding: 10px; border-radius: 10px;
   border: var(--edge) solid var(--line); background: var(--c-purple-soft);
@@ -1742,13 +1733,38 @@ input:focus, textarea:focus, select:focus {
 .preview-panel { display: flex; flex-direction: column; min-width: 0; }
 
 .preview-panel .preview-stage {
-  height: max(440px, calc(100vh - 360px));
+  height: var(--x-pane-height, max(440px, calc(100vh - 360px)));
   overflow: auto; align-content: start;
 }
 
 .preview-panel .preview-stage:not(.raw):not(.scrolls) { align-content: center; }
 
-.preview-panel .doc-stage { max-height: none; }
+/* The file brings its own frame -- a slide, a page, the PDF viewer -- so the
+   stage around it draws none and does not scroll. It used to be three borders
+   and two scrollbars deep, with the slide controls pushed out of sight. */
+.preview-panel .preview-stage.raw {
+  height: auto; max-height: none; overflow: visible;
+  padding: 0; border: none; background: none;
+}
+
+.preview-panel .doc-stage { max-height: 72vh; }
+
+/* ---- stage header: the agent, as an icon in the corner ------------------- */
+.btn-square { padding: 8px; justify-content: center; }
+
+.card-head > div + .btn { margin-left: auto; }
+
+/* ---- stage notices float, and leave by themselves ----------------------- */
+/* Positioned against the viewport, under the top bar, so a notice never moves
+   the page it is about. */
+#stage-notice {
+  position: fixed; top: 92px; right: 24px; z-index: 60;
+  max-width: min(440px, calc(100vw - 48px)); margin: 0;
+  cursor: pointer; box-shadow: var(--shadow);
+  animation: notice-in .18s ease-out;
+}
+
+@keyframes notice-in { from { opacity: 0; transform: translateY(-6px); } }
 
 /* File cards: the whole name, which file is on screen, and what the run made
    of it. A file name has no natural break points, so it may break anywhere. */
@@ -1761,24 +1777,16 @@ input:focus, textarea:focus, select:focus {
 
 .file-card .meta .sub { display: block; margin-top: 2px; }
 
-.file-card .checkbox { margin-top: 2px; }
-
 .file-status.ok { background: var(--c-green-soft); }
 
 .file-status.warn { background: var(--c-yellow); }
 
 .file-status.muted { background: var(--surface); color: var(--text-dim); }
 
-.file-card.selected, .file-card.left-out.selected {
+.file-card.selected {
   background: var(--c-blue-soft);
   box-shadow: inset 5px 0 0 var(--c-blue), var(--shadow-sm);
 }
-
-.file-card.left-out:not(.selected) { background: var(--surface-raised); }
-
-.file-card.left-out .file-badge { opacity: .45; }
-
-.file-card.left-out .meta .name { color: var(--text-dim); }
 
 .run-bar.pending { background: var(--c-purple-soft); }
 
@@ -1932,3 +1940,355 @@ input:focus, textarea:focus, select:focus {
 #stage-body .run-bar.pending { background: var(--c-purple-soft); }
 #stage-body .notice.ok { background: var(--c-green-soft, #DDF7EC); color: var(--text); }
 #stage-body .notice.warn { background: var(--c-yellow-soft, #FFF6CC); color: var(--text); }
+
+/* ---- every stage is two boxes: a header, then its content ----------------
+ * The header is the same loud purple on every page, drawn the brutalist way --
+ * a heavy black outline and a hard offset shadow, not the softened ones the
+ * rest of the stage uses -- so the title band is unmistakably the same thing
+ * wherever you are. The stage's own colour stays on its icon. */
+:root { --stage-head-bg: #9B6DFF; --stage-head-ink: #0E0B14; }
+
+#stage-body > .stage-head {
+  background: var(--stage-head-bg);
+  color: var(--stage-head-ink);
+  border: 3px solid var(--stage-head-ink);
+  border-radius: 16px;
+  box-shadow: 6px 6px 0 var(--stage-head-ink);
+  padding: 20px 24px;
+  margin: 0 6px 22px 0;
+}
+
+#stage-body > .stage-head h2 { color: var(--stage-head-ink); }
+
+#stage-body > .stage-head .card-icon {
+  border: 3px solid var(--stage-head-ink); box-shadow: 3px 3px 0 var(--stage-head-ink);
+}
+
+#stage-body > .stage-head .card-corner,
+#stage-body > .stage-head .btn {
+  background: var(--surface); color: var(--stage-head-ink);
+  border: 2.5px solid var(--stage-head-ink); box-shadow: 3px 3px 0 var(--stage-head-ink);
+}
+
+#stage-body > .stage-head .card-corner { align-self: center; }
+
+/* The progress bar: in the strip under the header, drawn like it -- a heavy
+   outline, a hard shadow, and a yellow fill that grows. When the steps are
+   not known yet, the fill runs striped instead. */
+#stage-body > .stage-progress {
+  margin: -8px 6px 22px 0; padding: 10px 14px 12px;
+  background: var(--surface); color: var(--stage-head-ink);
+  border: 3px solid var(--stage-head-ink); border-radius: 14px;
+  box-shadow: 5px 5px 0 var(--stage-head-ink);
+}
+
+#stage-body > .stage-progress[hidden] { display: none; }
+
+.stage-progress-text {
+  display: flex; align-items: baseline; gap: 12px; margin-bottom: 8px;
+  font-size: 13.5px;
+}
+
+.stage-progress-text b {
+  flex: 1; min-width: 0; font-weight: 800;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.stage-progress-text span {
+  flex: none; font-weight: 800; font-variant-numeric: tabular-nums;
+}
+
+.stage-progress-track {
+  height: 18px; overflow: hidden; background: #fff;
+  border: 2.5px solid var(--stage-head-ink); border-radius: 99px;
+}
+
+.stage-progress-fill {
+  height: 100%; background: var(--c-yellow);
+  border-right: 2.5px solid var(--stage-head-ink); transition: width .4s ease;
+}
+
+.stage-progress-track.unknown .stage-progress-fill {
+  border-right: none;
+  background: repeating-linear-gradient(
+    -45deg, var(--c-yellow) 0 12px, #fff3b0 12px 24px);
+  background-size: 34px 34px;
+  animation: stage-progress-stripes 1s linear infinite;
+}
+
+@keyframes stage-progress-stripes { to { background-position: 34px 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-progress-track.unknown .stage-progress-fill { animation: none; }
+}
+
+#stage-body > .stage-head .card-note { color: var(--stage-head-ink); }
+
+/* The Extraction page's content is its own panel -- the tabs -- so it has no
+   white box; only the footer needs room from the panel above it. */
+#stage-body > .stage-content-bare > .footer-nav { margin-top: 16px; }
+
+/* ---- the title, and what the stage is for behind an (i) ------------------ */
+.stage-title { display: flex; align-items: center; gap: 10px; }
+
+.stage-title h2 { margin: 0 !important; }
+
+.stage-info { position: relative; display: inline-flex; }
+
+.stage-info-button {
+  width: 26px; height: 26px; border-radius: 50%; padding: 0; cursor: help;
+  display: grid; place-items: center;
+  font: italic 900 14px/1 Georgia, serif;
+  background: var(--surface); color: var(--stage-head-ink);
+  border: 2.5px solid var(--stage-head-ink);
+  box-shadow: 2px 2px 0 var(--stage-head-ink);
+}
+
+.stage-info-button:hover,
+.stage-info-button:focus-visible { background: #FFD93D; outline: none; }
+
+.stage-info-pop {
+  position: absolute; top: calc(100% + 12px); left: -12px; z-index: 80;
+  width: min(380px, calc(100vw - 48px));
+  padding: 14px 16px; border-radius: 12px;
+  background: var(--surface); color: var(--stage-head-ink);
+  border: 3px solid var(--stage-head-ink);
+  box-shadow: 5px 5px 0 var(--stage-head-ink);
+  font-size: 13px; line-height: 1.5; font-weight: 500;
+  visibility: hidden; opacity: 0; transform: translateY(-4px);
+  transition: opacity .12s ease, transform .12s ease, visibility .12s;
+}
+
+.stage-info-pop b { display: block; font-size: 14px; font-weight: 800; margin-bottom: 6px; }
+
+.stage-info-pop ul { margin: 0; padding-left: 18px; }
+
+.stage-info-pop li { margin-bottom: 4px; }
+
+.stage-info:hover .stage-info-pop,
+.stage-info:focus-within .stage-info-pop {
+  visibility: visible; opacity: 1; transform: none;
+}
+
+/* ---- "Move to the next layer?" ------------------------------------------- */
+.move-dialog {
+  width: min(460px, calc(100vw - 32px)); padding: 0;
+  border: 3px solid var(--stage-head-ink); border-radius: 16px;
+  box-shadow: 8px 8px 0 var(--stage-head-ink);
+  background: var(--surface); color: var(--stage-head-ink);
+}
+
+.move-dialog::backdrop { background: rgba(14, 11, 20, .45); }
+
+.move-dialog form { padding: 22px 24px; }
+
+.move-dialog h3 {
+  margin: -22px -24px 16px; padding: 16px 24px;
+  background: var(--stage-head-bg); border-bottom: 3px solid var(--stage-head-ink);
+  font-size: 19px; font-weight: 900;
+}
+
+.move-dialog p { margin: 0 0 10px; font-size: 14px; line-height: 1.5; }
+
+.move-dialog-where { font-size: 15px !important; }
+
+.move-dialog-warning {
+  display: flex; gap: 8px; align-items: flex-start;
+  padding: 10px 12px; border-radius: 10px;
+  background: var(--c-yellow); border: 2px solid var(--stage-head-ink); font-weight: 700;
+}
+
+.move-dialog-warning svg { flex: none; margin-top: 2px; }
+
+.move-dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+
+.move-dialog .btn {
+  border: 2.5px solid var(--stage-head-ink); box-shadow: 3px 3px 0 var(--stage-head-ink);
+}
+
+/* ---- the Render page: the queue's bar, settings and jobs ------------------
+ * Like an editor's render queue: a bar that says what is rendering, and
+ * opened, the settings beside the list of jobs. Drawn like the header --
+ * heavy outline and hard shadow -- with the same progress track. */
+#stage-body > .render-dock {
+  margin: -8px 6px 22px 0; overflow: hidden;
+  background: var(--surface); color: var(--stage-head-ink);
+  border: 3px solid var(--stage-head-ink); border-radius: 14px;
+  box-shadow: 5px 5px 0 var(--stage-head-ink);
+}
+
+.rd-bar {
+  display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 8px 16px;
+}
+
+.rd-title {
+  flex: none; font-size: 12px; font-weight: 900; letter-spacing: .08em;
+  text-transform: uppercase; padding: 6px 10px; border-radius: 8px;
+  background: var(--stage-head-bg); border: 2.5px solid var(--stage-head-ink);
+  box-shadow: 2px 2px 0 var(--stage-head-ink);
+}
+
+.rd-chip {
+  flex: none; padding: 2px 9px; border-radius: 99px; font-size: 11.5px; font-weight: 800;
+  border: 2px solid var(--stage-head-ink); background: #fff; white-space: nowrap;
+}
+
+.rd-chip.rendering { background: var(--c-yellow); }
+.rd-chip.queued { background: var(--c-purple-soft, #EDE3FF); }
+.rd-chip.paused, .rd-chip.held { background: var(--c-orange-soft); }
+.rd-chip.failed { background: var(--c-red-soft); }
+.rd-chip.done { background: var(--c-lime-soft); }
+
+.rd-now { flex: 1; min-width: 0; display: grid; gap: 5px; }
+
+.rd-now-text { display: flex; gap: 10px; align-items: baseline; min-width: 0; font-size: 13px; }
+
+.rd-now-text b { flex: none; font-weight: 900; }
+
+.rd-now-text span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.rd-now .stage-progress-track { height: 12px; }
+
+.rd-numbers {
+  flex: none; font-size: 12.5px; font-weight: 800; font-variant-numeric: tabular-nums;
+}
+
+.rd-idle { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; color: var(--text-dim); }
+
+.render-dock .btn {
+  padding: 6px 12px; font-size: 12.5px; font-weight: 800;
+  border: 2.5px solid var(--stage-head-ink); box-shadow: 2px 2px 0 var(--stage-head-ink);
+}
+
+.render-dock .btn.danger { background: var(--c-red-soft); color: var(--stage-head-ink); }
+
+.render-dock .btn.rd-small { padding: 6px 9px; }
+
+#stage-body[data-stage="render"] { --stage: #9B6DFF; --stage-soft: #EDE6FF; }
+
+/* The sidebar's Render tab: its badge is the queue's state, not a step number. */
+.render-badge { min-width: 30px; font-variant-numeric: tabular-nums; }
+.render-badge[hidden] { display: none; }
+.render-badge.rendering { background: var(--c-yellow); color: var(--stage-head-ink); }
+.render-badge.stuck { background: var(--c-orange); color: var(--stage-head-ink); }
+
+.rd-body {
+  display: grid; grid-template-columns: minmax(240px, 300px) minmax(0, 1fr); gap: 18px;
+  padding: 4px 16px 16px;
+  border-top: 2px dashed var(--line);
+}
+
+.rd-body[hidden] { display: none; }
+
+.rd-body h4 {
+  margin: 12px 0 10px; font-size: 11.5px; font-weight: 900;
+  letter-spacing: .08em; text-transform: uppercase;
+}
+
+.rd-settings { display: grid; gap: 10px; align-content: start; }
+
+.rd-settings label { display: grid; gap: 4px; font-size: 12px; font-weight: 800; }
+
+.rd-settings { min-width: 0; }
+
+.rd-settings input, .rd-settings select {
+  width: 100%; min-width: 0; box-sizing: border-box;
+  padding: 8px 10px; font: inherit; font-size: 13px; font-weight: 600; border-radius: 8px;
+  border: 2.5px solid var(--stage-head-ink); background: #fff; color: var(--stage-head-ink);
+}
+
+.rd-hint { margin: 0; font-size: 12px; color: var(--text-dim); }
+
+.rd-queue-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.rd-jobs { display: grid; gap: 10px; align-content: start; }
+
+.rd-job {
+  display: grid; gap: 6px; padding: 10px 12px; border-radius: 12px; background: #fff;
+  border: 3px solid var(--stage-head-ink); box-shadow: 3px 3px 0 var(--stage-head-ink);
+}
+
+.rd-job.rendering { background: #FFFBEA; }
+.rd-job.paused { background: var(--c-orange-soft); }
+.rd-job.failed { background: var(--c-red-soft); }
+.rd-job.done { background: var(--c-lime-soft); }
+
+.rd-job-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.rd-job-number { font-size: 11px; font-weight: 900; color: var(--text-dim); }
+
+.rd-job-head b { flex: 1; min-width: 0; font-size: 14px; font-weight: 900; }
+
+.rd-line { margin: 0; font-size: 13px; line-height: 1.4; }
+
+.rd-line.muted { color: var(--text-dim); font-size: 12.5px; }
+
+.rd-line.bad { font-weight: 700; }
+
+.rd-link { font-size: 13px; font-weight: 800; color: var(--stage-head-ink); }
+
+.rd-job-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.rd-empty { margin: 0; font-size: 13px; }
+
+@media (max-width: 900px) {
+  .rd-body { grid-template-columns: minmax(0, 1fr); }
+  .rd-bar { flex-wrap: wrap; }
+}
+
+.render-dock a.btn { text-decoration: none; display: inline-flex; align-items: center; }
+
+/* --- when an earlier layer changed (upstream.py) -----------------------------
+   Loud on purpose: a layer built from an input that has since changed is wrong
+   until someone looks, and a quiet chip was how that went unnoticed. */
+.nav-item.flagged { border-color: #D92D20; box-shadow: 4px 4px 0 #D92D20; }
+.nav-item.flagged::after {
+  content: "!"; flex: none; display: grid; place-items: center; width: 20px; height: 20px;
+  font-weight: 900; font-size: 13px; color: #fff; background: #D92D20;
+  border: 2px solid var(--x-ink, #111); border-radius: 50%;
+}
+
+.upstream-flag {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center;
+  margin: 14px 0 0; padding: 14px 16px; border-radius: 14px;
+  background: #FFE0E0; border: 3px solid #D92D20; box-shadow: 5px 5px 0 #D92D20;
+}
+.upstream-flag-mark {
+  display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; white-space: nowrap;
+  font-weight: 900; font-size: 12px; letter-spacing: .05em; text-transform: uppercase;
+  color: #fff; background: #D92D20; border: 2px solid var(--x-ink, #111); border-radius: 99px;
+}
+.upstream-flag-text { font-size: 13.5px; line-height: 1.45; }
+.upstream-flag-text p { margin: 0 0 4px; }
+.upstream-parts { display: block; font-size: 12.5px; }
+.upstream-flag-actions { display: flex; flex-direction: column; gap: 8px; }
+
+@media (max-width: 1000px) {
+  .upstream-flag { grid-template-columns: minmax(0, 1fr); }
+  .upstream-flag-actions { flex-direction: row; flex-wrap: wrap; }
+}
+
+/* --- Inputs: the project's one source file ---------------------------------- */
+.source-card { padding: 16px 18px; background: var(--c-blue-soft, #DCEAFF);
+  border: 3px solid var(--x-ink, #111); border-radius: 14px; box-shadow: 5px 5px 0 var(--x-ink, #111); }
+.source-card.over { background: var(--c-yellow-soft); border-style: dashed; }
+.source-card.busy { opacity: .7; }
+.source-card-row { display: flex; align-items: center; gap: 12px; }
+.source-card-name { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.source-card-name b { font-size: 17px; font-weight: 900; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; }
+.source-card-name span { font-size: 13px; color: var(--text-dim); }
+.source-card .file-preview { margin-top: 14px; }
+.source-card-note { margin: 12px 0 0; font-size: 12.5px; color: var(--text-dim); }
+
+
+/* --- Extraction: the source and its one button ---------------------------------- */
+.x-source-file { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.x-source-file span { display: grid; gap: 2px; min-width: 0; }
+.x-source-file b { font-size: 14px; overflow-wrap: anywhere; }
+.x-source-file small { font-size: 12px; color: var(--text-dim); }
+.x-source-state { margin: 0 0 12px; font-size: 13px; line-height: 1.45; }
+.x-source.ready .x-source-state b { color: #0F7A4F; }
+.x-source.stale .x-source-state b { color: #9A5B00; }
+.x-source .x-extract-button { width: 100%; }
+.x-final-text { margin-top: 16px; }

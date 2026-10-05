@@ -54,12 +54,26 @@ def write_text_atomically(destination_path: Path, text: str) -> None:
 
     The rename is what makes it atomic: a reader either sees the whole previous
     file or the whole new one, never a half-written middle.
+
+    On Windows the rename is refused while another thread has the file open to
+    read it -- a page polling a render's progress while the render records it
+    -- so it is retried for a moment. A read holds the file for milliseconds;
+    failing the render over it lost minutes of work.
     """
+    import time
+
     destination_path.parent.mkdir(parents=True, exist_ok=True)
     temporary_path = destination_path.with_name(
         destination_path.name + TEMPORARY_WRITE_SUFFIX)
     temporary_path.write_text(text, encoding="utf-8")
-    temporary_path.replace(destination_path)
+    for attempt in range(40):
+        try:
+            temporary_path.replace(destination_path)
+            return
+        except PermissionError:
+            if attempt == 39:
+                raise
+            time.sleep(0.025)
 
 
 def read_json_object(source_path: Path, description: str) -> dict | None:

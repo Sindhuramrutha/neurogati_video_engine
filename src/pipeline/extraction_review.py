@@ -6,15 +6,13 @@ figure was saved anywhere near it. Nothing downstream can tell -- the planner
 sees a figure block, the renderer shows an empty rectangle, and the first person
 to notice is whoever watches the finished video.
 
-Two passes, in this order and deliberately separate:
-
-1. **Checks.** Every extracted picture is opened and measured. Missing, corrupt,
-   blank, tiny and hairline images are facts, not opinions, and they are found
-   without a model, without a network, and identically every run.
-2. **The Extraction agent.** What is left is a reading problem: a reference to a
-   figure that was never extracted, a section that stops mid-sentence, text that
-   came out garbled. That needs a reader, so the stage's own agent gets the
-   extracted text, the figure inventory and the findings from pass 1.
+The checks here need no model: every extracted picture is opened and
+measured, and every "see Figure 2.1" is matched to a figure. Missing, corrupt,
+blank, tiny and hairline images are facts, not opinions, found identically
+every run. Reading problems -- text in the wrong order, a garbled line, a
+figure that is the wrong picture -- are the Extraction agent's, one slide at a
+time with the slide in view (`extraction_slide_review`). It once read the
+whole extraction in one reply, which ran out of room on any real deck.
 
 A finding is a claim about a place in a document, so it carries that place. What
 can be done about it lives here too: replace the picture with one you upload, or
@@ -35,7 +33,8 @@ from typing import Any
 from pydantic import BaseModel, Field, field_validator
 
 from pipeline.config import get_settings
-from pipeline.extraction import BlockKind, Extraction, ExtractionStore
+from pipeline.extraction import BlockKind, Extraction, ExtractionCollectionStore
+from pipeline.figure_pictures import picture_context, picture_prompt, set_picture, store_picture
 from pipeline.storage.documents import JsonDocumentStore, new_identifier
 
 logger = logging.getLogger(__name__)
@@ -53,8 +52,6 @@ EXTREME_ASPECT_RATIO = 20
 BLANK_TONAL_RANGE = 8
 
 MAXIMUM_FINDINGS = 200
-MAXIMUM_EXTRACTION_CHARACTERS_FOR_REVIEW = 40_000
-MAXIMUM_FIGURES_LISTED_FOR_AGENT = 120
 
 # "as Figure 2.1 shows", "see Fig. 4" -- a promise that a picture exists.
 FIGURE_REFERENCE = re.compile(r"\b(?:fig|figure)s?\.?\s*(\d+(?:\.\d+)?)", re.IGNORECASE)
@@ -104,7 +101,6 @@ class ExtractionReview(BaseModel):
     # stale, and saying so is better than showing findings about content that no
     # longer exists.
     content_fingerprint: str = ""
-    asked_the_agent: bool = False
     findings: list[Finding] = Field(default_factory=list)
     acknowledged: list[str] = Field(default_factory=list)
     notes: list[str] = Field(default_factory=list)
@@ -127,7 +123,6 @@ class ExtractionReview(BaseModel):
         open_findings = [f for f in self.findings if f.id not in acknowledged]
         return {
             "reviewed_at": self.reviewed_at,
-            "asked_the_agent": self.asked_the_agent,
             "is_stale": stale,
             "notes": self.notes,
             "open_count": len(open_findings),
@@ -263,34 +258,11 @@ def inspect_pictures(project_root: Path, extraction: Extraction) -> list[Finding
 def check_references(extraction: Extraction) -> list[Finding]:
     """Text that promises a figure the extraction does not have.
 
-    Scoped per document: "Figure 2.1" in a chapter with no extracted figures at
-    all is a strong signal, while the same phrase in a document full of figures
-    usually just refers to one of them.
+    By count, not all-or-nothing: skipping any document that extracted even one
+    figure missed the case that actually happens -- a chapter of sixty that lost
+    figure 63. A reference numbered past the figures there are catches both.
     """
     findings: list[Finding] = []
-
-    for document in extraction.documents:
-        figures = [b for b in document.blocks if b.kind == BlockKind.FIGURE]
-        if figures:
-            continue
-
-        referenced: dict[str, Any] = {}
-        for block in document.blocks:
-            if block.kind == BlockKind.FIGURE:
-                continue
-            for number in FIGURE_REFERENCE.findall(block.text):
-                referenced.setdefault(number, block)
-
-        for number, block in sorted(referenced.items())[:10]:
-            findings.append(Finding(
-                kind=FindingKind.REFERENCE_WITHOUT_FIGURE, severity="warning",
-                file_name=document.file_name, heading_path=list(block.heading_path),
-                block_id=block.id,
-                what=f"The text refers to Figure {number}, but no figure was extracted "
-                     f"from this document at all.",
-                suggestion="Check whether the figures are images the reader could not "
-                           "open, and upload them if the video needs them.",
-            ))
 
     for document in extraction.documents:
         if not document.blocks:
@@ -301,6 +273,28 @@ def check_references(extraction: Extraction) -> list[Finding]:
                 suggestion="It may be a scanned file with no text layer. "
                            "Check it on Inputs.",
             ))
+            continue
+
+        figures = sum(1 for b in document.blocks if b.kind == BlockKind.FIGURE)
+        referenced: dict[str, Any] = {}
+        for block in document.blocks:
+            if block.kind == BlockKind.FIGURE:
+                continue
+            # "2.1" is figure 1 of chapter 2: numbering restarts, so the tail counts.
+            for number in FIGURE_REFERENCE.findall(block.text):
+                if int(number.rsplit(".", 1)[-1]) > figures:
+                    referenced.setdefault(number, block)
+
+        for number, block in sorted(referenced.items())[:10]:
+            findings.append(Finding(
+                kind=FindingKind.REFERENCE_WITHOUT_FIGURE, severity="warning",
+                file_name=document.file_name, heading_path=list(block.heading_path),
+                block_id=block.id,
+                what=f"The text refers to Figure {number}, but {figures} figure(s) "
+                     f"were extracted from this document.",
+                suggestion="Check whether the figures are images the reader could not "
+                           "open, and upload them if the video needs them.",
+            ))
 
     return findings
 
@@ -310,146 +304,21 @@ def run_checks(project_root: Path, extraction: Extraction) -> list[Finding]:
     return inspect_pictures(project_root, extraction) + check_references(extraction)
 
 
-# --- pass two: the stage's own agent ------------------------------------------------
-
-
-class AgentFinding(BaseModel):
-    file_name: str = Field(default="", description="The document the problem is in.")
-    heading: str = Field(
-        default="", description="The heading it is under, copied exactly from the text."
-    )
-    what: str = Field(description="What is wrong, in one sentence.")
-    suggestion: str = Field(default="", description="What the person should do about it.")
-    severity: str = Field(
-        default="warning", description="error, warning or note."
-    )
-
-
-class ExtractionReviewReport(BaseModel):
-    findings: list[AgentFinding] = Field(
-        default_factory=list,
-        description="Problems in what was extracted. Empty if the extraction reads cleanly.",
-    )
-    notes: list[str] = Field(
-        default_factory=list, description="Anything worth saying that is not a problem."
-    )
-
-
-def _figure_inventory(project_root: Path, extraction: Extraction) -> str:
-    """What pictures exist, with their measurements, for the agent to reason about."""
-    lines: list[str] = []
-    for document in extraction.documents:
-        for block in document.blocks:
-            if block.kind != BlockKind.FIGURE or len(lines) >= MAXIMUM_FIGURES_LISTED_FOR_AGENT:
-                continue
-            location = " › ".join(block.heading_path) or "(no heading)"
-            if not block.asset_path:
-                lines.append(f"- {block.text or 'figure'} [{location}] — no picture saved")
-                continue
-            measured = _describe_picture(project_root / block.asset_path)
-            size = (f"{measured['width']}×{measured['height']}"
-                    if measured["readable"] else "unreadable")
-            lines.append(f"- {block.text or 'figure'} [{location}] — {size}")
-    return "\n".join(lines) or "(no figures were extracted)"
-
-
-def ask_the_agent(
-    project, extraction: Extraction, found: list[Finding]
-) -> ExtractionReviewReport:
-    """Have the Extraction agent read what was extracted and say what is wrong."""
-    from pipeline.agent_runtime import build_system_prompt, resolve_agent
-    from pipeline.llm import complete_structured
-    from pipeline.stages import Stage
-
-    agent = resolve_agent(project, Stage.EXTRACTION)
-    system_prompt = build_system_prompt(agent) + (
-        "\n\nYou are reviewing an extraction you have already produced. Report only "
-        "problems you can point at in the text below: a section that stops "
-        "mid-sentence, words that came out garbled or run together, a table that "
-        "lost its shape, a reference to a figure or appendix that is not here, "
-        "content that is obviously missing. Quote the heading each problem is "
-        "under, exactly as it appears. Do not summarise the content, do not "
-        "suggest improvements to the source material, and report nothing you "
-        "cannot point at."
-    )
-
-    already = "\n".join(f"- {finding.where}: {finding.what}" for finding in found)
-    user_prompt = "\n\n".join(part for part in [
-        f"--- figures extracted ---\n{_figure_inventory(project.root, extraction)}",
-        f"--- problems already found by the automatic checks ---\n{already}"
-        if already else "",
-        f"--- the extracted content ---\n"
-        f"{extraction.as_markdown()[:MAXIMUM_EXTRACTION_CHARACTERS_FOR_REVIEW]}",
-    ] if part)
-
-    return complete_structured(ExtractionReviewReport, system_prompt, user_prompt)
-
-
-def _heading_path_for(extraction: Extraction, file_name: str, heading: str) -> list[str]:
-    """Turn the agent's quoted heading back into a real location.
-
-    The agent answers with a heading it read; a finding needs the path the rest
-    of the pipeline uses. An unmatched heading is not discarded -- the finding is
-    still true, it just points at the document.
-    """
-    wanted = heading.strip().lower()
-    if not wanted:
-        return []
-    for document in extraction.documents:
-        if file_name and document.file_name != file_name:
-            continue
-        for block in document.blocks:
-            if block.kind == BlockKind.HEADING and block.text.strip().lower() == wanted:
-                return list(block.heading_path)
-    return []
-
-
 # --- what a client calls ------------------------------------------------------------
 
 
-def review_extraction(slug: str, ask_agent: bool = True) -> dict[str, Any]:
-    """Check the extraction, optionally have its agent read it, and save the result.
-
-    The checks always run. The agent is best-effort: a review that reported
-    nothing because the model was unreachable would be worse than one that
-    reports the broken pictures and says the reading pass did not happen.
-    """
-    from pipeline.llm import ModelCallFailed, ModelNotConfigured
+def review_extraction(slug: str) -> dict[str, Any]:
+    """Run the checks over the extraction, and save what they found."""
     from pipeline.operations import OperationFailed, require_project
 
     project = require_project(slug)
-    extraction = ExtractionStore(project.root).load()
+    extraction = ExtractionCollectionStore(project.root).load()
     if not extraction.documents:
         raise OperationFailed(
-            f"{project.name} has nothing extracted yet. Run extraction first."
+            f"{project.name} has nothing in its extraction collection yet. Extract a file first."
         )
 
     findings = run_checks(project.root, extraction)
-    notes: list[str] = []
-    asked = False
-
-    if ask_agent:
-        try:
-            report = ask_the_agent(project, extraction, findings)
-            asked = True
-            notes.extend(report.notes)
-            for found in report.findings:
-                findings.append(Finding(
-                    kind=FindingKind.READING_PROBLEM,
-                    severity=found.severity if found.severity in
-                    {"error", "warning", "note"} else "warning",
-                    file_name=found.file_name,
-                    heading_path=_heading_path_for(
-                        extraction, found.file_name, found.heading),
-                    what=found.what,
-                    suggestion=found.suggestion,
-                    found_by="agent",
-                ))
-        except ModelNotConfigured as not_configured:
-            notes.append(f"The agent did not read it: {not_configured}")
-        except ModelCallFailed as call_failure:
-            logger.warning("the extraction agent could not review: %s", call_failure)
-            notes.append(f"The agent did not read it: {call_failure}")
 
     store = ExtractionReviewStore(project.root)
     previous = store.load()
@@ -467,10 +336,8 @@ def review_extraction(slug: str, ask_agent: bool = True) -> dict[str, Any]:
     saved = store.save(ExtractionReview(
         reviewed_at=datetime.now(UTC).isoformat(timespec="seconds"),
         content_fingerprint=extraction.content_fingerprint(),
-        asked_the_agent=asked,
         findings=findings,
         acknowledged=acknowledged,
-        notes=notes,
     ))
     return saved.to_dict(extraction)
 
@@ -480,7 +347,7 @@ def read_extraction_review(slug: str) -> dict[str, Any]:
     from pipeline.operations import require_project
 
     project = require_project(slug)
-    extraction = ExtractionStore(project.root).load()
+    extraction = ExtractionCollectionStore(project.root).load()
     return ExtractionReviewStore(project.root).load().to_dict(extraction)
 
 
@@ -497,7 +364,18 @@ def acknowledge_finding(slug: str, finding_id: str) -> dict[str, Any]:
     if finding_id not in review.acknowledged:
         review.acknowledged = [*review.acknowledged, finding_id]
     saved = store.save(review)
-    return saved.to_dict(ExtractionStore(project.root).load())
+    return saved.to_dict(ExtractionCollectionStore(project.root).load())
+
+
+def _find_figure(extraction: Extraction, block_id: str):
+    """The document a block is in, and the block."""
+    from pipeline.operations import OperationFailed
+
+    for document in extraction.documents:
+        for block in document.blocks:
+            if block.id == block_id:
+                return document, block
+    raise OperationFailed(f"This extraction has no block {block_id!r}.")
 
 
 def replace_figure(
@@ -505,27 +383,19 @@ def replace_figure(
 ) -> dict[str, Any]:
     """Put a picture you supply where the extracted one should have been.
 
-    The extraction itself is edited, because that is what every later stage
-    reads. The replacement is stored like any other asset, so it is pruned and
-    addressed the same way -- and it survives until the next extraction run,
-    which will overwrite it from the source. That is stated in the result rather
-    than hidden.
+    The collection is edited, and later stages get the picture when it is next
+    confirmed. The replacement is stored like any other asset, so it is pruned
+    and addressed the same way -- and it survives until that file is extracted
+    again, which overwrites it from the source. That is stated in the result
+    rather than hidden.
     """
-    from pipeline.extraction import AssetSink
     from pipeline.operations import OperationFailed, present_artifact, require_project
 
     project = require_project(slug)
-    store = ExtractionStore(project.root)
+    store = ExtractionCollectionStore(project.root)
     extraction = store.load()
 
-    target = None
-    for document in extraction.documents:
-        for block in document.blocks:
-            if block.id == block_id:
-                target = block
-                break
-    if target is None:
-        raise OperationFailed(f"This extraction has no block {block_id!r}.")
+    document, target = _find_figure(extraction, block_id)
     if target.kind != BlockKind.FIGURE:
         raise OperationFailed(f"Block {block_id!r} is a {target.kind}, not a figure.")
 
@@ -545,48 +415,22 @@ def replace_figure(
             f"({type(unreadable).__name__})."
         ) from unreadable
 
-    sink = AssetSink(project.root / "extraction" / "assets", relative_to=project.root)
-    stored = sink.store(image_bytes, suffix if suffix.startswith(".") else f".{suffix}")
-    if not stored:
-        raise OperationFailed("The picture could not be stored.")
-
-    target.asset_path = stored
-    target.asset_origin = origin
+    stored = store_picture(project, image_bytes, suffix)
+    # The figure and its place on the slide: one picture, recorded in both.
+    set_picture(document, target, stored, origin)
+    # Saving marks the collection changed: later stages get the picture on the
+    # next transfer.
     saved = store.save(extraction)
 
     return present_artifact(project, "extraction", saved) | {
         "block_id": block_id,
         "asset_path": stored,
         "asset_origin": origin,
-        "note": "Running extraction again will replace this picture with the "
-                "one in the source document.",
+        "note": "Transfer again to hand this picture on; re-extracting replaces it.",
     }
 
 
 # --- drawing a replacement ----------------------------------------------------------
-
-# What the picture has to be, whatever it is of. An explainer video needs a
-# legible diagram on a plain background, not an illustration with a style.
-IMAGE_STYLE = (
-    "A clear, simple diagram for an educational video. Flat vector style, plain "
-    "white background, strong contrast, large legible labels, no watermark, no "
-    "signature, no photographic texture."
-)
-
-MAXIMUM_CONTEXT_CHARACTERS_FOR_A_PICTURE = 1_500
-
-
-def _picture_context(document, block) -> str:
-    """The words around a figure, which are what it has to illustrate."""
-    blocks = document.blocks
-    position = next((i for i, b in enumerate(blocks) if b.id == block.id), 0)
-    nearby = blocks[max(0, position - 3):position + 4]
-    text = " ".join(
-        b.text for b in nearby
-        if b.kind in {BlockKind.PARAGRAPH, BlockKind.LIST_ITEM, BlockKind.HEADING}
-    )
-    return text[:MAXIMUM_CONTEXT_CHARACTERS_FOR_A_PICTURE]
-
 
 def describe_figure_for_drawing(slug: str, block_id: str) -> dict[str, Any]:
     """What would be drawn, and from what, without drawing it.
@@ -598,7 +442,7 @@ def describe_figure_for_drawing(slug: str, block_id: str) -> dict[str, Any]:
     from pipeline.operations import OperationFailed, require_project
 
     project = require_project(slug)
-    extraction = ExtractionStore(project.root).load()
+    extraction = ExtractionCollectionStore(project.root).load()
     for document in extraction.documents:
         for block in document.blocks:
             if block.id == block_id:
@@ -607,7 +451,7 @@ def describe_figure_for_drawing(slug: str, block_id: str) -> dict[str, Any]:
                     "caption": block.text,
                     "file_name": document.file_name,
                     "heading_path": list(block.heading_path),
-                    "context": _picture_context(document, block),
+                    "context": picture_context(document, block),
                     "model": get_settings().image_llm[2],
                 }
     raise OperationFailed(f"This extraction has no block {block_id!r}.")
@@ -621,19 +465,13 @@ def generate_figure(slug: str, block_id: str, instruction: str = "") -> dict[str
     that does not, and the stage that shows it has to be able to say so.
     """
     from pipeline.llm import ModelCallFailed, ModelNotConfigured
-    from pipeline.operations import OperationFailed
+    from pipeline.operations import OperationFailed, require_project
 
     described = describe_figure_for_drawing(slug, block_id)
-    where = " › ".join(described["heading_path"]) or described["file_name"]
-    prompt = "\n".join(part for part in [
-        f"Draw the figure described as: {described['caption'] or 'an unnamed figure'}.",
-        f"It belongs in: {where}.",
-        f"The surrounding text says: {described['context']}" if described["context"] else "",
-        f"Additional instruction: {instruction}" if instruction.strip() else "",
-        "Show only what that text supports. Do not invent numbers, data points or "
-        "labels that are not in it.",
-        IMAGE_STYLE,
-    ] if part)
+    document, block = _find_figure(ExtractionCollectionStore(
+        require_project(slug).root).load(), block_id)
+    prompt = picture_prompt(
+        document, block, described["caption"] or "an unnamed figure", instruction)
 
     from pipeline.llm import draw_image
 

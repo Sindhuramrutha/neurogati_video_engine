@@ -65,7 +65,7 @@ def test_traversal_filename_cannot_write_outside_the_project(
         assert stored_file.parent == projects_root / slug / "sources"
 
 
-def test_unsupported_type_is_reported_per_file_not_as_a_server_error(
+def test_unsupported_type_is_refused_with_a_reason_not_a_server_error(
     client_with_temporary_projects_directory,
 ):
     client = client_with_temporary_projects_directory
@@ -75,50 +75,62 @@ def test_unsupported_type_is_reported_per_file_not_as_a_server_error(
         f"/api/projects/{slug}/sources",
         files={"file0": ("clip.mp4", b"not a document", "video/mp4")},
     )
-    assert response.status_code == 201, response.text
-    payload = response.json()
-    assert payload["accepted"] == []
-    assert len(payload["rejected"]) == 1
-    assert "supported types" in payload["rejected"][0]["reason"].lower()
+    assert response.status_code == 400, response.text
+    assert "supported types" in response.json()["detail"].lower()
+    assert client.get(f"/api/projects/{slug}").json()["source"] is None
 
 
-def test_partial_success_keeps_the_good_files(
-    client_with_temporary_projects_directory,
-):
-    """Dropping five files where one is bad must store the four good ones and say
-    which failed -- not refuse the batch."""
+def test_a_project_takes_one_source_file(client_with_temporary_projects_directory):
+    """One file runs through every layer, so an upload of several is refused
+    whole: nothing is stored, and the reason says why."""
     client = client_with_temporary_projects_directory
     slug = _create_project(client)
 
     response = client.post(
         f"/api/projects/{slug}/sources",
         files=[
-            ("file0", ("good-one.md", b"# content", "text/markdown")),
-            ("file1", ("clip.mp4", b"video", "video/mp4")),
-            ("file2", ("good-two.txt", b"more content", "text/plain")),
+            ("file0", ("one.md", b"# content", "text/markdown")),
+            ("file1", ("two.txt", b"more content", "text/plain")),
         ],
     )
-    assert response.status_code == 201, response.text
-    payload = response.json()
-
-    accepted_names = sorted(f["file_name"] for f in payload["accepted"])
-    assert accepted_names == ["good-one.md", "good-two.txt"]
-    assert [f["file_name"] for f in payload["rejected"]] == ["clip.mp4"]
+    assert response.status_code == 400
+    assert "one source file" in response.json()["detail"]
+    assert client.get(f"/api/projects/{slug}").json()["sources"] == []
 
 
-def test_empty_file_is_rejected_with_a_reason(
+def test_a_second_file_replaces_the_first_only_when_asked(
     client_with_temporary_projects_directory,
 ):
     client = client_with_temporary_projects_directory
     slug = _create_project(client)
+    client.post(f"/api/projects/{slug}/sources",
+                files={"file0": ("first.md", b"# first", "text/markdown")})
 
-    response = client.post(
-        f"/api/projects/{slug}/sources",
-        files={"file0": ("empty.md", b"", "text/markdown")},
-    )
-    payload = response.json()
-    assert payload["accepted"] == []
-    assert "empty" in payload["rejected"][0]["reason"].lower()
+    refused = client.post(f"/api/projects/{slug}/sources",
+                          files={"file0": ("second.md", b"# second", "text/markdown")})
+    assert refused.status_code == 400 and "Replace it" in refused.json()["detail"]
+    assert client.get(f"/api/projects/{slug}").json()["source"]["name"] == "first.md"
+
+    replaced = client.post(f"/api/projects/{slug}/sources?replace=true",
+                           files={"file0": ("second.md", b"# second", "text/markdown")})
+    assert replaced.status_code == 201, replaced.text
+    assert replaced.json()["replaced"] == "first.md"
+    project = client.get(f"/api/projects/{slug}").json()
+    assert [s["name"] for s in project["sources"]] == ["second.md"]
+
+
+def test_a_refused_replacement_keeps_the_source_as_it_was(
+    client_with_temporary_projects_directory,
+):
+    client = client_with_temporary_projects_directory
+    slug = _create_project(client)
+    client.post(f"/api/projects/{slug}/sources",
+                files={"file0": ("keep.md", b"# keep", "text/markdown")})
+
+    response = client.post(f"/api/projects/{slug}/sources?replace=true",
+                           files={"file0": ("empty.md", b"", "text/markdown")})
+    assert response.status_code == 400 and "empty" in response.json()["detail"].lower()
+    assert client.get(f"/api/projects/{slug}").json()["source"]["name"] == "keep.md"
 
 
 def test_upload_to_a_missing_project_is_a_404_not_a_crash(
@@ -141,6 +153,7 @@ def test_deleting_a_source_removes_it(client_with_temporary_projects_directory, 
     response = client.delete(f"/api/projects/{slug}/sources/notes.md")
     assert response.status_code == 200, response.text
     assert response.json()["deleted"] == "notes.md"
+    assert response.json()["was_in_extraction"] is False  # never extracted
     assert not (tmp_path / "projects" / slug / "sources" / "notes.md").exists()
 
 

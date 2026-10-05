@@ -108,6 +108,51 @@ export async function requestJsonFromApi(path, requestOptions) {
 }
 
 /**
+ * `requestJsonFromApi` for a POST whose body takes a while to send.
+ *
+ * fetch reports no upload progress, so a 300 MB deck sat behind a dimmed
+ * dropzone for minutes with no sign it was moving. XMLHttpRequest does; the
+ * contract is otherwise identical -- parsed JSON, or an ApiRequestFailed.
+ * `onProgress` receives a fraction from 0 to 1.
+ */
+export function uploadJsonToApi(path, body, onProgress) {
+  return new Promise((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    request.open("POST", path);
+
+    request.upload.onprogress = event => {
+      if (event.lengthComputable) onProgress?.(event.loaded / event.total);
+    };
+    request.onerror = () => reject(new ApiRequestFailed(
+      navigator.onLine === false
+        ? "You appear to be offline."
+        : "Could not reach the server. Is it still running?",
+      { isNetworkFailure: true },
+    ));
+    request.onload = () => {
+      let parsed = null;
+      try {
+        parsed = request.responseText ? JSON.parse(request.responseText) : null;
+      } catch {
+        // Handled below: an error status reports its own text, a 2xx is a server bug.
+      }
+      if (request.status < 200 || request.status >= 300) {
+        reject(new ApiRequestFailed(
+          parsed?.detail || `${request.status} ${request.statusText}`,
+          { statusCode: request.status },
+        ));
+      } else if (parsed === null && request.status !== 204) {
+        reject(new ApiRequestFailed("The server returned a malformed response."));
+      } else {
+        resolve(parsed);
+      }
+    };
+
+    request.send(body);
+  });
+}
+
+/**
  * Renders a transient message into a host element.
  *
  * Kept here so both pages report success, partial success and failure the same

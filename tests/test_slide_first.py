@@ -74,7 +74,8 @@ def a_deck_project(name: str, slides: int = 5):
     project = operations.require_project(slug)
     (project.root / "sources").mkdir(parents=True, exist_ok=True)
     a_deck(project.root / "sources" / "deck.pptx", slides=slides)
-    operations.run_extraction(slug)
+    operations.run_extraction(slug, "deck.pptx")
+    operations.confirm_extraction(slug)
     return slug, project
 
 
@@ -90,9 +91,10 @@ def test_a_plan_built_from_a_deck_has_one_section_per_slide_in_order(project_roo
     assert built["section_count"] == 7
     assert built["coverage"]["is_complete"]
     assert [s["title"] for s in built["sections"]] == [
-        f"Heading number {n}" for n in range(1, 8)
-    ], "the sections must follow the deck, and carry its own headings"
-    assert all(s["rendering_approach"] == "slide" for s in built["sections"])
+        "Opening", *(f"Heading number {n}" for n in range(1, 8)), "Recap", "Close",
+    ], "the sections must follow the deck, carry its own headings, inside the lesson frame"
+    assert all(s["rendering_approach"] == "slide"
+               for s in built["sections"] if s["role"] == "teach")
 
 
 def test_the_deck_s_own_heading_survives_even_without_a_title_placeholder(project_root):
@@ -127,10 +129,11 @@ def test_a_kicker_above_a_title_does_not_become_the_heading(project_root):
         run = box.text_frame.paragraphs[0].add_run()
         run.text, run.font.size = text, Pt(size)
     presentation.save(str(project.root / "sources" / "deck.pptx"))
-    operations.run_extraction(slug)
+    operations.run_extraction(slug, "deck.pptx")
+    operations.confirm_extraction(slug)
 
     built = plan_from_slides(slug)
-    assert built["sections"][0]["title"] == "Networks that Learn"
+    assert built["sections"][1]["title"] == "Networks that Learn"
 
 
 def test_scenes_may_outnumber_slides_but_never_the_reverse(project_root):
@@ -209,12 +212,13 @@ def test_a_slide_scene_shows_the_composed_slide_and_says_which_one(project_root)
     ]))
 
     planned = operations.plan_visuals(slug)
-    assert [v["kind"] for v in planned["visuals"]] == ["slide"] * 3
-    assert [v["slide_number"] for v in planned["visuals"]] == [1, 2, 3]
+    # The lesson frame shows words; each slide section shows its slide.
+    assert [v["kind"] for v in planned["visuals"]] == ["text", *["slide"] * 3, "text", "text"]
+    assert [v["slide_number"] for v in planned["visuals"]] == [0, 1, 2, 3, 0, 0]
 
     built = operations.build_visuals(slug)
     assert built["audit"]["slides"] == 3
-    for visual in built["visuals"]:
+    for visual in (v for v in built["visuals"] if v["slide_number"]):
         assert visual["asset_path"].startswith("generation/slides/")
         assert (project.root / visual["asset_path"]).exists()
         # Its own heading, verbatim, and no composed labels: the slide already

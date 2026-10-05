@@ -174,7 +174,20 @@ source documents ──► extraction ──► planning ──► scripting ─
                                               for beats + subtitles
 ```
 
-Three properties worth stating explicitly:
+Four properties worth stating explicitly:
+
+**One source file per project.** A project is made from exactly one file -- a
+deck, a PDF, a Word, Markdown or text file -- and it runs through every layer.
+Upload takes one file; a second replaces the first only when the request says
+`replace` (`web/routes_source.py`). An extraction run replaces the extraction
+whole. Records keep a `file_name`, so nothing on disk depends on the rule, but
+no layer lists files or asks which one: each names the source once, in the strip
+under its header. Replacing the file leaves later work in place and flags it out
+of date (`upstream.py`), keyed by slide or heading, not by file, so a new version
+of a deck shows the slides that differ. Tests: `test_a_project_takes_one_source_file`,
+`test_a_second_file_replaces_the_first_only_when_asked`,
+`test_a_new_file_replaces_the_old_ones_result`,
+`test_a_replaced_source_shows_the_slides_that_differ_not_everything`.
 
 **Audio is the clock** ([ADR 0001](../decisions/0001-preserve-audio-first-timing.md)).
 Word timings from measured narration drive both animation beats and subtitles, so

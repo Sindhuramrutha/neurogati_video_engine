@@ -552,3 +552,35 @@ async def test_mcp_offers_drafting_every_unwritten_section():
 
     names = {tool.name for tool in await server.list_tools()}
     assert {"draft_section_script", "draft_unwritten_sections"} <= names
+
+
+# --- whose voice the narration is in ------------------------------------------------
+
+
+def test_every_draft_is_told_to_speak_as_the_teacher(project_root, monkeypatch):
+    """A finished video said "The chapter opens with a line from Plato": the
+    narrator was describing a book instead of teaching the viewer."""
+    from pipeline.narration_voice import VOICE_RULE
+
+    slug, _ = planned_project("Voice")
+    systems = []
+
+    def fake(response_model, system_prompt, user_prompt, **kwargs):
+        systems.append(system_prompt)
+        return FakeScriptModel()(response_model, system_prompt, user_prompt)
+
+    monkeypatch.setattr(script_drafting, "complete_structured", fake)
+    script_drafting.draft_section(slug, "s1")
+
+    assert VOICE_RULE in systems[0]
+    assert "you are the teacher" in systems[0] and '"the chapter"' in systems[0]
+
+
+def test_narration_that_talks_about_the_source_is_found():
+    from pipeline.narration_voice import reporting_phrases
+
+    assert reporting_phrases("The chapter opens with a line from Plato.")
+    assert reporting_phrases("This chapter explores the neural systems.")
+    assert reporting_phrases("According to the author, vision is built.")
+    assert reporting_phrases("Let me tell you about Padma. Plato wrote that love "
+                             "makes us poets. You see with your brain.") == []

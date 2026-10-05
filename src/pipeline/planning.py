@@ -85,11 +85,25 @@ class SourceReference(BaseModel):
         return f"{named} (slide {self.slide_number})" if self.slide_number else named
 
 
+# What a section does in the lesson (`lesson_plan.py`). The frame roles wrap the
+# body and are written from the plan itself; the body roles teach the source.
+SECTION_ROLES = ("opening", "teach", "story", "recap", "close")
+LESSON_FRAME_PARTS = ["opening", "recap", "close"]
+
+
 class PlanSection(BaseModel):
     id: str = Field(default_factory=new_identifier)
     title: str = ""
     summary: str = ""
     estimated_seconds: int = 60
+
+    role: str = "teach"
+    # A length a person set. Pinned sections keep it; the rest share what is left
+    # of the target duration.
+    pinned: bool = False
+    # Who wrote the summary: "rule" (a stand-in), "ai" (accepted from a model),
+    # "you", or "" for a summary from before this was recorded.
+    summary_origin: str = ""
 
     # What the section teaches from. Without these a plan could be about
     # material that is not in the extraction at all -- and one was: every
@@ -105,6 +119,12 @@ class PlanSection(BaseModel):
     # Which of the plan's learning objectives this section serves.
     objective_ids: list[str] = Field(default_factory=list)
 
+    # The pictures it shows, from what Assets & Design transferred (by their
+    # extracted path), and whether a person chose them rather than the rule
+    # (`plan_pictures.py`). Later layers show these and no others.
+    picture_paths: list[str] = Field(default_factory=list)
+    pictures_chosen: bool = False
+
     @field_validator("rendering_approach")
     @classmethod
     def _known_approach(cls, value: str) -> str:
@@ -112,6 +132,11 @@ class PlanSection(BaseModel):
         # hand-edited plan must still load.
         cleaned = (value or "").strip().lower()
         return cleaned if cleaned in {a.value for a in RenderingApproach} else ""
+
+    @field_validator("role")
+    @classmethod
+    def _known_role(cls, value: str) -> str:
+        return value if value in SECTION_ROLES else "teach"
 
     @field_validator("rendering_reason")
     @classmethod
@@ -188,6 +213,33 @@ class Plan(BaseModel):
     # nobody has checked against the extraction. Hand edits do not update it:
     # editing a title is not a statement that the plan matches new material.
     extraction_fingerprint: str = ""
+
+    # Which parts of the lesson frame wrap the body. On for a new plan; a plan
+    # saved before the frame existed keeps none until someone turns it on, so
+    # opening it does not add sections nobody asked for.
+    lesson_frame: list[str] = Field(default_factory=lambda: list(LESSON_FRAME_PARTS))
+
+    # How the outline was last built (`plan_approaches.py`): the approach, its
+    # options, and what the person added in their own words.
+    approach: str = ""
+    approach_options: dict[str, str] = Field(default_factory=dict)
+    approach_notes: str = ""
+
+    # The Assets & Design transfer the sections' pictures were attached from;
+    # empty for a plan from before plans carried pictures.
+    pictures_from: str = ""
+
+    @model_validator(mode="before")
+    @classmethod
+    def _older_plans_have_no_frame(cls, data):
+        if isinstance(data, dict) and "lesson_frame" not in data and data.get("sections"):
+            data = {**data, "lesson_frame": []}
+        return data
+
+    @field_validator("lesson_frame")
+    @classmethod
+    def _known_frame_parts(cls, value: list[str]) -> list[str]:
+        return [part for part in LESSON_FRAME_PARTS if part in value]
 
     @field_validator("sections")
     @classmethod

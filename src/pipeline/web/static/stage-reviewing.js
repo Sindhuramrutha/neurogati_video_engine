@@ -11,12 +11,15 @@ import { editStageDocument, loadStageDocument, newItemIdentifier }
   from "/static/document-editing.js";
 import { requestJsonFromApi } from "/static/shared-client.js";
 import {
-  ICON, applicationState, escapeHtml, icon, projectApiPath, select,
-  showStageNotice, stageIcon,
+  ICON, applicationState, escapeHtml, footerNav, icon, projectApiPath, select,
+  showStageNotice, stageHeader, wireGotoButtons,
 } from "/static/ui-kit.js";
+import { addToRenderQueue } from "/static/render-dock.js";
+
+/** Redraws Reviewing when its project's render finishes; replaced on each draw. */
+let redrawWhenRendered = () => {};
 
 const reviewViewState = {
-  activeTab: "transcript",
   playheadMs: 0,
   isComposingComment: false,
 };
@@ -63,17 +66,11 @@ export async function renderReviewingStage(stage, navigateToStage, renderAgentSt
   }
 
   body.innerHTML = `
-    <div class="card">
-      <div class="card-head">
-        <span class="card-icon">${stageIcon("reviewing", 21)}</span>
-        <div>
-          <h2>Reviewing</h2>
-          <p>Watch, give feedback, and decide whether it ships.</p>
-        </div>
-        <button class="btn" id="reviewing-agent-button">
-          ${icon(ICON.gear, 14, 1.8)} Agent &amp; instructions
-        </button>
-      </div>
+    ${stageHeader("reviewing", "Reviewing", {
+      agentButtonId: "reviewing-agent-button",
+    })}
+
+    <div class="card stage-content">
 
       ${renderReadinessCard(review)}
 
@@ -133,7 +130,7 @@ function renderReadinessCard(review) {
               : "No open feedback. Render the video to watch it here."}</span>
       </span>
       <button class="btn btn-accent" id="render-button"
-              title="Synthesise narration and render the video">
+              title="Add this project to the render queue, on the Render tab">
         Render video
       </button>
     </div>`;
@@ -193,7 +190,7 @@ function renderPlayer(review) {
 
 function renderTabs(review) {
   const openCount = review.audit.open_comment_count;
-  const isTranscript = reviewViewState.activeTab === "transcript";
+  const isTranscript = applicationState.reviewTab === "transcript";
 
   return `
     <div class="panel">
@@ -372,22 +369,13 @@ function renderChapterPanel(review) {
 }
 
 function renderFooterNav(stage, review) {
-  const { stageDefinitions } = applicationState;
-  const previousStage = stageDefinitions[
-    stageDefinitions.findIndex(s => s.key === stage.key) - 1];
-
-  return `
-    <div class="footer-nav">
-      ${previousStage ? `
-        <button class="btn" data-goto="${previousStage.key}">
-          ${icon(ICON.arrowLeft)} Back to ${escapeHtml(previousStage.title)}
-        </button>` : ""}
+  return footerNav(stage, {
+    middle: `
       <span class="plan-total" style="margin-left:14px">
         ${review.comments.length} comment(s) · ${review.chapters.length} chapter(s)
-      </span>
-      <div class="spacer"></div>
-      <span class="muted" style="font-size:12.5px">Last stage</span>
-    </div>`;
+      </span>`,
+    end: `<span class="muted" style="font-size:12.5px">Last stage</span>`,
+  });
 }
 
 /* ---- persistence -------------------------------------------------------- */
@@ -409,20 +397,23 @@ function wireReviewingStage(stage, navigateToStage, renderAgentStage) {
     }),
   });
 
-  document.querySelectorAll("[data-goto]").forEach(button => {
-    button.onclick = () => navigateToStage(button.dataset.goto);
-  });
+  wireGotoButtons(navigateToStage);
   select("#reviewing-agent-button").onclick = () => renderAgentStage(stage);
 
+  // Into the render queue at the bottom of the page; when this project's
+  // render finishes there, this page redraws to play it.
   const renderButton = select("#render-button");
-  if (renderButton) {
-    renderButton.onclick = () => renderProjectVideo(renderButton, () =>
-      renderReviewingStage(stage, navigateToStage, renderAgentStage));
-  }
+  if (renderButton) renderButton.onclick = () => addToRenderQueue(() => navigateToStage("render"));
+  window.removeEventListener("render-finished", redrawWhenRendered);
+  redrawWhenRendered = event => {
+    if (event.detail.slug === applicationState.selectedProject?.slug
+        && select("#render-button")?.isConnected) rerender();
+  };
+  window.addEventListener("render-finished", redrawWhenRendered);
 
   document.querySelectorAll("[data-review-tab]").forEach(tab => {
     tab.onclick = () => {
-      reviewViewState.activeTab = tab.dataset.reviewTab;
+      applicationState.reviewTab = tab.dataset.reviewTab;
       rerender();
     };
   });
@@ -598,51 +589,4 @@ function wireVersions(change) {
       review.active_version_id = row.dataset.version;
     });
   });
-}
-
-
-/** Synthesise narration and render the video.
- *
- *  Minutes, not seconds: one text-to-speech round trip per section, then ffmpeg.
- *  The button therefore reports progress rather than going inert, and says which
- *  voice it is using -- a silent five-minute wait is indistinguishable from a
- *  hang.
- */
-async function renderProjectVideo(button, rerender) {
-  const originalLabel = button.textContent;
-  button.disabled = true;
-  button.textContent = "Rendering...";
-
-  let voiceProvider = "";
-  try {
-    const voices = await requestJsonFromApi("/api/voices");
-    voiceProvider = voices.recommended;
-    button.textContent = `Rendering with ${voiceProvider}...`;
-  } catch (voicesFailure) {
-    console.error("could not list voices", voicesFailure);
-  }
-
-  showStageNotice("warn",
-    "Rendering. One synthesis call per section, then ffmpeg - this takes a few minutes.");
-
-  try {
-    const result = await requestJsonFromApi(projectApiPath("/render"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ voice_provider: voiceProvider, voice: "" }),
-    });
-
-    await rerender();
-    showStageNotice(
-      result.warnings.length ? "warn" : "ok",
-      result.warnings.length
-        ? result.warnings.join(" - ")
-        : `Rendered ${result.section_count} section(s), ${
-            Math.round(result.duration_ms / 1000)}s. Playing above.`);
-  } catch (renderFailure) {
-    console.error("render failed", renderFailure);
-    button.disabled = false;
-    button.textContent = originalLabel;
-    showStageNotice("bad", `Render failed - ${renderFailure.message}`);
-  }
 }

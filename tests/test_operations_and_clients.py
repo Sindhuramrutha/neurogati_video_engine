@@ -1001,16 +1001,16 @@ def test_the_core_is_a_surface_not_a_file():
 LONGEST_SENSIBLE_MODULE = 450
 
 MODULE_BUDGETS = {
-    "web/routes_project.py": 1438,
-    "rendering.py": 1283,
-    "extraction.py": 1154,
+    "web/routes_project.py": 1282,
+    "rendering.py": 1226,
+    "extraction.py": 947,
     "scene_renderers.py": 758,
     "slide_frame.py": 677,
-    "extraction_review.py": 648,
-    "generation.py": 556,
+    "extraction_review.py": 515,
+    "generation.py": 554,
     "speech.py": 551,
     "visual_build.py": 501,
-    "plan_drafting.py": 476,
+    "plan_drafting.py": 473,
     "orchestrator.py": 465,
     "cli.py": 460,
 }

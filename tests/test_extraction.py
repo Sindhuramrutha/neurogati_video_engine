@@ -153,9 +153,9 @@ def test_the_same_image_repeated_is_stored_once(tmp_path):
 
 
 def test_figures_past_the_ceiling_are_skipped_and_counted(tmp_path, monkeypatch):
-    from pipeline import extraction
+    from pipeline import extraction_assets
 
-    monkeypatch.setattr(extraction, "MAXIMUM_EXTRACTED_ASSET_BYTES", 150)
+    monkeypatch.setattr(extraction_assets, "MAXIMUM_EXTRACTED_ASSET_BYTES", 150)
     sink = AssetSink(tmp_path / "assets")
 
     kept = sink.store(b"x" * 100, ".png")
@@ -175,13 +175,22 @@ def test_figures_are_named_in_the_text_the_planner_reads():
 # --- a real run, through operations ---------------------------------------------
 
 
+def extract_everything(slug):
+    """Extract each source into the collection, one at a time, then confirm it --
+    what someone does on the Extraction page before moving on."""
+    project = operations.require_project(slug)
+    for source in project.sources():
+        operations.run_extraction(slug, source["name"])
+    return operations.confirm_extraction(slug)
+
+
 def test_a_run_stores_figures_under_the_project(project_root, tmp_path):
     slug = operations.create_project("Figures")["slug"]
     project = operations.require_project(slug)
     chapter_with_a_table_and_a_figure(project.sources_dir / "chapter.docx")
     (project.sources_dir / "figure-red.png").unlink()
 
-    result = operations.run_extraction(slug)
+    result = operations.run_extraction(slug, "chapter.docx")
     figure = next(
         block for block in result["documents"][0]["blocks"]
         if block["kind"] == BlockKind.FIGURE
@@ -192,26 +201,60 @@ def test_a_run_stores_figures_under_the_project(project_root, tmp_path):
     assert result["audit"]["figure_count"] == 1
 
 
-def test_a_rerun_removes_figures_nothing_refers_to(project_root):
-    """Deleting a picture-heavy deck used to leave its images behind for good."""
+def test_replacing_the_file_removes_figures_nothing_refers_to(project_root):
+    """A picture-heavy deck replaced by another used to leave its images behind
+    for good. Pictures the extraction no longer uses go -- unless what was
+    transferred still points at them."""
     slug = operations.create_project("Pruning")["slug"]
     project = operations.require_project(slug)
     chapter_with_a_table_and_a_figure(project.sources_dir / "one.docx", "red")
     (project.sources_dir / "figure-red.png").unlink()
-    chapter_with_a_table_and_a_figure(project.sources_dir / "two.docx", "blue")
-    (project.sources_dir / "figure-blue.png").unlink()
-
     operations.run_extraction(slug)
     assets = project.root / "extraction" / "assets"
-    assert len(list(assets.iterdir())) == 2
-
-    (project.sources_dir / "two.docx").unlink()
-    operations.run_extraction(slug)
-
     assert len(list(assets.iterdir())) == 1
 
+    (project.sources_dir / "one.docx").unlink()
+    chapter_with_a_table_and_a_figure(project.sources_dir / "two.docx", "blue")
+    (project.sources_dir / "figure-blue.png").unlink()
+    operations.run_extraction(slug)
 
-# --- knowing the extraction is out of date --------------------------------------
+    assert len(list(assets.iterdir())) == 1, "only the new file's picture is left"
+
+
+def test_a_confirmed_figure_survives_until_the_confirmation_changes(project_root):
+    """Later stages read the confirmed extraction, so its pictures stay on disk
+    while the extraction moves on to a new file without them."""
+    slug = operations.create_project("Keep Confirmed")["slug"]
+    project = operations.require_project(slug)
+    chapter_with_a_table_and_a_figure(project.sources_dir / "one.docx", "red")
+    (project.sources_dir / "figure-red.png").unlink()
+    extract_everything(slug)
+    assets = project.root / "extraction" / "assets"
+
+    (project.sources_dir / "one.docx").unlink()
+    (project.sources_dir / "notes.md").write_text("# Notes\n\ntext", encoding="utf-8")
+    operations.run_extraction(slug)
+    assert len(list(assets.iterdir())) == 1, "still what the next layer reads"
+
+    operations.confirm_extraction(slug)
+    assert list(assets.iterdir()) == []
+
+
+# --- one file at a time, into a collection, then confirmed -----------------------
+
+
+def project_with_notes(name, *file_names):
+    slug = operations.create_project(name)["slug"]
+    project = operations.require_project(slug)
+    for file_name in file_names:
+        (project.sources_dir / file_name).write_text(
+            f"# {file_name}\n\nSome text.", encoding="utf-8"
+        )
+    return slug, project
+
+
+def names_in(extraction):
+    return [document.file_name for document in extraction.documents]
 
 
 def test_freshness_before_any_run(project_root):
@@ -222,29 +265,111 @@ def test_freshness_before_any_run(project_root):
     assert freshness["is_stale"] is False
 
 
-def test_a_source_added_after_the_run_makes_it_stale(project_root):
-    """The reported defect: a deck uploaded after extraction was simply absent,
-    and nothing on any page said so."""
-    slug = operations.create_project("Stale")["slug"]
-    project = operations.require_project(slug)
-    (project.sources_dir / "notes.md").write_text("# One\n\ntext", encoding="utf-8")
+def test_extracting_a_file_adds_only_that_file(project_root):
+    from pipeline.extraction import ExtractionCollectionStore
+
+    slug, project = project_with_notes("One At A Time", "a.md", "b.md")
+
+    operations.run_extraction(slug, "b.md")
+
+    assert names_in(ExtractionCollectionStore(project.root).load()) == ["b.md"]
+
+
+def test_extracting_again_replaces_the_result(project_root):
+    """One file, one result: a second run replaces the first, it does not add."""
+    from pipeline.extraction import ExtractionCollectionStore
+
+    slug, project = project_with_notes("Replace", "a.md")
     operations.run_extraction(slug)
 
-    assert operations.extraction_freshness(project)["is_stale"] is False
+    (project.sources_dir / "a.md").write_text("# a.md\n\nNew words entirely.", encoding="utf-8")
+    operations.run_extraction(slug)
 
-    (project.sources_dir / "later.md").write_text("# Two\n\ntext", encoding="utf-8")
+    collection = ExtractionCollectionStore(project.root).load()
+    assert names_in(collection) == ["a.md"], "no duplicate"
+    assert "New words" in collection.document("a.md").as_markdown()
+
+
+def test_a_new_file_replaces_the_old_ones_result(project_root):
+    """After the source is replaced, the old file's result cannot linger beside
+    the new one."""
+    from pipeline.extraction import ExtractionCollectionStore
+
+    slug, project = project_with_notes("New File", "old.md")
+    operations.run_extraction(slug)
+    (project.sources_dir / "old.md").unlink()
+    (project.sources_dir / "new.md").write_text("# new.md\n\ntext", encoding="utf-8")
+
+    operations.run_extraction(slug)
+    assert names_in(ExtractionCollectionStore(project.root).load()) == ["new.md"]
+
+def test_later_stages_see_nothing_until_the_collection_is_confirmed(project_root):
+    """The hand-off the page is built around: a half-assembled collection must not
+    reach the planner as if it were the source."""
+    from pipeline.extraction import ExtractionStore
+
+    slug, project = project_with_notes("Confirm", "a.md", "b.md")
+    operations.run_extraction(slug, "a.md")
+
+    assert ExtractionStore(project.root).load().documents == []
+    freshness = operations.extraction_freshness(project)
+    assert freshness["pending_confirmation"] is True
+    assert freshness["has_confirmed"] is False
+
+    operations.confirm_extraction(slug)
+
+    assert names_in(ExtractionStore(project.root).load()) == ["a.md"]
+    assert operations.extraction_freshness(project)["pending_confirmation"] is False
+
+
+def test_a_change_after_confirming_waits_for_the_next_confirmation(project_root):
+    from pipeline.extraction import ExtractionStore
+
+    slug, project = project_with_notes("Reconfirm", "a.md")
+    extract_everything(slug)
+
+    (project.sources_dir / "a.md").unlink()
+    (project.sources_dir / "b.md").write_text("# b.md\n\ntext", encoding="utf-8")
+    operations.run_extraction(slug)
+
+    assert names_in(ExtractionStore(project.root).load()) == ["a.md"], "not until confirmed"
+    assert operations.extraction_freshness(project)["pending_confirmation"] is True
+
+    operations.confirm_extraction(slug)
+    assert names_in(ExtractionStore(project.root).load()) == ["b.md"]
+
+def test_an_empty_collection_cannot_be_confirmed(project_root):
+    slug, _ = project_with_notes("Empty", "a.md")
+
+    with pytest.raises(operations.OperationFailed, match="Extract at least one file"):
+        operations.confirm_extraction(slug)
+
+
+def test_a_file_that_changed_since_extraction_blocks_confirming(project_root):
+    """Confirming a result for a file that has since been replaced would hand on
+    something that no longer matches the file."""
+    slug, project = project_with_notes("Changed", "a.md")
+    operations.run_extraction(slug, "a.md")
+
+    (project.sources_dir / "a.md").write_text("# a.md\n\nA longer, different file.",
+                                              encoding="utf-8")
+    freshness = operations.extraction_freshness(project)
+    assert freshness["changed"] == ["a.md"]
+
+    with pytest.raises(operations.OperationFailed, match="a.md"):
+        operations.confirm_extraction(slug)
+
+
+def test_a_file_not_extracted_yet_is_waiting_not_stale(project_root):
+    slug, project = project_with_notes("Not Yet", "a.md")
     freshness = operations.extraction_freshness(project)
 
-    assert freshness["is_stale"] is True
-    assert freshness["added"] == ["later.md"]
+    assert freshness["added"] == ["a.md"]
+    assert freshness["is_stale"] is False
 
-
-def test_a_removed_source_makes_it_stale_too(project_root):
-    slug = operations.create_project("Removed")["slug"]
-    project = operations.require_project(slug)
-    (project.sources_dir / "a.md").write_text("# A\n\ntext", encoding="utf-8")
-    (project.sources_dir / "b.md").write_text("# B\n\ntext", encoding="utf-8")
-    operations.run_extraction(slug)
+def test_a_removed_source_makes_it_stale(project_root):
+    slug, project = project_with_notes("Removed", "a.md", "b.md")
+    extract_everything(slug)
 
     (project.sources_dir / "b.md").unlink()
     freshness = operations.extraction_freshness(project)
@@ -253,17 +378,71 @@ def test_a_removed_source_makes_it_stale_too(project_root):
     assert freshness["is_stale"] is True
 
 
-def test_the_orchestrator_is_told_extraction_is_behind(project_root):
-    slug = operations.create_project("Told")["slug"]
-    project = operations.require_project(slug)
-    (project.sources_dir / "a.md").write_text("# A\n\ntext", encoding="utf-8")
-    operations.run_extraction(slug)
+def test_only_one_file_is_extracted_at_a_time(project_root):
+    """Two runs at once would each load the collection, add their file and save,
+    and the second save would silently drop the first file."""
+    from pipeline.extraction_run import _extraction_lock
+
+    slug, project = project_with_notes("Busy", "a.md", "b.md")
+    lock = _extraction_lock(project)
+    lock.acquire()
+    try:
+        with pytest.raises(operations.OperationFailed, match="Another file is being extracted"):
+            operations.run_extraction(slug, "b.md")
+    finally:
+        lock.release()
+
+    operations.run_extraction(slug, "b.md")
+
+
+def test_an_unknown_file_cannot_be_extracted(project_root):
+    slug, _ = project_with_notes("Unknown", "a.md")
+
+    with pytest.raises(operations.OperationFailed, match="no source file"):
+        operations.run_extraction(slug, "../project.json")
+
+
+def test_a_project_from_before_collections_keeps_what_it_extracted(project_root):
+    """Only the confirmed extraction exists on disk; it becomes the collection
+    rather than the page showing an empty box over content later stages use."""
+    from pipeline.extraction import (
+        ExtractedDocument,
+        Extraction,
+        ExtractionCollectionStore,
+        ExtractionStore,
+    )
+
+    slug, project = project_with_notes("Older", "a.md")
+    ExtractionStore(project.root).save(Extraction(
+        documents=[ExtractedDocument(file_name="a.md", blocks=[
+            ContentBlock(kind=BlockKind.PARAGRAPH, text="kept")])],
+        extracted_at="2026-01-01T00:00:00+00:00",
+    ))
+
+    assert names_in(ExtractionCollectionStore(project.root).load()) == ["a.md"]
+    assert operations.extraction_freshness(project)["pending_confirmation"] is False
+
+
+def test_the_orchestrator_is_told_what_is_not_extracted(project_root):
+    slug, project = project_with_notes("Told", "a.md")
+    extract_everything(slug)
     (project.sources_dir / "deck.md").write_text("# Deck\n\ntext", encoding="utf-8")
 
     snapshot = orchestrator.pipeline_snapshot(project)
 
-    assert "Extraction is out of date" in snapshot
-    assert "not extracted yet: deck.md" in snapshot
+    assert "Not extracted yet: deck.md" in snapshot
+
+
+def test_agents_are_told_a_file_was_not_extracted(project_root):
+    """Otherwise an agent reports a deck nobody extracted as one it failed to read."""
+    from pipeline.agent_runtime import stage_context
+    from pipeline.stages import Stage
+
+    slug, project = project_with_notes("Told Why", "keep.md", "deck.md")
+    operations.run_extraction(slug, "keep.md")
+    operations.confirm_extraction(slug)
+
+    assert "deck.md (not extracted)" in stage_context(project, Stage.SCENE_PLAN)
 
 
 # --- over HTTP --------------------------------------------------------------------
@@ -285,17 +464,25 @@ def client(project_root):
     routes_project_module._service = None
 
 
-def test_the_extraction_route_reports_staleness(project_root, client):
-    slug = operations.create_project("Route")["slug"]
-    project = operations.require_project(slug)
-    (project.sources_dir / "a.md").write_text("# A\n\ntext", encoding="utf-8")
-    operations.run_extraction(slug)
-    (project.sources_dir / "b.md").write_text("# B\n\ntext", encoding="utf-8")
+def test_the_source_is_extracted_and_confirmed_over_http(project_root, client):
+    slug, project = project_with_notes("Over HTTP", "a.md")
 
-    body = client.get(f"/api/projects/{slug}/extraction").json()
+    extracted = client.post(f"/api/projects/{slug}/extraction/run", json={})
+    assert extracted.status_code == 201, extracted.text
+    assert extracted.json()["extracted"]["file_name"] == "a.md", "the project's one source"
+    assert extracted.json()["freshness"]["added"] == []
 
-    assert body["freshness"]["added"] == ["b.md"]
-    assert any("b.md has not been extracted" in warning for warning in body["warnings"])
+    confirmed = client.post(f"/api/projects/{slug}/extraction/confirm")
+    assert confirmed.status_code == 201, confirmed.text
+    assert confirmed.json()["freshness"]["pending_confirmation"] is False
+    assert client.delete(f"/api/projects/{slug}/extraction/documents/a.md").status_code \
+        in (404, 405), "there is no removing one file of one"
+
+
+def test_confirming_an_empty_collection_is_refused_over_http(project_root, client):
+    slug, _ = project_with_notes("Refused", "a.md")
+
+    assert client.post(f"/api/projects/{slug}/extraction/confirm").status_code == 400
 
 
 def test_an_extracted_figure_is_served_inert(project_root, client):
@@ -355,16 +542,16 @@ def set_extraction_options(project, **values):
     store.save(Stage.EXTRACTION, {**current, **values})
 
 
-def test_only_options_that_change_a_run_are_marked_as_built():
+def test_every_option_is_built():
     """A toggle that is saved and read by nothing is indistinguishable from a
-    broken one. Every option must either be read by the code or say it is not."""
+    broken one -- and the page no longer has anywhere to put one."""
     from pipeline.stage_options import options_for
     from pipeline.stages import Stage
 
-    built = {option.key for option in options_for(Stage.EXTRACTION) if option.implemented}
-    assert built == {
+    assert all(option.implemented for option in options_for(Stage.EXTRACTION))
+    assert {option.key for option in options_for(Stage.EXTRACTION)} == {
         "extract_tables", "extract_images", "extract_layout",
-        "extract_backgrounds", "extract_styling",
+        "extract_backgrounds", "extract_styling", "handwriting_ocr",
     }
 
     # The Scene Plan's three preferences are read: the duration steers drafting
@@ -380,7 +567,7 @@ def test_switching_images_off_extracts_no_figures(project_root):
     slug, project = project_with_a_chapter("No Images")
     set_extraction_options(project, extract_images=False)
 
-    result = operations.run_extraction(slug)
+    result = operations.run_extraction(slug, "chapter.docx")
     kinds = {block["kind"] for block in result["documents"][0]["blocks"]}
 
     assert BlockKind.FIGURE not in kinds
@@ -389,12 +576,12 @@ def test_switching_images_off_extracts_no_figures(project_root):
 
 def test_switching_images_off_later_clears_the_old_figures(project_root):
     slug, project = project_with_a_chapter("Images Later Off")
-    operations.run_extraction(slug)
+    operations.run_extraction(slug, "chapter.docx")
     assets = project.root / "extraction" / "assets"
     assert len(list(assets.iterdir())) == 1
 
     set_extraction_options(project, extract_images=False)
-    operations.run_extraction(slug)
+    operations.run_extraction(slug, "chapter.docx")
 
     assert list(assets.iterdir()) == []
 
@@ -403,7 +590,7 @@ def test_switching_tables_off_keeps_their_words_as_text(project_root):
     slug, project = project_with_a_chapter("No Tables")
     set_extraction_options(project, extract_tables=False)
 
-    blocks = operations.run_extraction(slug)["documents"][0]["blocks"]
+    blocks = operations.run_extraction(slug, "chapter.docx")["documents"][0]["blocks"]
 
     assert all(block["kind"] != BlockKind.TABLE for block in blocks)
     flattened = next(block for block in blocks if "Wet" in block["text"])
@@ -411,25 +598,67 @@ def test_switching_tables_off_keeps_their_words_as_text(project_root):
     assert flattened["text"] == "Sensor Noise Wet Low"
 
 
-def test_changing_an_option_makes_the_extraction_stale(project_root):
+def test_changing_an_option_makes_that_file_stale(project_root):
     slug, project = project_with_a_chapter("Option Stale")
-    operations.run_extraction(slug)
+    extract_everything(slug)
     assert operations.extraction_freshness(project)["is_stale"] is False
 
     set_extraction_options(project, extract_images=False)
     freshness = operations.extraction_freshness(project)
 
     assert freshness["is_stale"] is True
-    assert freshness["options_changed"] == ["extract_images"]
+    assert freshness["options_changed"] == ["chapter.docx"]
 
 
-def test_an_option_that_is_not_built_never_makes_it_stale(project_root):
-    slug, project = project_with_a_chapter("Inert Option")
-    operations.run_extraction(slug)
+def test_handwriting_recognition_reads_only_pages_with_no_text(project_root, monkeypatch):
+    """A page with a text layer is never sent; a textless page is read by the
+    vision model and marked as transcribed."""
+    from pypdf import PdfWriter
 
-    set_extraction_options(project, extraction_mode="thorough", handwriting_ocr=True)
+    from pipeline import llm
 
-    assert operations.extraction_freshness(project)["is_stale"] is False
+    slug, project = project_with_notes("Handwriting")
+    writer = PdfWriter()
+    writer.add_blank_page(width=200, height=200)
+    with (project.sources_dir / "scan.pdf").open("wb") as handle:
+        writer.write(handle)
+
+    sent = []
+    monkeypatch.setattr("pipeline.ocr._page_images", lambda page: [b"jpeg"])
+    monkeypatch.setattr(llm, "read_image_text",
+                        lambda image, mime, instruction: sent.append(image) or
+                        "Dear diary\n\nThe neuron fired.")
+    set_extraction_options(project, handwriting_ocr=True)
+
+    document = operations.run_extraction(slug, "scan.pdf")["documents"][0]
+
+    assert sent == [b"jpeg"]
+    assert [b["text"] for b in document["blocks"]] == ["Page 1", "Dear diary", "The neuron fired."]
+    assert all(b["transcribed"] for b in document["blocks"])
+    assert "1 page(s) transcribed" in document["extraction_note"]
+
+
+def test_handwriting_recognition_without_a_key_still_extracts(project_root, monkeypatch):
+    from pypdf import PdfWriter
+
+    from pipeline import llm
+
+    slug, project = project_with_notes("No Key")
+    writer = PdfWriter()
+    writer.add_blank_page(width=200, height=200)
+    with (project.sources_dir / "scan.pdf").open("wb") as handle:
+        writer.write(handle)
+
+    def not_configured(*_args):
+        raise llm.ModelNotConfigured("No API key set")
+
+    monkeypatch.setattr("pipeline.ocr._page_images", lambda page: [b"jpeg"])
+    monkeypatch.setattr(llm, "read_image_text", not_configured)
+    set_extraction_options(project, handwriting_ocr=True)
+
+    document = operations.run_extraction(slug, "scan.pdf")["documents"][0]
+
+    assert "handwriting recognition skipped" in document["extraction_note"]
 
 
 def test_the_stage_chip_counts_documents_and_figures_not_files(project_root):
@@ -437,161 +666,22 @@ def test_the_stage_chip_counts_documents_and_figures_not_files(project_root):
     from pipeline.stages import Stage
 
     slug, project = project_with_a_chapter("Chip")
-    operations.run_extraction(slug)
+    extract_everything(slug)
 
     detail = project.stage_state(Stage.EXTRACTION).detail
     assert detail == "1 document · 1 figure"
 
 
-# --- choosing which files are extracted ----------------------------------------------
-
-
-def project_with_notes(name, *file_names):
-    slug = operations.create_project(name)["slug"]
-    project = operations.require_project(slug)
-    for file_name in file_names:
-        (project.sources_dir / file_name).write_text(
-            f"# {file_name}\n\nSome text.", encoding="utf-8"
-        )
-    return slug, project
-
-
-def extracted_names(slug):
-    return [d["file_name"] for d in operations.read_artifact(slug, "extraction")["documents"]]
-
-
-def test_an_unticked_file_is_not_extracted(project_root):
-    """The checkboxes were only ever in the page's memory; the run read them never."""
-    slug, _ = project_with_notes("Ticks", "keep.md", "skip.md")
-    operations.set_excluded_sources(slug, ["skip.md"])
-
-    operations.run_extraction(slug)
-
-    assert extracted_names(slug) == ["keep.md"]
-
-
-def test_a_file_left_out_by_choice_is_not_reported_as_missing(project_root):
-    """The reason this needed deciding: unticked must not read as "not extracted"."""
-    slug, project = project_with_notes("Chosen", "keep.md", "skip.md")
-    operations.set_excluded_sources(slug, ["skip.md"])
-    operations.run_extraction(slug)
-
-    freshness = operations.extraction_freshness(project)
-
-    assert freshness["is_stale"] is False
-    assert freshness["added"] == []
-    assert freshness["excluded"] == ["skip.md"]
-
-
-def test_a_new_upload_is_included_and_reported_until_extracted(project_root):
-    """Remembering what is left out, not what is ticked, is what makes this true."""
-    slug, project = project_with_notes("Later Upload", "keep.md", "skip.md")
-    operations.set_excluded_sources(slug, ["skip.md"])
-    operations.run_extraction(slug)
-
-    (project.sources_dir / "new.md").write_text("# New\n\ntext", encoding="utf-8")
-    freshness = operations.extraction_freshness(project)
-
-    assert freshness["added"] == ["new.md"]
-    assert freshness["is_stale"] is True
-
-
-def test_unticking_an_extracted_file_makes_it_stale_until_rerun(project_root):
-    """Later stages are still reading it, so the page must say so."""
-    slug, project = project_with_notes("Untick Later", "a.md", "b.md")
-    operations.run_extraction(slug)
-
-    operations.set_excluded_sources(slug, ["b.md"])
-    freshness = operations.extraction_freshness(project)
-    assert freshness["newly_excluded"] == ["b.md"]
-    assert freshness["is_stale"] is True
-
-    operations.run_extraction(slug)
-    assert extracted_names(slug) == ["a.md"]
-    assert operations.extraction_freshness(project)["is_stale"] is False
-
-
-def test_unticking_a_file_removes_its_figures_on_the_next_run(project_root):
-    slug, project = project_with_a_chapter("Figures Left Out")
-    (project.sources_dir / "notes.md").write_text("# Notes\n\ntext", encoding="utf-8")
-    operations.run_extraction(slug)
-    assets = project.root / "extraction" / "assets"
-    assert len(list(assets.iterdir())) == 1
-
-    operations.set_excluded_sources(slug, ["chapter.docx"])
-    operations.run_extraction(slug)
-
-    assert list(assets.iterdir()) == []
-
-
-def test_extraction_refuses_when_every_file_is_left_out(project_root):
-    slug, _ = project_with_notes("Nothing Ticked", "a.md")
-    operations.set_excluded_sources(slug, ["a.md"])
-
-    with pytest.raises(operations.OperationFailed, match="Tick at least one"):
-        operations.run_extraction(slug)
-
-
-def test_an_unknown_file_cannot_be_left_out(project_root):
-    """Saving a name with no file would silently exclude whatever is uploaded
-    under that name later."""
-    slug, _ = project_with_notes("Unknown", "a.md")
-
-    with pytest.raises(operations.OperationFailed, match="no source file"):
-        operations.set_excluded_sources(slug, ["typo.md"])
-
-
-def test_the_selection_survives_being_read_again(project_root):
-    """What makes a reload keep the ticks."""
-    slug, project = project_with_notes("Reload", "a.md", "b.md")
-    operations.set_excluded_sources(slug, ["b.md"])
-
-    assert operations.excluded_sources(operations.require_project(slug)) == ["b.md"]
-
-
-def test_agents_are_told_a_file_was_left_out_on_purpose(project_root):
-    """Otherwise an agent reports an unticked deck as never extracted -- exactly
-    the finding that started this."""
-    from pipeline.agent_runtime import stage_context
-    from pipeline.stages import Stage
-
-    slug, project = project_with_notes("Told Why", "keep.md", "deck.md")
-    operations.set_excluded_sources(slug, ["deck.md"])
-    operations.run_extraction(slug)
-
-    assert "deck.md (left out of extraction by choice)" in stage_context(project, Stage.SCENE_PLAN)
-    snapshot = orchestrator.pipeline_snapshot(project)
-    assert "Left out of extraction by choice: deck.md" in snapshot
-    assert "not extracted yet: deck.md" not in snapshot
-
-
-def test_the_selection_is_saved_and_read_over_http(project_root, client):
-    slug, project = project_with_notes("Over HTTP", "a.md", "b.md")
-    operations.run_extraction(slug)
-
-    saved = client.post(f"/api/projects/{slug}/extraction/sources", json={"excluded": ["b.md"]})
-    assert saved.status_code == 201, saved.text
-    assert saved.json()["excluded"] == ["b.md"]
-
-    body = client.get(f"/api/projects/{slug}/extraction").json()
-    assert body["freshness"]["excluded"] == ["b.md"]
-    assert any("b.md was extracted but has since been left out" in w for w in body["warnings"])
-
-    refused = client.post(f"/api/projects/{slug}/extraction/sources",
-                          json={"excluded": ["nope.md"]})
-    assert refused.status_code == 400
-
-
-def test_deleting_a_file_forgets_it_was_left_out(project_root, client):
-    """Uploading it again should include it, not bring back an old choice."""
-    slug, project = project_with_notes("Delete Forgets", "a.md", "b.md")
-    operations.set_excluded_sources(slug, ["b.md"])
+def test_deleting_an_extracted_file_says_so_at_the_time(project_root, client):
+    """Its result stays in the collection until it is removed there, and the
+    delete itself says so rather than leaving it to be found on the page."""
+    slug, _ = project_with_notes("Delete Extracted", "a.md", "b.md")
+    operations.run_extraction(slug, "b.md")
 
     response = client.delete(f"/api/projects/{slug}/sources/b.md")
-    assert response.status_code in (200, 204), response.text
 
-    (project.sources_dir / "b.md").write_text("# B again\n\ntext", encoding="utf-8")
-    assert operations.excluded_sources(project) == []
+    assert response.status_code == 200, response.text
+    assert response.json()["was_in_extraction"] is True
 
 
 # --- how a deck is put together ------------------------------------------------------
@@ -629,7 +719,7 @@ def test_a_slides_shapes_are_captured_where_they_sit(tmp_path):
 def test_a_shape_that_declares_no_position_takes_its_layouts(tmp_path):
     """A placeholder can carry no geometry of its own. Reporting that as 0,0
     would put the title in the corner of every slide."""
-    from pipeline.extraction import _shape_box
+    from pipeline.deck_shapes import _shape_box
 
     class Placeholder:
         left = top = width = height = None
@@ -677,6 +767,59 @@ def test_a_slide_that_sets_no_background_reports_the_theme_one(tmp_path):
 
     assert slides[0].background.colour == "#FFFFFF"
     assert slides[0].background.inherited_from == "theme"
+
+
+def test_full_slide_art_on_the_layout_is_the_background(tmp_path):
+    """Designed decks put their look on the layout as a full-slide picture.
+    Reading only the background settings called such a deck plain white."""
+    from pipeline.extraction import AssetSink, read_pptx_design
+
+    art = tmp_path / "art.png"
+    art.write_bytes(png_bytes("purple"))
+    from pptx.opc.constants import RELATIONSHIP_TYPE
+    from pptx.oxml.ns import qn
+
+    deck = Presentation()
+    layout = deck.slide_layouts[6]
+    # python-pptx cannot add a picture to a layout, so one is made on the slide
+    # and moved there, with its image related to the layout instead.
+    slide = deck.slides.add_slide(layout)
+    picture = slide.shapes.add_picture(
+        str(art), 0, 0, width=deck.slide_width, height=deck.slide_height)
+    blip = picture._element.find(".//" + qn("a:blip"))
+    image_part = slide.part.related_part(blip.get(qn("r:embed")))
+    blip.set(qn("r:embed"), layout.part.relate_to(image_part, RELATIONSHIP_TYPE.IMAGE))
+    layout.shapes._spTree.append(picture._element)
+    deck.slides.add_slide(deck.slide_layouts[5])        # a layout without art
+    deck.save(tmp_path / "art.pptx")
+
+    sink = AssetSink(tmp_path / "assets")
+    slides, _design = read_pptx_design(tmp_path / "art.pptx", sink)
+
+    assert slides[0].background.inherited_from == "layout"
+    assert slides[0].background.asset_path
+    assert slides[1].background.inherited_from == "theme"
+
+
+def test_a_gradient_background_is_recorded_with_its_colours(tmp_path):
+    from pptx.dml.color import RGBColor
+
+    from pipeline.extraction import read_pptx_design
+
+    deck = Presentation()
+    slide = deck.slides.add_slide(deck.slide_layouts[6])
+    fill = slide.background.fill
+    fill.gradient()
+    fill.gradient_stops[0].color.rgb = RGBColor(0x7B, 0x5C, 0xFF)
+    fill.gradient_stops[1].color.rgb = RGBColor(0x2A, 0x27, 0x9C)
+    deck.save(tmp_path / "gradient.pptx")
+
+    slides, _design = read_pptx_design(tmp_path / "gradient.pptx")
+
+    background = slides[0].background
+    assert background.inherited_from == "slide"
+    assert background.gradient == ["#7B5CFF", "#2A279C"]
+    assert background.colour == "#7B5CFF"
 
 
 def test_layout_and_design_are_captured_only_when_asked(tmp_path):

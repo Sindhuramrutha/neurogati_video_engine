@@ -4,6 +4,25 @@
    under it. Styled like the rendered frames so the two read as the same video. */
 .studio-stage { position: absolute; inset: 0; display: grid; place-items: center; }
 
+.studio-stage[hidden], .transport[hidden] { display: none; }
+
+/* A rendered video shown in place of the timeline player. */
+.studio-watch-video { position: absolute; inset: 0; width: 100%; height: 100%; background: #000; }
+
+.studio-watch-head {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;
+}
+
+.studio-watch-chip {
+  padding: 3px 10px; border-radius: 99px; font-size: 12px; font-weight: 900;
+  background: var(--c-lime-soft, #EDFBD2); border: 2px solid var(--stage-head-ink, #0E0B14);
+}
+
+.studio-watch-file {
+  flex: 1; min-width: 0; font-size: 12.5px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
 .track-lane { cursor: crosshair; }
 
 /* timeline */
@@ -86,3 +105,225 @@
 .track-label { font-weight: 800; }
 
 .studio-top > .panel:last-child { background: var(--c-orange-soft); }
+
+/* =============================================================================
+   The Studio as an editing suite.
+
+   Everywhere else the app is bright and loud; an editor is not. This is the
+   room where you look at pictures for a long time, so it is dark, flat and
+   dense, like Premiere or Resolve: a black viewer, a quiet inspector, a
+   timeline with a column of track headers, a ruler with ticks, a red playhead
+   and muted clip colours. Every rule is scoped to `.studio-suite`, under the
+   page's own id, so nothing outside the Studio changes. No hover colour
+   changes, by the app's own rule.
+   ============================================================================= */
+#stage-body .studio-suite {
+  --nle-ground: #121215;
+  --nle-panel: #1b1b20;
+  --nle-raised: #24242a;
+  --nle-field: #101013;
+  --nle-line: #2e2e36;
+  --nle-line-strong: #3b3b45;
+  --nle-text: #dcdce2;
+  --nle-dim: #8e8e9a;
+  --nle-faint: #5d5d68;
+  --nle-blue: #4a8cff;
+  --nle-playhead: #ff4d4f;
+  --nle-lane: #18181d;
+  --nle-lane-alt: #1c1c22;
+  padding: 10px;
+  color: var(--nle-text);
+  background: var(--nle-ground);
+  border: 1px solid #000;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+}
+
+/* Panels: flat, hairline borders, a small caps title bar. */
+#stage-body .studio-suite .panel,
+#stage-body .studio-suite .timeline {
+  padding: 0; margin: 0;
+  background: var(--nle-panel);
+  border: 1px solid var(--nle-line);
+  border-radius: 4px;
+  box-shadow: none;
+  overflow: hidden;
+}
+#stage-body .studio-suite .studio-top { gap: 10px; margin-bottom: 10px; }
+#stage-body .studio-suite .studio-top > .panel:last-child { background: var(--nle-panel); }
+#stage-body .studio-suite .nle-panel-title {
+  display: flex; align-items: center; gap: 10px; height: 28px; padding: 0 10px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--nle-dim); background: var(--nle-raised); border-bottom: 1px solid var(--nle-line);
+}
+#stage-body .studio-suite .nle-panel-meta {
+  margin-left: auto; font-family: var(--mono); font-weight: 500; letter-spacing: 0;
+  text-transform: none; color: var(--nle-faint);
+}
+#stage-body .studio-suite .nle-empty { margin: 0; padding: 14px; font-size: 12.5px; color: var(--nle-dim); }
+
+/* Buttons and fields: flat and dark, the same everywhere in the suite. */
+#stage-body .studio-suite .btn,
+#stage-body .studio-suite .btn-icon {
+  color: var(--nle-text);
+  background: var(--nle-raised);
+  border: 1px solid var(--nle-line-strong);
+  border-radius: 4px;
+  box-shadow: none;
+  font-weight: 600;
+}
+#stage-body .studio-suite .btn { padding: 6px 12px; font-size: 12.5px; }
+#stage-body .studio-suite .btn-icon { padding: 5px; }
+#stage-body .studio-suite .btn-icon.danger { color: #ff8a8a; }
+#stage-body .studio-suite .btn:disabled,
+#stage-body .studio-suite .btn-icon:disabled { opacity: .4; }
+#stage-body .studio-suite input,
+#stage-body .studio-suite select,
+#stage-body .studio-suite textarea {
+  color: var(--nle-text);
+  background: var(--nle-field);
+  border: 1px solid var(--nle-line-strong);
+  border-radius: 3px;
+  box-shadow: none;
+  font-size: 12.5px;
+}
+#stage-body .studio-suite .notice {
+  color: var(--nle-text); background: #2a1d1d; border: 1px solid #5c2b2b; border-radius: 4px;
+  box-shadow: none; margin: 0 0 10px;
+}
+#stage-body .studio-suite .notice.warn { background: #2a2418; border-color: #5c4a22; }
+
+/* The viewer: black, edge to edge, with a transport bar under it. */
+#stage-body .studio-suite .preview-frame {
+  max-height: min(48vh, 540px);
+  margin: 0; border: 0; border-radius: 0; box-shadow: none;
+  background: #000;
+}
+#stage-body .studio-suite .studio-watch-head { padding: 8px 10px 0; margin: 0; }
+#stage-body .studio-suite .studio-watch-chip {
+  color: #0d0d10; background: #b8e986; border: 0; border-radius: 3px; font-weight: 700;
+}
+#stage-body .studio-suite .transport {
+  display: flex; align-items: center; gap: 6px; padding: 8px 10px; margin: 0;
+  background: var(--nle-raised); border-top: 1px solid var(--nle-line);
+}
+#stage-body .studio-suite .transport .time {
+  min-width: 150px; font-family: var(--mono); font-size: 13px; font-weight: 600;
+  color: #f2f2f5; letter-spacing: .02em;
+}
+#stage-body .studio-suite .transport #play-toggle { color: #fff; background: #34343c; }
+#stage-body .studio-suite .scrubber {
+  flex: 1; height: 4px; margin: 0 6px; overflow: visible;
+  background: #3a3a44; border: 0; border-radius: 2px;
+}
+#stage-body .studio-suite .scrubber .played { background: var(--nle-blue); border-radius: 2px; }
+#stage-body .studio-suite .scrubber .head {
+  width: 12px; height: 12px; background: #fff; border: 0; border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, .5);
+}
+
+/* The inspector. */
+#stage-body .studio-suite .nle-inspector .panel-head { padding: 10px 12px 0; margin: 0; }
+#stage-body .studio-suite .nle-inspector .panel-head h3 {
+  font-size: 13px; letter-spacing: 0; text-transform: none; color: var(--nle-text);
+}
+#stage-body .studio-suite .prop-group { padding: 10px 12px 0; margin: 0; }
+#stage-body .studio-suite .prop-group:last-child { padding-bottom: 12px; }
+#stage-body .studio-suite .prop-group > label {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--nle-faint);
+}
+#stage-body .studio-suite .prop-row input,
+#stage-body .studio-suite .prop-row select { width: 100%; padding: 6px 8px; }
+#stage-body .studio-suite textarea.prop-text { width: 100%; padding: 8px; min-height: 80px; }
+#stage-body .studio-suite .help { color: var(--nle-faint); font-size: 11.5px; }
+
+/* The timeline. */
+#stage-body .studio-suite .timeline-bar {
+  display: flex; align-items: center; gap: 4px; margin: 0; padding: 6px 8px;
+  border-bottom: 1px solid var(--nle-line);
+}
+#stage-body .studio-suite .timeline-bar .time-readout {
+  margin-left: auto; padding: 2px 8px; font-family: var(--mono); font-size: 14px; font-weight: 600;
+  color: #fff; background: var(--nle-field); border: 1px solid var(--nle-line); border-radius: 3px;
+}
+#stage-body .studio-suite .ruler {
+  position: relative; height: 26px; margin: 0 0 0 120px; overflow: hidden;
+  background: var(--nle-raised); border: 0; border-bottom: 1px solid var(--nle-line);
+}
+#stage-body .studio-suite .ruler i {
+  position: absolute; bottom: 0; width: 1px; height: 6px; background: var(--nle-faint);
+}
+#stage-body .studio-suite .ruler i.major { height: 12px; background: var(--nle-dim); }
+#stage-body .studio-suite .ruler span {
+  position: absolute; top: 2px; padding-left: 4px; transform: none;
+  font-family: var(--mono); font-size: 10px; font-weight: 500; color: var(--nle-dim);
+}
+
+#stage-body .studio-suite .track-row { gap: 0; margin: 0; border-bottom: 1px solid #0d0d10; }
+#stage-body .studio-suite .track-row:nth-child(even) .track-lane { background: var(--nle-lane-alt); }
+#stage-body .studio-suite .track-head {
+  width: 120px; padding: 0 6px 0 10px; gap: 2px;
+  background: var(--nle-raised); border-right: 1px solid var(--nle-line);
+}
+#stage-body .studio-suite .track-head .track-label {
+  display: grid; gap: 0; font-family: var(--mono); line-height: 1.2;
+}
+#stage-body .studio-suite .track-head .track-label b { font-size: 11.5px; color: var(--nle-text); }
+#stage-body .studio-suite .track-head .track-label small { font-size: 10px; color: var(--nle-faint); }
+#stage-body .studio-suite .track-head .btn-icon {
+  padding: 3px; color: var(--nle-dim); background: none; border: 0;
+}
+#stage-body .studio-suite .track-head .btn-icon.off { color: var(--nle-faint); opacity: .6; }
+#stage-body .studio-suite .track-lane {
+  height: 46px; background: var(--nle-lane); border: 0; border-radius: 0;
+}
+#stage-body .studio-suite .track-lane.locked {
+  opacity: 1;
+  background-image: repeating-linear-gradient(-45deg, transparent 0 6px, rgba(255,255,255,.03) 6px 12px);
+}
+
+/* Clips: muted colour, a lighter top edge, white label; selected has a white frame. */
+#stage-body .studio-suite .clip {
+  top: 3px; bottom: 3px; padding: 0 8px;
+  color: #fff !important;
+  background: var(--clip-bg);
+  border: 0 !important;
+  border-top: 2px solid rgba(255, 255, 255, .28) !important;
+  border-radius: 3px;
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .35);
+  font-size: 11px; font-weight: 600;
+  filter: none;
+}
+#stage-body .studio-suite .clip .clip-label { font-weight: 600; text-shadow: 0 1px 1px rgba(0,0,0,.4); }
+#stage-body .studio-suite .clip.selected {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(0, 0, 0, .6);
+  z-index: 4;
+}
+#stage-body .studio-suite .clip.colliding { outline: 2px solid var(--nle-playhead); outline-offset: 1px; }
+
+/* The playhead: a red line through every track, with a marker at its top. */
+#stage-body .studio-suite .playhead {
+  width: 1px; background: var(--nle-playhead);
+  box-shadow: 0 0 4px rgba(255, 77, 79, .6);
+}
+#stage-body .studio-suite .playhead::before {
+  content: ""; position: absolute; top: 0; left: -5px;
+  border: 5px solid transparent; border-top: 7px solid var(--nle-playhead);
+}
+
+/* The page's own footer, quiet on the dark ground. */
+#stage-body .studio-suite .footer-nav {
+  margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--nle-line);
+}
+#stage-body .studio-suite .footer-nav .btn-move-next,
+#stage-body .studio-suite .footer-nav .btn-accent {
+  color: #fff; background: var(--nle-blue); border-color: var(--nle-blue);
+}
+#stage-body .studio-suite .footer-nav .muted { color: var(--nle-dim); }
+
+/* The picture sits centred on black, whatever the viewer's shape. */
+#stage-body .studio-suite .nle-viewer { display: flex; flex-direction: column; }
+#stage-body .studio-suite .nle-viewer .preview-frame { margin: 0 auto; width: 100%; }
+#stage-body .studio-suite .nle-viewer .nle-panel-title + .preview-frame,
+#stage-body .studio-suite .nle-viewer .studio-watch-head + .preview-frame { box-shadow: 0 0 0 100vmax #050506; clip-path: inset(0 -100vmax); }

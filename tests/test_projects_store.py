@@ -96,5 +96,5 @@ def test_deleting_a_project_requires_it_to_actually_be_one(tmp_path):
     (tmp_path / "innocent-folder").mkdir()
     (tmp_path / "innocent-folder" / "important.txt").write_text("keep me")
 
-    assert store.delete("innocent-folder") is False
+    assert store.delete("innocent-folder") is None
     assert (tmp_path / "innocent-folder" / "important.txt").exists()

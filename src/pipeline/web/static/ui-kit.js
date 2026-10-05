@@ -6,7 +6,9 @@
  * imports this — not editing the shell.
  */
 
-import { escapeHtml, requestJsonFromApi, showNoticeIn } from "/static/shared-client.js";
+import {
+  escapeHtml, hideNoticeIn, requestJsonFromApi, showNoticeIn,
+} from "/static/shared-client.js";
 
 export { escapeHtml };
 export const select = selector => document.querySelector(selector);
@@ -25,14 +27,19 @@ export const applicationState = {
   activeStageKey: "inputs",
 
   // Inputs
-  sourceSortOrder: "name-asc",
   isUploadInFlight: false,
   isDeleteInFlight: false,
 
   // Extraction workbench. Which file is previewed is a view concern and lives
   // here; which files are *extracted* is saved with the project on the server.
   previewFileName: null,
-  previewTab: "preview",
+  extractingFileName: null,    // the one file being extracted, while it runs
+  extractionSelection: [],     // the files ticked for the next extraction
+  extractionTab: "extract",    // extract | review | final
+  compareSplit: 32,            // % of the width the Preview column takes
+  comparePaneHeight: null,     // px; null keeps the default height
+  previewSlideIndex: null,     // the slide on screen in the Extraction preview
+  finalFileName: null,
   stageSettings: {},           // stage key -> { values, options }
   isSavingSettings: false,
 
@@ -54,9 +61,7 @@ export const applicationState = {
   // Reviewing. Comments, chapters and version history for the cut.
   review: null,
 
-  // Whether an extraction review also asks the stage's agent to read the text.
   // A preference, not project data: it says how you like to work.
-  reviewAsksTheAgent: true,
 };
 
 /* ---- icons -------------------------------------------------------------- */
@@ -69,6 +74,7 @@ const ICON_PATHS = {
   "script-staging": `<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>`,
   generation: `<path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/><circle cx="12" cy="12" r="3.5"/>`,
   studio: `<rect x="2" y="5" width="14" height="14" rx="2"/><path d="m22 8-6 4 6 4V8z"/>`,
+  render: `<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m10 9 5 3-5 3V9z"/>`,
   export: `<path d="M12 3v12M8 11l4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>`,
   reviewing: `<path d="M9 11l3 3 8-8"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>`,
 };
@@ -190,19 +196,23 @@ export function stageStateFor(stageKey) {
     ?? { status: "empty", detail: "" };
 }
 
-export function sortedSources() {
-  const sources = [...(applicationState.selectedProject?.sources ?? [])];
-  const comparators = {
-    "name-asc": (a, b) => a.name.localeCompare(b.name),
-    "name-desc": (a, b) => b.name.localeCompare(a.name),
-    "size-desc": (a, b) => b.bytes - a.bytes,
-    "type-asc": (a, b) => a.suffix.localeCompare(b.suffix) || a.name.localeCompare(b.name),
-  };
-  return sources.sort(comparators[applicationState.sourceSortOrder] ?? comparators["name-asc"]);
-}
+/** How long a notice stays, by tone, before it goes by itself. A long message
+ *  gets longer, so the rejected-file list in a warning can still be read. */
+const NOTICE_MILLISECONDS = { ok: 4000, warn: 8000, bad: 12000 };
+let stageNoticeTimer = null;
 
+/** A toast over the page, not a bar in it: it used to sit at the top of the
+ *  stage and push everything down until the next navigation. Now it floats,
+ *  leaves on its own, and a click sends it away sooner. */
 export function showStageNotice(tone, message) {
-  showNoticeIn(select("#stage-notice"), tone, message);
+  const host = select("#stage-notice");
+  showNoticeIn(host, tone, message);
+  if (!host) return;
+
+  host.onclick = () => hideNoticeIn(host);
+  clearTimeout(stageNoticeTimer);
+  const lasts = Math.max(NOTICE_MILLISECONDS[tone] ?? 6000, message.length * 60);
+  stageNoticeTimer = setTimeout(() => hideNoticeIn(host), lasts);
 }
 
 export const projectApiPath = suffix =>
@@ -244,7 +254,90 @@ export async function refreshProjectSummary() {
     .findIndex(project => project.slug === slugAtRequestTime);
   if (listed !== -1) applicationState.availableProjects[listed] = summary;
   redrawChrome?.();
+  await refreshUpstream();
 }
+
+/* ---- when an earlier layer changed -----------------------------------------
+ *
+ * Every transfer records what it was built from. When an earlier layer is
+ * transferred again, each layer after it is flagged: red in the sidebar, and a
+ * banner under its header that names what is new, changed or gone and offers to
+ * redo the layer for the new input. `stageHeader` draws the banner, so it is on
+ * every layer without each page knowing about it.
+ */
+const UPSTREAM_REDO = {
+  assets: "Gather again",
+  "scene-plan": "Re-sync the plan",
+  "script-staging": "Go to the sections to redraft",
+  generation: "Decide the shots again",
+  render: "Render again",
+};
+
+let upstreamActionHandler = null;
+/** The shell says what Redo and Transfer as it stands do; this file cannot navigate. */
+export function onUpstreamAction(handler) { upstreamActionHandler = handler; }
+
+export async function refreshUpstream() {
+  const slug = applicationState.selectedProject?.slug;
+  if (!slug) return;
+  try {
+    const state = await requestJsonFromApi(`/api/projects/${slug}/upstream`);
+    if (applicationState.selectedProject?.slug !== slug) return;
+    applicationState.upstream = state;
+  } catch (failure) {
+    console.warn("could not read what changed upstream", failure);
+    return;
+  }
+  paintUpstreamFlags();
+}
+
+function upstreamBanner(stageKey) {
+  const flag = applicationState.upstream?.[stageKey];
+  if (!flag?.flagged) return "";
+  const parts = (change, kind, word) => change.counts[kind] ? `
+    <span class="upstream-parts"><b>${change.counts[kind]} ${word}:</b>
+      ${change[kind].map(escapeHtml).join(" · ")}${
+        change.counts[kind] > change[kind].length ? " …" : ""}</span>` : "";
+  const direct = flag.changes.map(change => `
+    <p><b>${escapeHtml(change.name)} was transferred again</b> (${escapeHtml(whenItWas(change.at))}).
+      This layer was built from the transfer before it.</p>
+    ${parts(change, "changed", "changed")}${parts(change, "added", "new")}${
+      parts(change, "removed", "removed")}`).join("");
+  const behind = flag.behind.length ? `
+    <p><b>${flag.behind.map(escapeHtml).join(" and ")}</b>
+      ${flag.behind.length === 1 ? "is" : "are"} out of date, so this layer is too.
+      Bring ${flag.behind.length === 1 ? "it" : "them"} up to date first.</p>` : "";
+  return `
+    <div class="upstream-flag" role="alert">
+      <span class="upstream-flag-mark">${icon(ICON.alert, 18, 2.4)} Out of date</span>
+      <div class="upstream-flag-text">${direct}${behind}</div>
+      ${flag.changes.length ? `
+        <div class="upstream-flag-actions">
+          <button class="btn btn-accent" data-upstream-redo="${stageKey}">${UPSTREAM_REDO[stageKey]}</button>
+          ${stageKey === "render" ? "" : `<button class="btn" data-upstream-keep="${stageKey}"
+            title="This layer still holds: hand it on again as it is">Transfer as it stands</button>`}
+        </div>` : ""}
+    </div>`;
+}
+
+/** Fill every banner on the page, and mark the flagged layers in the sidebar. */
+export function paintUpstreamFlags() {
+  document.querySelectorAll("[data-upstream-for]").forEach(host => {
+    host.innerHTML = upstreamBanner(host.dataset.upstreamFor);
+  });
+  document.querySelectorAll(".nav-item[data-stage]").forEach(item => {
+    const flagged = Boolean(applicationState.upstream?.[item.dataset.stage]?.flagged);
+    item.classList.toggle("flagged", flagged);
+    item.title = flagged ? "Out of date: an earlier layer was transferred again" : "";
+  });
+}
+
+document.addEventListener("click", event => {
+  const redo = event.target.closest?.("[data-upstream-redo]");
+  const keep = event.target.closest?.("[data-upstream-keep]");
+  if (redo) upstreamActionHandler?.(redo.dataset.upstreamRedo, "redo");
+  if (keep) upstreamActionHandler?.(keep.dataset.upstreamKeep, "keep");
+});
 
 /**
  * Every field in `applicationState` scoped to one project.
@@ -252,9 +345,53 @@ export async function refreshProjectSummary() {
  * Listed once, here, so a new per-project document cannot be added to the state
  * object and then forgotten when the project changes.
  */
+/**
+ * Which tab each layer is on, kept per project in this browser so a refresh
+ * comes back to the same tab. Each page checks the value against its own tabs
+ * and falls back to its first, so a tab that no longer exists is harmless.
+ */
+const REMEMBERED_TABS = {
+  assetsTab: "extracted",      // extracted | brand | look | final
+  planTab: "brief",            // brief | outline | check | final
+  scriptTab: "setup",          // setup | write | check | final
+  generationTab: "setup",      // setup | decide | make | check | final
+  extractionTab: "extract",
+  reviewTab: "transcript",     // Reviewing: transcript | comments
+  scriptEditorTab: "script",   // Script & Staging's writing pane: script | preview
+};
+const tabsStorageKey = () => `pipeline.tabs.${applicationState.selectedProject?.slug ?? ""}`;
+const readRememberedTabs = () => {
+  try { return JSON.parse(localStorage.getItem(tabsStorageKey()) ?? "{}") ?? {}; } catch { return {}; }
+};
+const chosenTabs = {};   // this page load's choices; null until one is made
+for (const [key, fallback] of Object.entries(REMEMBERED_TABS)) {
+  Object.defineProperty(applicationState, key, {
+    enumerable: true,
+    get: () => chosenTabs[key] ?? readRememberedTabs()[key] ?? fallback,
+    set: value => {
+      chosenTabs[key] = value;
+      if (value === null || !applicationState.selectedProject) return;
+      try {
+        localStorage.setItem(tabsStorageKey(), JSON.stringify({ ...readRememberedTabs(), [key]: value }));
+      } catch { /* private mode: the tab is kept for this page load only */ }
+    },
+  });
+}
+
 const PROJECT_SCOPED_STATE_DEFAULTS = {
   previewFileName: null,
-  previewTab: "preview",
+  // null: back to what this browser remembers for the project (REMEMBERED_TABS).
+  assetsTab: null,
+  planTab: null,
+  scriptTab: null,
+  generationTab: null,
+  reviewTab: null,
+  scriptEditorTab: null,
+  // A rendered video Studio is showing instead of its timeline: { slug, file }.
+  studioWatch: null,
+  extractionTab: null,
+  extractionSelection: [],
+  finalFileName: null,
   stageSettings: {},
   plan: null,
   script: null,
@@ -265,6 +402,9 @@ const PROJECT_SCOPED_STATE_DEFAULTS = {
   exportManifest: null,
   composition: null,
   review: null,
+
+  // For each layer: what changed before it since it was handed on (`upstream.py`).
+  upstream: null,
 
   // The Orchestrator's thread is about one project's work, so it must not
   // follow you into another project.
@@ -297,4 +437,316 @@ export function clearProjectScopedState() {
  */
 export function isDocumentLoadedForCurrentProject(loadedForSlug) {
   return loadedForSlug === applicationState.selectedProject?.slug;
+}
+
+/* ---- what each stage is for, behind an (i) beside its title ---------------
+ *
+ * The one-line description under every title said too little to help and took
+ * a line on every page. It lives here instead, longer, and appears on hover or
+ * keyboard focus. Written per stage so the header code stays one call.
+ */
+const STAGE_INFO = {
+  inputs: {
+    summary: "The one source file this video is made from.",
+    points: [
+      "One file per project: a PowerPoint deck, PDF, Word, Markdown or plain-text file. It runs through every layer.",
+      "It is kept exactly as uploaded; open Preview to look at it.",
+      "Replace it to use another file: the work after Extraction is kept and marked out of date until it is redone.",
+      "Next, Extraction reads it.",
+    ],
+  },
+  extraction: {
+    summary: "Pull the text and figures out of the source.",
+    points: [
+      "Extract: read the source, with the options beside it. Extracting again replaces the result.",
+      "Review: each slide beside what was extracted from it. The agent reviews every "
+        + "slide and proposes fixes, and you can ask it for more changes, or new pictures.",
+      "Final & transfer: see everything extracted, then transfer it to the next layer.",
+      "Nothing reaches later stages until it is transferred.",
+    ],
+  },
+  assets: {
+    summary: "The inventory and the look: what exists, your brand assets, and how the video's frames look.",
+    points: [
+      "Extracted assets: every picture, in a box per file, with the slide it came from. Leave out what you "
+        + "don't want. Nothing is judged here; Generation decides which picture a scene shows.",
+      "Brand assets: watermark, logo, intro and outro. Drag to place; set size, opacity, corners, shadow, "
+        + "when it appears, trims and cross-fades. The preview is the image the render lays on.",
+      "Look: a theme, three colours, fonts and the deck's background art, with a live preview and a "
+        + "readability check.",
+      "Final & transfer: the video as it will look, and everything handed on, stated. No AI on this layer.",
+    ],
+  },
+  "scene-plan": {
+    summary: "Shape the lesson: what is taught, in what order, for how long, and to what end.",
+    points: [
+      "Brief: what Extraction handed on; the audience, objectives, lesson frame (Opening, Recap, Close) and preferences.",
+      "Outline: build it, then shape it -- time shared from the target, objective links and summaries proposed for you to accept.",
+      "Check: fixed rules, each pass / warning / fails; a failing check blocks the transfer.",
+      "Final & transfer: once transferred, later stages read only the transferred plan.",
+    ],
+  },
+  "script-staging": {
+    summary: "Write each planned section as scenes.",
+    points: [
+      "Setup: the sections the Scene Plan handed on, scenarios, variables, and leftover narration.",
+      "Write: each section as scenes — what is said and what is shown. The agent (AI) only drafts what you ask.",
+      "Check: fixed rules; an unwritten section or an undefined {{VARIABLE}} blocks the transfer.",
+      "Final & transfer: once transferred, later stages read only the transferred script.",
+    ],
+  },
+  generation: {
+    summary: "Make what each scene shows.",
+    points: [
+      "Setup: what came in, what this machine can draw, and the rules that decide each shot.",
+      "Decide: what every scene shows and how it moves — fixed rules, no model; change any by hand.",
+      "Make: produce it; says first which scenes call a model (on-screen words, drawn pictures, scene scripts).",
+      "A scripted scene is drawn by its own Python script, in its own folder; fixed checks decide whether its clip is used.",
+      "Check, then Final & transfer: the render reads the transferred shots, frozen.",
+    ],
+  },
+  studio: {
+    summary: "Compose and render the video.",
+    points: [
+      "Arrange media on the timeline, in layers.",
+      "Pick the voice that reads the narration.",
+      "Render video adds the project to the Render queue, where it is made.",
+    ],
+  },
+  render: {
+    summary: "Make the videos: a queue of renders, one at a time.",
+    points: [
+      "Choose the voice, then add the project to the queue.",
+      "Renders run one after another on the server; reloading the page stops nothing.",
+      "Pause keeps everything made so far — resume carries on from there.",
+      "Delete stops a render and removes what it made; finished videos are never deleted.",
+    ],
+  },
+  reviewing: {
+    summary: "Watch the video and decide whether it ships.",
+    points: [
+      "Play it back and leave comments at the moment they are about.",
+      "Check the chapters.",
+      "Anything that needs changing goes back to the stage that made it.",
+    ],
+  },
+  export: {
+    summary: "Take the finished video away as files.",
+    points: [
+      "The video itself, its transcript, its chapters and a description.",
+      "Each is a file you can download and publish.",
+    ],
+  },
+};
+
+/** An (i) beside a stage title that explains the stage on hover or focus.
+ *  `summaryOverride` replaces the summary, for pages that describe themselves
+ *  (an agent states its own role). */
+function stageInfoButton(stageKey, summaryOverride = "") {
+  const info = STAGE_INFO[stageKey] ?? { summary: "", points: [] };
+  const summary = summaryOverride || info.summary;
+  const id = `stage-info-${stageKey}`;
+  return `
+    <span class="stage-info">
+      <button class="stage-info-button" type="button" aria-describedby="${id}"
+              aria-label="About this stage">i</button>
+      <span class="stage-info-pop" role="tooltip" id="${id}">
+        <b>${escapeHtml(summary)}</b>
+        ${info.points.length ? `<ul>${info.points.map(point =>
+          `<li>${escapeHtml(point)}</li>`).join("")}</ul>` : ""}
+      </span>
+    </span>`;
+}
+
+/* ---- moving on: "Move to next layer", confirmed first ---------------------
+ *
+ * Every stage ends in the same button, and moving on is a deliberate step: a
+ * dialog says where you are going and what goes with you, and nothing happens
+ * until you confirm. The pages still save as you work -- this confirms the
+ * move, it does not save anything.
+ */
+
+/** The footer button that moves to the next stage after a confirmation.
+ *  `carries` is one sentence on what goes on with you; `warning` is shown in
+ *  the dialog when something is not ready (it does not block the move). */
+export function moveToNextLayerButton(nextStage, {
+  disabled = false, disabledReason = "", carries = "", warning = "",
+} = {}) {
+  if (!nextStage) return "";
+  return `
+    <button class="btn btn-accent btn-move-next" data-goto="${escapeHtml(nextStage.key)}"
+            data-move-next="${escapeHtml(nextStage.title)}"
+            data-move-carries="${escapeHtml(carries)}"
+            data-move-warning="${escapeHtml(warning)}"
+            ${disabled ? "disabled" : ""}
+            title="${escapeHtml(disabled ? disabledReason : `Move on to ${nextStage.title}`)}">
+      Move to next layer ${icon(ICON.arrowRight)}
+    </button>`;
+}
+
+/** A brutalist confirmation dialog. Resolves true on confirm, false otherwise. */
+function confirmMoveToNextLayer({ nextTitle, carries = "", warning = "" }) {
+  return new Promise(resolve => {
+    const dialog = document.createElement("dialog");
+    dialog.className = "move-dialog";
+    dialog.setAttribute("aria-labelledby", "move-dialog-title");
+    dialog.innerHTML = `
+      <form method="dialog">
+        <h3 id="move-dialog-title">Move to the next layer?</h3>
+        <p class="move-dialog-where">Next: <b>${escapeHtml(nextTitle)}</b></p>
+        ${carries ? `<p>${escapeHtml(carries)}</p>` : ""}
+        ${warning ? `<p class="move-dialog-warning">${icon(ICON.alert, 16, 2.2)}
+                     <span>${escapeHtml(warning)}</span></p>` : ""}
+        <div class="move-dialog-actions">
+          <button class="btn" value="cancel">Stay here</button>
+          <button class="btn btn-accent" value="confirm" autofocus>
+            Move to ${escapeHtml(nextTitle)} ${icon(ICON.arrowRight)}
+          </button>
+        </div>
+      </form>`;
+    document.body.append(dialog);
+    dialog.addEventListener("close", () => {
+      resolve(dialog.returnValue === "confirm");
+      dialog.remove();
+    });
+    // A click on the backdrop is a "stay here".
+    dialog.addEventListener("click", event => {
+      if (event.target === dialog) dialog.close("cancel");
+    });
+    dialog.showModal();
+  });
+}
+
+/** Wire every [data-goto] on the page: a "Move to next layer" button asks
+ *  first, any other goto (Back, Go to ...) moves straight away. */
+export function wireGotoButtons(navigateToStage) {
+  document.querySelectorAll("[data-goto]").forEach(button => {
+    button.onclick = async () => {
+      if (button.dataset.moveNext) {
+        const confirmed = await confirmMoveToNextLayer({
+          nextTitle: button.dataset.moveNext,
+          carries: button.dataset.moveCarries,
+          warning: button.dataset.moveWarning,
+        });
+        if (!confirmed) return;
+      }
+      navigateToStage(button.dataset.goto);
+    };
+  });
+}
+
+/* ---- the page frame every stage shares ------------------------------------ */
+
+/** The stage before and after this one, either possibly undefined. */
+export function stageNeighbours(stage) {
+  const { stageDefinitions } = applicationState;
+  const index = stageDefinitions.findIndex(s => s.key === stage.key);
+  return { previous: stageDefinitions[index - 1], next: stageDefinitions[index + 1] };
+}
+
+/** The purple header box: icon, title, the (i) and, on the right, whatever the
+ *  page adds -- then the gear that opens its agent, when it has one. */
+export function stageHeader(stageKey, title, {
+  actions = "", agentButtonId = "", infoSummary = "",
+} = {}) {
+  return `
+    <div class="card-head stage-head">
+      <span class="card-icon">${stageIcon(stageKey, 21)}</span>
+      <div class="stage-title">
+        <h2>${escapeHtml(title)}</h2>
+        ${stageInfoButton(stageKey, infoSummary)}
+      </div>
+      ${actions}
+      ${agentButtonId ? `
+        <button class="btn btn-square card-corner" id="${agentButtonId}"
+                title="Agent &amp; instructions" aria-label="Agent and instructions">
+          ${icon(ICON.gear, 18, 1.8)}
+        </button>` : ""}
+    </div>
+    <div class="stage-progress" aria-live="polite" ${progressState ? "" : "hidden"}>
+      ${progressMarkup()}</div>
+    <div data-upstream-for="${stageKey}">${upstreamBanner(stageKey)}</div>`;
+}
+
+/* ---- the progress bar under the stage header --------------------------------
+ *
+ * For long work the page itself steps through -- extracting several files, the
+ * agent reviewing slide after slide -- in the strip under the purple header,
+ * where the eye already is. It says what is under way, how far it has got and
+ * for how long. Renders run on the server and have their own panel along the
+ * bottom (`render-dock.js`). Kept outside the page, so it survives a redraw;
+ * `stageHeader` draws it.
+ */
+
+let progressState = null;  // { label, done, total, startedAt }
+let progressClock = null;
+
+function progressMarkup() {
+  if (!progressState) return "";
+  const { label, done, total, startedAt } = progressState;
+  const known = total > 0;
+  const shown = Math.min(done, total);
+  const percent = known ? Math.round((100 * shown) / total) : 0;
+  const seconds = Math.max(0, Math.round((Date.now() - startedAt) / 1000));
+  const elapsed = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+  return `
+    <div class="stage-progress-text">
+      <b>${escapeHtml(label)}</b>
+      <span>${known ? `${shown} / ${total} · ${percent}% · ` : ""}${elapsed}</span>
+    </div>
+    <div class="stage-progress-track ${known ? "" : "unknown"}" role="progressbar"
+         aria-label="${escapeHtml(label)}" aria-valuemin="0" aria-valuemax="100"
+         ${known ? `aria-valuenow="${percent}"` : ""}>
+      <div class="stage-progress-fill" style="width:${known ? percent : 100}%"></div>
+    </div>`;
+}
+
+function paintProgress() {
+  const bar = document.querySelector(".stage-progress");
+  if (!bar) return;
+  bar.hidden = !progressState;
+  bar.innerHTML = progressMarkup();
+}
+
+/** Show or move the bar. `total` 0 means the steps are not known yet: the bar
+ *  runs striped instead of filling. */
+export function showProgress({ label, done = 0, total = 0 }) {
+  progressState = { label, done, total, startedAt: progressState?.startedAt ?? Date.now() };
+  paintProgress();
+  progressClock ??= setInterval(paintProgress, 1000);
+}
+
+export function hideProgress() {
+  progressState = null;
+  clearInterval(progressClock);
+  progressClock = null;
+  paintProgress();
+}
+
+/** The footer: Back, anything the page puts in the middle, and the confirmed
+ *  "Move to next layer" (see `moveToNextLayerButton` for `next`'s options).
+ *  `end` takes the forward button's place, for a page that should not have one. */
+export function footerNav(stage, { middle = "", next = {}, end = null } = {}) {
+  const { previous, next: nextStage } = stageNeighbours(stage);
+  return `
+    <div class="footer-nav">
+      ${previous ? `
+        <button class="btn" data-goto="${previous.key}">
+          ${icon(ICON.arrowLeft)} Back to ${escapeHtml(previous.title)}
+        </button>` : ""}
+      ${middle}
+      <div class="spacer"></div>
+      ${end ?? moveToNextLayerButton(nextStage, next)}
+    </div>`;
+}
+
+/** "14:05" today, "3 Sep, 14:05" otherwise; the raw text if it is not a date. */
+export function whenItWas(isoTimestamp) {
+  if (!isoTimestamp) return "";
+  const when = new Date(isoTimestamp);
+  if (Number.isNaN(when.getTime())) return isoTimestamp.slice(0, 16).replace("T", " ");
+  const today = new Date().toDateString() === when.toDateString();
+  return when.toLocaleString(undefined, today
+    ? { hour: "2-digit", minute: "2-digit" }
+    : { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }

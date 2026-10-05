@@ -102,6 +102,9 @@ class PreparedFigure:
     prepared_path: str = ""          # relative to the project root; empty if untrimmed
     trimmed_fraction: float = 0.0
     flags: list[str] = field(default_factory=list)
+    # Which edges ink runs off -- top, bottom, left, right -- so the page can
+    # show where to look instead of only saying "check the crop".
+    cut_edges: list[str] = field(default_factory=list)
 
     @property
     def is_usable(self) -> bool:
@@ -137,6 +140,7 @@ def prepare_figure(project_root: Path, asset_path: str) -> PreparedFigure:
     if box is None:
         return PreparedFigure(width=width, height=height, flags=[FigureFlag.BLANK])
 
+    cut_edges: list[str] = []
     trimmed = picture.crop(box)
     kept = (trimmed.width * trimmed.height) / max(1, width * height)
     trimmed_fraction = round(1 - kept, 3)
@@ -155,7 +159,7 @@ def prepare_figure(project_root: Path, asset_path: str) -> PreparedFigure:
         flags.append(FigureFlag.SLIVER)
     if _tonal_range(shown) <= FLATTEST_USABLE_RANGE:
         flags.append(FigureFlag.BLANK)
-    elif _runs_off_an_edge(picture, mask):
+    elif cut_edges := _edges_ink_runs_off(picture, mask):
         # Asked of the picture as it was stored, not of the trimmed copy: after
         # trimming, every figure's ink is at the edge by construction, so a
         # diagram drawn inside a box would flag every time and the flag would
@@ -167,7 +171,7 @@ def prepare_figure(project_root: Path, asset_path: str) -> PreparedFigure:
         width=width, height=height,
         prepared_width=shown.width, prepared_height=shown.height,
         prepared_path=prepared_path, trimmed_fraction=trimmed_fraction,
-        flags=flags,
+        flags=flags, cut_edges=cut_edges if FigureFlag.CUT_OFF in flags else [],
     )
 
 
@@ -232,8 +236,8 @@ def _tonal_range(picture) -> int:
     return lightest - darkest
 
 
-def _runs_off_an_edge(picture, mask) -> bool:
-    """Whether ink reaches an edge densely enough to look like a cut.
+def _edges_ink_runs_off(picture, mask) -> list[str]:
+    """The edges ink reaches densely enough to look like a cut.
 
     Density, not presence: one antialiased pixel touching the border happens in
     most diagrams. A tenth of an edge band covered is a line, a caption or a
@@ -242,21 +246,22 @@ def _runs_off_an_edge(picture, mask) -> bool:
     width, height = mask.size
     band = max(1, int(min(width, height) * EDGE_BAND_FRACTION))
 
-    edges = [
-        mask.crop((0, 0, width, band)),
-        mask.crop((0, height - band, width, height)),
-        mask.crop((0, 0, band, height)),
-        mask.crop((width - band, 0, width, height)),
-    ]
-    for edge in edges:
+    edges = {
+        "top": mask.crop((0, 0, width, band)),
+        "bottom": mask.crop((0, height - band, width, height)),
+        "left": mask.crop((0, 0, band, height)),
+        "right": mask.crop((width - band, 0, width, height)),
+    }
+    found = []
+    for name, edge in edges.items():
         pixels = edge.width * edge.height
         if not pixels:
             continue
         inked = sum(edge.point(lambda value: 1 if value else 0)
                     .getdata())  # noqa: PD011 - a PIL image, not a dataframe
         if inked / pixels >= EDGE_INK_FRACTION:
-            return True
-    return False
+            found.append(name)
+    return found
 
 
 def _write_prepared(project_root: Path, source: Path, trimmed) -> str:

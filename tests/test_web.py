@@ -183,16 +183,19 @@ def test_settings_round_trip_and_default_when_absent(tmp_path):
 
     store = StageSettingsStore(tmp_path)
 
-    loaded = store.load(Stage.EXTRACTION)
-    assert loaded.values["extraction_mode"] == "balanced"
-    assert loaded.values["handwriting_ocr"] is False
+    loaded = store.load(Stage.SCENE_PLAN)
+    assert loaded.values["target_duration"] == "7-10"
 
-    store.save(Stage.EXTRACTION, {"extraction_mode": "thorough", "handwriting_ocr": True})
-    reloaded = store.load(Stage.EXTRACTION)
-    assert reloaded.values["extraction_mode"] == "thorough"
-    assert reloaded.values["handwriting_ocr"] is True
+    store.save(Stage.SCENE_PLAN, {"target_duration": "12-18", "tone": "academic"})
+    reloaded = store.load(Stage.SCENE_PLAN)
+    assert reloaded.values["target_duration"] == "12-18"
+    assert reloaded.values["tone"] == "academic"
+
+    extraction = store.load(Stage.EXTRACTION)
+    assert extraction.values["handwriting_ocr"] is False
+    store.save(Stage.EXTRACTION, {"handwriting_ocr": True})
     # untouched options keep their defaults rather than vanishing
-    assert reloaded.values["extract_tables"] is True
+    assert store.load(Stage.EXTRACTION).values["extract_tables"] is True
 
 
 def test_invalid_stored_values_fall_back_rather_than_crashing(tmp_path):
@@ -204,11 +207,12 @@ def test_invalid_stored_values_fall_back_rather_than_crashing(tmp_path):
     store = StageSettingsStore(tmp_path)
     (tmp_path / "settings").mkdir()
     (tmp_path / "settings" / "extraction.json").write_text(
-        '{"extraction_mode": "no_such_mode", "extract_tables": "yes-ish"}', encoding="utf-8")
+        '{"extract_tables": "yes-ish"}', encoding="utf-8")
+    (tmp_path / "settings" / "scene-plan.json").write_text(
+        '{"target_duration": "no_such_length"}', encoding="utf-8")
 
-    loaded = store.load(Stage.EXTRACTION)
-    assert loaded.values["extraction_mode"] == "balanced"   # back to default
-    assert loaded.values["extract_tables"] is True          # coerced to bool
+    assert store.load(Stage.EXTRACTION).values["extract_tables"] is True   # coerced to bool
+    assert store.load(Stage.SCENE_PLAN).values["target_duration"] == "7-10"  # back to default
 
 
 def test_corrupt_settings_file_is_logged_not_swallowed(tmp_path, caplog):
@@ -222,7 +226,7 @@ def test_corrupt_settings_file_is_logged_not_swallowed(tmp_path, caplog):
     with caplog.at_level("ERROR"):
         loaded = store.load(Stage.EXTRACTION)
 
-    assert loaded.values["extraction_mode"] == "balanced"
+    assert loaded.values["extract_tables"] is True
     assert any("unreadable" in record.message for record in caplog.records), (
         "settings silently reverted with no log line"
     )
@@ -236,12 +240,12 @@ def test_unknown_keys_are_not_persisted(tmp_path):
     from pipeline.stages import Stage
 
     store = StageSettingsStore(tmp_path)
-    store.save(Stage.EXTRACTION, {"extraction_mode": "fast", "injected_key": "nope"})
+    store.save(Stage.EXTRACTION, {"extract_tables": False, "injected_key": "nope"})
 
     written = json.loads(
         (tmp_path / "settings" / "extraction.json").read_text(encoding="utf-8"))
     assert "injected_key" not in written
-    assert written["extraction_mode"] == "fast"
+    assert written["extract_tables"] is False
 
 
 def test_settings_write_is_atomic(tmp_path):
@@ -249,7 +253,7 @@ def test_settings_write_is_atomic(tmp_path):
     from pipeline.stages import Stage
 
     store = StageSettingsStore(tmp_path)
-    store.save(Stage.EXTRACTION, {"extraction_mode": "fast"})
+    store.save(Stage.EXTRACTION, {"extract_tables": False})
     assert not list((tmp_path / "settings").glob("*.tmp"))
 
 

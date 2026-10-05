@@ -64,6 +64,8 @@ def present_artifact(project: Project, artifact_name: str, document: Any) -> dic
     their own data.
     """
     if artifact_name == "plan":
+        from pipeline.lesson_plan import lesson_view
+        from pipeline.plan_approaches import approach_view
         extraction = ExtractionStore(project.root).load()
         freshness = plan_freshness(document, extraction)
         presented = document.to_dict()
@@ -72,10 +74,15 @@ def present_artifact(project: Project, artifact_name: str, document: Any) -> dic
             "freshness": freshness,
             "source_outline": source_outline(extraction),
             "has_pending_draft": PlanDraftStore(project.root).load() is not None,
+            "lesson": lesson_view(project, document),
+            "approach_choices": approach_view(document, any(
+                b.slide_number for d in extraction.documents for b in d.blocks)),
         }
 
     if artifact_name == "script":
-        plan = PlanStore(project.root).load()
+        from pipeline.plan_handoff import plan_for_later_stages
+
+        plan = plan_for_later_stages(project)
         section_ids = [section.id for section in plan.sections]
         budgets = {section.id: section.estimated_seconds for section in plan.sections}
         titles = {section.id: section.title for section in plan.sections}
@@ -112,8 +119,11 @@ def present_artifact(project: Project, artifact_name: str, document: Any) -> dic
         }
 
     if artifact_name == "review":
-        plan = PlanStore(project.root).load()
-        script = ScriptStore(project.root).load()
+        from pipeline.plan_handoff import plan_for_later_stages
+
+        plan = plan_for_later_stages(project)
+        from pipeline.script_handoff import script_for_later_stages
+        script = script_for_later_stages(project)
         presented = document.to_dict()
         # Reviewing is the last gate before export, so it repeats what Scripting
         # found about length. A review reading "no warnings" over a section half
@@ -209,6 +219,9 @@ def save_artifact(slug: str, artifact_name: str, document: Any) -> dict[str, Any
     project = require_project(slug)
     binding = require_artifact(artifact_name)
     _mark_as_hand_edited(document)
+    if artifact_name == "plan":
+        from pipeline.lesson_plan import shape_plan
+        document = shape_plan(project, document)
     if artifact_name == "script":
         document = _script_in_plan_order(project, document)
         _stamp_rewritten_narration(project, document)
@@ -216,7 +229,8 @@ def save_artifact(slug: str, artifact_name: str, document: Any) -> dict[str, Any
 
 def _script_in_plan_order(project: Project, script: Script) -> Script:
     """Stored in plan order, so the file reads the way the video plays."""
-    plan = PlanStore(project.root).load()
+    from pipeline.plan_handoff import plan_for_later_stages
+    plan = plan_for_later_stages(project)
     return script.in_plan_order([section.id for section in plan.sections])
 
 def _mark_as_hand_edited(document: Any) -> None:
@@ -240,7 +254,8 @@ def _stamp_rewritten_narration(project: Project, script: Script) -> None:
     whole script after editing one section must not declare every other section
     freshly checked against the current plan.
     """
-    plan = PlanStore(project.root).load()
+    from pipeline.plan_handoff import plan_for_later_stages
+    plan = plan_for_later_stages(project)
     sections = {section.id: section for section in plan.sections}
     extraction = ExtractionStore(project.root).load()
     stored = {s.section_id: s for s in ScriptStore(project.root).load().section_scripts}

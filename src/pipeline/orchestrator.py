@@ -47,6 +47,7 @@ from pipeline.operations import (
     ARTIFACTS,
     OperationFailed,
     extraction_freshness,
+    freshness_warnings,
     read_artifact,
     require_project,
 )
@@ -175,22 +176,14 @@ def pipeline_snapshot(project: Project) -> str:
     freshness = extraction_freshness(project)
     if freshness["is_stale"]:
         lines.append("")
-        lines.append("Extraction is out of date with the source files:")
-        lines.extend(f"  not extracted yet: {name}" for name in freshness["added"])
-        lines.extend(
-            f"  extracted but since removed: {name}" for name in freshness["removed"]
-        )
-        lines.extend(
-            f"  extracted but since left out: {name}" for name in freshness["newly_excluded"]
-        )
+        lines.append("Extraction is out of date:")
+        lines.extend(f"  {warning}" for warning in freshness_warnings(freshness))
 
-    # Said even when nothing is stale, so a deliberately unticked file is not
-    # reported to the person as a document the pipeline failed to read.
-    if freshness["excluded"]:
+    # Said even when nothing is stale: files are extracted one at a time, so one
+    # not extracted is a choice still to make, not a document that failed.
+    if freshness["added"]:
         lines.append("")
-        lines.append(
-            "Left out of extraction by choice: " + ", ".join(freshness["excluded"])
-        )
+        lines.append("Not extracted yet: " + ", ".join(freshness["added"]))
 
     return "\n".join(lines)
 

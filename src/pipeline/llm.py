@@ -144,25 +144,23 @@ def _what_went_wrong(call_failure: Exception) -> str:
     return ""
 
 
-def complete_text(system_prompt: str, user_prompt: str, *, max_tokens: int = 2000) -> str:
-    """Ask for prose. Used where the answer is for a person to read.
+def _chat(
+    endpoint: tuple[str, str, str], purpose: str, messages: list[dict[str, Any]],
+    max_tokens: int,
+) -> str:
+    """One chat completion, answered as text, with the failure vocabulary above.
 
-    Deliberately not used to produce an artifact: see the module note.
+    Every free-text call goes through here, so a provider error is described the
+    same way whether the question was words or a picture.
     """
-    settings = get_settings()
-    client = _build_client(settings.llm_base_url, settings.llm_api_key, "text")
+    base_url, api_key, model_name = endpoint
+    client = _build_client(base_url, api_key, purpose)
 
     try:
         response = client.chat.completions.create(
-            model=settings.llm_model,
-            max_tokens=max_tokens,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-        )
+            model=model_name, max_tokens=max_tokens, messages=messages)
     except Exception as call_failure:
-        logger.exception("text completion failed")
+        logger.exception("%s completion failed", purpose)
         raise ModelCallFailed(
             _what_went_wrong(call_failure)
             or f"{type(call_failure).__name__}: {call_failure}"
@@ -170,19 +168,31 @@ def complete_text(system_prompt: str, user_prompt: str, *, max_tokens: int = 200
 
     choices = getattr(response, "choices", None)
     if not choices:
-        raise ModelCallFailed("The provider returned no choices.")
-
+        raise ModelCallFailed(f"{model_name} returned no answer.")
     return (choices[0].message.content or "").strip()
 
 
-def complete_structured[ModelType: BaseModel](
-    response_model: type[ModelType],
-    system_prompt: str,
-    user_prompt: str,
-    *,
-    max_tokens: int = STRUCTURED_OUTPUT_TOKEN_BUDGET,
+def complete_text(system_prompt: str, user_prompt: str, *, max_tokens: int = 2000) -> str:
+    """Ask for prose. Used where the answer is for a person to read.
+
+    Deliberately not used to produce an artifact: see the module note.
+    """
+    settings = get_settings()
+    return _chat(
+        (settings.llm_base_url, settings.llm_api_key, settings.llm_model), "text",
+        [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        max_tokens,
+    )
+
+
+def _structured[ModelType: BaseModel](
+    endpoint: tuple[str, str, str], purpose: str, response_model: type[ModelType],
+    messages: list[dict[str, Any]], max_tokens: int,
 ) -> ModelType:
-    """Ask for an object that satisfies `response_model`, or fail here.
+    """One schema-checked completion, re-asked on a misfit, failing here if not.
 
     instructor re-asks the model with the validation errors attached when the
     first attempt does not fit the schema. That retry is the point: the failure
@@ -191,9 +201,7 @@ def complete_structured[ModelType: BaseModel](
     """
     import instructor
 
-    settings = get_settings()
-    base_url, api_key, model_name = settings.ir_llm
-
+    base_url, api_key, model_name = endpoint
     # JSON mode rather than instructor's default forced tool-calling. Reasoning
     # models reject `tool_choice: required` -- TokenRouter's deepseek-v4-flash
     # answers a structured request with
@@ -203,9 +211,7 @@ def complete_structured[ModelType: BaseModel](
     # problem. JSON mode asks for a JSON object and validates it against the
     # schema, which every OpenAI-compatible provider supports.
     client = instructor.from_openai(
-        _build_client(base_url, api_key, "structured-output"),
-        mode=instructor.Mode.JSON,
-    )
+        _build_client(base_url, api_key, purpose), mode=instructor.Mode.JSON)
 
     try:
         return client.chat.completions.create(
@@ -213,20 +219,117 @@ def complete_structured[ModelType: BaseModel](
             max_tokens=max_tokens,
             max_retries=MAXIMUM_SCHEMA_RETRIES,
             response_model=response_model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
+            messages=messages,
         )
     except ModelNotConfigured:
         raise
     except Exception as call_failure:
-        logger.exception("structured completion failed")
+        logger.exception("%s completion failed", purpose)
         raise ModelCallFailed(
             _what_went_wrong(call_failure)
             or f"The model did not return a valid {response_model.__name__} after "
                f"{MAXIMUM_SCHEMA_RETRIES} retries: {type(call_failure).__name__}: {call_failure}"
         ) from call_failure
+
+
+def complete_structured[ModelType: BaseModel](
+    response_model: type[ModelType],
+    system_prompt: str,
+    user_prompt: str,
+    *,
+    max_tokens: int = STRUCTURED_OUTPUT_TOKEN_BUDGET,
+) -> ModelType:
+    """Ask for an object that satisfies `response_model`, or fail here."""
+    return _structured(
+        get_settings().ir_llm, "structured-output", response_model,
+        [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        max_tokens,
+    )
+
+
+def complete_structured_with_images[ModelType: BaseModel](
+    response_model: type[ModelType],
+    system_prompt: str,
+    user_prompt: str,
+    pictures: list[tuple[str, bytes]],
+    *,
+    max_tokens: int = STRUCTURED_OUTPUT_TOKEN_BUDGET,
+) -> ModelType:
+    """The same, from the vision model, with pictures to look at.
+
+    `pictures` are (label, JPEG bytes); each label is sent as text just before
+    its picture, so the model can say which one it means.
+    """
+    import base64
+
+    content: list[dict[str, Any]] = [{"type": "text", "text": user_prompt}]
+    for label, picture in pictures:
+        encoded = base64.b64encode(picture).decode("ascii")
+        content.append({"type": "text", "text": label})
+        content.append({"type": "image_url",
+                        "image_url": {"url": f"data:image/jpeg;base64,{encoded}"}})
+    return _structured(
+        get_settings().vision_llm, "vision", response_model,
+        [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": content},
+        ],
+        max_tokens,
+    )
+
+
+def picture_in_reply(message: Any) -> bytes:
+    """The picture an image model put in its chat reply, or empty bytes.
+
+    Gemini's image models, as TokenRouter serves them, answer a chat request with
+    the picture embedded in the text as `![image](data:image/png;base64,...)`;
+    OpenRouter-style providers attach it as `images[0].image_url.url`. Both are
+    read here, so the caller does not care which it got.
+    """
+    import base64
+    import re
+
+    candidates: list[str] = []
+    extra = getattr(message, "model_extra", None) or {}
+    for image in extra.get("images") or []:
+        url = (image.get("image_url") or {}).get("url", "") if isinstance(image, dict) else ""
+        candidates.append(url)
+    candidates.append(getattr(message, "content", "") or "")
+
+    for text in candidates:
+        found = re.search(r"data:image/[a-zA-Z+.-]+;base64,([A-Za-z0-9+/=\s]+)", text)
+        if found:
+            return base64.b64decode(re.sub(r"\s", "", found.group(1)))
+    return b""
+
+
+def _picture_from_chat(content: Any, purpose: str) -> bytes:
+    """Ask the image model for a picture through the chat endpoint.
+
+    The way Gemini image models are served: the picture comes back in the reply.
+    Returns empty bytes when the reply has none, so a caller can try the image
+    endpoint instead for a provider that uses that.
+    """
+    base_url, api_key, model_name = get_settings().image_llm
+    client = _build_client(base_url, api_key, "images")
+    try:
+        response = client.chat.completions.create(
+            model=model_name,
+            messages=[{"role": "user", "content": content}],
+            extra_body={"modalities": ["image", "text"]},
+        )
+    except Exception as call_failure:
+        logger.exception("%s failed", purpose)
+        raise ModelCallFailed(
+            _what_went_wrong(call_failure)
+            or f"{model_name} could not make the picture: "
+               f"{type(call_failure).__name__}: {call_failure}"
+        ) from call_failure
+    choices = getattr(response, "choices", None) or []
+    return picture_in_reply(choices[0].message) if choices else b""
 
 
 def draw_image(prompt: str, *, size: str = "1024x1024") -> bytes:
@@ -236,29 +339,69 @@ def draw_image(prompt: str, *, size: str = "1024x1024") -> bytes:
     key handling and the same failure vocabulary, and a second module for one
     endpoint would drift from this one the first time a timeout changed.
 
-    Returns the image itself rather than a URL. A URL would expire, and the
-    caller always wants the bytes -- they are going straight into the project's
-    own asset store.
+    Through the chat endpoint first, which is how the configured Gemini image
+    model answers; the dedicated image endpoint only when the reply carried no
+    picture. That endpoint alone answered "model not found" for Gemini.
     """
     import base64
 
-    settings = get_settings()
-    base_url, api_key, model_name = settings.image_llm
-    client = _build_client(base_url, api_key, "images")
+    picture = _picture_from_chat(prompt, "image generation")
+    if picture:
+        return picture
 
+    base_url, api_key, model_name = get_settings().image_llm
+    client = _build_client(base_url, api_key, "images")
     try:
         response = client.images.generate(model=model_name, prompt=prompt, size=size, n=1)
     except Exception as call_failure:
         logger.exception("image generation failed")
         raise ModelCallFailed(
-            _what_went_wrong(call_failure)
-            or f"{type(call_failure).__name__}: {call_failure}"
+            f"{model_name} returned no picture in its reply, and its image endpoint "
+            f"failed too: {_what_went_wrong(call_failure) or call_failure}"
         ) from call_failure
-
     data = getattr(response, "data", None) or []
     encoded = getattr(data[0], "b64_json", "") if data else ""
     if not encoded:
-        raise ModelCallFailed(
-            f"{model_name} returned no image. It may not be an image model."
-        )
+        raise ModelCallFailed(f"{model_name} returned no image. It may not be an image model.")
     return base64.b64decode(encoded)
+
+
+def edit_image(image_bytes: bytes, mime_type: str, instruction: str) -> bytes:
+    """Ask the image model to change an existing picture, and return the result.
+
+    The picture itself goes with the instruction, so a crop, a recolour or a
+    removed element keeps the rest of the original -- which redrawing from a
+    description cannot.
+    """
+    import base64
+
+    encoded = base64.b64encode(image_bytes).decode("ascii")
+    picture = _picture_from_chat([
+        {"type": "text", "text": f"Edit this picture: {instruction}. Return the edited picture."},
+        {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{encoded}"}},
+    ], "image edit")
+    if not picture:
+        raise ModelCallFailed(
+            f"{get_settings().image_llm[2]} did not return an edited picture.")
+    return picture
+
+
+def read_image_text(image_bytes: bytes, mime_type: str, instruction: str) -> str:
+    """Ask the vision model what text a picture contains. Returns it as written.
+
+    The one call that sends pixels rather than words: a handwritten or scanned
+    page has no text layer for a parser to read, so the only reader available is
+    a model that can see. The caller records the result as transcribed, never as
+    text the file contained.
+    """
+    import base64
+
+    encoded = base64.b64encode(image_bytes).decode("ascii")
+    return _chat(
+        get_settings().vision_llm, "vision",
+        [{"role": "user", "content": [
+            {"type": "text", "text": instruction},
+            {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{encoded}"}},
+        ]}],
+        4000,
+    )

@@ -97,8 +97,9 @@ def test_gathering_finds_every_picture_and_measures_it(project_root):
     captions = [figure["caption"] for figure in library["figures"]]
     assert captions == ["Figure 1 the chain", "bullet"]
     assert library["figures"][0]["width"] == 400
-    assert library["figures"][1]["is_decoration"] is True
-    assert library["audit"]["usable_count"] == 1, "decoration is not proposed for use"
+    assert library["figures"][1]["fills_a_frame"] is False
+    assert library["audit"]["usable_count"] == 1, "decoration cannot be a scene's picture"
+    assert library["audit"]["handed_on_count"] == 2, "but it is listed and handed on"
 
 
 def test_a_decision_survives_re_extraction(project_root):
@@ -135,10 +136,51 @@ def test_a_picture_that_left_the_extraction_keeps_its_decision(project_root):
 
     library = operations.refresh_asset_library(slug)
 
-    assert library["figures"][0]["in_extraction"] is False
-    assert library["figures"][0]["use"] == FigureUse.USE
-    assert library["audit"]["figure_count"] == 0
-    assert any("no longer in the extraction" in w for w in library["warnings"])
+    assert library["figures"] == [], "only what the last transfer has is listed"
+    assert library["audit"]["figure_count"] == 0 and library["audit"]["gone_count"] == 1
+    assert library["gone_figures"] == ["Figure 1"], "named on the page, not just counted"
+    assert any("not in the" in w and "not handed on" in w for w in library["warnings"])
+
+    # It comes back, and so does the decision about it.
+    ExtractionStore(project.root).save(Extraction(documents=[ExtractedDocument(
+        file_name="chapter.docx", blocks=[ContentBlock(
+            kind=BlockKind.FIGURE, text="Figure 1", heading_path=["Chapter"],
+            asset_path="extraction/assets/pic0.png")])]))
+    assert operations.refresh_asset_library(slug)["figures"][0]["use"] == FigureUse.USE
+
+
+def test_a_new_transfer_is_gathered_when_the_page_opens(project_root):
+    """It used to wait for the Gather button, so the page kept showing the
+    previous transfer's pictures."""
+    slug, project = project_with_pictures("Follows", [("Old chapter figure", (400, 300), "source")])
+    operations.refresh_asset_library(slug)
+
+    (project.root / "extraction" / "assets" / "new.png").write_bytes(picture_bytes("red"))
+    ExtractionStore(project.root).save(Extraction(documents=[ExtractedDocument(
+        file_name="next-chapter.pptx", blocks=[ContentBlock(
+            kind=BlockKind.FIGURE, text="New chapter figure", heading_path=["Next"],
+            asset_path="extraction/assets/new.png")])],
+        extracted_at="2026-09-27T00:00:00+00:00", confirmed_at="2026-09-27T00:00:00+00:00"))
+
+    library = operations.read_asset_library(slug)
+
+    assert [f["caption"] for f in library["figures"]] == ["New chapter figure"]
+
+
+def test_clearing_forgets_every_picture_and_decision(project_root):
+    slug, project = project_with_pictures("Clear", [("Figure 1", (400, 300), "source")])
+    operations.refresh_asset_library(slug)
+    figure_id = operations.read_asset_library(slug)["figures"][0]["id"]
+    operations.decide_figure(slug, figure_id, FigureUse.SKIP)
+
+    library = operations.refresh_asset_library(slug, clear=True)
+
+    assert library["figures"] == [] and library["is_empty"] is True
+    assert operations.read_asset_library(slug)["is_empty"] is True, "and it stays empty"
+
+    gathered = operations.refresh_asset_library(slug)
+    assert [f["use"] for f in gathered["figures"]] == [FigureUse.UNDECIDED]
+    assert gathered["figures"][0]["id"] == figure_id,         "the same picture always has the same id: it is derived from the picture"
 
 
 def test_a_drawn_picture_is_marked_in_the_library(project_root):
@@ -454,9 +496,8 @@ def test_a_picture_with_nothing_in_it_is_not_proposed_for_the_video(project_root
     figure = library["figures"][0]
 
     assert "blank" in figure["flags"]
-    assert figure["is_unfit"] and figure["why_unfit"]
+    assert not figure["fills_a_frame"] and figure["why_not_a_frame"]
     assert library["audit"]["unfit_count"] == 1
-    assert any("unfit to show" in warning for warning in library["warnings"])
 
     # Still choosable: the measurement is a default, not a veto.
     operations.decide_figure(slug, figure["id"], FigureUse.USE)
@@ -481,6 +522,11 @@ def test_the_video_keeps_the_app_look_until_the_project_asks_for_the_deck_s(proj
     assert render_style_for(project) is DEFAULT_STYLE
 
     operations.set_project_look(slug, True)
+    assert render_style_for(project) is DEFAULT_STYLE, "not until it is transferred"
+
+    from pipeline.assets_handoff import confirm_assets
+
+    confirm_assets(slug)
     style = render_style_for(project)
 
     assert style.background_colour == (255, 255, 255)

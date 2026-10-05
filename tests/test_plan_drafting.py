@@ -457,7 +457,9 @@ def test_accepting_all_replaces_the_plan_and_links_it(project_root, monkeypatch)
 
     accepted = operations.accept_plan_draft(slug)
 
-    assert [s["title"] for s in accepted["sections"]] == ["New one", "New two"]
+    # A new plan is a lesson: the frame wraps what was drafted.
+    assert [s["title"] for s in accepted["sections"]] == [
+        "Opening", "New one", "New two", "Recap", "Close"]
     assert [o["text"] for o in accepted["learning_objectives"]] == [
         "Explain the chain", "Name the parts"]
     assert accepted["selected_audience"] == "Practitioners"
@@ -490,8 +492,9 @@ def test_accepting_some_sections_appends_them_and_brings_their_objectives(
 
     accepted = operations.accept_plan_draft(slug, [take])
 
-    assert [s["title"] for s in accepted["sections"]] == ["Kept", "Take me"]
-    added = accepted["sections"][1]
+    assert [s["title"] for s in accepted["sections"]] == [
+        "Opening", "Kept", "Take me", "Recap", "Close"], "added to the body, inside the frame"
+    added = accepted["sections"][2]
     assert added["id"] != take, "an accepted section gets its own identity"
     # The matching objective is reused, the new one added -- never duplicated.
     assert [o["text"] for o in accepted["learning_objectives"]] == [
@@ -575,7 +578,7 @@ def test_a_draft_can_be_reviewed_accepted_and_confirmed_over_http(
 
     accepted = client.post(f"/api/projects/{slug}/plan/draft/accept", json={})
     assert accepted.status_code == 201, accepted.text
-    assert accepted.json()["sections"][0]["title"] == "From HTTP"
+    assert accepted.json()["sections"][1]["title"] == "From HTTP"
 
     confirmed = client.post(f"/api/projects/{slug}/plan/confirm-extraction")
     assert confirmed.status_code == 201 and confirmed.json()["freshness"]["is_linked"]

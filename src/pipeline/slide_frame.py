@@ -265,7 +265,7 @@ def _box_of(shape, slide, place: Placement) -> tuple[int, int, int, int] | None:
 
     A placeholder often carries no geometry of its own and takes it from the
     matching placeholder on the layout -- the same rule `_shape_box` in
-    extraction follows.
+    deck_shapes follows.
     """
     left, top = shape.left, shape.top
     width, height = shape.width, shape.height

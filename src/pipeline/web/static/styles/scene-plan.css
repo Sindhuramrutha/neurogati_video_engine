@@ -151,3 +151,132 @@
 .draft-approach { font-size: 12px; margin: 0 0 6px; display: flex; gap: 6px; align-items: baseline; }
 
 .draft-section-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
+
+/* --- four tabs, like Extraction and Assets ---------------------------------- */
+/* The tabs and the yellow body are Extraction's (`.extraction-tabs`); the
+   source rows, rule table and final grid are Assets'. Only what differs here. */
+.plan-pane[hidden] { display: none; }
+
+.plan-tabs .panel { border: 2.5px solid var(--x-ink); }
+
+.plan-tab-count {
+  min-width: 22px; height: 22px; padding: 0 6px; border-radius: 99px;
+  display: inline-grid; place-items: center; font-size: 11.5px; font-weight: 900;
+  border: 2px solid var(--x-ink);
+}
+
+.plan-tab-count.fail { background: var(--c-red); }
+.plan-tab-count.warn { background: var(--c-orange); }
+
+/* 1. Brief: the source first, then the intent, two to a row. */
+.plan-brief { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+
+.plan-brief .panel { margin: 0 !important; }
+
+/* 2. Outline: the three ways to build it, beside the outline. */
+.plan-methods { display: grid; gap: 10px; }
+
+.plan-method {
+  display: grid; gap: 3px; padding: 10px 12px; border-radius: 10px; font-size: 13px;
+  line-height: 1.45; background: var(--c-yellow-soft); border: 2px solid var(--x-ink);
+}
+
+.plan-method b { font-size: 14px; font-weight: 900; }
+
+/* 3. Check: one pill per result. */
+.plan-check {
+  display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: 11.5px;
+  font-weight: 900; border: 2px solid var(--x-ink); white-space: nowrap;
+}
+
+.plan-check.pass { background: var(--c-green); }
+.plan-check.warn { background: var(--c-orange); }
+.plan-check.fail { background: var(--c-red); }
+.plan-check.na { background: #fff; color: var(--text-dim); }
+
+/* 4. Final & transfer. */
+.plan-final-list { margin: 0; padding-left: 20px; display: grid; gap: 5px; font-size: 13.5px; }
+
+.plan-final-list li span { margin-left: 8px; color: var(--text-dim); font-size: 12px; }
+
+@media (max-width: 900px) { .plan-brief { grid-template-columns: minmax(0, 1fr); } }
+
+.plan-method .fact { justify-self: start; }
+
+/* --- the plan as a lesson ----------------------------------------------------
+   Rows are coloured by what they do in the lesson, not by their position, so the
+   frame reads as a frame: the Opening, the body, then the Recap and Close. */
+.plan-tabs .outline-row.role-opening { background: var(--c-purple-soft); }
+.plan-tabs .outline-row.role-teach { background: #fff; }
+.plan-tabs .outline-row.role-story { background: var(--c-pink-soft); }
+.plan-tabs .outline-row.role-recap { background: var(--c-green-soft); }
+.plan-tabs .outline-row.role-close { background: var(--c-yellow-soft); }
+.plan-tabs .outline-row.has-missing { background: var(--c-red-soft); }
+
+.role-chip {
+  display: inline-block; margin-right: 6px; padding: 1px 7px; vertical-align: 1px;
+  font-size: 10px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase;
+  border: 1.5px solid var(--x-ink); border-radius: 99px; background: #fff;
+}
+.role-chip.role-opening { background: var(--c-purple); }
+.role-chip.role-teach { background: var(--c-blue-soft); }
+.role-chip.role-story { background: var(--c-pink); }
+.role-chip.role-recap { background: var(--c-green); }
+.role-chip.role-close { background: var(--c-yellow); }
+
+/* The timeline: each section's share of the video. */
+.plan-strip {
+  display: flex; gap: 2px; height: 18px; margin: 4px 0 6px; padding: 2px;
+  border: 2px solid var(--x-ink); border-radius: 6px; background: #fff;
+}
+.plan-strip-cell { min-width: 3px; border-radius: 3px; background: var(--c-blue-soft); }
+.plan-strip-cell.role-opening { background: var(--c-purple); }
+.plan-strip-cell.role-teach { background: var(--c-blue); }
+.plan-strip-cell.role-story { background: var(--c-pink); }
+.plan-strip-cell.role-recap { background: var(--c-green); }
+.plan-strip-cell.role-close { background: var(--c-yellow); }
+.plan-strip-note { margin: 0 0 10px; font-size: 12.5px; }
+.plan-strip-note.warn { padding: 6px 9px; border-radius: 8px; background: var(--c-orange-soft);
+  border: 2px solid var(--x-ink); }
+
+.plan-tools { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; }
+.plan-tools .btn { font-size: 12.5px; }
+
+.outline-row .summary.has-problem { color: var(--text-faint); font-style: italic; }
+.summary-problem { font-size: 11.5px; font-weight: 800; color: #9A5B00; }
+.summary-proposal {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 6px 0 2px;
+  padding: 7px 9px; font-size: 12.5px; border-radius: 8px;
+  background: #fff; border: 2px dashed var(--x-ink);
+}
+.summary-proposal .btn { padding: 3px 10px; font-size: 11.5px; }
+
+.objective-suggestions { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+.suggestion-chip {
+  display: inline-flex; gap: 5px; align-items: center; padding: 2px 9px; cursor: pointer;
+  font: inherit; font-size: 11px; font-weight: 800; color: var(--x-ink);
+  background: #fff; border: 1.5px dashed var(--x-ink); border-radius: 99px;
+}
+.suggestion-chip span { font-weight: 600; color: var(--text-dim); }
+
+.pin-chip {
+  margin-right: 4px; padding: 0 6px; cursor: pointer; font: inherit; font-size: 10px;
+  font-weight: 800; background: var(--c-yellow); border: 1.5px solid var(--x-ink);
+  border-radius: 99px;
+}
+.edit-pin { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; }
+
+.lesson-frame-panel .toggle-row { width: 100%; margin-top: 8px; }
+.plan-final-list .role-chip { margin-right: 4px; }
+
+/* --- how to build the outline: the approach picker ------------------------------ */
+.plan-approach-pick { border: 2.5px solid var(--x-ink); gap: 3px; }
+.plan-approach-pick:disabled { opacity: .5; cursor: default; }
+.plan-approach-pick .x-pick-name { display: flex; align-items: center; gap: 6px; }
+.plan-approach-does { font-size: 12.5px; line-height: 1.4; }
+.plan-approach-when { font-size: 11.5px; color: var(--text-dim); }
+.plan-approach-pick.on .plan-approach-when { color: inherit; }
+.plan-approach .edit-field { margin-top: 12px; }
+.plan-approach-option { flex-wrap: wrap; }
+.plan-approach textarea { width: 100%; min-height: 70px; }
+.plan-approach #build-outline-button { margin-top: 14px; }

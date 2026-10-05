@@ -39,18 +39,103 @@
 
 .slide-stage {
   border: var(--edge) solid var(--line); border-radius: 10px;
-  background: #fff; overflow: auto; padding: 10px;
+  background: #fff; overflow: hidden; padding: 10px;
   min-height: 220px; display: grid; place-items: center;
 }
 
 .slide-stage canvas, .slide-stage section, .slide-stage > div { max-width: 100%; }
 
-.deck-controls {
-  display: flex; align-items: center; justify-content: center; gap: 12px;
-  margin-top: 10px;
+/* --- the slide strip: every slide, small, down the left ------------------- */
+/* The strip is how a deck is moved through -- there is no other transport. */
+.deck-layout {
+  display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 12px; align-items: start;
 }
 
-.deck-count {
-  border: var(--edge) solid var(--line); border-radius: 99px;
-  background: var(--surface); padding: 5px 14px; font-weight: 800; font-size: 12.5px;
+.deck-layout > .slide-stage { grid-column: 2; grid-row: 1; min-width: 0; }
+
+.deck-strip {
+  grid-column: 1; grid-row: 1; position: relative;
+  display: grid; gap: 10px; align-content: start;
+  overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;
+  padding: 4px 8px 8px 2px;
+}
+
+.deck-thumb { position: relative; }
+
+.deck-thumb-pick {
+  display: flex; align-items: flex-start; gap: 6px; padding: 0;
+  background: none; border: none; cursor: pointer; text-align: left; color: var(--text-dim);
+}
+
+.deck-thumb-number {
+  width: 20px; flex: none; padding-top: 2px; text-align: right;
+  font-family: var(--mono); font-size: 11px; font-weight: 800;
+}
+
+.deck-thumb-frame {
+  display: block; position: relative; overflow: hidden; flex: none;
+  width: 150px; height: var(--thumb-height, 84px);
+  background: #fff; border: 2px solid var(--line); border-radius: 4px;
+}
+
+.deck-thumb.on .deck-thumb-pick { color: var(--stage-head-ink); }
+
+.deck-thumb.on .deck-thumb-frame {
+  border: 3px solid var(--stage-head-ink); box-shadow: 3px 3px 0 var(--stage-head-ink);
+}
+
+.deck-thumb-pick:focus-visible .deck-thumb-frame { outline: 3px solid var(--c-yellow); }
+
+.deck-strip-scratch {
+  position: absolute; left: -10000px; top: 0; visibility: hidden; pointer-events: none;
+}
+
+/* --- editing a deck: mark slides, then save ------------------------------- */
+.deck-thumb-delete {
+  display: none; position: absolute; top: 5px; left: 146px; z-index: 1;
+  width: 24px; height: 24px; padding: 0; place-items: center; cursor: pointer;
+  background: #fff; color: var(--stage-head-ink);
+  border: 2px solid var(--stage-head-ink); border-radius: 6px;
+  box-shadow: 2px 2px 0 var(--stage-head-ink);
+}
+
+.deck-strip.editable .deck-thumb-delete { display: grid; }
+
+.deck-thumb.marked .deck-thumb-delete { background: var(--c-yellow); }
+
+.deck-thumb.marked .deck-thumb-frame { border-color: var(--c-red); }
+
+.deck-thumb.marked .deck-thumb-frame::after {
+  content: "Will be deleted"; position: absolute; inset: 0; z-index: 1;
+  display: grid; place-items: center;
+  background: rgba(255, 92, 92, .78); color: #fff;
+  font-size: 11px; font-weight: 900; letter-spacing: .02em;
+}
+
+.deck-edit-bar {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 10px 14px;
+  background: var(--c-yellow); color: var(--stage-head-ink); font-weight: 800; font-size: 13px;
+  border: 3px solid var(--stage-head-ink); border-radius: 12px;
+  box-shadow: 4px 4px 0 var(--stage-head-ink);
+}
+
+.deck-edit-bar .btn {
+  border: 2.5px solid var(--stage-head-ink); box-shadow: 3px 3px 0 var(--stage-head-ink);
+}
+
+/* --- no strip: the page beside it moves through the file ----------------- */
+.deck-layout.deck-arrows { grid-template-columns: minmax(0, 1fr); }
+
+.deck-layout.deck-arrows > .slide-stage { grid-column: 1; }
+
+/* --- a PDF, page by page ---------------------------------------------------- */
+.pdf-stage { place-items: start center; }
+
+.pdf-page { display: block; max-width: 100%; }
+
+.pdf-thumb { display: block; width: 100%; height: 100%; object-fit: contain; }
+
+@media (max-width: 700px) {
+  .deck-layout { grid-template-columns: minmax(0, 1fr); }
+  .deck-strip { display: none; }
 }

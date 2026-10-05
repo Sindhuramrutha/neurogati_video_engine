@@ -16,6 +16,7 @@ from pathlib import Path
 from litestar import Litestar, Request, get
 from litestar.channels import ChannelsPlugin
 from litestar.channels.backends.memory import MemoryChannelsBackend
+from litestar.datastructures import CacheControlHeader
 from litestar.di import Provide
 from litestar.response import Response
 from litestar.static_files import create_static_files_router
@@ -25,6 +26,11 @@ from pipeline.sources import (
     MAXIMUM_SOURCE_FILE_SIZE_IN_BYTES,
     MAXIMUM_UPLOAD_REQUEST_SIZE_IN_BYTES,
 )
+from pipeline.web.routes_assets_handoff import ASSETS_HANDOFF_ROUTES
+from pipeline.web.routes_extraction_agent import EXTRACTION_AGENT_ROUTES
+from pipeline.web.routes_generation_handoff import GENERATION_HANDOFF_ROUTES
+from pipeline.web.routes_lesson_plan import LESSON_PLAN_ROUTES
+from pipeline.web.routes_plan_handoff import PLAN_HANDOFF_ROUTES
 from pipeline.web.routes_project import (
     accept_plan_draft_route,
     acknowledge_extraction_finding,
@@ -35,12 +41,13 @@ from pipeline.web.routes_project import (
     build_scene_visuals,
     change_scene_visual,
     clear_studio_timeline,
+    confirm_extraction_route,
     confirm_plan_route,
     confirm_section_narration_route,
     create_project,
     decide_asset_figure,
     delete_agent_conversation,
-    delete_source,
+    delete_source_pages,
     discard_plan_draft_route,
     download_export_file,
     download_narration,
@@ -78,7 +85,6 @@ from pipeline.web.routes_project import (
     put_agent,
     put_composition,
     put_credentials,
-    put_extraction_sources,
     put_plan,
     put_review,
     put_script,
@@ -95,9 +101,13 @@ from pipeline.web.routes_project import (
     run_extraction_route,
     seed_chapters,
     set_asset_look,
-    upload_source,
     verify_renderer,
 )
+from pipeline.web.routes_project_admin import PROJECT_ADMIN_ROUTES
+from pipeline.web.routes_render_job import RENDER_JOB_ROUTES
+from pipeline.web.routes_scene_lab import SCENE_LAB_ROUTES
+from pipeline.web.routes_script_handoff import SCRIPT_HANDOFF_ROUTES
+from pipeline.web.routes_source import SOURCE_ROUTES
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
@@ -150,12 +160,21 @@ def create_app() -> Litestar:
     return Litestar(
         route_handlers=[
             index,
+            *EXTRACTION_AGENT_ROUTES,
+            *RENDER_JOB_ROUTES,
+            *PROJECT_ADMIN_ROUTES,
+            *ASSETS_HANDOFF_ROUTES,
+            *PLAN_HANDOFF_ROUTES,
+            *LESSON_PLAN_ROUTES,
+            *SCENE_LAB_ROUTES,
+            *SCRIPT_HANDOFF_ROUTES,
+            *GENERATION_HANDOFF_ROUTES,
             list_stages,
             list_projects,
             create_project,
             get_project,
-            upload_source,
-            delete_source,
+            *SOURCE_ROUTES,
+            delete_source_pages,
             get_agent,
             put_agent,
             get_stage_settings,
@@ -173,7 +192,7 @@ def create_app() -> Litestar:
             seed_chapters,
             get_credentials,
             put_credentials,
-            put_extraction_sources,
+            confirm_extraction_route,
             get_model_status,
             get_extraction,
             run_extraction_route,
@@ -220,7 +239,10 @@ def create_app() -> Litestar:
             draft_unwritten_script_sections,
             get_section_source,
             confirm_section_narration_route,
-            create_static_files_router(path="/static", directories=[STATIC_DIR]),
+            # no-cache: the browser asks every time (a 304 when unchanged). Without
+            # it a browser reused an old module after an update and showed an old page.
+            create_static_files_router(path="/static", directories=[STATIC_DIR],
+                                      cache_control=CacheControlHeader(no_cache=True)),
         ],
         # Litestar's own default is 10 MB, which refused a single ordinary
         # 50-slide deck with "Request Entity Too Large" before any of this

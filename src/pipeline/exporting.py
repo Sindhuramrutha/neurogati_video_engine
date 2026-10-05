@@ -30,11 +30,11 @@ from pydantic import BaseModel, Field
 from pipeline.composition import CompositionStore
 from pipeline.core import require_project
 from pipeline.freshness import cut_freshness
-from pipeline.planning import Plan, PlanStore
+from pipeline.planning import Plan
 from pipeline.presentation import section_start_times
 from pipeline.projects import Project
 from pipeline.review import CommentStatus, ReviewStore
-from pipeline.scripting import Script, ScriptStore
+from pipeline.scripting import Script
 from pipeline.stages import Stage
 from pipeline.storage.documents import JsonDocumentStore, write_text_atomically
 from pipeline.storage.layout import artifact_path
@@ -187,8 +187,10 @@ def export_readiness(project: Project) -> tuple[list[str], list[str]]:
     else is a warning, because "one comment is still open" is a judgement and
     this stage does not get to make it.
     """
-    plan = PlanStore(project.root).load()
-    script = ScriptStore(project.root).load()
+    from pipeline.plan_handoff import plan_for_later_stages
+    plan = plan_for_later_stages(project)
+    from pipeline.script_handoff import script_for_later_stages
+    script = script_for_later_stages(project)
     review = ReviewStore(project.root).load()
     composition = CompositionStore(project.root).load()
 
@@ -227,9 +229,11 @@ def build_export(slug: str) -> dict[str, Any]:
     problems named in it. Withholding the files would not make the video better,
     and someone checking what is wrong needs the transcript to do it.
     """
+    from pipeline.plan_handoff import plan_for_later_stages
     project = require_project(slug)
-    plan = PlanStore(project.root).load()
-    script = ScriptStore(project.root).load()
+    plan = plan_for_later_stages(project)
+    from pipeline.script_handoff import script_for_later_stages
+    script = script_for_later_stages(project)
     review = ReviewStore(project.root).load()
 
     blockers, warnings = export_readiness(project)

@@ -26,6 +26,46 @@ logger = logging.getLogger(__name__)
 # about which files are acceptable.
 SOURCE_SUFFIXES = SUPPORTED_SOURCE_FILE_SUFFIXES
 
+_KINDS = {".pptx": "deck", ".pdf": "PDF", ".docx": "Word document", ".md": "Markdown",
+          ".txt": "text"}
+_described: dict[tuple[str, int, int], dict] = {}
+
+
+def describe_source(path: Path) -> dict:
+    """What a source file is, and how much of it, without extracting it: a deck's
+    slides, a PDF's pages, a document's words. Read once per version of the file."""
+    import re
+    import zipfile
+
+    stat = path.stat()
+    key = (str(path), stat.st_size, int(stat.st_mtime))
+    if key in _described:
+        return _described[key]
+    suffix = path.suffix.lower()
+    measure = ""
+    try:
+        if suffix == ".pptx":
+            with zipfile.ZipFile(path) as deck:
+                slides = [name for name in deck.namelist()
+                          if re.fullmatch(r"ppt/slides/slide\d+\.xml", name)]
+            measure = f"{len(slides)} slide{'' if len(slides) == 1 else 's'}"
+        elif suffix == ".pdf":
+            from pypdf import PdfReader
+            pages = len(PdfReader(str(path)).pages)
+            measure = f"{pages} page{'' if pages == 1 else 's'}"
+        elif suffix == ".docx":
+            from docx import Document
+            words = sum(len(p.text.split()) for p in Document(str(path)).paragraphs)
+            measure = f"{words:,} words"
+        elif suffix in (".md", ".txt"):
+            words = len(path.read_text(encoding="utf-8", errors="replace").split())
+            measure = f"{words:,} words"
+    except Exception as unreadable:     # a file that cannot be read is said so, not raised
+        logger.info("could not measure %s: %s", path.name, unreadable)
+    described = {"kind": _KINDS.get(suffix, suffix.lstrip(".")), "measure": measure}
+    _described[key] = described
+    return described
+
 
 @dataclass
 class StageState:
@@ -53,6 +93,16 @@ class Project:
     def meta_path(self) -> Path:
         return self.root / "project.json"
 
+    @property
+    def source(self) -> dict | None:
+        """The project's one source file, or None, with what it is in words: "deck",
+        "5 slides". A project is made from exactly one file; should a folder from
+        before that hold more, the first is it."""
+        found = self.sources()
+        if not found:
+            return None
+        return found[0] | describe_source(self.sources_dir / found[0]["name"])
+
     def sources(self) -> list[dict]:
         if not self.sources_dir.exists():
             return []
@@ -70,16 +120,16 @@ class Project:
     def stage_state(self, stage: Stage) -> StageState:
         """Derived from disk, never cached.
 
-        Inputs is special: it is 'ready' when at least one source exists, since there
-        is no artifact to produce -- the files themselves are the output.
+        Inputs is special: it is 'ready' once the source file exists, since there
+        is no artifact to produce -- the file itself is the output.
         """
         if stage is Stage.INPUTS:
-            n = len(self.sources())
+            source = self.source
             return StageState(
                 stage=stage,
-                status="ready" if n else "empty",
-                artifact="sources/" if n else None,
-                detail=f"{n} file(s)" if n else "no sources yet",
+                status="ready" if source else "empty",
+                artifact="sources/" if source else None,
+                detail=source["name"] if source else "no source yet",
             )
 
         d = self.stage_dir(stage)
@@ -116,6 +166,7 @@ class Project:
             "slug": self.slug,
             "created": self.created,
             "sources": self.sources(),
+            "source": self.source,
             "stages": [
                 {
                     "stage": s.stage.value,
@@ -265,6 +316,26 @@ class ProjectStore:
             logger.info("moved %s to its current layout: %s", slug, ", ".join(moved))
         return self._load(d)
 
+    def delete(self, slug: str) -> Path | None:
+        """Take a project out of the app by moving its folder to `.trash/`, and
+        say where it went -- or None if `slug` is not a project folder.
+
+        Moved, not erased: a project is hours of work, and a mistaken click
+        should be recoverable by moving the folder back. The trash has no
+        `project.json` of its own, so listings never show it.
+        """
+        from datetime import UTC, datetime
+
+        project_directory = self.root / slug
+        if not (project_directory / "project.json").is_file():
+            return None
+        trash = self.root / ".trash"
+        trash.mkdir(exist_ok=True)
+        stamp = datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
+        destination = trash / f"{slug}-{stamp}"
+        project_directory.rename(destination)
+        return destination
+
     def create(self, name: str) -> Project:
         """Create a project directory, or fail without leaving a half-built one.
 
@@ -321,9 +392,3 @@ class ProjectStore:
         write_text_atomically(
             project_directory / "project.json", json.dumps(metadata, indent=2))
 
-    def delete(self, slug: str) -> bool:
-        d = self.root / slug
-        if not d.is_dir() or not (d / "project.json").exists():
-            return False
-        shutil.rmtree(d)
-        return True

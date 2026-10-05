@@ -128,12 +128,16 @@ def accept_plan_draft(slug: str, section_ids: list[str] | None = None) -> dict[s
     store = PlanStore(project.root)
     plan = store.load()
 
+    from pipeline.lesson_plan import save_plan
+
     if section_ids is None:
         plan.sections = proposed.sections
+        for section in plan.sections:
+            section.summary_origin = "ai" if section.summary else ""
         plan.learning_objectives = proposed.learning_objectives
         plan.key_themes = proposed.key_themes or plan.key_themes
         plan.extraction_fingerprint = draft.get("extraction_fingerprint", "")
-        saved = store.save(plan)
+        saved = save_plan(project, plan)
         drafts.clear()
         return present_artifact(project, "plan", saved)
 
@@ -162,9 +166,10 @@ def accept_plan_draft(slug: str, section_ids: list[str] | None = None) -> dict[s
         # two sections rather than two entries sharing one identity.
         section.id = PlanSection().id
         section.objective_ids = linked
+        section.summary_origin = "ai" if section.summary else ""
         plan.sections.append(section)
 
-    saved = store.save(plan)
+    saved = save_plan(project, plan)
 
     accepted = sorted(set(draft.get("accepted_section_ids", [])) | set(section_ids))
     if set(accepted) >= set(by_id):
@@ -198,8 +203,9 @@ def write_section_script(slug: str, section_id: str, body: str) -> dict[str, Any
     edit, and it should hear about it immediately rather than through a warning
     three stages later.
     """
+    from pipeline.plan_handoff import plan_for_later_stages
     project = require_project(slug)
-    plan = PlanStore(project.root).load()
+    plan = plan_for_later_stages(project)
     known_section_ids = {section.id for section in plan.sections}
 
     if section_id not in known_section_ids:
@@ -226,8 +232,9 @@ def write_section_script(slug: str, section_id: str, body: str) -> dict[str, Any
 def confirm_section_narration(slug: str, section_id: str) -> dict[str, Any]:
     """Record that this section's narration was checked against the current plan
     and source, without changing a word of it."""
+    from pipeline.plan_handoff import plan_for_later_stages
     project = require_project(slug)
-    plan = PlanStore(project.root).load()
+    plan = plan_for_later_stages(project)
     section = next((s for s in plan.sections if s.id == section_id), None)
     if section is None:
         raise OperationFailed(f"The plan has no section {section_id!r}.")
@@ -244,9 +251,10 @@ def confirm_section_narration(slug: str, section_id: str) -> dict[str, Any]:
 def section_source_material(slug: str, section_id: str) -> dict[str, Any]:
     """The full text of the content a plan section records, for reading while writing."""
     from pipeline.plan_drafting import MAXIMUM_SECTION_SOURCE_CHARACTERS
+    from pipeline.plan_handoff import plan_for_later_stages
 
     project = require_project(slug)
-    plan = PlanStore(project.root).load()
+    plan = plan_for_later_stages(project)
     section = next((s for s in plan.sections if s.id == section_id), None)
     if section is None:
         raise OperationFailed(f"The plan has no section {section_id!r}.")
@@ -335,6 +343,7 @@ def chapters_for(project: Project) -> list:
     is the best available answer at that point.
     """
     from pipeline.composition import TrackKind
+    from pipeline.plan_handoff import plan_for_later_stages
     from pipeline.review import Chapter
 
     composition = CompositionStore(project.root).load()
@@ -365,7 +374,7 @@ def chapters_for(project: Project) -> list:
         if chapters:
             return chapters
 
-    plan = PlanStore(project.root).load()
+    plan = plan_for_later_stages(project)
     return chapters_from_plan([
         {"title": section.title, "estimated_seconds": section.estimated_seconds}
         for section in plan.sections

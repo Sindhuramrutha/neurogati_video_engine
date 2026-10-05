@@ -36,6 +36,13 @@ class Settings(BaseSettings):
     image_api_key: str | None = None
     image_model: str = "google/gemini-2.5-flash-image"
 
+    # --- Vision: the Extraction agent looking at slides, and handwriting OCR ---
+    # The text model cannot see a picture, so this is a separate, multimodal one --
+    # one the provider actually offers: TokenRouter has no channel for 2.5-flash.
+    vision_base_url: str | None = None
+    vision_api_key: str | None = None
+    vision_model: str = "google/gemini-3.5-flash"
+
     # Explicit, unlike v1 -- see docs/decisions/0003-durable-incremental-state.md.
     # A dropped connection there surfaced as a failed scene with no code generated,
     # losing minutes of work per scene.
@@ -63,6 +70,15 @@ class Settings(BaseSettings):
             self.image_base_url or self.llm_base_url,
             self.image_api_key or self.llm_api_key,
             self.image_model,
+        )
+
+    @property
+    def vision_llm(self) -> tuple[str, str, str]:
+        """(base_url, api_key, model) for reading text out of a page image."""
+        return (
+            self.vision_base_url or self.llm_base_url,
+            self.vision_api_key or self.llm_api_key,
+            self.vision_model,
         )
 
 

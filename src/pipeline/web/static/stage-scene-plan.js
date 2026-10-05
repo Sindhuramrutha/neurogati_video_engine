@@ -1,5 +1,19 @@
 /**
- * Planning stage — the video outline, and how it relates to the extracted content.
+ * Scene Plan — four tabs, in the order the work happens.
+ *
+ * 1. Brief: what Extraction handed on, and the intent -- audience, learning
+ *    objectives, key themes, video preferences.
+ * 2. Outline: build it (follow the deck, draft with the agent, or by hand) and
+ *    edit it. The agent only proposes; nothing changes until it is accepted.
+ *    The plan is a lesson (`lesson_plan.py`): every section has a role, an
+ *    Opening, Recap and Close wrap the body, time is shared from the target, and
+ *    objective links and summaries are proposed, never imposed.
+ * 3. Check: fixed rules over the plan, each pass / warn / fail with why.
+ * 4. Final & transfer: later stages read the transferred plan
+ *    (`plan_handoff.py`); a failing check blocks the transfer.
+ *
+ * Every pane is drawn and only the chosen one shown, so a tab change never
+ * redraws the page or loses an edit in progress.
  *
  * The plan is the stage's output and is edited directly. It can also be drafted
  * by the Planning agent from the whole extraction; a draft is shown next to the
@@ -19,10 +33,17 @@ import { editStageDocument, loadStageDocument, newItemIdentifier }
   from "/static/document-editing.js";
 import { requestJsonFromApi } from "/static/shared-client.js";
 import {
-  ICON, applicationState, escapeHtml, icon, notBuiltYet, projectApiPath,
-  refreshProjectSummary, select,
-  showStageNotice, stageIcon,
+  ICON, applicationState, escapeHtml, footerNav, icon, moveToNextLayerButton, notBuiltYet,
+  projectApiPath, refreshProjectSummary, select, showStageNotice, stageHeader, stageNeighbours,
+  whenItWas, wireGotoButtons,
 } from "/static/ui-kit.js";
+
+const PLAN_TABS = [
+  ["brief", "Brief"], ["outline", "Outline"], ["check", "Check"], ["final", "Final & transfer"],
+];
+
+const currentPlanTab = () =>
+  PLAN_TABS.some(([key]) => key === applicationState.planTab) ? applicationState.planTab : "brief";
 
 /** View state only — it must not survive a reload or leak into the saved plan. */
 const planViewState = {
@@ -32,6 +53,10 @@ const planViewState = {
   isDrafting: false,
   isActing: false,
   draftInstruction: "",
+  // The approach being chosen, before it is built with. Null: what the plan has.
+  approachKey: null,
+  approachOptions: null,
+  approachNotes: null,
 };
 
 const RENDERING_APPROACHES = [
@@ -43,13 +68,28 @@ const RENDERING_APPROACHES = [
 ];
 const approachLabel = key => RENDERING_APPROACHES.find(([k]) => k === key)?.[1] ?? "";
 
+const FRAME_ROLES = ["opening", "recap", "close"];
+const isFrame = section => FRAME_ROLES.includes(section.role);
+const ROLE_NAMES = { opening: "Opening", teach: "Teach", story: "Story", recap: "Recap",
+                     close: "Close" };
+const FRAME_HELP = {
+  opening: "A hook, then what the viewer will be able to do by the end — your objectives.",
+  recap: "Back through each objective, one short beat each, from what the sections said.",
+  close: "The one idea to keep, and something to think about next.",
+};
+const minutes = seconds => `${(seconds / 60).toFixed(1)} min`;
+
 function formatDuration(totalSeconds) {
   if (totalSeconds < 60) return `~ ${totalSeconds} sec`;
   return `~ ${Math.round(totalSeconds / 60)} min`;
 }
 
-const referenceLabel = reference =>
-  [reference.file_name, ...reference.heading_path].join(" › ");
+/** Where a section draws from, in the source's own terms: "Slide 3", or the
+ *  heading path. The project has one source file, so its name is never needed. */
+const referenceLabel = reference => reference.slide_number
+  ? `Slide ${reference.slide_number}${reference.heading_path.length
+      ? ` · ${reference.heading_path.at(-1)}` : ""}`
+  : reference.heading_path.length ? reference.heading_path.join(" › ") : "The whole source";
 
 export async function renderScenePlanStage(stage, navigateToStage, renderAgentStage) {
   const body = select("#stage-body");
@@ -85,11 +125,18 @@ export async function renderScenePlanStage(stage, navigateToStage, renderAgentSt
   // own request because a failure here should cost the slide controls and not
   // the page.
   let slides = null;
+  let handoff = { checks: [], failing: 0, warning: 0, has_transferred: false, pending: false };
   try {
-    slides = await requestJsonFromApi(projectApiPath("/plan/slide-coverage"));
+    [slides, handoff] = await Promise.all([
+      requestJsonFromApi(projectApiPath("/plan/slide-coverage")),
+      requestJsonFromApi(projectApiPath("/plan/handoff")),
+    ]);
   } catch (coverageFailure) {
-    console.error("slide coverage load failed", coverageFailure);
+    console.error("slide coverage or hand-off load failed", coverageFailure);
   }
+  const tab = currentPlanTab();
+  const pane = (key, content) =>
+    `<section class="plan-pane" data-plan-pane="${key}" ${key === tab ? "" : "hidden"}>${content}</section>`;
 
   // The bar already speaks for the plan's relationship to the extraction, so
   // the notice carries only the plan's own problems.
@@ -97,40 +144,45 @@ export async function renderScenePlanStage(stage, navigateToStage, renderAgentSt
   const ownWarnings = plan.warnings.filter(warning => !freshnessWarnings.has(warning));
 
   body.innerHTML = `
-    <div class="card">
-      <div class="card-head">
-        <span class="card-icon">${stageIcon("scene-plan", 21)}</span>
-        <div>
-          <h2>Scene Plan</h2>
-          <p>Turn extracted content into a clear structure for your video.</p>
+    ${stageHeader("scene-plan", "Scene Plan", {
+      agentButtonId: "planning-agent-button",
+    })}
+
+    <div class="stage-content stage-content-bare">
+      <div class="extraction-tabs plan-tabs">
+        <nav class="x-tabs" role="tablist" aria-label="Scene Plan steps">
+          ${PLAN_TABS.map(([key, label], index) => `
+            <button role="tab" class="x-tab ${key === tab ? "on" : ""}" data-plan-tab="${key}"
+                    aria-selected="${key === tab}">
+              <span class="x-tab-number">${index + 1}</span>
+              <b class="x-tab-label">${label}</b>
+              ${key === "check" && handoff.failing ? `<span class="plan-tab-count fail">${handoff.failing}</span>`
+                : key === "check" && handoff.warning ? `<span class="plan-tab-count warn">${handoff.warning}</span>` : ""}
+            </button>`).join("")}
+        </nav>
+        <div class="x-tab-body" role="tabpanel">
+          ${pane("brief", renderBrief(plan, settings, slides))}
+          ${pane("outline", `
+            ${renderPlanBar(plan, slides)}
+            ${ownWarnings.length ? `
+              <div class="notice warn" style="margin-bottom:14px">
+                ${ownWarnings.map(escapeHtml).join(" · ")}
+              </div>` : ""}
+            <div class="plan-grid">
+              ${renderOutlinePanel(plan)}
+              <div>${draft ? renderDraftPanel(draft, plan) : renderApproachPicker(plan)}</div>
+            </div>`)}
+          ${pane("check", renderChecks(handoff))}
+          ${pane("final", renderFinal(plan, handoff, stage))}
         </div>
-        <button class="btn" id="planning-agent-button">
-          ${icon(ICON.gear, 14, 1.8)} Agent &amp; instructions
-        </button>
       </div>
 
-      ${renderPlanBar(plan, slides)}
-
-      ${ownWarnings.length ? `
-        <div class="notice warn" style="margin-bottom:14px">
-          ${ownWarnings.map(escapeHtml).join(" · ")}
-        </div>` : ""}
-
-      <div class="plan-grid">
-        ${renderOutlinePanel(plan)}
-        <div>
-          ${draft
-            ? renderDraftPanel(draft, plan)
-            : `${renderObjectivesPanel(plan)}
-               ${renderAudiencePanel(plan)}
-               ${renderPreferencesPanel(settings)}
-               ${renderThemesPanel(plan)}`}
-        </div>
-      </div>
-
-      ${renderFooterNav(stage)}
+      ${renderFooterNav(stage, handoff, tab)}
     </div>`;
 
+  lastHandoff = handoff;
+  currentNavigate = navigateToStage;
+  currentAgentRenderer = renderAgentStage;
   wireScenePlanStage(stage, navigateToStage, renderAgentStage, draft);
 }
 
@@ -151,13 +203,8 @@ function renderPlanBar(plan, slides) {
       ${actions ? `<span class="plan-actions">${actions}</span>` : ""}
     </div>`;
 
-  const draftControls = label => `
-    <input id="draft-instruction" class="draft-instruction" maxlength="300"
-           placeholder="Guidance for the draft (optional)"
-           value="${escapeHtml(planViewState.draftInstruction)}"
-           aria-label="Guidance for the draft">
-    <button class="btn btn-accent" id="draft-plan-button">${label}</button>`
-    + deckButton;
+  // Building is chosen in "How to build the outline", beside the plan.
+  const draftControls = () => "";
 
   /**
    * Following the deck is a different kind of decision from drafting.
@@ -183,12 +230,12 @@ function renderPlanBar(plan, slides) {
   }
 
   if (planViewState.isDrafting) {
-    return bar("working", ICON.doc, `Drafting from ${documents.length} document(s)…`,
+    return bar("working", ICON.doc, "Drafting from the source…",
       `Reading all ${headingCount} headings, then writing each section from its own text.
        This can take a minute or two; it is saved as a draft even if you leave this page.`);
   }
 
-  const scope = `${documents.length} document(s) · ${headingCount} headings extracted`;
+  const scope = `${headingCount} headings extracted`;
 
   if (plan.has_pending_draft) {
     return bar("pending", ICON.doc, "A drafted plan is waiting for review",
@@ -197,8 +244,8 @@ function renderPlanBar(plan, slides) {
   }
 
   if (!plan.sections.length) {
-    return bar("ready", ICON.check, "Draft a plan from your extraction",
-      escapeHtml(scope), draftControls("Draft plan"));
+    return bar("ready", ICON.check, "No outline yet",
+      `${escapeHtml(scope)}. Choose how to build it, on the right.`);
   }
 
   if (freshness.is_stale) {
@@ -254,7 +301,10 @@ function renderOutlinePanel(plan) {
         <span class="plan-total">${plan.sections.length} sections ·
           ${formatDuration(plan.total_estimated_seconds)}</span>
       </div>
-      <p class="panel-sub">Drag to reorder, or click a section to edit it.</p>
+      ${renderTimingStrip(plan)}
+      ${renderLessonTools(plan)}
+      <p class="panel-sub">Drag to reorder the body, or click a section to edit it. The
+        Opening stays first; the Recap and Close stay last.</p>
 
       <div id="outline-list">
         ${plan.sections.length
@@ -267,6 +317,57 @@ function renderOutlinePanel(plan) {
         ${icon(ICON.plus)} Add new section
       </button>
     </div>`;
+}
+
+/** The plan as a timeline: each section's share of the video, coloured by role. */
+function renderTimingStrip(plan) {
+  const timing = plan.lesson?.timing;
+  if (!plan.sections.length || !timing) return "";
+  const tone = timing.is_stretched || timing.is_squeezed ? "warn" : "ok";
+  const verdict = timing.is_stretched
+    ? `That is stretched ×${timing.scale}, so the narration will pad. Choose a shorter target,
+       or add material.`
+    : timing.is_squeezed
+      ? `That is squeezed ×${timing.scale}, so each section is cut hard. Choose a longer
+         target, or split the video.`
+      : timing.scale === 1 ? "It fits the target as it is."
+        : `Shared out ×${timing.scale} to fit.`;
+  return `
+    <div class="plan-strip" role="img" aria-label="The video's sections, by length">
+      ${plan.sections.map((section, index) => `
+        <span class="plan-strip-cell role-${section.role}" style="flex:${Math.max(1, section.estimated_seconds)}"
+              title="${index + 1}. ${escapeHtml(section.title || "Untitled")} · ${
+                formatDuration(section.estimated_seconds)}"></span>`).join("")}
+    </div>
+    <p class="plan-strip-note ${tone}">The material needs about <b>${minutes(timing.needed_total)}</b>;
+      the target is <b>${escapeHtml(timing.target_phrase)}</b>. ${verdict}</p>`;
+}
+
+/** What can be done to the plan as a whole: summaries and objective links. */
+function renderLessonTools(plan) {
+  const summaries = plan.lesson?.summaries ?? {};
+  const proposals = Object.keys(summaries.proposals ?? {}).length;
+  const suggestions = plan.lesson?.objective_suggestions ?? [];
+  const tools = [];
+  if (summaries.needing) {
+    tools.push(`<button class="btn" id="write-summaries-button" data-everything="false">
+      AI · write ${summaries.needing} summar${summaries.needing === 1 ? "y" : "ies"}
+      <span class="fact warn">1 AI call</span></button>`);
+  } else if (summaries.teaching_sections) {
+    tools.push(`<button class="btn" id="write-summaries-button" data-everything="true">
+      AI · rewrite all ${summaries.teaching_sections} summaries
+      <span class="fact warn">1 AI call</span></button>`);
+  }
+  if (proposals) {
+    tools.push(`<button class="btn btn-accent" id="accept-summaries-button">
+      Use all ${proposals} proposed summar${proposals === 1 ? "y" : "ies"}</button>`,
+      `<button class="btn" id="dismiss-summaries-button">Dismiss them</button>`);
+  }
+  if (suggestions.length) {
+    tools.push(`<button class="btn" id="link-objectives-button">
+      Link ${suggestions.length} suggested objective${suggestions.length === 1 ? "" : "s"}</button>`);
+  }
+  return tools.length ? `<div class="plan-tools">${tools.join("")}</div>` : "";
 }
 
 /** The numbers of the plan's learning objectives a section serves. */
@@ -292,12 +393,18 @@ function renderSectionFacts(section, plan, { missing = [] } = {}) {
   const sources = section.sources ?? [];
 
   const facts = [];
-  if (section.rendering_approach) {
+  if (isFrame(section)) {
+    facts.push(`<span class="fact muted" title="${escapeHtml(FRAME_HELP[section.role])}">
+      written from the plan</span>`);
+  }
+  if (section.rendering_approach && !isFrame(section)) {
     facts.push(`<span class="fact approach ${escapeHtml(section.rendering_approach)}"
       title="${escapeHtml(section.rendering_reason || "")}">${
         escapeHtml(approachLabel(section.rendering_approach))}</span>`);
   }
-  if (sources.length) {
+  if (isFrame(section)) {
+    // A frame section is written from the plan, so "no source" would be noise.
+  } else if (sources.length) {
     facts.push(`<span class="fact" title="${escapeHtml(sources.map(referenceLabel).join("\n"))}">
       ${sources.length} source${sources.length === 1 ? "" : "s"}</span>`);
   } else if (usesSources) {
@@ -323,10 +430,17 @@ function renderOutlineRow(section, index, plan) {
   const missing = (plan.freshness?.sections_with_missing_sources ?? [])
     .find(entry => entry.section_id === section.id)?.missing ?? [];
 
+  const problem = plan.lesson?.summary_problems?.[section.id] ?? "";
+  const proposal = plan.lesson?.summaries?.proposals?.[section.id];
+  const suggestions = (plan.lesson?.objective_suggestions ?? [])
+    .filter(suggestion => suggestion.section_id === section.id);
+  const objectiveNumber = id => plan.learning_objectives.findIndex(o => o.id === id) + 1;
+  const frame = isFrame(section);
+
   return `
-    <div class="outline-row ${missing.length ? "has-missing" : ""}" data-section="${section.id}"
-         draggable="true">
-      <span class="grip" aria-hidden="true">
+    <div class="outline-row role-${section.role} ${missing.length ? "has-missing" : ""}"
+         data-section="${section.id}" ${frame ? "" : `draggable="true"`}>
+      <span class="grip" aria-hidden="true" ${frame ? "hidden" : ""}>
         ${icon(`<circle cx="9" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/>
                 <circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="6" r="1.4"/>
                 <circle cx="15" cy="12" r="1.4"/><circle cx="15" cy="18" r="1.4"/>`, 15, 0)}
@@ -334,13 +448,33 @@ function renderOutlineRow(section, index, plan) {
       <span class="outline-num">${index + 1}</span>
       <div class="outline-body">
         <div class="title ${section.title ? "" : "untitled"}">
+          <span class="role-chip role-${section.role}">${ROLE_NAMES[section.role] ?? "Teach"}</span>
           ${escapeHtml(section.title || "Untitled section")}</div>
-        ${section.summary
-          ? `<div class="summary">${escapeHtml(section.summary)}</div>` : ""}
+        ${section.summary ? `<div class="summary ${problem ? "has-problem" : ""}">${
+          escapeHtml(section.summary)}</div>` : ""}
+        ${problem ? `<div class="summary-problem">Summary: ${escapeHtml(problem)}</div>` : ""}
+        ${proposal ? `
+          <div class="summary-proposal">
+            <span class="fact warn">AI proposes</span>
+            <span>${escapeHtml(proposal.summary)}</span>
+            ${proposal.talks_about_source ? `<span class="fact bad">talks about the source</span>` : ""}
+            <button class="btn" data-accept-summary="${section.id}">Use</button>
+            <button class="btn" data-dismiss-summary="${section.id}">Dismiss</button>
+          </div>` : ""}
         ${renderSectionFacts(section, plan, { missing })}
+        ${suggestions.length ? `
+          <div class="objective-suggestions">${suggestions.map(suggestion => `
+            <button class="suggestion-chip" data-link-section="${section.id}"
+                    data-link-objective="${suggestion.objective_id}"
+                    title="Shares: ${escapeHtml(suggestion.words.join(", "))}">
+              + objective ${objectiveNumber(suggestion.objective_id)}
+              <span>${escapeHtml(suggestion.words.join(", "))}</span></button>`).join("")}
+          </div>` : ""}
       </div>
       <span class="outline-duration ${isOddDuration ? "odd" : ""}"
-            title="${isOddDuration ? "Unusual length for one section" : ""}">
+            title="${section.pinned ? "Pinned: a length you set" : "Shared out from the target"}">
+        ${section.pinned ? `<button class="pin-chip" data-unpin="${section.id}"
+            title="Pinned. Click to let it follow the target again">pinned ×</button>` : ""}
         ${formatDuration(section.estimated_seconds)}</span>
       <button class="btn-icon" data-edit-section="${section.id}"
               title="Edit" aria-label="Edit ${escapeHtml(section.title || "section")}">
@@ -352,26 +486,38 @@ function renderOutlineRow(section, index, plan) {
 function renderSectionEditor(section, index, plan) {
   const outline = plan.source_outline ?? [];
   const sourceOptions = outline.map(document => `
-    <optgroup label="${escapeHtml(document.file_name)}">
       <option value="${escapeHtml(JSON.stringify({ file_name: document.file_name, heading_path: [] }))}"
-        >Whole document · ${document.words} words</option>
+        >The whole source · ${document.words} words</option>
       ${document.headings.map(heading => `
         <option value="${escapeHtml(JSON.stringify({
           file_name: document.file_name, heading_path: heading.heading_path }))}"
           >${"  ".repeat(Math.max(0, heading.level - 1))}${
             escapeHtml(heading.heading_path.at(-1) ?? "")} · ${heading.words} words</option>`).join("")}
-    </optgroup>`).join("");
+    `).join("");
 
+  const frame = isFrame(section);
   return `
     <div class="outline-row editing" data-section="${section.id}">
       <span class="outline-num">${index + 1}</span>
       <div class="outline-edit">
         <input id="edit-title" value="${escapeHtml(section.title)}"
                placeholder="Section title" maxlength="120" aria-label="Section title">
-        <textarea id="edit-summary" placeholder="What this section covers"
+        <textarea id="edit-summary" placeholder="In one line: what the viewer learns"
                   maxlength="400" aria-label="Section summary">${escapeHtml(section.summary)}</textarea>
 
+        ${frame ? `<p class="muted edit-hint">${escapeHtml(FRAME_HELP[section.role])} Written
+          from the plan, so it names no source.</p>` : `
         <div class="edit-field">
+          <label>Its part in the lesson</label>
+          <div class="seg" id="edit-role">
+            ${["teach", "story"].map(role => `
+              <button type="button" class="${section.role === role ? "on" : ""}" data-role="${role}">
+                ${ROLE_NAMES[role]}</button>`).join("")}
+          </div>
+          <p class="muted edit-hint">Story: told first hand, in order, then what it shows.</p>
+        </div>`}
+
+        <div class="edit-field" ${frame ? "hidden" : ""}>
           <label for="edit-approach">How to show it</label>
           <div class="edit-pair">
             <select id="edit-approach">
@@ -385,7 +531,7 @@ function renderSectionEditor(section, index, plan) {
           </div>
         </div>
 
-        <div class="edit-field">
+        <div class="edit-field" ${frame ? "hidden" : ""}>
           <label for="edit-add-source">Source content</label>
           <div id="edit-sources" class="source-chips"></div>
           ${outline.length
@@ -395,7 +541,7 @@ function renderSectionEditor(section, index, plan) {
             : `<p class="muted edit-hint">Nothing extracted yet to point at.</p>`}
         </div>
 
-        ${plan.learning_objectives.length ? `
+        ${plan.learning_objectives.length && !frame ? `
           <div class="edit-field">
             <label>Learning objectives it serves</label>
             <div class="edit-objectives">
@@ -411,13 +557,15 @@ function renderSectionEditor(section, index, plan) {
         <div class="edit-row">
           <label for="edit-seconds">Seconds</label>
           <input id="edit-seconds" type="number" min="1" max="3600"
-                 value="${section.estimated_seconds}">
+                 value="${section.estimated_seconds}" data-was="${section.estimated_seconds}">
+          <label class="edit-pin"><input type="checkbox" id="edit-pinned"
+            ${section.pinned ? "checked" : ""}> Pin this length</label>
           <div class="spacer" style="flex:1"></div>
           <button class="btn btn-accent" id="save-section-button">Done</button>
-          <button class="btn-icon danger" id="delete-section-button"
+          ${frame ? "" : `<button class="btn-icon danger" id="delete-section-button"
                   title="Delete section" aria-label="Delete section">
             ${icon(`<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>`, 16, 1.8)}
-          </button>
+          </button>`}
         </div>
       </div>
     </div>`;
@@ -462,8 +610,8 @@ function renderDraftPanel(draft, currentPlan) {
           ${formatDuration(proposed.total_estimated_seconds)}</span>
       </div>
       <p class="panel-sub">
-        Drafted by the ${escapeHtml(draft.agent ?? "Scene Plan")} agent from
-        ${(draft.documents_read ?? []).length} document(s) and ${draft.headings_read ?? 0} headings
+        Drafted by the ${escapeHtml(draft.agent ?? "Scene Plan")} agent from the source's
+        ${draft.headings_read ?? 0} headings
         ${drafted ? `· ${escapeHtml(drafted)}` : ""}
         ${draft.instruction ? `· guidance: “${escapeHtml(draft.instruction)}”` : ""}
       </p>
@@ -585,6 +733,22 @@ function renderObjectivesPanel(plan) {
     </div>`;
 }
 
+function renderFramePanel(plan) {
+  const on = new Set(plan.lesson_frame ?? []);
+  return `
+    <div class="panel lesson-frame-panel" style="margin-bottom:14px">
+      <div class="panel-head"><h3>The lesson frame</h3></div>
+      <p class="panel-sub">Wrapped around the body so the video teaches, rather than starting
+        cold on the first slide. Written from the plan, not the source.</p>
+      ${FRAME_ROLES.map(part => `
+        <button class="toggle-row" data-frame-part="${part}" role="checkbox"
+                aria-checked="${on.has(part)}">
+          <span class="checkbox ${on.has(part) ? "on" : ""}">${on.has(part) ? icon(ICON.check, 13, 3.5) : ""}</span>
+          <span class="toggle-label"><b>${ROLE_NAMES[part]}</b> — ${escapeHtml(FRAME_HELP[part])}</span>
+        </button>`).join("")}
+    </div>`;
+}
+
 function renderAudiencePanel(plan) {
   return `
     <div class="panel" style="margin-bottom:14px">
@@ -651,27 +815,184 @@ function renderThemesPanel(plan) {
     </div>`;
 }
 
-function renderFooterNav(stage) {
-  const { stageDefinitions } = applicationState;
-  const stageIndex = stageDefinitions.findIndex(s => s.key === stage.key);
-  const previousStage = stageDefinitions[stageIndex - 1];
-  const nextStage = stageDefinitions[stageIndex + 1];
-  const hasSections = (applicationState.plan?.sections ?? []).length > 0;
+/* ---- 1. Brief --------------------------------------------------------------- */
+
+function renderBrief(plan, settings, slides) {
+  const documents = plan.source_outline ?? [];
+  return `
+    <div class="plan-brief">
+      ${documents.length ? "" : `
+        <section class="panel">
+          <p class="muted">Nothing has been transferred from Extraction yet. The plan is built
+            from what the source says.</p>
+          <button class="btn btn-accent" data-goto="extraction">Go to Extraction</button>
+        </section>`}
+      ${renderAudiencePanel(plan)}
+      ${renderObjectivesPanel(plan)}
+      ${renderFramePanel(plan)}
+      ${renderThemesPanel(plan)}
+      ${renderPreferencesPanel(settings)}
+    </div>`;
+}
+
+/* ---- 2. Outline: how a plan can be built ------------------------------------ */
+
+function chosenApproach(plan) {
+  const view = plan.approach_choices;
+  const key = planViewState.approachKey ?? view.chosen;
+  return {
+    approach: view.approaches.find(a => a.key === key && a.available)
+      ?? view.approaches.find(a => a.available),
+    options: { ...view.chosen_options, ...(planViewState.approachOptions ?? {}) },
+    notes: planViewState.approachNotes ?? view.notes ?? "",
+  };
+}
+
+function renderApproachPicker(plan) {
+  const view = plan.approach_choices;
+  if (!view) return "";
+  const { approach, options, notes } = chosenApproach(plan);
+  const buildLabel = approach.key === "follow-deck" ? "Follow the deck"
+    : approach.key === "by-hand" ? "Build it by hand"
+      : `Draft it: ${approach.name}`;
+  return `
+    <div class="panel plan-approach">
+      <div class="panel-head"><h3>How to build the outline</h3></div>
+      <p class="panel-sub">Choose an approach. One marked <b>AI</b> proposes a draft beside
+        your plan, and nothing changes until you accept it.</p>
+      ${view.approaches.map(a => `
+        <button class="x-pick plan-approach-pick ${a.key === approach.key ? "on" : ""}"
+                data-approach="${a.key}" ${a.available ? "" : "disabled"}>
+          <span class="x-pick-name">${escapeHtml(a.name)}
+            ${a.uses_ai ? `<span class="fact warn">AI</span>` : `<span class="fact muted">no AI</span>`}
+            ${a.available ? "" : `<span class="fact muted">needs a deck</span>`}</span>
+          <span class="plan-approach-does">${escapeHtml(a.does)}</span>
+          <span class="plan-approach-when">Best when: ${escapeHtml(a.when)}</span>
+        </button>`).join("")}
+
+      ${view.options.filter(option => !option.for_ai || approach.uses_ai).map(option => `
+        <div class="edit-field">
+          <label>${escapeHtml(option.label)}</label>
+          <div class="seg plan-approach-option">
+            ${Object.entries(option.choices).map(([value, label]) => `
+              <button class="${options[option.key] === value ? "on" : ""}"
+                      data-approach-option="${option.key}" data-value="${value}"
+                      data-saves="${option.for_ai ? "" : "now"}">${escapeHtml(label)}</button>`).join("")}
+          </div>
+        </div>`).join("")}
+
+      ${approach.uses_ai ? `
+        <div class="edit-field">
+          <label for="approach-notes">Anything else the plan should do</label>
+          <textarea id="approach-notes" maxlength="600"
+            placeholder="In your own words. For example: keep Padma's story together, and spend longest on the neural architecture."
+            >${escapeHtml(notes)}</textarea>
+        </div>` : ""}
+
+      <button class="btn btn-accent" id="build-outline-button">${escapeHtml(buildLabel)}
+        ${approach.uses_ai ? `<span class="fact warn">AI</span>` : ""}</button>
+    </div>`;
+}
+
+/* ---- 3. Check --------------------------------------------------------------- */
+
+const CHECK_LABELS = { pass: "Pass", warn: "Warning", fail: "Fails", "n/a": "Not applicable" };
+
+function renderChecks(handoff) {
+  return `
+    <section class="panel">
+      <div class="panel-head"><h3>The checks the plan goes through</h3></div>
+      <p class="panel-sub">Fixed rules over the plan, the extraction and the deck — no AI,
+        the same plan always gets the same result. A failing check blocks the transfer;
+        a warning is shown and allowed.</p>
+      <table class="assets-rule-table plan-checks">
+        <thead><tr><th>Result</th><th>Check</th><th>Rule</th><th>Found</th></tr></thead>
+        <tbody>
+          ${handoff.checks.map(check => `
+            <tr>
+              <td><span class="plan-check ${check.status === "n/a" ? "na" : check.status}">${
+                CHECK_LABELS[check.status] ?? check.status}</span></td>
+              <td><b>${escapeHtml(check.name)}</b></td>
+              <td>${escapeHtml(check.rule)}</td>
+              <td>${escapeHtml(check.detail)}</td>
+            </tr>`).join("")}
+        </tbody>
+      </table>
+    </section>`;
+}
+
+/* ---- 4. Final & transfer ---------------------------------------------------- */
+
+function renderFinal(plan, handoff, stage) {
+  const [tone, title, detail] = !plan.sections.length
+    ? ["blocked", "Nothing to transfer yet", "Build the outline first."]
+    : handoff.failing
+      ? ["stale", `${handoff.failing} check(s) fail`, "Fix them on the Check tab; then transfer."]
+      : !handoff.has_transferred
+        ? ["pending", "Ready to transfer",
+           "Nothing has been transferred yet, so later stages read your working plan."]
+        : handoff.pending
+          ? ["pending", "Ready to transfer",
+             "This differs from what the next layer has. Transfer to hand it the changes."]
+          : ["ready", "Transferred to the next layer",
+             `The next layer has had exactly this since ${whenItWas(handoff.transferred_at)}.`];
+  const canTransfer = plan.sections.length && !handoff.failing
+    && (handoff.pending || !handoff.has_transferred);
+  const objectives = plan.learning_objectives.filter(o => o.is_included);
 
   return `
-    <div class="footer-nav">
-      ${previousStage ? `
-        <button class="btn" data-goto="${previousStage.key}">
-          ${icon(ICON.arrowLeft)} Back to ${escapeHtml(previousStage.title)}
-        </button>` : ""}
-      <div class="spacer"></div>
-      ${nextStage ? `
-        <button class="btn btn-accent" data-goto="${nextStage.key}"
-                ${hasSections ? "" : "disabled"}
-                title="${hasSections ? "" : "Add at least one section first"}">
-          Next: ${escapeHtml(nextStage.title)} ${icon(ICON.arrowRight)}
-        </button>` : ""}
+    <div class="final-head ${tone}">
+      <span class="run-icon">${icon(tone === "ready" ? ICON.check : ICON.alert, 18, 2.3)}</span>
+      <span class="run-text">
+        <b>${escapeHtml(title)}</b>
+        <span>${escapeHtml(detail)}</span>
+        <span class="final-totals">${plan.sections.length} section(s) · ${
+          formatDuration(plan.total_estimated_seconds)} · ${objectives.length} objective(s) · ${
+          handoff.warning} warning(s)</span>
+      </span>
+      ${tone === "ready" ? moveToNextLayerButton(stageNeighbours(stage).next, {
+          carries: "The transferred plan goes on to be scripted." })
+        : `<button class="btn btn-accent btn-transfer" id="transfer-plan-button"
+                   ${canTransfer ? "" : "disabled"}>
+             Transfer to the next layer ${icon(ICON.arrowRight)}</button>`}
+    </div>
+    <div class="assets-final">
+      <section class="panel">
+        <div class="panel-head"><h3>The outline (${plan.sections.length})</h3></div>
+        <ol class="plan-final-list">
+          ${plan.sections.map(section => `
+            <li><span class="role-chip role-${section.role}">${ROLE_NAMES[section.role] ?? ""}</span>
+              <b>${escapeHtml(section.title || "Untitled section")}</b>
+              <span>${formatDuration(section.estimated_seconds)}</span></li>`).join("")}
+        </ol>
+      </section>
+      <section class="panel">
+        <div class="panel-head"><h3>For whom, and to what end</h3></div>
+        <p><b>Audience:</b> ${escapeHtml(plan.selected_audience || "not chosen")}</p>
+        ${objectives.length ? `<ol class="plan-final-list">${objectives.map(o =>
+          `<li>${escapeHtml(o.text)}</li>`).join("")}</ol>` : `<p class="muted">No objectives.</p>`}
+      </section>
     </div>`;
+}
+
+function renderFooterNav(stage, handoff, tab) {
+  const at = PLAN_TABS.findIndex(([key]) => key === tab);
+  const next = PLAN_TABS[at + 1];
+  return footerNav(stage, {
+    end: next ? `
+      <button class="btn btn-accent btn-move-next" data-plan-tab="${next[0]}">
+        Move to ${next[1]} ${icon(ICON.arrowRight)}</button>` : null,
+    next: {
+      carries: handoff.has_transferred ? "The transferred plan goes on to be scripted." : "",
+      warning: !handoff.has_transferred
+        ? "The plan has never been transferred: later stages read your working plan until "
+          + "you transfer it on the Final & transfer tab."
+        : handoff.pending
+          ? "Your latest changes are not transferred — later stages still read the last "
+            + "transferred plan."
+          : "",
+    },
+  });
 }
 
 /* ---- server actions ------------------------------------------------------ */
@@ -738,9 +1059,36 @@ function wireScenePlanStage(stage, navigateToStage, renderAgentStage, draft) {
 
   select("#planning-agent-button").onclick = () => renderAgentStage(stage);
 
-  document.querySelectorAll("[data-goto]").forEach(button => {
-    button.onclick = () => navigateToStage(button.dataset.goto);
+  // Tabs: shown and hidden in place -- every pane is already drawn.
+  document.querySelectorAll("[data-plan-tab]").forEach(button => {
+    button.onclick = () => {
+      const tab = button.dataset.planTab;
+      applicationState.planTab = tab;
+      document.querySelectorAll("[data-plan-pane]").forEach(pane => {
+        pane.hidden = pane.dataset.planPane !== tab;
+      });
+      document.querySelectorAll(".plan-tabs .x-tab").forEach(tabButton => {
+        const on = tabButton.dataset.planTab === tab;
+        tabButton.classList.toggle("on", on);
+        tabButton.setAttribute("aria-selected", String(on));
+      });
+      // The footer's forward button follows the tab.
+      rerenderFooter(stage, tab);
+      if (button.closest(".footer-nav")) {
+        select(".x-tabs")?.scrollIntoView({ block: "start", behavior: "smooth" });
+      }
+    };
   });
+
+  const transferButton = select("#transfer-plan-button");
+  if (transferButton && !transferButton.disabled) {
+    transferButton.onclick = () => runPlanAction({
+      path: "/plan/transfer", rerender,
+      done: "Transferred: the stages after this read exactly this plan.",
+    });
+  }
+
+  wireGotoButtons(navigateToStage);
 
   // --- the plan against the extraction ---
   const fromSlides = document.querySelector("#plan-from-slides-button");
@@ -762,6 +1110,8 @@ function wireScenePlanStage(stage, navigateToStage, renderAgentStage, draft) {
       await rerender();
     };
   }
+
+  wireApproachPicker(change, rerender);
 
   const draftButton = select("#draft-plan-button");
   if (draftButton) draftButton.onclick = () => draftPlan(rerender);
@@ -798,10 +1148,12 @@ function wireScenePlanStage(stage, navigateToStage, renderAgentStage, draft) {
   select("#add-section-button").onclick = () => change(plan => {
     const newSection = {
       id: newItemIdentifier(),
-      title: "", summary: "", estimated_seconds: 60,
-      sources: [], rendering_approach: "", rendering_reason: "", objective_ids: [],
+      title: "", summary: "", estimated_seconds: 60, role: "teach", pinned: false,
+      summary_origin: "", sources: [], rendering_approach: "", rendering_reason: "",
+      objective_ids: [],
     };
-    plan.sections.push(newSection);
+    const tail = plan.sections.findIndex(s => s.role === "recap" || s.role === "close");
+    plan.sections.splice(tail < 0 ? plan.sections.length : tail, 0, newSection);
     planViewState.editingSectionId = newSection.id;
     planViewState.editingSources = [];
   });
@@ -838,10 +1190,21 @@ function wireScenePlanStage(stage, navigateToStage, renderAgentStage, draft) {
 
     const commitEdit = () => {
       const editingId = planViewState.editingSectionId;
+      const before = applicationState.plan.sections.find(s => s.id === editingId) ?? {};
+      const secondsInput = select("#edit-seconds");
+      const seconds = Number(secondsInput.value) || 60;
+      // Typing a length is setting one: it is pinned, and the rest rebalance.
+      const pinned = select("#edit-pinned").checked
+        || String(seconds) !== secondsInput.dataset.was;
+      const summary = select("#edit-summary").value;
       const edited = {
         title: select("#edit-title").value,
-        summary: select("#edit-summary").value,
-        estimated_seconds: Number(select("#edit-seconds").value) || 60,
+        summary,
+        summary_origin: summary.trim() !== (before.summary ?? "").trim() ? "you"
+          : before.summary_origin ?? "",
+        role: select("#edit-role .on")?.dataset.role ?? before.role ?? "teach",
+        pinned,
+        estimated_seconds: seconds,
         rendering_approach: select("#edit-approach").value,
         rendering_reason: select("#edit-reason").value,
         sources: structuredClone(planViewState.editingSources),
@@ -857,6 +1220,12 @@ function wireScenePlanStage(stage, navigateToStage, renderAgentStage, draft) {
     };
 
     select("#save-section-button").onclick = commitEdit;
+    document.querySelectorAll("#edit-role [data-role]").forEach(button => {
+      button.onclick = () => {
+        document.querySelectorAll("#edit-role [data-role]")
+          .forEach(other => other.classList.toggle("on", other === button));
+      };
+    });
     // Enter commits from the title field; the summary is multi-line so Enter
     // there must insert a newline rather than close the editor.
     titleInput.addEventListener("keydown", event => {
@@ -868,7 +1237,8 @@ function wireScenePlanStage(stage, navigateToStage, renderAgentStage, draft) {
       }
     });
 
-    select("#delete-section-button").onclick = () => {
+    const deleteButton = select("#delete-section-button");
+    if (deleteButton) deleteButton.onclick = () => {
       const editingId = planViewState.editingSectionId;
       planViewState.editingSectionId = null;
       planViewState.editingSources = [];
@@ -879,10 +1249,9 @@ function wireScenePlanStage(stage, navigateToStage, renderAgentStage, draft) {
   }
 
   wireOutlineDragAndDrop(change);
+  wireLessonControls(stage, change, rerender);
 
-  // The side panels are replaced by the draft while one is under review.
-  if (draft) return;
-
+  // The Brief's panels are always drawn now, draft or not.
   // --- objectives ---
   select("#add-objective-button").onclick = () => change(plan => {
     plan.learning_objectives.push({
@@ -960,6 +1329,154 @@ function wireScenePlanStage(stage, navigateToStage, renderAgentStage, draft) {
   });
 }
 
+function wireApproachPicker(change, rerender) {
+  const keepNotes = () => {
+    const notes = select("#approach-notes");
+    if (notes) planViewState.approachNotes = notes.value;
+  };
+  document.querySelectorAll("[data-approach]").forEach(button => {
+    button.onclick = () => {
+      keepNotes();
+      planViewState.approachKey = button.dataset.approach;
+      rerender();
+    };
+  });
+  document.querySelectorAll("[data-approach-option]").forEach(button => {
+    button.onclick = () => {
+      keepNotes();
+      const key = button.dataset.approachOption;
+      planViewState.approachOptions = { ...(planViewState.approachOptions ?? {}),
+        [key]: button.dataset.value };
+      // A choice about the plan as it is, not about a draft, is saved at once.
+      if (button.dataset.saves === "now") {
+        change(plan => {
+          plan.approach_options = { ...(plan.approach_options ?? {}), [key]: button.dataset.value };
+        });
+      } else {
+        rerender();
+      }
+    };
+  });
+  select("#approach-notes")?.addEventListener("input", keepNotes);
+
+  const build = select("#build-outline-button");
+  if (!build) return;
+  build.onclick = async () => {
+    keepNotes();
+    const plan = applicationState.plan;
+    const { approach, options, notes } = chosenApproach(plan);
+    const body = plan.sections.filter(section => !isFrame(section));
+    if (approach.key === "follow-deck" && body.length && !window.confirm(
+        "Follow the deck? This replaces the outline with one section per slide. Narration "
+        + "written for sections that go is kept, unattached.")) return;
+    if (approach.uses_ai && !window.confirm(`Draft with “${approach.name}”?\n\nThis calls `
+        + "the model: one call for the outline, then one per section. It makes a draft "
+        + "beside your plan; nothing changes until you accept it.")) return;
+
+    if (approach.uses_ai) {
+      planViewState.isDrafting = true;
+      await rerender();
+    }
+    try {
+      const built = await requestJsonFromApi(projectApiPath("/plan/build"), {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ approach: approach.key, options, notes }),
+      });
+      planViewState.approachKey = planViewState.approachOptions = planViewState.approachNotes = null;
+      planViewState.isDrafting = false;
+      await refreshProjectSummary();
+      await rerender();
+      showStageNotice("ok", built.made === "draft" ? "Draft ready. Review it beside your plan."
+        : built.made === "plan" ? "The outline follows the deck, inside the lesson frame."
+          : "Add sections with “Add new section”.");
+    } catch (failure) {
+      console.error("building the outline failed", failure);
+      planViewState.isDrafting = false;
+      await rerender();
+      showStageNotice("bad", failure.message);
+    }
+  };
+}
+
+function wireLessonControls(stage, change, rerender) {
+  document.querySelectorAll("[data-frame-part]").forEach(button => {
+    button.onclick = () => {
+      const on = new Set(applicationState.plan.lesson_frame ?? []);
+      const part = button.dataset.framePart;
+      if (on.has(part)) on.delete(part); else on.add(part);
+      runPlanAction({ path: "/plan/lesson-frame", body: { parts: [...on] }, rerender,
+        done: on.has(part) ? `${ROLE_NAMES[part]} added.` : `${ROLE_NAMES[part]} switched off.` });
+    };
+  });
+
+  const writeButton = select("#write-summaries-button");
+  if (writeButton) {
+    writeButton.onclick = () => {
+      const everything = writeButton.dataset.everything === "true";
+      const summaries = applicationState.plan.lesson?.summaries ?? {};
+      const count = everything ? summaries.teaching_sections : summaries.needing;
+      if (!window.confirm(`Ask the model for ${count} one-line summar${count === 1 ? "y" : "ies"}?`
+          + "\n\nOne AI call. Nothing in the plan changes until you use them.")) return;
+      runPlanAction({ path: "/plan/summaries", body: { everything }, rerender,
+        pending: "Writing summaries…", done: "Summaries proposed. Use or dismiss each one." });
+    };
+  }
+  const acceptAll = select("#accept-summaries-button");
+  if (acceptAll) acceptAll.onclick = () => runPlanAction({
+    path: "/plan/summaries/accept", body: {}, rerender, done: "Summaries are in the plan." });
+  const dismissAll = select("#dismiss-summaries-button");
+  if (dismissAll) dismissAll.onclick = () => runPlanAction({
+    path: "/plan/summaries/dismiss", body: {}, rerender, done: "Proposals dismissed." });
+  document.querySelectorAll("[data-accept-summary]").forEach(button => {
+    button.onclick = () => runPlanAction({ path: "/plan/summaries/accept",
+      body: { section_ids: [button.dataset.acceptSummary] }, rerender });
+  });
+  document.querySelectorAll("[data-dismiss-summary]").forEach(button => {
+    button.onclick = () => runPlanAction({ path: "/plan/summaries/dismiss",
+      body: { section_ids: [button.dataset.dismissSummary] }, rerender });
+  });
+
+  const link = (plan, sectionId, objectiveId) => {
+    const section = plan.sections.find(s => s.id === sectionId);
+    if (section && !section.objective_ids.includes(objectiveId)) section.objective_ids.push(objectiveId);
+  };
+  document.querySelectorAll("[data-link-section]").forEach(chip => {
+    chip.onclick = () => change(plan =>
+      link(plan, chip.dataset.linkSection, chip.dataset.linkObjective));
+  });
+  const linkAll = select("#link-objectives-button");
+  if (linkAll) linkAll.onclick = () => {
+    const suggestions = applicationState.plan.lesson?.objective_suggestions ?? [];
+    change(plan => suggestions.forEach(s => link(plan, s.section_id, s.objective_id)));
+  };
+
+  document.querySelectorAll("[data-unpin]").forEach(button => {
+    button.onclick = event => {
+      event.stopPropagation();
+      change(plan => {
+        const section = plan.sections.find(s => s.id === button.dataset.unpin);
+        if (section) section.pinned = false;
+      });
+    };
+  });
+}
+
+/** Redraw only the footer, for a tab change. */
+let lastHandoff = null;
+
+function rerenderFooter(stage, tab) {
+  const footer = select(".stage-content > .footer-nav");
+  if (!footer || !lastHandoff) return;
+  footer.outerHTML = renderFooterNav(stage, lastHandoff, tab);
+  wireGotoButtons(currentNavigate);
+  document.querySelectorAll(".footer-nav [data-plan-tab]").forEach(button => {
+    button.onclick = () => select(`.plan-tabs [data-plan-tab="${button.dataset.planTab}"]`)?.click();
+  });
+}
+
+let currentNavigate = () => {};
+let currentAgentRenderer = () => {};
+
 /** Swap a label for an input in place, commit on blur or Enter. Avoids a modal
  *  for what is a one-field edit. */
 function promptInline(textNode, commit) {
@@ -1018,6 +1535,8 @@ function wireOutlineDragAndDrop(change) {
       const draggedId = planViewState.draggingSectionId;
       const targetId = row.dataset.section;
       if (!draggedId || draggedId === targetId) return;
+      // The frame stays at the edges; the server would put it back anyway.
+      if (!row.hasAttribute("draggable")) return;
 
       change(plan => {
         const fromIndex = plan.sections.findIndex(s => s.id === draggedId);
@@ -1050,6 +1569,11 @@ async function persistPreference(stage, optionKey, newValue) {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ values: settings.values }),
       });
+    if (optionKey === "target_duration") {
+      await requestJsonFromApi(projectApiPath("/plan/reshape"), { method: "POST" });
+      await renderScenePlanStage(stage, currentNavigate, currentAgentRenderer);
+      showStageNotice("ok", "The time is shared out again for the new target.");
+    }
     const savedHint = select("#settings-saved-hint");
     if (savedHint) {
       savedHint.textContent = "saved";

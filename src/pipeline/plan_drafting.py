@@ -77,13 +77,10 @@ class OutlineSection(BaseModel):
         description="Ids of the outline entries this section covers, such as h12, or d2 "
                     "for a whole document."
     )
-    estimated_seconds: int = Field(
-        default=60, description="Spoken length, estimated from the words it covers."
-    )
+    estimated_seconds: int = Field(default=60, description="Spoken length, from its words.")
     objective_numbers: list[int] = Field(
-        default_factory=list,
-        description="Numbers of the learning objectives this section serves (1-based).",
-    )
+        default_factory=list, description="The learning objectives it serves (1-based).")
+    role: str = Field(default="teach", description="teach, or story for a story or case.")
 
 
 class DraftOutline(BaseModel):
@@ -301,7 +298,7 @@ def draft_plan(slug: str, instruction: str = "") -> dict[str, Any]:
                 f"the outline ({', '.join(unknown[:5])})."
             )
         sections.append(PlanSection(
-            title=proposed.title,
+            title=proposed.title, role=proposed.role,
             estimated_seconds=proposed.estimated_seconds,
             sources=references,
             objective_ids=[
@@ -395,10 +392,10 @@ def _detail_pass(
     system_prompt = (
         f"{build_system_prompt(agent)}\n\n"
         f"---\nThis is the second pass: ONE section, with the full text it covers.\n"
-        f"Write a one- or two-sentence summary of what it teaches, from this text "
-        f"only. Choose how it should be shown -- composition, plot, simulation, code "
-        f"or still -- and give one sentence of why. Estimate how long a faithful "
-        f"spoken treatment of this text takes, in seconds."
+        f"In one or two sentences from this text only, say what the viewer learns -- "
+        f"never what a chapter, book or author says. Choose how it is shown -- "
+        f"composition, plot, simulation, code or still -- with one sentence of why. "
+        f"Estimate how long a faithful spoken treatment of this text takes, in seconds."
     )
     instruction_line = (
         f"Instruction for the whole plan: {instruction.strip()}\n" if instruction.strip() else ""

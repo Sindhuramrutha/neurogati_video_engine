@@ -1007,63 +1007,6 @@ def _shot_source(
     return (["-loop", "1", "-i", str(frame_path)], _motion_filter(shot.motion, length_ms))
 
 
-def render_sections(
-    sections: list[RenderedSection],
-    working_directory: Path,
-    output_video_path: Path,
-    style: RenderStyle = DEFAULT_STYLE,
-) -> None:
-    """Draw every shot, cut each section to its exact length, and join them.
-
-    One encode per *scene*, not per sentence: the camera move runs across the
-    whole scene, an animated diagram plays once, and the scene's labels arrive
-    on top of the moving picture as they are spoken. Encoding a frame per label
-    would restart the motion on every one of them.
-
-    Four details carry the timing, and each fixes something that was wrong:
-
-    - **Only the opening section waits for a title card.** A card before every
-      section was 2.5 seconds of silence each time, which on a five-minute video
-      is most of a section spent reading a name that is on the frames anyway.
-    - **Each clip is cut to exactly `total_ms`** with `-t`. `-shortest` did not
-      cut the still-image stream, so sections overran and the drift compounded.
-    - **Shots are cross-faded, and the fade is paid for.** Every shot is encoded
-      a fade longer than its slot, and each dissolve starts a fade early, so the
-      section still lands on exactly the length the clock says.
-    - **Every clip has an audio stream**, silent if there is no narration.
-      Concatenating with `-c copy` needs identical streams in every clip; one
-      without audio produces a file whose sound stops partway through.
-    """
-    ffmpeg = require_ffmpeg()
-    working_directory.mkdir(parents=True, exist_ok=True)
-    clip_paths: list[Path] = []
-    last_section = len(sections) - 1
-
-    for index, section in enumerate(sections):
-        windows = shot_windows(section)
-        if not windows:
-            continue
-        durations = [window.duration_ms for window in windows]
-        fade_ms = _cross_fade_ms(durations)
-
-        shot_paths = [
-            _encode_shot(
-                ffmpeg, section, window, style, working_directory,
-                name=f"s{index:02d}_{at:02d}",
-                kicker=f"Section {index + 1}",
-                length_ms=window.duration_ms + fade_ms,
-                step=f"section {index + 1}, shot {at + 1} of {len(windows)}",
-                opens_the_video=index == 0 and at == 0,
-                closes_the_video=index == last_section and at == len(windows) - 1,
-            )
-            for at, window in enumerate(windows)
-        ]
-        clip_paths.append(_cut_section(
-            ffmpeg, section, shot_paths, durations, fade_ms, index, working_directory))
-
-    _join_and_level(ffmpeg, clip_paths, working_directory, output_video_path)
-
-
 def _encode_shot(
     ffmpeg: str,
     section: RenderedSection,

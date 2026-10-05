@@ -24,10 +24,11 @@ from pipeline.agent_runtime import (
     draft_section_script_with_agent,
 )
 from pipeline.agents import AgentRegistry
+from pipeline.assets_handoff import assets_page
 from pipeline.composition import Composition, CompositionStore
 from pipeline.config import REPO_ROOT, get_settings
 from pipeline.credentials import describe_credentials, save_credentials
-from pipeline.extraction import ExtractionStore
+from pipeline.deck_edit import delete_pages
 from pipeline.extraction_review import (
     acknowledge_finding,
     generate_figure,
@@ -46,17 +47,16 @@ from pipeline.operations import (
     accept_plan_draft,
     build_export,
     clear_timeline,
+    confirm_extraction,
     confirm_plan_matches_extraction,
     confirm_section_narration,
     decide_figure,
     discard_plan_draft,
-    extraction_freshness,
-    forget_excluded_source,
+    extraction_page,
     list_voice_providers,
     plan_from_slides,
     present_artifact,
     preview_source,
-    read_asset_library,
     read_export,
     read_plan_draft,
     refresh_asset_library,
@@ -64,7 +64,6 @@ from pipeline.operations import (
     run_extraction,
     save_artifact,
     section_source_material,
-    set_excluded_sources,
     set_project_look,
     slide_coverage,
 )
@@ -80,9 +79,7 @@ from pipeline.review import Review, ReviewStore, chapters_from_plan
 from pipeline.scene_renderers import describe_scene_renderers, verify_scene_renderer
 from pipeline.scripting import Script, ScriptStore
 from pipeline.sources import (
-    SourceFileRejected,
     reduce_to_bare_file_name,
-    store_uploaded_source_file,
 )
 from pipeline.stage_options import StageSettingsStore
 from pipeline.stages import STAGES, Stage, downstream_of
@@ -156,12 +153,6 @@ class VisualChoice(BaseModel):
     motion: str | None = None
 
 
-class ReviewRequest(BaseModel):
-    # The checks always run; the agent's reading pass is a model call, so it is
-    # asked for rather than assumed.
-    ask_agent: bool = True
-
-
 class AgentQuestion(BaseModel):
     question: str
     # Empty starts a new thread. The panel sends the id of the conversation it
@@ -169,8 +160,12 @@ class AgentQuestion(BaseModel):
     conversation_id: str = ""
 
 
-class SourceSelection(BaseModel):
-    excluded: list[str]
+class ExtractionTarget(BaseModel):
+    file_name: str = ""     # the project's source when empty
+
+
+class PageDeletion(BaseModel):
+    pages: list[int]    # 1-based, as the page strip numbers them
 
 
 class PlanInstruction(BaseModel):
@@ -194,6 +189,7 @@ class SectionScriptInstruction(BaseModel):
 class RenderRequest(BaseModel):
     voice_provider: str = ""
     voice: str = ""
+    resume: bool = False  # continue the stopped render instead of starting over
 
 
 class CredentialsEdit(BaseModel):
@@ -244,144 +240,6 @@ def get_project(
     slug: FromPath[str], projects: NamedDependency[ProjectService]
 ) -> dict[str, Any]:
     return projects.require(slug).to_dict()
-
-
-@post("/api/projects/{slug:str}/sources")
-async def upload_source(
-    slug: FromPath[str],
-    projects: NamedDependency[ProjectService],
-    data: Annotated[dict[str, Any], Body(media_type=RequestEncodingType.MULTI_PART)],
-) -> dict[str, Any]:
-    """Accept source documents, one at a time, reporting each outcome separately.
-
-    Partial success is a real outcome and is reported as one: dropping five files
-    where one is a 200 MB video should store the four good ones and say precisely
-    why the fifth was refused. An all-or-nothing 500 would tell the user nothing
-    about which file was the problem.
-    """
-    project = projects.require(slug)
-    project.sources_dir.mkdir(parents=True, exist_ok=True)
-
-    accepted_source_files: list[dict[str, Any]] = []
-    rejected_source_files: list[dict[str, str]] = []
-    file_parts_seen = 0
-
-    for uploaded_part in data.values():
-        original_file_name = getattr(uploaded_part, "filename", "") or ""
-
-        # A multipart body may legitimately carry plain text fields alongside
-        # files; those have no filename and must be skipped, not crashed on.
-        if not hasattr(uploaded_part, "read"):
-            continue
-        file_parts_seen += 1
-
-        try:
-            # Streamed to disk in blocks. Reading the whole part first meant a
-            # 300 MB deck cost 300 MB of memory before a byte was written, and
-            # several at once multiplied it.
-            accepted = await store_uploaded_source_file(
-                original_file_name=original_file_name,
-                upload_stream=uploaded_part,
-                destination_directory=project.sources_dir,
-            )
-        except SourceFileRejected as rejection:
-            logger.info(
-                "rejected source upload for project %s: %s", slug, rejection
-            )
-            rejected_source_files.append(
-                {"file_name": rejection.original_file_name, "reason": rejection.reason}
-            )
-            continue
-
-        try:
-            stored_size = (project.sources_dir / accepted.safe_file_name).stat().st_size
-            logger.info(
-                "stored source %s (%s bytes) for project %s",
-                accepted.safe_file_name, stored_size, slug,
-            )
-        except OSError as write_failure:
-            # Disk full, permission denied, name still unusable on this platform.
-            # The user gets a plain reason; the log keeps the underlying error.
-            logger.warning(
-                "failed writing source %s for project %s: %s",
-                accepted.safe_file_name, slug, write_failure,
-            )
-            rejected_source_files.append(
-                {
-                    "file_name": accepted.original_file_name,
-                    "reason": "could not be saved to disk",
-                }
-            )
-            continue
-
-        accepted_source_files.append(
-            {
-                "file_name": accepted.safe_file_name,
-                "original_file_name": accepted.original_file_name,
-                "was_renamed": accepted.was_renamed,
-                "size_in_bytes": accepted.size_in_bytes,
-            }
-        )
-
-    # A request carrying no usable file part is a client mistake, not a success.
-    # Returning 201 with two empty lists is the worst of both: the caller sees no
-    # error and no result. Reproduced with `curl -F files=@a -F files=@b`, where
-    # the repeated field name collapses to a single entry that is not a file
-    # part -- nothing was stored and nothing was reported.
-    if not file_parts_seen:
-        raise ClientException(
-            detail="No file was found in the upload. Send each file under its own "
-                   "field name, e.g. file0, file1."
-        )
-
-    return {
-        "accepted": accepted_source_files,
-        "rejected": rejected_source_files,
-        "project": project.to_dict(),
-    }
-
-
-@delete("/api/projects/{slug:str}/sources/{file_name:str}", status_code=200)
-async def delete_source(
-    slug: FromPath[str],
-    file_name: FromPath[str],
-    projects: NamedDependency[ProjectService],
-) -> dict[str, Any]:
-    """Remove one source file from a project.
-
-    The filename arrives from the URL and is therefore untrusted, exactly like an
-    upload filename. It is reduced to a bare name and the resolved target is
-    re-checked against the sources directory, so a crafted request cannot delete
-    something outside the project -- the deletion equivalent of the traversal that
-    the upload path had.
-    """
-    project = projects.require(slug)
-
-    bare_file_name = reduce_to_bare_file_name(file_name)
-    target_path = (project.sources_dir / bare_file_name).resolve()
-
-    if not target_path.is_relative_to(project.sources_dir.resolve()):
-        logger.warning(
-            "refused delete outside sources dir for project %s: %r", slug, file_name
-        )
-        raise ClientException(detail="that filename is not valid")
-
-    if not target_path.is_file():
-        raise NotFoundException(detail=f"no such source file: {bare_file_name}")
-
-    try:
-        target_path.unlink()
-    except OSError as delete_failure:
-        logger.warning(
-            "failed deleting %s from project %s: %s", bare_file_name, slug, delete_failure
-        )
-        raise ClientException(detail="could not delete that file") from delete_failure
-
-    # Otherwise a file deleted while unticked would come back unticked when
-    # uploaded again under the same name, with no sign of why.
-    forget_excluded_source(project, bare_file_name)
-
-    return {"deleted": bare_file_name, "project": project.to_dict()}
 
 
 @get("/api/projects/{slug:str}/agent/{stage:str}", sync_to_thread=False)
@@ -564,8 +422,9 @@ def seed_chapters(
     Explicitly destructive and explicitly invoked: seeding automatically on load
     would silently discard hand-edited chapter titles every time the page opened.
     """
+    from pipeline.plan_handoff import plan_for_later_stages
     project = projects.require(slug)
-    plan = PlanStore(project.root).load()
+    plan = plan_for_later_stages(project)
     store = ReviewStore(project.root)
 
     review = store.load()
@@ -764,50 +623,18 @@ def confirm_plan_route(slug: FromPath[str]) -> dict[str, Any]:
         raise ClientException(detail=str(failure)) from failure
 
 
-@get("/api/projects/{slug:str}/extraction", sync_to_thread=False)
+@get("/api/projects/{slug:str}/extraction", sync_to_thread=True)
 def get_extraction(
     slug: FromPath[str], projects: NamedDependency[ProjectService]
 ) -> dict[str, Any]:
-    """The structured content parsed out of the source documents.
-
-    Carries whether it still matches the files on disk, so the page can say a
-    re-run is needed instead of showing stale content as if it were current.
-    """
-    project = projects.require(slug)
-    presented = present_artifact(project, "extraction", ExtractionStore(project.root).load())
-    freshness = extraction_freshness(project)
-    presented["freshness"] = freshness
-
-    if freshness["is_stale"]:
-        changed = [
-            *(f"{name} has not been extracted" for name in freshness["added"]),
-            *(f"{name} was extracted but is no longer in the project"
-              for name in freshness["removed"]),
-            *(f"the {key.replace('_', ' ')} option changed since the last run"
-              for key in freshness["options_changed"]),
-            *(f"{name} was extracted but has since been left out"
-              for name in freshness["newly_excluded"]),
-        ]
-        presented["warnings"] = [*presented["warnings"], *changed]
-    return presented
-
-
-@post("/api/projects/{slug:str}/extraction/sources", sync_to_thread=False)
-def put_extraction_sources(slug: FromPath[str], data: SourceSelection) -> dict[str, Any]:
-    """Choose which source files extraction leaves out.
-
-    Saved with the project, so the checkboxes on the Extraction page are the same
-    after a reload and in any other client, and the run reads the same list.
-    """
-    try:
-        return set_excluded_sources(slug, data.excluded)
-    except OperationFailed as failure:
-        raise ClientException(detail=str(failure)) from failure
+    """The extraction collection, with where it stands against the files and
+    against what later stages were last given."""
+    return extraction_page(projects.require(slug))
 
 
 @post("/api/projects/{slug:str}/extraction/run")
-async def run_extraction_route(slug: FromPath[str]) -> dict[str, Any]:
-    """Parse every source document into structured content.
+async def run_extraction_route(slug: FromPath[str], data: ExtractionTarget) -> dict[str, Any]:
+    """Extract the project's source file. The result replaces the last one.
 
     Off the event loop: a large PDF takes real time to parse, and blocking the
     loop would freeze the rest of the app while one project extracted.
@@ -815,7 +642,16 @@ async def run_extraction_route(slug: FromPath[str]) -> dict[str, Any]:
     import anyio
 
     try:
-        return await anyio.to_thread.run_sync(run_extraction, slug)
+        return await anyio.to_thread.run_sync(run_extraction, slug, data.file_name)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure
+
+
+@post("/api/projects/{slug:str}/extraction/confirm", sync_to_thread=True)
+def confirm_extraction_route(slug: FromPath[str]) -> dict[str, Any]:
+    """Hand the collection to later stages -- the only step that changes what they read."""
+    try:
+        return confirm_extraction(slug)
     except OperationFailed as failure:
         raise ClientException(detail=str(failure)) from failure
 
@@ -880,17 +716,13 @@ def confirm_section_narration_route(
 
 
 @post("/api/projects/{slug:str}/extraction/review")
-async def review_extraction_route(
-    slug: FromPath[str], data: ReviewRequest
-) -> dict[str, Any]:
-    """Check every extracted picture, and have the Extraction agent read the text.
-
-    Off the event loop: opening a few hundred images and one model call.
-    """
+async def review_extraction_route(slug: FromPath[str]) -> dict[str, Any]:
+    """Check every extracted picture and figure reference. Off the event loop:
+    it opens a few hundred images."""
     import anyio
 
     try:
-        return await anyio.to_thread.run_sync(review_extraction, slug, data.ask_agent)
+        return await anyio.to_thread.run_sync(review_extraction, slug)
     except OperationFailed as failure:
         raise ClientException(detail=str(failure)) from failure
 
@@ -974,18 +806,19 @@ def clear_studio_timeline(slug: FromPath[str]) -> dict[str, Any]:
 
 @get("/api/projects/{slug:str}/assets", sync_to_thread=False)
 def get_asset_library(slug: FromPath[str]) -> dict[str, Any]:
-    """Every extracted picture and what was decided about it."""
+    """Every picture, what was decided about it, the rules, and the hand-off state."""
     try:
-        return read_asset_library(slug)
+        return assets_page(slug)
     except OperationFailed as failure:
         raise ClientException(detail=str(failure)) from failure
 
 
 @post("/api/projects/{slug:str}/assets/refresh", sync_to_thread=False)
-def refresh_assets(slug: FromPath[str]) -> dict[str, Any]:
-    """Gather the pictures the current extraction has, keeping every decision."""
+def refresh_assets(slug: FromPath[str], clear: bool = False) -> dict[str, Any]:
+    """Gather the pictures the transferred extraction has, keeping every decision --
+    or, with `clear`, forgetting every picture and decision first."""
     try:
-        return refresh_asset_library(slug)
+        return refresh_asset_library(slug, clear=clear)
     except OperationFailed as failure:
         raise ClientException(detail=str(failure)) from failure
 
@@ -1182,7 +1015,7 @@ async def render_project_video(
 
     try:
         return await anyio.to_thread.run_sync(
-            render_video, slug, data.voice_provider, data.voice
+            render_video, slug, data.voice_provider, data.voice, data.resume
         )
     except OperationFailed as failure:
         raise ClientException(detail=str(failure)) from failure
@@ -1436,3 +1269,14 @@ def preview_source_file(
         return preview_source(slug, file_name)
     except OperationFailed as failure:
         raise NotFoundException(detail=str(failure)) from failure
+
+
+@post("/api/projects/{slug:str}/sources/{file_name:str}/pages/delete", sync_to_thread=True)
+def delete_source_pages(
+    slug: FromPath[str], file_name: FromPath[str], data: PageDeletion
+) -> dict[str, Any]:
+    """Take slides or pages out of a deck or PDF, in place. Threaded: 100 MB takes seconds."""
+    try:
+        return delete_pages(slug, file_name, data.pages)
+    except OperationFailed as failure:
+        raise ClientException(detail=str(failure)) from failure

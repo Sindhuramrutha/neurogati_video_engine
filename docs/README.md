@@ -47,6 +47,15 @@ docs/
 ├── architecture/
 │   └── system-map.md            ← what is BUILT: boundaries, contracts, invariants
 │
+├── operations/
+│   ├── extraction-pictures-sop.md  How a figure's picture is changed, and checked
+│   ├── assets-and-design-sop.md    Pictures, brand assets and the look, then transferring
+│   ├── scene-plan-sop.md           Building, checking and transferring the plan
+│   ├── script-and-staging-sop.md   Writing, checking and transferring the script
+│   ├── generation-sop.md           Deciding, making, checking and transferring the shots
+│   ├── scripted-scenes-sop.md      A folder and a script per scene; the resource library
+│   └── change-flags-sop.md         When a layer changes, the layers after it are flagged
+│
 ├── decisions/                   ADRs (Proposed until committed)
 │   ├── 0001-preserve-audio-first-timing.md
 │   ├── 0002-structured-output-over-free-text.md

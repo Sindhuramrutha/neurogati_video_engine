@@ -1,5 +1,17 @@
 /**
- * Scripting stage — each plan section's narration, written as scenes.
+ * Script & Staging — four tabs, in the order the work happens.
+ *
+ * 1. Setup: what the Scene Plan handed on, the scenarios and variables used
+ *    across the script, and narration left over from sections the plan dropped.
+ * 2. Write: each section's narration as scenes, beside what it was planned
+ *    with. The Scripting agent (AI) only writes empty sections, or one you ask
+ *    it to redraft.
+ * 3. Check: fixed rules over the script, each pass / warn / fail with why.
+ * 4. Final & transfer: later stages read the transferred script
+ *    (`script_handoff.py`); a failing check blocks the transfer.
+ *
+ * Every pane is drawn and only the chosen one shown, so a tab change never
+ * redraws the page or loses typing.
  *
  * A scene is what is said and what is on screen while it is said. The section
  * list is the *plan's*: narration is keyed by `PlanSection.id`, so renaming or
@@ -16,14 +28,24 @@ import { editStageDocument, loadStageDocument, newItemIdentifier }
   from "/static/document-editing.js";
 import { requestJsonFromApi } from "/static/shared-client.js";
 import {
-  ICON, applicationState, escapeHtml, icon, projectApiPath, refreshProjectSummary, select,
-  showStageNotice, stageIcon,
+  ICON, applicationState, escapeHtml, footerNav, icon, moveToNextLayerButton, projectApiPath,
+  refreshProjectSummary, select, showStageNotice, stageHeader, stageNeighbours, whenItWas,
+  wireGotoButtons,
 } from "/static/ui-kit.js";
+
+const SCRIPT_TABS = [
+  ["setup", "Setup"], ["write", "Write"], ["check", "Check"], ["final", "Final & transfer"],
+];
+
+const currentScriptTab = () =>
+  SCRIPT_TABS.some(([key]) => key === applicationState.scriptTab)
+    ? applicationState.scriptTab : "setup";
+
+const CHECK_LABELS = { pass: "Pass", warn: "Warning", fail: "Fails", "n/a": "Not applicable" };
 
 /** View-only state. None of it belongs in the saved script. */
 const scriptViewState = {
   activeSectionId: null,
-  editorTab: "script",
   pendingSaveTimer: null,
   savePromise: null,
   saveAgain: false,
@@ -55,8 +77,12 @@ const formatClock = milliseconds => {
   const seconds = Math.round(milliseconds / 1000);
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 };
-const referenceLabel = reference =>
-  [reference.file_name, ...reference.heading_path].join(" › ");
+/** Where a section draws from, in the source's own terms: "Slide 3", or the
+ *  heading path. The project has one source file, so its name is never needed. */
+const referenceLabel = reference => reference.slide_number
+  ? `Slide ${reference.slide_number}${reference.heading_path.length
+      ? ` · ${reference.heading_path.at(-1)}` : ""}`
+  : reference.heading_path.length ? reference.heading_path.join(" › ") : "The whole source";
 
 export async function renderScriptStagingStage(stage, navigateToStage, renderAgentStage) {
   const body = select("#stage-body");
@@ -80,8 +106,8 @@ export async function renderScriptStagingStage(stage, navigateToStage, renderAge
   const sections = script.plan_sections;
   if (!sections.length) {
     body.innerHTML = `
-      <div class="card">
-        ${scriptingHeader()}
+      ${scriptingHeader()}
+      <div class="card stage-content">
         <div class="empty">
           <h3>No sections to write for</h3>
           <p>Narration is written per planned section. Build the scene plan first.</p>
@@ -89,7 +115,7 @@ export async function renderScriptStagingStage(stage, navigateToStage, renderAge
             ${icon(ICON.arrowLeft)} Go to the Scene Plan</button>
         </div>
       </div>`;
-    wireNavigation(navigateToStage);
+    wireGotoButtons(navigateToStage);
     select("#scripting-agent-button").onclick = () => renderAgentStage(stage);
     return;
   }
@@ -99,51 +125,157 @@ export async function renderScriptStagingStage(stage, navigateToStage, renderAge
     scriptViewState.activeSectionId = sections[0].id;
   }
 
-  // Stranded and out-of-date narration have their own places on the page; the
-  // notice keeps the rest.
-  const shownElsewhere = /belong to sections no longer in the plan|were written against an earlier/;
-  const warnings = script.warnings.filter(warning => !shownElsewhere.test(warning));
+  let handoff = { checks: [], failing: 0, warning: 0, has_transferred: false, pending: false };
+  try {
+    handoff = await requestJsonFromApi(projectApiPath("/script/handoff"));
+  } catch (handoffFailure) {
+    console.error("script hand-off load failed", handoffFailure);
+  }
+  const tab = currentScriptTab();
+  const pane = (key, content) =>
+    `<section class="plan-pane" data-script-pane="${key}" ${key === tab ? "" : "hidden"}>${content}</section>`;
 
   body.innerHTML = `
-    <div class="card">
-      ${scriptingHeader()}
-      ${renderDraftBar(script, sections)}
-
-      ${warnings.length ? `
-        <div class="notice warn" style="margin-bottom:14px">
-          ${warnings.map(escapeHtml).join(" · ")}
-        </div>` : ""}
-
-      ${renderStrandedNarration(script, sections)}
-
-      <div class="script-grid">
-        ${renderSectionList(script, sections)}
-        ${renderEditor(script, sections)}
-        <div>
-          ${renderSectionContext(script, sections)}
-          ${renderScenarioPanel(script)}
-          ${renderVariablePanel(script)}
+    ${scriptingHeader()}
+    <div class="stage-content stage-content-bare">
+      <div class="extraction-tabs plan-tabs script-tabs">
+        <nav class="x-tabs" role="tablist" aria-label="Script & Staging steps">
+          ${SCRIPT_TABS.map(([key, label], index) => `
+            <button role="tab" class="x-tab ${key === tab ? "on" : ""}" data-script-tab="${key}"
+                    aria-selected="${key === tab}">
+              <span class="x-tab-number">${index + 1}</span>
+              <b class="x-tab-label">${label}</b>
+              ${key === "check" && handoff.failing ? `<span class="plan-tab-count fail">${handoff.failing}</span>`
+                : key === "check" && handoff.warning ? `<span class="plan-tab-count warn">${handoff.warning}</span>` : ""}
+              ${key === "setup" && script.orphaned?.length ? `<span class="plan-tab-count warn"
+                  title="Narration left over from earlier plans">${script.orphaned.length}</span>` : ""}
+            </button>`).join("")}
+        </nav>
+        <div class="x-tab-body" role="tabpanel">
+          ${pane("setup", renderSetup(script, sections))}
+          ${pane("write", `
+            ${renderDraftBar(script, sections)}
+            <div class="script-grid">
+              ${renderSectionList(script, sections)}
+              ${renderEditor(script, sections)}
+              <div>${renderSectionContext(script, sections)}</div>
+            </div>`)}
+          ${pane("check", renderScriptChecks(handoff))}
+          ${pane("final", renderScriptFinal(script, sections, handoff, stage))}
         </div>
       </div>
-
-      ${renderFooterNav(stage, script)}
+      ${renderFooterNav(stage, script, handoff, tab)}
     </div>`;
 
+  lastScriptHandoff = handoff;
   wireScriptingStage(stage, navigateToStage, renderAgentStage);
 }
 
-function scriptingHeader() {
+/* ---- 1. Setup ---------------------------------------------------------------- */
+
+function renderSetup(script, sections) {
+  const planned = sections.reduce((sum, s) => sum + s.estimated_seconds, 0);
   return `
-    <div class="card-head">
-      <span class="card-icon">${stageIcon("script-staging", 21)}</span>
+    <div class="plan-brief">
+      <section class="panel">
+        <div class="panel-head"><h3>Handed on by the Scene Plan</h3></div>
+        <p class="panel-sub">${sections.length} section(s), about ${Math.round(planned / 60)} min
+          planned${script.selected_audience ? `, for ${escapeHtml(script.selected_audience)}` : ""}.
+          Narration is written for these, and only these.</p>
+        <ol class="plan-final-list">
+          ${sections.map(section => `<li><b>${escapeHtml(section.title || "Untitled section")}</b>
+            <span>${section.estimated_seconds} s</span></li>`).join("")}
+        </ol>
+        ${(script.plan_objectives ?? []).length ? `
+          <p class="panel-sub" style="margin-top:12px">Objectives:</p>
+          <ol class="plan-final-list">${script.plan_objectives.map(o =>
+            `<li>${escapeHtml(o.text)}</li>`).join("")}</ol>` : ""}
+      </section>
       <div>
-        <h2>Script &amp; Staging</h2>
-        <p>Write each section as scenes: what is said, and what is on screen.</p>
+        ${renderScenarioPanel(script)}
+        ${renderVariablePanel(script)}
       </div>
-      <button class="btn" id="scripting-agent-button">
-        ${icon(ICON.gear, 14, 1.8)} Agent &amp; instructions
-      </button>
-    </div>`;
+    </div>
+    ${renderStrandedNarration(script, sections)}`;
+}
+
+/* ---- 3. Check ---------------------------------------------------------------- */
+
+function renderScriptChecks(handoff) {
+  return `
+    <section class="panel">
+      <div class="panel-head"><h3>The checks the script goes through</h3></div>
+      <p class="panel-sub">Fixed rules over the script, its plan, the extraction and the
+        review — no AI, the same script always gets the same result. A failing check
+        blocks the transfer; a warning is shown and allowed.</p>
+      <table class="assets-rule-table plan-checks">
+        <thead><tr><th>Result</th><th>Check</th><th>Rule</th><th>Found</th></tr></thead>
+        <tbody>
+          ${handoff.checks.map(check => `
+            <tr>
+              <td><span class="plan-check ${check.status === "n/a" ? "na" : check.status}">${
+                CHECK_LABELS[check.status] ?? check.status}</span></td>
+              <td><b>${escapeHtml(check.name)}</b></td>
+              <td>${escapeHtml(check.rule)}</td>
+              <td>${escapeHtml(check.detail)}</td>
+            </tr>`).join("")}
+        </tbody>
+      </table>
+    </section>`;
+}
+
+/* ---- 4. Final & transfer ----------------------------------------------------- */
+
+function renderScriptFinal(script, sections, handoff, stage) {
+  const written = sections.filter(s => script.per_section[s.id]?.word_count > 0);
+  const [tone, title, detail] = !written.length
+    ? ["blocked", "Nothing to transfer yet", "Write the narration on the Write tab."]
+    : handoff.failing
+      ? ["stale", `${handoff.failing} check(s) fail`, "Fix them (see the Check tab), then transfer."]
+      : !handoff.has_transferred
+        ? ["pending", "Ready to transfer",
+           "Nothing has been transferred yet, so later stages read your working script."]
+        : handoff.pending
+          ? ["pending", "Ready to transfer",
+             "This differs from what the next layer has. Transfer to hand it the changes."]
+          : ["ready", "Transferred to the next layer",
+             `The next layer has had exactly this since ${whenItWas(handoff.transferred_at)}.`];
+  const canTransfer = written.length && !handoff.failing
+    && (handoff.pending || !handoff.has_transferred);
+
+  return `
+    <div class="final-head ${tone}">
+      <span class="run-icon">${icon(tone === "ready" ? ICON.check : ICON.alert, 18, 2.3)}</span>
+      <span class="run-text">
+        <b>${escapeHtml(title)}</b>
+        <span>${escapeHtml(detail)}</span>
+        <span class="final-totals">${written.length} of ${sections.length} section(s) written ·
+          ${script.total_word_count} words · ~${Math.round(script.total_estimated_seconds / 60)} min ·
+          ${handoff.warning} warning(s)</span>
+      </span>
+      ${tone === "ready" ? moveToNextLayerButton(stageNeighbours(stage).next, {
+          carries: "The transferred narration and its scenes go on." })
+        : `<button class="btn btn-accent btn-transfer" id="transfer-script-button"
+                   ${canTransfer ? "" : "disabled"}>
+             Transfer to the next layer ${icon(ICON.arrowRight)}</button>`}
+    </div>
+    <section class="panel">
+      <div class="panel-head"><h3>The narration, section by section</h3></div>
+      <ol class="plan-final-list">
+        ${sections.map(section => {
+          const stats = script.per_section[section.id];
+          return `<li><b>${escapeHtml(section.title || "Untitled section")}</b>
+            <span>${stats?.word_count
+              ? `${stats.word_count} words · ~${stats.estimated_seconds} s of ${section.estimated_seconds} s · ${stats.scene_count} scene(s)`
+              : "not written"}</span></li>`;
+        }).join("")}
+      </ol>
+    </section>`;
+}
+
+function scriptingHeader() {
+  return stageHeader("script-staging", "Script & Staging",
+                     { agentButtonId: "scripting-agent-button" });
 }
 
 /* ---- drafting ------------------------------------------------------------ */
@@ -172,7 +304,9 @@ function renderDraftBar(script, sections) {
               placeholder="Guidance for every section (optional)"
               value="${escapeHtml(scriptViewState.draftInstruction)}"
               aria-label="Guidance for the drafts">
+       <span class="fact warn" title="Written by the Scripting agent: a model">AI</span>
        <button class="btn btn-accent" id="draft-unwritten-button"
+               title="The Scripting agent writes every empty section; written ones are never touched"
                ${isDrafting() ? "disabled" : ""}>Draft all unwritten</button>`);
   }
   return bar("ready", ICON.check, `All ${sections.length} sections have narration`,
@@ -190,10 +324,14 @@ function renderStrandedNarration(script, sections) {
   return `
     <div class="panel stranded-panel">
       <div class="panel-head">
-        <h3>Narration not attached to any section (${script.orphaned.length})</h3>
+        <h3>Narration from earlier plans (${script.orphaned.length})</h3>
+        <div class="spacer"></div>
+        <button class="btn danger" id="delete-unattached-button"
+                title="Delete every piece of narration that belongs to no section">
+          Delete all ${script.orphaned.length}</button>
       </div>
-      <p class="panel-sub">Written for sections the plan no longer has. Attach it to a
-        section to use it, or delete it.</p>
+      <p class="panel-sub">Written for sections the plan no longer has. It is not in the video.
+        Attach a piece to a section to use it, or delete it.</p>
       ${script.orphaned.map(entry => `
         <div class="stranded-row">
           <div class="stranded-text">
@@ -271,7 +409,7 @@ function renderEditor(script, sections) {
   const section = sections.find(s => s.id === scriptViewState.activeSectionId);
   const written = activeSectionScript(script);
   const scenes = written?.scenes ?? [];
-  const isScriptTab = scriptViewState.editorTab === "script";
+  const isScriptTab = applicationState.scriptEditorTab === "script";
   const isDraftingThis = scriptViewState.draftingSectionId === section.id;
   const words = countWords(scenes.map(scene => scene.narration).join(" "));
 
@@ -284,8 +422,9 @@ function renderEditor(script, sections) {
         </div>
         <div class="spacer"></div>
         <button class="btn ${words ? "" : "btn-accent"}" id="draft-section-button"
+                title="The Scripting agent (AI) writes this section from its source text"
                 ${isDrafting() ? "disabled" : ""}>
-          ${isDraftingThis ? "Drafting…" : words ? "Redraft this section" : "Draft this section"}
+          ${isDraftingThis ? "Drafting…" : words ? "Redraft this section (AI)" : "Draft this section (AI)"}
         </button>
       </div>
 
@@ -516,30 +655,62 @@ function renderVariablePanel(script) {
     </div>`;
 }
 
-function renderFooterNav(stage, script) {
-  const { stageDefinitions } = applicationState;
-  const stageIndex = stageDefinitions.findIndex(s => s.key === stage.key);
-  const previousStage = stageDefinitions[stageIndex - 1];
-  const nextStage = stageDefinitions[stageIndex + 1];
-  const hasAnyNarration = script.total_word_count > 0;
-
-  return `
-    <div class="footer-nav">
-      ${previousStage ? `
-        <button class="btn" data-goto="${previousStage.key}">
-          ${icon(ICON.arrowLeft)} Back to ${escapeHtml(previousStage.title)}
-        </button>` : ""}
+function renderFooterNav(stage, script, handoff, tab) {
+  const at = SCRIPT_TABS.findIndex(([key]) => key === tab);
+  const next = SCRIPT_TABS[at + 1];
+  return footerNav(stage, {
+    middle: `
       <span class="plan-total" style="margin-left:14px">
         ${script.total_word_count} words · ~${Math.round(script.total_estimated_seconds / 60)} min
-      </span>
-      <div class="spacer"></div>
-      ${nextStage ? `
-        <button class="btn btn-accent" data-goto="${nextStage.key}"
-                ${hasAnyNarration ? "" : "disabled"}
-                title="${hasAnyNarration ? "" : "Write narration for at least one section"}">
-          Next: ${escapeHtml(nextStage.title)} ${icon(ICON.arrowRight)}
-        </button>` : ""}
-    </div>`;
+      </span>`,
+    end: next ? `
+      <button class="btn btn-accent btn-move-next" data-script-tab="${next[0]}">
+        Move to ${next[1]} ${icon(ICON.arrowRight)}</button>` : null,
+    next: {
+      carries: handoff.has_transferred ? "The transferred narration and its scenes go on." : "",
+      warning: !handoff.has_transferred
+        ? "The script has never been transferred: later stages read your working script "
+          + "until you transfer it on the Final & transfer tab."
+        : handoff.pending
+          ? "Your latest changes are not transferred — later stages still read the last "
+            + "transferred script."
+          : "",
+    },
+  });
+}
+
+/** Redraw only the footer, for a tab change. */
+let lastScriptHandoff = null;
+
+let redrawScript = async () => {};
+
+function showScriptTab(tab, stage, navigateToStage) {
+  applicationState.scriptTab = tab;
+  // Typing saves quietly, without a redraw; the checks and the summary are
+  // drawn fresh, so they never describe the script as it was before it.
+  if (tab === "check" || tab === "final") {
+    flushPendingSave().then(() => redrawScript());
+    return;
+  }
+  document.querySelectorAll("[data-script-pane]").forEach(pane => {
+    pane.hidden = pane.dataset.scriptPane !== tab;
+  });
+  document.querySelectorAll(".script-tabs .x-tab").forEach(tabButton => {
+    const on = tabButton.dataset.scriptTab === tab;
+    tabButton.classList.toggle("on", on);
+    tabButton.setAttribute("aria-selected", String(on));
+  });
+  const footer = select(".stage-content > .footer-nav");
+  if (footer && lastScriptHandoff) {
+    footer.outerHTML = renderFooterNav(stage, applicationState.script, lastScriptHandoff, tab);
+    wireGotoButtons(navigateToStage);
+    document.querySelectorAll(".footer-nav [data-script-tab]").forEach(button => {
+      button.onclick = () => {
+        showScriptTab(button.dataset.scriptTab, stage, navigateToStage);
+        select(".x-tabs")?.scrollIntoView({ block: "start", behavior: "smooth" });
+      };
+    });
+  }
 }
 
 /* ---- persistence -------------------------------------------------------- */
@@ -578,14 +749,9 @@ const scriptPayload = script => ({
 
 /* ---- wiring ------------------------------------------------------------- */
 
-function wireNavigation(navigateToStage) {
-  document.querySelectorAll("[data-goto]").forEach(button => {
-    button.onclick = () => navigateToStage(button.dataset.goto);
-  });
-}
-
 function wireScriptingStage(stage, navigateToStage, renderAgentStage) {
   const rerender = () => renderScriptStagingStage(stage, navigateToStage, renderAgentStage);
+  redrawScript = rerender;
   const change = async applyEdit => {
     await flushPendingSave();
     if (isDrafting()) {
@@ -598,8 +764,40 @@ function wireScriptingStage(stage, navigateToStage, renderAgentStage) {
     });
   };
 
-  wireNavigation(navigateToStage);
+  wireGotoButtons(navigateToStage);
   select("#scripting-agent-button").onclick = () => renderAgentStage(stage);
+
+  // Tabs: shown and hidden in place -- every pane is already drawn.
+  document.querySelectorAll("[data-script-tab]").forEach(button => {
+    button.onclick = async () => {
+      await flushPendingSave();
+      showScriptTab(button.dataset.scriptTab, stage, navigateToStage);
+      if (button.closest(".footer-nav")) {
+        select(".x-tabs")?.scrollIntoView({ block: "start", behavior: "smooth" });
+      }
+    };
+  });
+
+  const transferButton = select("#transfer-script-button");
+  if (transferButton && !transferButton.disabled) {
+    transferButton.onclick = () => runScriptAction({
+      path: "/script/transfer", rerender,
+      done: "Transferred: the stages after this read exactly this script.",
+    });
+  }
+
+  const clearLeftovers = select("#delete-unattached-button");
+  if (clearLeftovers) {
+    clearLeftovers.onclick = () => {
+      const count = applicationState.script.orphaned?.length ?? 0;
+      if (!window.confirm(`Delete all ${count} piece(s) of narration that belong to no section? `
+          + "This cannot be undone.")) return;
+      runScriptAction({
+        path: "/script/unattached/delete", rerender,
+        done: `Deleted ${count} piece(s) of leftover narration.`,
+      });
+    };
+  }
 
   document.querySelectorAll("[data-section]").forEach(row => {
     row.onclick = async () => {
@@ -612,7 +810,7 @@ function wireScriptingStage(stage, navigateToStage, renderAgentStage) {
   document.querySelectorAll("[data-editor-tab]").forEach(tab => {
     tab.onclick = async () => {
       await flushPendingSave();
-      scriptViewState.editorTab = tab.dataset.editorTab;
+      applicationState.scriptEditorTab = tab.dataset.editorTab;
       rerender();
     };
   });

@@ -13,8 +13,12 @@ import {
   openRawFile, releaseRawFile, renderRawFileShell,
 } from "/static/raw-file-viewer.js";
 import {
-  renderModelMarkdown, requestJsonFromApi, showNoticeIn,
+  renderModelMarkdown, requestJsonFromApi, showNoticeIn, uploadJsonToApi,
 } from "/static/shared-client.js";
+import { paintProjectPicker, startProjectPicker } from "/static/project-picker.js";
+import {
+  paintRenderNavBadge, renderRenderPage, startRenderDock,
+} from "/static/render-dock.js";
 import { renderAssetsStage } from "/static/stage-assets.js";
 import { renderExportStage } from "/static/stage-export.js";
 import { renderExtractionStage } from "/static/stage-extraction.js";
@@ -24,12 +28,24 @@ import { renderScriptStagingStage } from "/static/stage-script-staging.js";
 import { renderReviewingStage } from "/static/stage-reviewing.js";
 import { renderStudioStage } from "/static/stage-studio.js";
 import {
-  ICON, applicationState, clearProjectScopedState, escapeHtml, fileTypeBadge,
-  formatFileSize, icon, onProjectSummaryRefreshed, projectApiPath, select, showStageNotice,
-  sortedSources, stageIcon, stageStateFor,
+  applicationState, clearProjectScopedState, escapeHtml, fileTypeBadge, footerNav,
+  formatFileSize, icon, onProjectSummaryRefreshed, onUpstreamAction, paintUpstreamFlags,
+  projectApiPath, refreshProjectSummary, refreshUpstream, select,
+  showStageNotice, stageHeader, stageIcon, stageStateFor, whenItWas,
+  wireGotoButtons,
 } from "/static/ui-kit.js";
 
 /* ---- boot --------------------------------------------------------------- */
+
+/** Render is a page of its own, not a pipeline stage: it has a tab in the
+ *  sidebar before Studio -- a render writes the timeline Studio shows -- but
+ *  no step number and nothing to hand on. */
+const RENDER_PAGE = { key: "render", title: "Render" };
+
+function isKnownPage(key) {
+  return key === RENDER_PAGE.key
+    || applicationState.stageDefinitions.some(stage => stage.key === key);
+}
 
 async function boot() {
   select("#main-inner").innerHTML = `<div class="empty muted">Loading…</div>`;
@@ -41,7 +57,7 @@ async function boot() {
     // first stage, and the address is corrected by replacement so the back
     // button is not filled with a place nobody chose.
     const { stageKey } = readAddress();
-    const known = applicationState.stageDefinitions.some(s => s.key === stageKey);
+    const known = isKnownPage(stageKey);
     applicationState.activeStageKey =
       known ? stageKey : applicationState.stageDefinitions[0]?.key;
     writeAddress({ replace: true });
@@ -172,6 +188,43 @@ function navigateToStage(stageKey, { replaceAddress = false } = {}) {
   renderMain();
 }
 
+/**
+ * What the banner's two buttons do, per layer. Redo is the rule-based part
+ * where there is one (gather again; re-sync a deck plan, keeping its edits) and
+ * otherwise the tab where the work is redone. Either way the layer is then
+ * transferred again, which is what clears its flag.
+ */
+const UPSTREAM_TABS = {
+  assets: ["assetsTab", "extracted"],
+  "scene-plan": ["planTab", "outline"],
+  "script-staging": ["scriptTab", "write"],
+  generation: ["generationTab", "decide"],
+};
+
+onUpstreamAction(async (layer, action) => {
+  let notice = null;
+  if (action === "redo") {
+    try {
+      if (layer === "assets") {
+        await requestJsonFromApi(projectApiPath("/assets/refresh"), { method: "POST" });
+        notice = ["ok", "Gathered again from the new extraction. Your Use and Skip are kept."];
+      }
+      if (layer === "scene-plan") {
+        const plan = await requestJsonFromApi(projectApiPath("/plan/resync"), { method: "POST" });
+        notice = ["ok", `Re-synced with the deck: ${plan.resync.added.length} section(s) added, `
+          + `${plan.resync.removed.length} removed. Your edits are kept. Check it, then transfer.`];
+      }
+    } catch (failure) {
+      notice = ["warn", `${failure.message} Redo this layer by hand, then transfer.`];
+    }
+  }
+  const [tabKey, redoTab] = UPSTREAM_TABS[layer] ?? [];
+  if (tabKey) applicationState[tabKey] = action === "redo" ? redoTab : "final";
+  navigateToStage(layer === "render" ? RENDER_PAGE.key : layer);
+  await refreshProjectSummary();
+  if (notice) showStageNotice(...notice);
+});
+
 /* ---- sidebar ------------------------------------------------------------ */
 
 function renderSidebar() {
@@ -180,7 +233,7 @@ function renderSidebar() {
   const navigationItems = stageDefinitions.map((stage, index) => {
     const state = stageStateFor(stage.key);
     const isActive = activeStageKey === stage.key;
-    return `
+    return `${stage.key === "studio" ? renderTab() : ""}
       <button class="nav-item ${isActive ? "active" : ""}" data-stage="${stage.key}"
               ${isActive ? 'aria-current="page"' : ""}>
         <span class="nav-icon">${stageIcon(stage.key)}</span>
@@ -190,15 +243,29 @@ function renderSidebar() {
   }).join("");
 
   select("#sidebar").innerHTML = navigationItems;
+  paintRenderNavBadge();
+  paintUpstreamFlags();
 
   document.querySelectorAll(".nav-item").forEach(item => {
     item.onclick = () => navigateToStage(item.dataset.stage);
   });
 }
 
+function renderTab() {
+  const isActive = applicationState.activeStageKey === RENDER_PAGE.key;
+  return `
+      <button class="nav-item nav-page ${isActive ? "active" : ""}" data-stage="${RENDER_PAGE.key}"
+              ${isActive ? 'aria-current="page"' : ""}>
+        <span class="nav-icon">${stageIcon(RENDER_PAGE.key)}</span>
+        <span class="nav-label">${RENDER_PAGE.title}</span>
+        <span class="nav-badge render-badge" id="render-nav-badge" hidden></span>
+      </button>`;
+}
+
 /* ---- main --------------------------------------------------------------- */
 
 function renderMain() {
+  paintProjectPicker();
   const container = select("#main-inner");
 
   if (!applicationState.selectedProject) {
@@ -212,12 +279,17 @@ function renderMain() {
     return;
   }
 
-  const stage = applicationState.stageDefinitions
-    .find(s => s.key === applicationState.activeStageKey);
+  const stage = applicationState.activeStageKey === RENDER_PAGE.key ? RENDER_PAGE
+    : applicationState.stageDefinitions.find(s => s.key === applicationState.activeStageKey);
 
   container.innerHTML = `
-    <div class="notice" id="stage-notice" hidden></div>
+    <div class="notice" id="stage-notice" role="status" aria-live="polite"
+         title="Click to dismiss" hidden></div>
     <div id="stage-body" data-stage="${stage.key}"></div>`;
+
+  // Every page render asks what changed upstream: the flags are painted when the
+  // answer arrives, and a stage that draws later reads them from the state.
+  refreshUpstream();
 
   // Stage views own their own rendering; the shell only routes. Adding a stage
   // view means one more line here and one more module.
@@ -231,211 +303,182 @@ function renderMain() {
     studio: () => renderStudioStage(stage, navigateToStage, renderAgentStage),
     reviewing: () => renderReviewingStage(stage, navigateToStage, renderAgentStage),
     export: () => renderExportStage(stage, navigateToStage, renderAgentStage),
+    render: () => renderRenderPage(stage),
   };
   (stageRenderers[stage.key] ?? (() => renderAgentStage(stage)))();
 }
 
 /* ---- inputs stage ------------------------------------------------------- */
 
+/**
+ * A project is made from one source file, and that file runs through every
+ * layer. So this page is one drop zone until there is a file, and one card once
+ * there is: preview it, replace it, or remove it. Replacing asks first, and says
+ * what happens to the work after it.
+ */
+const SOURCE_TYPES = ".pdf,.md,.txt,.docx,.pptx";
+
 function renderInputsStage(stage) {
-  const sources = sortedSources();
+  const source = applicationState.selectedProject?.source ?? null;
 
   select("#stage-body").innerHTML = `
-    <div class="card">
-      <div class="card-head">
-        <span class="card-icon">${stageIcon("inputs", 21)}</span>
-        <div>
-          <h2>${escapeHtml(stage.title)}</h2>
-          <p>Source documents for this project.</p>
-        </div>
+    ${stageHeader("inputs", stage.title, {
+      actions: `
         <span class="supported-types" title="Supported source documents">
           ${["pdf", "md", "docx", "pptx", "txt"].map(fileTypeBadge).join("")}
-        </span>
-      </div>
+        </span>`,
+    })}
 
-      <div class="dropzone" id="dropzone">
-        <div class="cloud">${icon(
-          `<path d="M16 16l-4-4-4 4M12 12v9"/>
-           <path d="M20.4 14.5A5 5 0 0 0 18 5a7 7 0 0 0-13.3 2A4.5 4.5 0 0 0 5 16"/>`, 38, 1.5)}
-        </div>
-        <div class="lead">Drag and drop your files here</div>
-        <div class="or">or</div>
-        <button class="btn btn-accent" id="choose-files-button">
-          ${icon(`<path d="M12 19V5M5 12l7-7 7 7"/>`)} Choose files
-        </button>
-        <input type="file" id="file-picker" multiple hidden
-               accept=".pdf,.md,.txt,.docx,.pptx">
-      </div>
-
-      <div class="list-head">
-        <h3>Uploaded files (${sources.length})</h3>
-        <div class="sort">
-          <label for="sort-select">Sort by</label>
-          <select id="sort-select">
-            <option value="name-asc">Name (A–Z)</option>
-            <option value="name-desc">Name (Z–A)</option>
-            <option value="size-desc">Size (largest)</option>
-            <option value="type-asc">Type</option>
-          </select>
-        </div>
-      </div>
-
-      ${sources.length ? sources.map(file => `
-        <div class="file-entry">
-          <div class="file-row">
-            ${fileTypeBadge(file.suffix)}
-            <span class="file-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</span>
-            ${file.supported ? "" : `<span class="chip">unsupported</span>`}
-            <span class="file-size">${formatFileSize(file.bytes)}</span>
-            <span class="file-actions">
-              <button class="btn-icon" data-preview="${escapeHtml(file.name)}"
-                      aria-expanded="false" title="Preview this file"
-                      aria-label="Preview ${escapeHtml(file.name)}">
-                ${icon(`<path d="M6 9l6 6 6-6"/>`, 16, 2.2)}
-              </button>
-              <button class="btn-icon danger" data-delete="${escapeHtml(file.name)}"
-                      aria-label="Delete ${escapeHtml(file.name)}" title="Delete">
-                ${icon(`<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>`, 16, 1.8)}
-              </button>
-            </span>
+    <div class="card stage-content">
+      ${source ? `
+        <div class="source-card" id="source-card">
+          <div class="source-card-row">
+            ${fileTypeBadge(source.suffix)}
+            <div class="source-card-name">
+              <b title="${escapeHtml(source.name)}">${escapeHtml(source.name)}</b>
+              <span>${escapeHtml([source.kind, source.measure, formatFileSize(source.bytes)]
+                .filter(Boolean).join(" · "))}</span>
+            </div>
+            <button class="btn" data-preview="${escapeHtml(source.name)}" aria-expanded="false">
+              ${icon(`<path d="M6 9l6 6 6-6"/>`, 15, 2.2)} Preview</button>
+            <button class="btn" id="replace-source-button">Replace</button>
+            <button class="btn-icon danger" id="remove-source-button"
+                    title="Remove the source" aria-label="Remove ${escapeHtml(source.name)}">
+              ${icon(`<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>`, 16, 1.8)}
+            </button>
           </div>
-          <div class="file-preview" data-preview-for="${escapeHtml(file.name)}" hidden></div>
-        </div>`).join("")
-        : `<div class="empty" style="padding:26px">
-             <p class="muted" style="margin:0">No files yet — add one to begin.</p>
-           </div>`}
+          <div class="file-preview" data-preview-for="${escapeHtml(source.name)}" hidden></div>
+          <p class="source-card-note">This file runs through every layer. To use another,
+            replace it (or drop the new file here): the work after Extraction is kept and
+            marked out of date until it is redone.</p>
+        </div>`
+        : `
+        <div class="dropzone" id="dropzone">
+          <div class="cloud">${icon(
+            `<path d="M16 16l-4-4-4 4M12 12v9"/>
+             <path d="M20.4 14.5A5 5 0 0 0 18 5a7 7 0 0 0-13.3 2A4.5 4.5 0 0 0 5 16"/>`, 38, 1.5)}
+          </div>
+          <div class="lead">Drop your source file here</div>
+          <div class="or">A deck, PDF, Word, Markdown or text file. One file: it runs through
+            every layer.</div>
+          <button class="btn btn-accent" id="choose-files-button">
+            ${icon(`<path d="M12 19V5M5 12l7-7 7 7"/>`)} Choose a file
+          </button>
+        </div>`}
+      <input type="file" id="file-picker" hidden accept="${SOURCE_TYPES}">
 
-      ${renderInputsFooter(stage, sources.length)}
+      ${renderInputsFooter(stage, source)}
     </div>`;
 
-  wireInputsStage(stage);
+  wireInputsStage(stage, source);
 }
 
-function renderInputsFooter(stage, sourceCount) {
-  const nextStage = applicationState.stageDefinitions[
-    applicationState.stageDefinitions.findIndex(s => s.key === stage.key) + 1];
-  if (!nextStage) return "";
-
-  return `
-    <div class="footer-nav">
-      <div class="spacer"></div>
-      <button class="btn btn-accent" data-goto="${nextStage.key}"
-              ${sourceCount ? "" : "disabled"}
-              title="${sourceCount ? "" : "Add at least one source file first"}">
-        Next: ${escapeHtml(nextStage.title)} ${icon(ICON.arrowRight)}
-      </button>
-    </div>`;
+function renderInputsFooter(stage, source) {
+  return footerNav(stage, {
+    next: {
+      disabled: !source,
+      disabledReason: "Add the source file first",
+      carries: source ? `${source.name} goes on to be extracted.` : "",
+    },
+  });
 }
 
-function wireInputsStage(stage) {
-  const dropzone = select("#dropzone");
+function wireInputsStage(stage, source) {
   const filePicker = select("#file-picker");
-
-  select("#choose-files-button").onclick = () => filePicker.click();
   filePicker.onchange = () => {
-    uploadSourceFiles(stage, filePicker.files);
-    filePicker.value = "";  // allow re-selecting the same file after a delete
+    useSourceFile(stage, filePicker.files);
+    filePicker.value = "";  // allow choosing the same file again
   };
+  const choose = select("#choose-files-button");
+  if (choose) choose.onclick = () => filePicker.click();
+  const replace = select("#replace-source-button");
+  if (replace) replace.onclick = () => filePicker.click();
+  const remove = select("#remove-source-button");
+  if (remove) remove.onclick = () => deleteSourceFile(stage, source.name);
 
-  dropzone.addEventListener("dragover", event => {
+  // The drop zone takes a first file; the card takes a replacement.
+  const target = select("#dropzone") ?? select("#source-card");
+  target.addEventListener("dragover", event => {
     event.preventDefault();
-    dropzone.classList.add("over");
+    target.classList.add("over");
   });
-  dropzone.addEventListener("dragleave", () => dropzone.classList.remove("over"));
-  dropzone.addEventListener("drop", event => {
+  target.addEventListener("dragleave", () => target.classList.remove("over"));
+  target.addEventListener("drop", event => {
     event.preventDefault();
-    dropzone.classList.remove("over");
-    uploadSourceFiles(stage, event.dataTransfer.files);
+    target.classList.remove("over");
+    useSourceFile(stage, event.dataTransfer.files);
   });
-
-  select("#sort-select").value = applicationState.sourceSortOrder;
-  select("#sort-select").onchange = event => {
-    applicationState.sourceSortOrder = event.target.value;
-    renderInputsStage(stage);
-  };
 
   document.querySelectorAll("[data-preview]").forEach(button => {
     button.onclick = () => toggleSourcePreview(button);
   });
-
-  document.querySelectorAll("[data-delete]").forEach(button => {
-    button.onclick = () => deleteSourceFile(stage, button.dataset.delete);
-  });
-
-  document.querySelectorAll("[data-goto]").forEach(button => {
-    button.onclick = () => navigateToStage(button.dataset.goto);
-  });
+  wireGotoButtons(navigateToStage);
 }
 
-async function uploadSourceFiles(stage, fileList) {
+/** Use this file as the project's source: the first one, or a replacement. */
+async function useSourceFile(stage, fileList) {
   if (!fileList?.length) return;
+  if (fileList.length > 1) {
+    showStageNotice("warn", `A project has one source file. ${fileList.length} were dropped; `
+      + "drop just the one this video is made from.");
+    return;
+  }
   if (applicationState.isUploadInFlight) {
-    // Dropping a second batch mid-upload would race two responses to overwrite
-    // `selectedProject`. Refusing silently would look like the drop missed.
     showStageNotice("warn", "An upload is already running — wait for it to finish.");
     return;
   }
+  const file = fileList[0];
+  const current = applicationState.selectedProject?.source;
+  if (current && !window.confirm(`Replace ${current.name} with ${file.name}?\n\n`
+      + "Extract the new file next. Every layer after Extraction keeps its work and is "
+      + "marked out of date until it is redone, or transferred as it stands.")) return;
+
   applicationState.isUploadInFlight = true;
-
-  const dropzone = select("#dropzone");
-  dropzone?.classList.add("busy");
-
+  const host = select("#dropzone") ?? select("#source-card");
+  const lead = host?.querySelector(".lead, .source-card-name span");
+  const leadText = lead?.textContent;
+  host?.classList.add("busy");
   try {
     const formData = new FormData();
-    [...fileList].forEach((file, index) => formData.append(`file${index}`, file));
-
-    const uploadResult = await requestJsonFromApi(
-      projectApiPath("/sources"), { method: "POST", body: formData });
-
-    applicationState.selectedProject = uploadResult.project;
+    formData.append("file", file);
+    // A large deck takes minutes to send: say how far it has got. Past 100% the
+    // server is still checking and saving.
+    const result = await uploadJsonToApi(
+      projectApiPath(`/sources${current ? "?replace=true" : ""}`), formData, fraction => {
+        if (lead) lead.textContent = fraction < 1 ? `Uploading… ${Math.floor(fraction * 100)}%` : "Saving…";
+      });
+    applicationState.selectedProject = result.project;
+    applicationState.previewFileName = null;
     renderSidebar();
     renderMain();
-    reportUploadOutcome(uploadResult);
+    showStageNotice(result.replaced ? "warn" : "ok", result.replaced
+      ? `${result.accepted.file_name} replaced ${result.replaced}. Extract it next; the layers `
+        + "after Extraction are marked out of date."
+      : `${result.accepted.file_name} is the source. Extract it next.`
+        + (result.accepted.was_renamed ? " (Its name was made safe for a file name.)" : ""));
   } catch (uploadFailure) {
     console.error("upload failed", uploadFailure);
-    showStageNotice("bad", `Upload failed — ${uploadFailure.message}`);
+    showStageNotice("bad", uploadFailure.message);
   } finally {
     applicationState.isUploadInFlight = false;
-    dropzone?.classList.remove("busy");
+    host?.classList.remove("busy");
+    if (lead && lead.isConnected) lead.textContent = leadText;
   }
-}
-
-function reportUploadOutcome({ accepted = [], rejected = [] }) {
-  // Partial success is a real outcome. Reporting "3 added" while silently
-  // dropping a fourth file is the kind of quiet lie that erodes trust.
-  const renamedFiles = accepted.filter(file => file.was_renamed);
-  const messageParts = [];
-
-  if (accepted.length) messageParts.push(`${accepted.length} added`);
-  if (renamedFiles.length) messageParts.push(`${renamedFiles.length} renamed to a safe filename`);
-  if (rejected.length) {
-    const details = rejected.map(file => `${file.file_name} — ${file.reason}`).join("; ");
-    messageParts.push(`${rejected.length} rejected (${details})`);
-  }
-  if (!messageParts.length) return;
-
-  showStageNotice(rejected.length ? "warn" : "ok", messageParts.join(" · "));
 }
 
 async function deleteSourceFile(stage, fileName) {
-  if (applicationState.isDeleteInFlight) {
-    showStageNotice("warn", "Still removing the last file — try again in a moment.");
-    return;
-  }
+  if (!window.confirm(`Remove ${fileName}?\n\nThe project has no source until you add one. `
+      + "What was extracted and transferred stays where it is.")) return;
+  if (applicationState.isDeleteInFlight) return;
   applicationState.isDeleteInFlight = true;
   try {
     const deleteResult = await requestJsonFromApi(
       projectApiPath(`/sources/${encodeURIComponent(fileName)}`), { method: "DELETE" });
-
     applicationState.selectedProject = deleteResult.project;
-    // A deleted file must not linger in the preview. (The server drops it from
-    // the extraction selection itself.)
-    if (applicationState.previewFileName === fileName) {
-      applicationState.previewFileName = null;
-    }
+    applicationState.previewFileName = null;
     renderSidebar();
     renderMain();
-    showStageNotice("ok", `Removed ${fileName}.`);
+    showStageNotice("ok", `Removed ${fileName}. Add the source file to go on.`);
   } catch (deleteFailure) {
     console.error("delete failed", deleteFailure);
     showStageNotice("bad", `Could not remove ${fileName} — ${deleteFailure.message}`);
@@ -469,15 +512,12 @@ async function renderAgentStage(stage) {
   }
 
   body.innerHTML = `
-    <div class="card">
-      <div class="card-head">
-        <span class="card-icon">${stageIcon(stage.key, 21)}</span>
-        <div>
-          <h2>${escapeHtml(stage.title)}</h2>
-          <p>${escapeHtml(agent.role)}</p>
-        </div>
-        <span class="card-note">${escapeHtml(stage.produces)}</span>
-      </div>
+    ${stageHeader(stage.key, stage.title, {
+      actions: `<span class="card-note">${escapeHtml(stage.produces)}</span>`,
+      infoSummary: agent.role,
+    })}
+
+    <div class="card stage-content">
 
       <h3 class="section">Tools it can operate — ${agent.tools.length}</h3>
       <div class="tool-grid">${agent.tools.map(tool => `
@@ -645,6 +685,29 @@ select("#open-credentials-button").onclick = () => {
 };
 select("#close-credentials-button").onclick = closeCredentialsPanel;
 
+startRenderDock({
+  // Watch on the Render tab: that project's Studio, playing the rendered file.
+  watch: (slug, file, label) => {
+    if (slug !== applicationState.selectedProject?.slug) {
+      const chooser = select("#project-select");
+      chooser.value = slug;
+      chooser.dispatchEvent(new Event("change"));
+    }
+    applicationState.studioWatch = { slug, file, label };
+    navigateToStage("studio");
+  },
+});
+startProjectPicker({
+  // The deleted project may have been the open one: the list is re-read, and
+  // it chooses another and clears what was loaded for the old one.
+  onDeleted: async () => {
+    await refreshProjects();
+    writeAddress();
+    renderSidebar();
+    renderMain();
+  },
+});
+
 /** Ask the orchestrator — the master agent, not the stage you happen to be on.
  *
  *  This panel used to send your question to whichever stage tab was open, so
@@ -794,15 +857,6 @@ const INTRO_MESSAGE = `
 
 /** Timestamps are stored in UTC; a list that says 08:27 for something you asked
  *  at 13:57 reads as the wrong conversation. */
-function whenItWas(isoTimestamp) {
-  const when = new Date(isoTimestamp);
-  if (Number.isNaN(when.getTime())) return isoTimestamp.slice(0, 16).replace("T", " ");
-  const today = new Date().toDateString() === when.toDateString();
-  return when.toLocaleString(undefined, today
-    ? { hour: "2-digit", minute: "2-digit" }
-    : { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-}
-
 function resetConversationPanel() {
   applicationState.agentConversationId = null;
   select("#drawer-log").innerHTML = INTRO_MESSAGE;
@@ -955,15 +1009,21 @@ async function toggleSourcePreview(button) {
   try {
     const preview = await requestJsonFromApi(
       projectApiPath(`/sources/${encodeURIComponent(fileName)}/preview`));
-    panel.innerHTML = renderRawFileShell(fileName, preview);
+    panel.innerHTML = renderRawFileShell(fileName, preview, { pdfPages: true });
     panel.dataset.loaded = "true";
-    openRawFile(panel, fileName, preview.viewer);
+    openRawFile(panel, fileName, preview.viewer, { editable: true });
   } catch (previewFailure) {
     console.error("preview failed", previewFailure);
     panel.innerHTML = `<p class="muted" style="margin:0">
       Could not read this file — ${escapeHtml(previewFailure.message)}</p>`;
   }
 }
+
+/** A saved deck is a smaller file: its row and the project's figures say so. */
+document.addEventListener("deck-edited", async event => {
+  await refreshProjectSummary();
+  if (applicationState.activeStageKey === "inputs") renderMain();
+});
 
 /** The back button moves through the stages you visited.
  *
@@ -984,8 +1044,7 @@ window.addEventListener("popstate", async () => {
     resetConversationPanel();
   }
 
-  const known = applicationState.stageDefinitions.some(stage => stage.key === stageKey);
-  if (known) applicationState.activeStageKey = stageKey;
+  if (isKnownPage(stageKey)) applicationState.activeStageKey = stageKey;
 
   renderSidebar();
   renderMain();

@@ -10,3 +10,13 @@ is the same reason the file icons are drawn rather than fetched.
 
 The UMD build is used because it carries its own zip reader and defines a single
 global (`pptxPreview`), so the page needs no module loader and no other script.
+
+## pdf.js 4.10.38 (Apache-2.0, `pdfjs-LICENSE.txt`)
+
+Draws a PDF's pages in the browser from the raw file, for the page strip on the
+Inputs page -- thumbnails down the left, one page at full width, and pages that
+can be deleted -- which the browser's own PDF viewer cannot give.
+
+`pdf.min.js` and `pdf.worker.min.js` are `build/pdf.min.mjs` and
+`build/pdf.worker.min.mjs` from the npm package `pdfjs-dist`, renamed so the
+static server sends them as JavaScript. Both are ES modules.

@@ -1,197 +1,194 @@
 /**
- * Extraction stage — the run bar, then the workbench.
+ * Extraction stage — three tabs, in the order the work happens.
  *
- * The run bar (status and the Extract button) sits first, so the stage's one
- * action is always in view. Below it, files and options stack on the left and
- * the preview takes the remaining width. Options are declared server-side and
- * rendered generically here, so adding an option is one entry in
- * `stage_options.py` rather than a change in three places.
+ * 1. Extract: the project's one source file, and the one button that reads it.
+ * 2. Review: each slide beside what was extracted from it, with the agent to
+ *    review it slide by slide and change it. Only what was extracted.
+ * 3. Final & transfer: everything extracted, and the one button that hands it
+ *    to the next layer. Nothing reaches the Scene Plan until then, so a
+ *    half-assembled collection is never planned from.
+ *
+ * Options are declared server-side and rendered generically here, so adding an
+ * option is one entry in `stage_options.py` rather than a change in three places.
  */
 
 import {
-  openRawFile, releaseRawFile, renderRawFileShell,
+  openRawFile, releaseRawFile, renderRawFileShell, stepRawFile,
 } from "/static/raw-file-viewer.js";
 import { requestJsonFromApi } from "/static/shared-client.js";
 import {
-  ICON, applicationState, escapeHtml, fileTypeBadge, formatFileSize, icon,
-  notBuiltYet, projectApiPath, refreshProjectSummary, select, showStageNotice, sortedSources,
-  stageIcon,
+  ICON, applicationState, escapeHtml, fileTypeBadge, footerNav, hideProgress, icon,
+  moveToNextLayerButton, projectApiPath, refreshProjectSummary, select, showProgress,
+  showStageNotice, stageHeader, stageNeighbours, whenItWas, wireGotoButtons,
 } from "/static/ui-kit.js";
 
-/** The files extraction will read: every source except those left out.
- *
- *  Read from the project, not held in the page. The ticks used to live only in
- *  this tab's memory and the run ignored them -- unticking a file changed
- *  nothing, and a reload ticked it again.
- */
-function includedSourceNames(sources, extraction) {
-  const leftOut = new Set(extraction.freshness?.excluded ?? []);
-  return new Set(sources.map(file => file.name).filter(name => !leftOut.has(name)));
+/** What the page was last drawn from. A view change -- a tab, a file, a view --
+ *  redraws from this instead of fetching three documents again. */
+let loaded = null;
+
+async function loadExtractionPage(stage) {
+  const [settings, extraction, review] = await Promise.all([
+    requestJsonFromApi(projectApiPath(`/settings/${stage.key}`)),
+    requestJsonFromApi(projectApiPath("/extraction")).catch(extractionFailure => {
+      console.error("extraction load failed", extractionFailure);
+      return { documents: [], warnings: [], is_empty: true, audit: {}, freshness: {} };
+    }),
+    // A review of a previous run is worth showing straight away, and it is a
+    // file read rather than any work.
+    requestJsonFromApi(projectApiPath("/extraction/review")).catch(reviewFailure => {
+      console.warn("extraction review load failed", reviewFailure);
+      return null;
+    }),
+  ]);
+  return { slug: applicationState.selectedProject?.slug, settings, extraction, review };
 }
 
-export async function renderExtractionStage(stage, navigateToStage, renderAgentStage) {
+export async function renderExtractionStage(
+  stage, navigateToStage, renderAgentStage, { refetch = true } = {},
+) {
   const body = select("#stage-body");
-  const sources = sortedSources();
+  const source = applicationState.selectedProject?.source;
+  const sources = source ? [source] : [];
 
-  body.innerHTML = `<div class="card muted">Loading options…</div>`;
-
-  let settings;
-  try {
-    settings = await requestJsonFromApi(projectApiPath(`/settings/${stage.key}`));
-    applicationState.stageSettings[stage.key] = settings;
-  } catch (settingsFailure) {
-    console.error("settings load failed", settingsFailure);
-    body.innerHTML = `<div class="card">
-      <b>Could not load extraction options.</b>
-      <p class="muted" style="margin:6px 0 0">${escapeHtml(settingsFailure.message)}</p>
-    </div>`;
-    return;
-  }
-
-  // Loaded here rather than lazily on the tab, so the run bar can say what
-  // actually exists instead of claiming the stage is unimplemented.
-  let extraction = { documents: [], warnings: [], is_empty: true, audit: {} };
-  try {
-    extraction = await requestJsonFromApi(projectApiPath("/extraction"));
-  } catch (extractionFailure) {
-    console.error("extraction load failed", extractionFailure);
-  }
-
-  // Loaded with the page: a review of a previous run is worth showing straight
-  // away, and it is a file read rather than any work.
-  let review = null;
-  if (!extraction.is_empty) {
+  if (refetch || loaded?.slug !== applicationState.selectedProject?.slug) {
+    body.innerHTML = `<div class="card muted">Loading options…</div>`;
     try {
-      review = await requestJsonFromApi(projectApiPath("/extraction/review"));
-    } catch (reviewFailure) {
-      console.warn("extraction review load failed", reviewFailure);
+      loaded = await loadExtractionPage(stage);
+    } catch (settingsFailure) {
+      console.error("settings load failed", settingsFailure);
+      body.innerHTML = `<div class="card">
+        <b>Could not load extraction options.</b>
+        <p class="muted" style="margin:6px 0 0">${escapeHtml(settingsFailure.message)}</p>
+      </div>`;
+      return;
     }
   }
+  const { settings, extraction, review } = loaded;
+  applicationState.stageSettings[stage.key] = settings;
   applicationState.extractionReview = review;
 
-  const selected = includedSourceNames(sources, extraction);
-  if (!applicationState.previewFileName && sources.length) {
-    applicationState.previewFileName = sources[0].name;
-  }
+  applicationState.previewFileName = applicationState.selectedProject?.source?.name ?? null;
 
   body.innerHTML = `
-    <div class="card">
-      <div class="card-head">
-        <span class="card-icon">${stageIcon("extraction", 21)}</span>
-        <div>
-          <h2>Extraction</h2>
-          <p>Pull text and key information out of your documents.</p>
+    ${stageHeader("extraction", "Extraction", {
+      agentButtonId: "extraction-agent-button",
+    })}
+
+    <div class="stage-content stage-content-bare">
+
+      <div class="extraction-tabs">
+        ${renderStageTabs()}
+
+        <div class="x-tab-body" role="tabpanel">
+          ${{
+            extract: () => renderExtractTab(sources, extraction, settings),
+            review: () => renderReviewTab(sources, extraction, review),
+            final: () => renderFinalTab(stage, extraction),
+          }[currentExtractionTab()]()}
         </div>
-        <button class="btn" id="extraction-agent-button">
-          ${icon(ICON.gear, 14, 1.8)} Agent &amp; instructions
-        </button>
       </div>
 
-      ${renderRunBar(selected.size, sources.length, extraction)}
-
-      <div class="workbench extraction-workbench">
-        <div class="workbench-side">
-          ${renderFilePanel(sources, selected, extraction)}
-          ${renderReviewPanel(review)}
-          ${renderOptionsPanel(settings)}
-        </div>
-        ${renderPreviewPanel(sources, extraction, selected)}
-      </div>
-
-      ${renderFooterNav(stage)}
+      ${renderFooterNav(stage, extraction)}
     </div>`;
 
-  wireExtractionStage(stage, sources, navigateToStage, renderAgentStage);
+  wireExtractionStage(stage, navigateToStage, renderAgentStage);
 }
 
-/** What one file's card says about it, from the server's view of the run.
- *
- *  Per file, because "which of my files made it in?" was answerable only by
- *  reading the run bar's sentence. Checked in the order that matters to someone
- *  deciding whether to re-run: a choice to leave it out first, then whether the
- *  current extraction actually contains it.
- */
-function fileStatus(file, selected, extraction) {
-  const freshness = extraction.freshness ?? {};
-  const extracted = extraction.documents.find(d => d.file_name === file.name);
+/** Why an extracted file no longer matches its file or the options, or "". */
+const STALE_REASONS = [
+  ["removed", "file deleted"], ["changed", "file changed"], ["options_changed", "options changed"],
+];
 
-  if (!selected.has(file.name)) {
-    return extracted
-      ? { tone: "warn", text: "left out · still in the last run" }
-      : { tone: "muted", text: "left out" };
+function staleReason(freshness, fileName) {
+  return STALE_REASONS.find(([key]) => (freshness?.[key] ?? []).includes(fileName))?.[1] ?? "";
+}
+
+/** The open findings a review has, only for files in the collection and,
+ *  given a file name, only for that file. */
+function openFindings(review, extractedNames, fileName = "") {
+  return (review?.findings ?? []).filter(finding => !finding.acknowledged
+    && (!finding.file_name || extractedNames.has(finding.file_name))
+    && (!fileName || finding.file_name === fileName));
+}
+
+function statusBadge(tone, text) {
+  return `<span class="file-status ${tone}">${escapeHtml(text)}</span>`;
+}
+
+/** "342 blocks · 63 figures" for one extracted file. */
+function documentSummary(document) {
+  const figures = document.blocks.filter(block => block.kind === "figure").length;
+  return [
+    `${document.blocks.length} blocks`,
+    figures ? `${figures} figures` : "",
+  ].filter(Boolean).join(" · ");
+}
+
+/** Where the source stands, in one sentence: [tone, title, detail, button]. */
+function sourceState(source, extraction) {
+  if (!source) {
+    return ["blocked", "No source file", "Add it on Inputs.", ""];
   }
-  if (!extracted) {
-    // Before any run, nothing is behind; after one, a missing file is.
-    return freshness.has_run
-      ? { tone: "warn", text: "not extracted yet" }
-      : { tone: "muted", text: "ready to extract" };
+  const document = extraction.documents.find(d => d.file_name === source.name);
+  if (!document) {
+    return extraction.documents.length
+      ? ["stale", "The source was replaced",
+         `${extraction.documents[0].file_name} was extracted. Extract the new file.`, "Extract"]
+      : ["pending", "Not extracted yet", "Extract it to read what it says.", "Extract"];
   }
-  const figures = extracted.blocks.filter(block => block.kind === "figure").length;
-  return {
-    tone: "ok",
-    text: `${extracted.blocks.length} blocks${figures ? ` · ${figures} figures` : ""}`,
-  };
+  const stale = staleReason(extraction.freshness, source.name);
+  if (stale) {
+    return ["stale", "Extract it again",
+      stale === "options changed" ? "The options changed since it was extracted."
+        : "The file changed since it was extracted.", "Extract again"];
+  }
+  return ["ready", "Extracted", documentSummary(document), "Extract again"];
 }
 
-function renderFileStatus(file, selected, extraction) {
-  const status = fileStatus(file, selected, extraction);
-  return `<span class="file-status ${status.tone}"
-                data-status-for="${escapeHtml(file.name)}">${escapeHtml(status.text)}</span>`;
-}
-
-function renderFilePanel(sources, selected, extraction) {
+function renderSourcePanel(source, extraction) {
+  const [tone, title, detail, button] = sourceState(source, extraction);
+  const busy = Boolean(applicationState.extractingFileName);
   return `
-    <div class="panel">
-      <div class="panel-head"><h3 id="files-to-process-heading">${
-        filesToProcessHeading(selected.size, sources.length)}</h3></div>
-
-      ${sources.length ? sources.map(file => `
-        <button class="file-card ${applicationState.previewFileName === file.name ? "selected" : ""}
-                       ${selected.has(file.name) ? "" : "left-out"}"
-                data-preview="${escapeHtml(file.name)}" title="View ${escapeHtml(file.name)}"
-                aria-current="${applicationState.previewFileName === file.name}">
-          ${fileTypeBadge(file.suffix)}
-          <span class="meta">
-            <span class="name">${escapeHtml(file.name)}</span>
-            <span class="sub">${formatFileSize(file.bytes)}</span>
-            ${renderFileStatus(file, selected, extraction)}
-          </span>
-          <span class="checkbox ${selected.has(file.name) ? "on" : ""}"
-                data-toggle-file="${escapeHtml(file.name)}" role="checkbox"
-                aria-checked="${selected.has(file.name)}"
-                title="${selected.has(file.name) ? "Included in extraction" : "Left out of extraction"}"
-                aria-label="Include ${escapeHtml(file.name)}">
-            ${icon(ICON.check, 11, 3.5)}
-          </span>
-        </button>`).join("")
-        : `<p class="muted" style="font-size:12.5px;margin:0 0 10px">
-             No sources yet. Add them on the Inputs stage.</p>`}
-
-      <button class="btn" id="add-more-files-button"
-              style="width:100%;justify-content:center;margin-top:10px">
-        ${icon(ICON.plus)} Add more files
-      </button>
+    <div class="panel x-source ${tone}">
+      <div class="panel-head"><h3>Extract the source</h3></div>
+      ${source ? "" : `<button class="btn" data-goto="inputs">Go to Inputs</button>`}
+      <p class="x-source-state"><b>${escapeHtml(title)}</b> ${escapeHtml(detail)}</p>
+      ${button ? `
+        <button class="btn ${tone === "ready" ? "" : "btn-accent"} x-extract-button"
+                id="extract-file-button" ${busy ? "disabled" : ""}>
+          ${busy ? "Extracting…" : escapeHtml(button)}</button>` : ""}
+      ${renderPdfLimitation(source)}
     </div>`;
+}
+
+/** Said plainly, and only when it applies.
+ *
+ *  The PDF reader takes text and nothing else: no headings, so a block's heading
+ *  path is the page it sat on, and no figures. Every other stage is built on the
+ *  promise that a claim can be traced back to a section, and for a PDF it can
+ *  only be traced to "somewhere on page 7". The README admitted this and the
+ *  page did not, which left the gap to be discovered rather than read.
+ */
+function renderPdfLimitation(source) {
+  if ((source?.suffix || "").toLowerCase() !== ".pdf") return "";
+  return `
+    <p class="muted" style="font-size:12px;margin:8px 0 0;line-height:1.45">
+      <b>PDF:</b> headings become page numbers and figures are not extracted —
+      Word or PowerPoint keeps both. Scanned or handwritten pages are read only
+      with handwriting recognition on.
+    </p>`;
 }
 
 function renderOptionsPanel(settings) {
-  // Built options first and in full; the ones nothing reads yet fold away. Four
-  // disabled placeholders used to fill most of this panel and push the two
-  // switches that do something into the middle of it.
-  const built = settings.options.filter(option => option.implemented !== false);
-  const planned = settings.options.filter(option => option.implemented === false);
   const renderControl = option => {
     const currentValue = settings.values[option.key];
 
     if (option.kind === "choice") {
       const activeChoice = option.choices.find(choice => choice.value === currentValue);
-      const inert = option.implemented === false;
       return `
-        <div class="option${inert ? " inert" : ""}">
-          <label for="opt-${escapeHtml(option.key)}">${escapeHtml(option.label)}
-            ${notBuiltYet(option)}</label>
-          <select id="opt-${escapeHtml(option.key)}" data-option="${escapeHtml(option.key)}"
-                  ${inert ? "disabled" : ""}>
+        <div class="option">
+          <label for="opt-${escapeHtml(option.key)}">${escapeHtml(option.label)}</label>
+          <select id="opt-${escapeHtml(option.key)}" data-option="${escapeHtml(option.key)}">
             ${option.choices.map(choice => `
               <option value="${escapeHtml(choice.value)}"
                       ${choice.value === currentValue ? "selected" : ""}>
@@ -201,14 +198,12 @@ function renderOptionsPanel(settings) {
         </div>`;
     }
 
-    const inert = option.implemented === false;
     return `
-      <button class="toggle-row${inert ? " inert" : ""}" data-option="${escapeHtml(option.key)}"
-              role="switch" aria-checked="${currentValue}" ${inert ? "disabled" : ""}
+      <button class="toggle-row" data-option="${escapeHtml(option.key)}"
+              role="checkbox" aria-checked="${currentValue}"
               title="${escapeHtml(option.help_text)}">
-        <span class="switch ${currentValue && !inert ? "on" : ""}"></span>
+        <span class="checkbox ${currentValue ? "on" : ""}">${icon(ICON.check, 13, 3.5)}</span>
         <span class="toggle-label">${escapeHtml(option.label)}</span>
-        ${notBuiltYet(option)}
       </button>`;
   };
 
@@ -216,66 +211,214 @@ function renderOptionsPanel(settings) {
     <div class="panel">
       <div class="panel-head">
         <h3>Extraction options</h3>
-        <span class="info-dot"
-              title="Saved with the project and used the next time this stage runs.">i</span>
         <div class="spacer"></div>
         <span class="mono muted" id="settings-saved-hint"></span>
       </div>
-      ${built.map(renderControl).join("")}
-      ${planned.length ? `
-        <details class="planned-options">
-          <summary>Planned options <span class="not-built">not built yet</span>
-            <span class="count">${planned.length}</span></summary>
-          ${planned.map(renderControl).join("")}
-        </details>` : ""}
+      ${settings.options.map(renderControl).join("")}
     </div>`;
+}
+
+/** The previewed file's result in the collection, or a sentence saying why
+ *  there is none. Only ever the file whose name is in the header. */
+function previewedDocument(extraction, previewName) {
+  const parsed = extraction.documents.find(d => d.file_name === previewName);
+  if (parsed) return { parsed };
+
+  const message = !previewName
+    ? "No source file."
+    : `<b>${escapeHtml(previewName)}</b> is not extracted yet.<br>
+       Press <b>Extract</b> on the Extract tab to read it.`;
+  return { empty: `<div class="preview-empty">${icon(ICON.doc, 34, 1.4)}<p>${message}</p></div>` };
 }
 
 /** Blocks carry the heading they sit under, so extracted text reads back with
  *  its structure rather than as a wall of paragraphs. */
-function renderExtractedBlocks(extraction, selected) {
-  const previewName = applicationState.previewFileName;
-  // Only ever the file whose name is in the header. Falling back to the first
-  // extracted document put a deck's 408 blocks under a Word document's name
-  // whenever the Word document had been left out.
-  const parsed = extraction.documents.find(d => d.file_name === previewName);
+function renderExtractedBlocks(
+  extraction, fileName = applicationState.previewFileName, { head = true } = {},
+) {
+  const { parsed, empty } = previewedDocument(extraction, fileName);
+  if (!parsed) return empty;
 
-  if (!parsed) {
-    const message = !previewName
-      ? "No file selected."
-      : !selected.has(previewName)
-        ? `<b>${escapeHtml(previewName)}</b> is left out of extraction.<br>
-           Tick it in the file list to include it in the next run.`
-        : extraction.is_empty
-          ? "Nothing extracted yet.<br>Extract to see what is inside your documents."
-          : `<b>${escapeHtml(previewName)}</b> has not been extracted yet.<br>
-             Re-extract to see what is inside it.`;
-    return `<div class="preview-empty">${icon(ICON.doc, 34, 1.4)}<p>${message}</p></div>`;
-  }
-
-  const rows = parsed.blocks.slice(0, 400).map(block => {
-    if (block.kind === "heading") {
-      return `<div class="x-block x-heading" style="--depth:${block.level}">${
-        escapeHtml(block.text)}</div>`;
-    }
-    if (block.kind === "table") {
-      return `<pre class="x-block x-table">${escapeHtml(block.text)}</pre>`;
-    }
-    if (block.kind === "list_item") {
-      return `<div class="x-block x-list">${escapeHtml(block.text)}</div>`;
-    }
-    if (block.kind === "figure") return renderFigureBlock(block);
-    return `<div class="x-block">${escapeHtml(block.text)}</div>`;
-  }).join("");
-
+  const rows = renderBlockRows(parsed.blocks.slice(0, 400));
   const truncated = parsed.blocks.length > 400
     ? `<p class="muted" style="font-size:11.5px">showing the first 400 of ${
         parsed.blocks.length} blocks</p>`
     : "";
 
   return `<div class="x-doc">
-    <div class="x-doc-head">${escapeHtml(parsed.file_name)} &middot; ${
-      parsed.blocks.length} blocks</div>${rows}${truncated}</div>`;
+    ${head ? `<div class="x-doc-head">${escapeHtml(parsed.file_name)} &middot; ${
+      parsed.blocks.length} blocks${parsed.extraction_note
+        ? ` &middot; ${escapeHtml(parsed.extraction_note)}` : ""}</div>` : ""}${rows}${truncated}</div>`;
+}
+
+const BLOCK_KINDS = {
+  heading: "Heading", paragraph: "Text", list_item: "List item", table: "Table", figure: "Figure",
+};
+
+/** Every extracted block in the same box, labelled with what it is, so a page
+ *  of them reads as a list of pieces rather than a wall of mixed styles. */
+function renderBlockRows(blocks) {
+  return blocks.map(block => {
+    const body = block.kind === "figure" ? renderFigureBlock(block)
+      : block.kind === "table" ? `<pre class="x-box-table">${escapeHtml(block.text)}</pre>`
+      : `<p class="x-box-text">${escapeHtml(block.text)}</p>`;
+    return `
+      <div class="x-box ${escapeHtml(block.kind)}">
+        <div class="x-box-kind">${BLOCK_KINDS[block.kind] ?? escapeHtml(block.kind)}${
+          // Read off a page image by the vision model, not parsed from the file.
+          block.transcribed ? `<span class="x-transcribed"
+            title="Read from a page image by the vision model">transcribed</span>` : ""}</div>
+        ${body}
+      </div>`;
+  }).join("");
+}
+
+/** What was extracted from what is on screen: for a deck, the slide showing
+ *  in the preview beside it; for anything else, the whole file. */
+function renderExtractionSide(extraction, fileName, slideIndex = 0) {
+  const { parsed, empty } = previewedDocument(extraction, fileName);
+  if (!parsed) return empty;
+  if (!parsed.blocks.some(block => block.slide_number)) {
+    return renderExtractedBlocks(extraction, fileName, { head: false });
+  }
+  const number = slideIndex + 1;
+  const blocks = parsed.blocks.filter(block => block.slide_number === number);
+  return `<div class="x-doc">
+    ${renderSlideStructure(parsed, number)}
+    ${blocks.length ? renderBlockRows(blocks)
+      : `<p class="muted" style="margin:10px">Nothing was extracted from this slide.</p>`}
+  </div>`;
+}
+
+const SHAPE_KINDS = {
+  title: "title", text: "text", picture: "picture", table: "table", chart: "chart", other: "other",
+};
+
+function extractedAssetUrl(assetPath) {
+  return projectApiPath(`/extraction/assets/${encodeURIComponent(assetPath.split("/").pop())}`);
+}
+
+/** The slide itself, as extraction recorded it: where each shape sits
+ *  (Layout) and what is behind them (Background), in the same boxes as the
+ *  content. Only for a deck read with those options on. */
+function renderSlideStructure(parsed, number) {
+  const slide = parsed.slides?.find(candidate => candidate.number === number);
+  if (!slide) return "";
+
+  const design = parsed.design ?? {};
+  const ratio = design.slide_width_emu && design.slide_height_emu
+    ? design.slide_width_emu / design.slide_height_emu : 16 / 9;
+  const percent = fraction => `${(fraction * 100).toFixed(2)}%`;
+  const shapes = [...(slide.shapes ?? [])].sort((a, b) => a.z - b.z);
+  const counts = shapes.reduce((tally, shape) => {
+    tally[shape.kind] = (tally[shape.kind] ?? 0) + 1;
+    return tally;
+  }, {});
+  // A picture added after extraction has no slot on the original slide; a
+  // replaced one took its predecessor's, and shows in the map.
+  const placed = new Set(shapes.map(shape => shape.asset_path).filter(Boolean));
+  const added = parsed.blocks.filter(block => block.slide_number === number
+    && block.kind === "figure" && block.asset_path && !placed.has(block.asset_path)).length;
+
+  const layout = shapes.length ? `
+    <div class="x-box layout">
+      <div class="x-box-kind">Layout${slide.layout_name
+        ? `<span class="x-box-note">${escapeHtml(slide.layout_name)}</span>` : ""}</div>
+      <div class="x-layout-map" style="aspect-ratio:${ratio.toFixed(4)}">
+        ${shapes.map(shape => `
+          <span class="x-layout-shape ${SHAPE_KINDS[shape.kind] ?? "other"}"
+                title="${escapeHtml(shape.kind + (shape.text ? `: ${shape.text}` : ""))}"
+                style="left:${percent(shape.left)};top:${percent(shape.top)};
+                       width:${percent(shape.width)};height:${percent(shape.height)}">
+            ${shape.asset_path
+              ? `<img src="${extractedAssetUrl(shape.asset_path)}" alt="" loading="lazy">`
+              : `<span>${escapeHtml(shape.text || shape.kind)}</span>`}
+          </span>`).join("")}
+      </div>
+      <p class="x-box-caption">${shapes.length} shape${shapes.length === 1 ? "" : "s"}: ${
+        Object.entries(counts).map(([kind, count]) =>
+          `${count} ${escapeHtml(kind)}${count === 1 || kind === "text" ? "" : "s"}`).join(", ")}${
+        added ? ` · ${added} added picture${added === 1 ? "" : "s"}, not placed on the slide` : ""}</p>
+    </div>` : "";
+
+  const background = slide.background;
+  const isHex = value => /^#[0-9a-f]{6}$/i.test(value ?? "");
+  const colour = isHex(background?.colour) ? background.colour : "";
+  const stops = (background?.gradient ?? []).filter(isHex);
+  const swatch = stops.length > 1 ? `linear-gradient(90deg, ${stops.join(", ")})` : colour;
+  const from = background?.inherited_from;
+  const backgroundBox = background && (colour || background.asset_path) ? `
+    <div class="x-box background">
+      <div class="x-box-kind">Background${from ? `<span class="x-box-note">${
+        from === "slide" ? "set on this slide" : `from the ${escapeHtml(from)}`}</span>` : ""}</div>
+      ${background.asset_path ? `<img class="x-background-image" loading="lazy"
+          src="${extractedAssetUrl(background.asset_path)}" alt="Background of slide ${number}">` : ""}
+      ${swatch && !background.asset_path ? `<p class="x-box-text"><span class="x-swatch${
+        stops.length > 1 ? " wide" : ""}" style="background:${swatch}"></span>${
+        stops.length > 1 ? `Gradient ${stops.join(" → ")}` : colour}</p>` : ""}
+    </div>` : "";
+
+  return layout + backgroundBox;
+}
+
+/** The Extraction column and the pager follow the slide the preview shows. */
+document.addEventListener("deck-slide", event => {
+  const { fileName, index, total } = event.detail;
+  const pane = document.querySelector("[data-extraction-for]");
+  if (!loaded || pane?.dataset.extractionFor !== fileName) return;
+  applicationState.previewSlideIndex = index;
+  pane.innerHTML = renderExtractionSide(loaded.extraction, fileName, index);
+  pane.scrollTop = 0;
+
+  const pager = document.querySelector("[data-pager-for]");
+  if (!pager) return;
+  pager.hidden = total < 2;
+  pager.querySelector(".x-pager-count").textContent = `${index + 1} / ${total}`;
+  pager.querySelector('[data-step="-1"]').disabled = index === 0;
+  pager.querySelector('[data-step="1"]').disabled = index === total - 1;
+});
+
+/** Drag the boundary between Preview and Extraction, or focus it and use the
+ *  arrow keys. The split is kept for the session, so it survives a redraw. */
+function wireCompare() {
+  document.querySelectorAll("[data-pager-for] [data-step]").forEach(button => {
+    button.onclick = () => stepRawFile(applicationState.previewFileName, Number(button.dataset.step));
+  });
+
+  const compare = select(".x-compare");
+  const divider = compare?.querySelector(".x-compare-divider");
+  if (!divider) return;
+  const setSplit = percent => {
+    const split = Math.min(75, Math.max(30, percent));
+    applicationState.compareSplit = split;
+    compare.style.setProperty("--x-split", `${split}%`);
+    divider.setAttribute("aria-valuenow", String(Math.round(split)));
+  };
+
+  divider.onpointerdown = down => {
+    down.preventDefault();
+    divider.setPointerCapture(down.pointerId);
+    compare.classList.add("resizing");
+    const move = event => {
+      const box = compare.getBoundingClientRect();
+      setSplit(((event.clientX - box.left) / box.width) * 100);
+    };
+    const stop = () => {
+      compare.classList.remove("resizing");
+      divider.removeEventListener("pointermove", move);
+      divider.removeEventListener("pointerup", stop);
+      divider.removeEventListener("pointercancel", stop);
+    };
+    divider.addEventListener("pointermove", move);
+    divider.addEventListener("pointerup", stop);
+    divider.addEventListener("pointercancel", stop);
+  };
+  divider.onkeydown = event => {
+    const step = { ArrowLeft: -5, ArrowRight: 5 }[event.key];
+    if (!step) return;
+    event.preventDefault();
+    setSplit(applicationState.compareSplit + step);
+  };
 }
 
 /** Formats a browser cannot draw. Word and PowerPoint still embed old Windows
@@ -305,34 +448,47 @@ function renderFigureBlock(block) {
   </figure>`;
 }
 
-function renderPreviewPanel(sources, extraction, selected) {
+function renderPreviewPanel(sources, extraction) {
   const previewFile = sources.find(file => file.name === applicationState.previewFileName);
-  const isPreviewTab = applicationState.previewTab === "preview";
+  if (!previewFile) {
+    return `
+      <div class="panel preview-panel">
+        <div class="preview-empty">${icon(ICON.doc, 34, 1.4)}
+          <p>No file to show.<br>Add one on the Inputs stage.</p></div>
+      </div>`;
+  }
 
+  const name = escapeHtml(previewFile.name);
+  const split = applicationState.compareSplit;
   return `
     <div class="panel preview-panel">
-      <div class="preview-head">
-        <div class="seg">
-          <button class="${isPreviewTab ? "on" : ""}" data-preview-tab="preview">Preview</button>
-          <button class="${isPreviewTab ? "" : "on"}" data-preview-tab="text">Extracted text</button>
-        </div>
-        <div class="spacer"></div>
-        <span class="mono muted" title="${previewFile ? escapeHtml(previewFile.name) : ""}"
-              >${previewFile ? escapeHtml(previewFile.name) : "—"}</span>
+      <div class="x-compare" style="--x-split:${split}%">
+        <section class="x-compare-side">
+          <h3 class="x-compare-title">Preview</h3>
+          <div class="preview-stage raw">
+            <div data-raw-host="${name}">
+              <p class="muted" style="margin:0">Opening ${name}…</p>
+            </div>
+          </div>
+        </section>
+        <div class="x-compare-divider" role="separator" aria-orientation="vertical" tabindex="0"
+             aria-label="Drag to resize the preview and the extraction"
+             aria-valuemin="30" aria-valuemax="75" aria-valuenow="${Math.round(split)}"></div>
+        <section class="x-compare-side">
+          <h3 class="x-compare-title">Extraction</h3>
+          <div class="preview-stage scrolls" data-extraction-for="${name}">
+            ${renderExtractionSide(extraction, previewFile.name)}
+          </div>
+        </section>
       </div>
-
-      <div class="preview-stage${isPreviewTab ? " raw" : " scrolls"}">
-        ${!isPreviewTab
-          ? renderExtractedBlocks(extraction, selected)
-          : previewFile
-            ? `<div data-raw-host="${escapeHtml(previewFile.name)}">
-                 <p class="muted" style="margin:0">Opening ${escapeHtml(previewFile.name)}…</p>
-               </div>`
-            : `<div class="preview-empty">
-                 ${icon(ICON.doc, 34, 1.4)}
-                 <p>No file to show.<br>Add one on the Inputs stage.</p>
-               </div>`}
+      <div class="x-pager" data-pager-for="${name}" hidden>
+        <button class="x-pager-arrow" data-step="-1" title="Previous" aria-label="Previous">
+          ${icon(`<path d="M15 18l-6-6 6-6"/>`, 22, 2.8)}</button>
+        <span class="x-pager-count"></span>
+        <button class="x-pager-arrow" data-step="1" title="Next" aria-label="Next">
+          ${icon(`<path d="M9 18l6-6-6-6"/>`, 22, 2.8)}</button>
       </div>
+      ${renderAgentPanel(extraction, previewFile.name)}
     </div>`;
 }
 
@@ -352,7 +508,7 @@ async function openPreviewedFile() {
     // The stage may have been redrawn while this was loading.
     if (!host.isConnected) return;
     host.innerHTML = renderRawFileShell(fileName, preview);
-    openRawFile(host, fileName, preview.viewer);
+    openRawFile(host, fileName, preview.viewer, { slideStrip: false });
   } catch (previewFailure) {
     console.error("preview failed", previewFailure);
     if (host.isConnected) {
@@ -362,143 +518,258 @@ async function openPreviewedFile() {
   }
 }
 
-function renderRunBar(selectedCount, totalCount, extraction) {
-  const canRun = selectedCount > 0;
-  const hasExtracted = !extraction.is_empty;
-  const freshness = extraction.freshness ?? {};
+/* ---- the three tabs: Extract, Review, Final ---------------------------------
+ *
+ * One job per tab, in the order they happen. Extract reads files one at a time;
+ * Review checks only what was extracted; Final shows everything that will be
+ * handed on, and is the only place that hands it on.
+ */
 
-  // Out of date beats "Extracted": a green tick over content that is missing a
-  // whole document is how that gap went unnoticed until an agent reported it.
-  if (hasExtracted && freshness.is_stale) {
-    const missing = freshness.added ?? [];
-    const gone = freshness.removed ?? [];
-    const changed = (freshness.options_changed ?? []).map(key => key.replaceAll("_", " "));
-    const unticked = freshness.newly_excluded ?? [];
-    const detail = [
-      missing.length ? `not extracted: ${missing.join(", ")}` : "",
-      unticked.length ? `left out since the last run: ${unticked.join(", ")}` : "",
-      gone.length ? `no longer in the project: ${gone.join(", ")}` : "",
-      changed.length ? `options changed since the last run: ${changed.join(", ")}` : "",
-    ].filter(Boolean).join(" · ");
+const EXTRACTION_TABS = ["extract", "review", "final"];
 
-    return `
-      <div class="run-bar stale">
-        <span class="run-icon">${icon(ICON.alert, 17, 2.2)}</span>
-        <span class="run-text">
-          <b>Out of date with your files</b>
-          <span>${escapeHtml(detail)}. Re-extract so later stages see them.</span>
-        </span>
-        <button class="btn btn-accent" id="run-extraction-button" ${canRun ? "" : "disabled"}
-                title="Parse every source document again">Re-extract</button>
-      </div>`;
-  }
+function currentExtractionTab() {
+  return EXTRACTION_TABS.includes(applicationState.extractionTab)
+    ? applicationState.extractionTab : "extract";
+}
 
-  const disabledReason = totalCount === 0
-    ? "Add a source file first"
-    : "Select at least one file";
+const TAB_LABELS = { extract: "Extract", review: "Review", final: "Final & transfer" };
 
-  const summary = hasExtracted
-    ? `${extraction.audit.document_count} document(s) - ${extraction.audit.block_count} blocks`
-      + ` - ${extraction.audit.figure_count ?? 0} figures`
-      // Stated when there is something to state: an option that captured
-      // nothing looks exactly like one that was never switched on.
-      + (extraction.audit.slide_layout_count
-        ? ` - layout for ${extraction.audit.slide_layout_count} slide(s)` : "")
-      + (extraction.audit.background_image_count
-        ? ` - ${extraction.audit.background_image_count} slide background(s)` : "")
-      + (extraction.audit.themed_document_names?.length
-        ? ` - styling for ${extraction.audit.themed_document_names.length} deck(s)` : "")
-      + (totalCount > selectedCount ? ` - ${totalCount - selectedCount} left out` : "")
-      + ` - ${extraction.total_word_count} words (~${
-          extraction.estimated_narration_minutes} min narrated)`
-    : `${selectedCount} of ${totalCount} file(s) selected.`;
-
+function renderStageTabs() {
+  const tab = currentExtractionTab();
   return `
-    <div class="run-bar ${canRun || hasExtracted ? "ready" : "blocked"}">
-      <span class="run-icon">${icon(canRun || hasExtracted ? ICON.check : ICON.alert, 17,
-                                    canRun || hasExtracted ? 2.4 : 2)}</span>
-      <span class="run-text">
-        <b>${hasExtracted ? "Extracted" : canRun ? "Ready to extract" : "Nothing selected"}</b>
-        <span>${canRun || hasExtracted
-          ? escapeHtml(summary)
-          : escapeHtml(disabledReason) + "."}</span>
-      </span>
-      ${extraction.warnings?.length
-        ? `<span class="stage-chip unrouted">${escapeHtml(extraction.warnings[0])}</span>`
-        : ""}
-      <button class="btn btn-accent" id="run-extraction-button" ${canRun ? "" : "disabled"}
-              title="${canRun ? "Parse every source document" : escapeHtml(disabledReason)}">
-        ${hasExtracted ? "Re-extract" : "Extract content"}
-      </button>
+    <nav class="x-tabs" role="tablist" aria-label="Extraction steps">
+      ${EXTRACTION_TABS.map((key, index) => `
+        <button role="tab" class="x-tab ${key === tab ? "on" : ""}"
+                data-extraction-tab="${key}" aria-selected="${key === tab}">
+          <span class="x-tab-number">${index + 1}</span>
+          <b class="x-tab-label">${TAB_LABELS[key]}</b>
+        </button>`).join("")}
+    </nav>`;
+}
+
+function renderExtractTab(sources, extraction, settings) {
+  return `
+    <div class="workbench extraction-workbench">
+      <div class="workbench-side">
+        ${renderSourcePanel(applicationState.selectedProject?.source, extraction)}
+        ${renderOptionsPanel(settings)}
+      </div>
     </div>`;
 }
 
-
-function renderFooterNav(stage) {
-  const { stageDefinitions } = applicationState;
-  const stageIndex = stageDefinitions.findIndex(s => s.key === stage.key);
-  const previousStage = stageDefinitions[stageIndex - 1];
-  const nextStage = stageDefinitions[stageIndex + 1];
-
-  return `
-    <div class="footer-nav">
-      ${previousStage ? `
-        <button class="btn" data-goto="${previousStage.key}">
-          ${icon(ICON.arrowLeft)} Back to ${escapeHtml(previousStage.title)}
-        </button>` : ""}
-      <div class="spacer"></div>
-      ${nextStage ? `
-        <button class="btn btn-accent" data-goto="${nextStage.key}">
-          Next: ${escapeHtml(nextStage.title)} ${icon(ICON.arrowRight)}
-        </button>` : ""}
-    </div>`;
-}
-
-function wireExtractionStage(stage, sources, navigateToStage, renderAgentStage) {
-  // A redraw replaces the preview, so a rendered deck in it is released first
-  // rather than left as detached slides nobody can see.
-  const rerender = () => {
-    releaseRawFile(applicationState.previewFileName);
-    return renderExtractionStage(stage, navigateToStage, renderAgentStage);
+/** The boundary under the files and options: dragged up, Preview / Extraction
+ *  grows taller; down, shorter. The arrow keys do the same when it is focused.
+ *  Kept for the session, so it survives a redraw. */
+function wireRowDivider() {
+  const workbench = select(".extraction-workbench");
+  const divider = workbench?.querySelector(".x-row-divider");
+  const pane = workbench?.querySelector(".preview-panel .preview-stage.scrolls");
+  if (!divider || !pane) return;
+  const setHeight = pixels => {
+    const height = Math.round(Math.min(1600, Math.max(260, pixels)));
+    applicationState.comparePaneHeight = height;
+    workbench.style.setProperty("--x-pane-height", `${height}px`);
   };
 
-  openPreviewedFile();
-  wireReviewPanel(rerender);
-
-  document.querySelectorAll("[data-preview]").forEach(card => {
-    card.onclick = event => {
-      // The checkbox lives inside the card; clicking it must not also change
-      // which file is previewed.
-      if (event.target.closest("[data-toggle-file]")) return;
-      applicationState.previewFileName = card.dataset.preview;
-      rerender();
+  divider.onpointerdown = down => {
+    down.preventDefault();
+    divider.setPointerCapture(down.pointerId);
+    workbench.classList.add("resizing");
+    const startY = down.clientY;
+    const startHeight = pane.getBoundingClientRect().height;
+    const move = event => setHeight(startHeight + (startY - event.clientY));
+    const stop = () => {
+      workbench.classList.remove("resizing");
+      divider.removeEventListener("pointermove", move);
+      divider.removeEventListener("pointerup", stop);
+      divider.removeEventListener("pointercancel", stop);
     };
-  });
+    divider.addEventListener("pointermove", move);
+    divider.addEventListener("pointerup", stop);
+    divider.addEventListener("pointercancel", stop);
+  };
+  divider.onkeydown = event => {
+    const step = { ArrowUp: 40, ArrowDown: -40 }[event.key];
+    if (!step) return;
+    event.preventDefault();
+    setHeight(pane.getBoundingClientRect().height + step);
+  };
+}
 
-  document.querySelectorAll("[data-toggle-file]").forEach(checkbox => {
-    checkbox.onclick = event => {
-      event.stopPropagation();
-      toggleFileInclusion(checkbox, rerender);
-    };
-  });
+function renderTabEmpty(message) {
+  return `
+    <div class="panel x-tab-empty">
+      ${icon(ICON.doc, 34, 1.4)}
+      <p>${message}</p>
+      <button class="btn btn-accent" data-extraction-tab="extract">Go to Extract</button>
+    </div>`;
+}
 
-  document.querySelectorAll("[data-preview-tab]").forEach(tab => {
-    tab.onclick = () => {
-      applicationState.previewTab = tab.dataset.previewTab;
-      rerender();
-    };
-  });
-
-  document.querySelectorAll("[data-goto]").forEach(button => {
-    button.onclick = () => navigateToStage(button.dataset.goto);
-  });
-
-  select("#add-more-files-button").onclick = () => navigateToStage("inputs");
-
-  const runButton = select("#run-extraction-button");
-  if (runButton && !runButton.disabled) {
-    runButton.onclick = () => runExtraction(runButton, rerender);
+/** Only what was extracted: one file at a time, slide by slide -- the slide,
+ *  what was extracted from it, and the agent to review and change it. */
+function renderReviewTab(sources, extraction, review) {
+  const reviewSources = [{ name: extraction.documents[0]?.file_name, suffix: "" }];
+  if (!extraction.documents.length) {
+    return renderTabEmpty("Nothing to review yet.<br>Extract a file first, then check it here.");
   }
+  // What was extracted is what is reviewed: after the source is replaced and
+  // before it is extracted again, that is still the old file's result.
+  const fileName = extraction.documents[0].file_name;
+  applicationState.previewFileName = fileName;
+  const names = extractedNames(extraction);
+  const height = applicationState.comparePaneHeight;
+
+  return `
+    <div class="workbench extraction-workbench"${
+      height ? ` style="--x-pane-height:${height}px"` : ""}>
+      <div class="workbench-side">
+        ${renderReviewPanel(review ?? { findings: [], reviewed_at: "" }, names,
+          extraction.documents.find(d => d.file_name === fileName))}
+      </div>
+      <div class="x-row-divider" role="separator" aria-orientation="horizontal" tabindex="0"
+           aria-label="Drag up for a taller preview and extraction, down for a shorter one"></div>
+      ${renderPreviewPanel(reviewSources, extraction)}
+    </div>`;
+}
+
+/** Everything that will be handed on, and the one button that hands it on. */
+function renderFinalTab(stage, extraction) {
+  const freshness = extraction.freshness ?? {};
+  const documents = extraction.documents;
+  const outOfDate = documents.map(d => d.file_name).filter(name => staleReason(freshness, name));
+  const replaced = documents.length && applicationState.selectedProject?.source
+    && documents[0].file_name !== applicationState.selectedProject.source.name;
+  const pending = Boolean(freshness.pending_confirmation);
+  const transferred = freshness.has_confirmed && !pending;
+  const canTransfer = !outOfDate.length && !replaced
+    && (documents.length ? pending : freshness.has_confirmed);
+
+  const [tone, title, detail] = !documents.length
+    ? ["blocked", "Nothing extracted yet",
+       freshness.has_confirmed
+         ? "Every file was removed. Transfer to clear what the next layer reads."
+         : "Extract files on the Extract tab; they collect here."]
+    : replaced
+      ? ["stale", "The source was replaced",
+         "Extract the new file on the Extract tab, then transfer it."]
+    : outOfDate.length
+      ? ["stale", "Extract it again",
+         "It no longer matches the file or the options."]
+      : transferred
+        ? ["ready", "Transferred to the next layer",
+           `The next layer has had exactly this since ${whenItWas(freshness.confirmed_at)}.`]
+        : ["pending", "Ready to transfer",
+           freshness.has_confirmed
+             ? "This differs from what the next layer has. Transfer to hand it the changes."
+             : "Nothing reaches the next layer until you transfer it."];
+
+  const audit = extraction.audit ?? {};
+  const totals = documents.length ? [
+    documents[0].file_name, `${audit.block_count} blocks`,
+    `${audit.figure_count ?? 0} figures`,
+    `${extraction.total_word_count} words (~${extraction.estimated_narration_minutes} min narrated)`,
+  ] : [];
+
+
+  return `
+    <div class="final-head ${tone}">
+      <span class="run-icon">${icon(tone === "ready" ? ICON.check : ICON.alert, 18, 2.3)}</span>
+      <span class="run-text">
+        <b>${escapeHtml(title)}</b>
+        <span>${escapeHtml(detail)}</span>
+        ${totals.length ? `<span class="final-totals">${escapeHtml(totals.join(" · "))}</span>` : ""}
+      </span>
+      ${transferred && !canTransfer
+        ? moveToNextLayerButton(stageNeighbours(stage).next, {
+            carries: "The transferred extraction goes on: it is what every later stage reads.",
+          })
+        : `
+        <button class="btn btn-accent btn-transfer" id="confirm-extraction-button"
+                ${canTransfer ? "" : "disabled"}
+                title="${canTransfer ? "Hand this to Assets & Design, the Scene Plan and every later stage"
+                                     : "Nothing new to transfer"}">
+          Transfer to the next layer ${icon(ICON.arrowRight)}
+        </button>`}
+    </div>
+
+    ${documents.length ? `
+      <div class="panel preview-panel x-final-text">
+        <div class="preview-head"><h3>What the next layer receives</h3></div>
+        <div class="preview-stage scrolls">
+          ${renderExtractedBlocks(extraction, documents[0].file_name)}
+        </div>
+      </div>`
+      : renderTabEmpty("Nothing is extracted yet.<br>Extract the source on the Extract tab.")}`;
+}
+
+function extractedNames(extraction) {
+  return new Set(extraction.documents.map(d => d.file_name));
+}
+
+/** Clicks that only change what is on screen: [data- attribute, state field]. */
+const VIEW_CHOICES = [
+  ["extraction-tab", "extractionTab"],
+];
+
+function wireViewChoices(page) {
+  for (const [attribute, field] of VIEW_CHOICES) {
+    document.querySelectorAll(`[data-${attribute}]`).forEach(button => {
+      button.onclick = async () => {
+        applicationState[field] = button.getAttribute(`data-${attribute}`);
+        // Pressed at the foot of the page, it lands you on the new tab's top.
+        const fromFooter = Boolean(button.closest(".footer-nav"));
+        await page.redraw();
+        if (fromFooter) select(".x-tabs")?.scrollIntoView({ block: "start", behavior: "smooth" });
+      };
+    });
+  }
+}
+
+/** The step after this tab: Extract leads to Review, Review to Final. Only the
+ *  Final tab moves on to the next layer. */
+const NEXT_TAB = { extract: ["review", "Review"], review: ["final", "Final & transfer"] };
+
+function renderFooterNav(stage, extraction) {
+  const freshness = extraction.freshness ?? {};
+  const nextTab = NEXT_TAB[currentExtractionTab()];
+  return footerNav(stage, {
+    end: nextTab ? `
+      <button class="btn btn-accent btn-move-next" data-extraction-tab="${nextTab[0]}">
+        Move to ${nextTab[1]} ${icon(ICON.arrowRight)}
+      </button>` : null,
+    next: {
+      carries: freshness.has_confirmed
+        ? "The transferred extraction goes on: it is what every later stage reads."
+        : "",
+      warning: !freshness.has_confirmed
+        ? "Nothing has been transferred yet, so the next layer has no extracted content "
+          + "to work from. Transfer it on the Final & transfer tab first."
+        : freshness.pending_confirmation
+          ? "Your latest changes are not transferred yet — the next layer still reads the "
+            + "last transferred version. Transfer on the Final & transfer tab to send them."
+          : "",
+    },
+  });
+}
+
+function wireExtractionStage(stage, navigateToStage, renderAgentStage) {
+  // Either kind of redraw replaces the preview, so a rendered deck in it is
+  // released first rather than left as detached slides nobody can see.
+  const draw = refetch => {
+    releaseRawFile(applicationState.previewFileName);
+    return renderExtractionStage(stage, navigateToStage, renderAgentStage, { refetch });
+  };
+  // `redraw` for a change of view, `refresh` for a change of data.
+  const page = { redraw: () => draw(false), refresh: () => draw(true) };
+
+  openPreviewedFile();
+  wireCompare();
+  wireAgentPanel();
+  wireRowDivider();
+  wireReviewPanel(page);
+  wireCollection(page);
+  wireViewChoices(page);
+  wireGotoButtons(navigateToStage);
 
   // The AGENT.md is the real "settings" for this stage: it governs behaviour.
   select("#extraction-agent-button").onclick = () => renderAgentStage(stage);
@@ -507,59 +778,71 @@ function wireExtractionStage(stage, sources, navigateToStage, renderAgentStage) 
     if (control.disabled) return;
     const optionKey = control.dataset.option;
     if (control.tagName === "SELECT") {
-      control.onchange = () => persistOption(stage, optionKey, control.value, rerender);
+      control.onchange = () => persistOption(stage, optionKey, control.value, page);
     } else {
       control.onclick = () => {
         const currentValue = applicationState.stageSettings[stage.key].values[optionKey];
-        persistOption(stage, optionKey, !currentValue, rerender);
+        persistOption(stage, optionKey, !currentValue, page);
       };
     }
   });
 }
 
-
 /* ---- what the extraction got wrong ---------------------------------------
  *
  * Extraction fails quietly: a diagram comes out blank, a picture is a 3-pixel
  * rule, a chapter promises "Figure 2.1" and nothing was saved. The checks find
- * that without a model; the stage's own agent reads the text for the rest.
+ * that without a model. The rest is the agent's, one slide at a time with the
+ * slide in view: its answers land in the chat below, to apply or discard.
  */
 
-function renderReviewPanel(review) {
-  if (!review) return "";
+/** The slides of a deck, in order, or [0] for a document read as a whole. */
+function slidesToReview(document) {
+  const numbers = document.slides?.length
+    ? document.slides.map(slide => slide.number)
+    : document.blocks.map(block => block.slide_number).filter(Boolean);
+  return numbers.length ? [...new Set(numbers)].sort((a, b) => a - b) : [0];
+}
 
-  const open = review.findings.filter(finding => !finding.acknowledged);
-  const tone = review.error_count ? "bad" : open.length ? "warn" : "ok";
-  const headline = !review.reviewed_at
-    ? "Not reviewed yet"
+/** The review under way, if any: kept outside the page so a redraw can say so. */
+let slideReview = null;
+
+function renderReviewPanel(review, names, document) {
+  const fileName = document.file_name;
+  const open = openFindings(review, names, fileName);
+  const tone = open.some(finding => finding.severity === "error") ? "bad"
+    : open.length ? "warn" : "ok";
+  const checks = !review.reviewed_at
+    ? "Pictures and figure references not checked yet."
     : open.length
-      ? `${open.length} thing(s) to look at`
-      : "Nothing wrong found";
+      ? `The checks found ${open.length} thing(s) to look at.`
+      : "The checks found nothing wrong: every picture opened cleanly.";
+  const slides = slidesToReview(document);
+  const deck = slides[0] !== 0;
 
   return `
     <div class="panel review-panel ${tone}">
       <div class="panel-head">
-        <h3>Extraction review</h3>
-        <div class="spacer"></div>
-        ${review.reviewed_at ? `<span class="plan-total">${
-          review.asked_the_agent ? "checks + agent" : "checks only"}</span>` : ""}
+        <h3>Review</h3>
       </div>
-      <p class="panel-sub">${escapeHtml(headline)}${
-        review.is_stale ? " · the extraction has changed since this review" : ""}</p>
 
       <div class="review-actions">
-        <button class="btn btn-accent" id="review-extraction-button">
-          ${review.reviewed_at ? "Review again" : "Review extraction"}
+        <button class="btn btn-accent" id="review-slides-button"
+                title="The agent looks at each slide beside what was extracted from it, and proposes fixes. One model call per slide.">
+          ${slideReview ? "Stop the review"
+            : deck ? `Review all ${slides.length} slide${slides.length === 1 ? "" : "s"} with the agent`
+            : "Review with the agent"}
         </button>
-        <label class="review-ask-agent">
-          <input type="checkbox" id="review-ask-agent"
-                 ${applicationState.reviewAsksTheAgent === false ? "" : "checked"}>
-          Have the agent read it
-        </label>
+        <button class="btn" id="review-extraction-button"
+                title="Opens every extracted picture and matches every figure reference. No model call.">
+          ${review.reviewed_at ? "Check pictures again" : "Check pictures"}
+        </button>
       </div>
+      <p class="x-review-progress" hidden></p>
+      <div class="x-review-slides" data-proposal-slides hidden></div>
 
-      ${review.notes?.length ? `<p class="edit-hint muted">${
-        review.notes.map(escapeHtml).join(" · ")}</p>` : ""}
+      <p class="panel-sub">${escapeHtml(checks)}${
+        review.is_stale ? " The extraction has changed since." : ""}</p>
 
       ${open.map(finding => `
         <div class="finding ${escapeHtml(finding.severity)}">
@@ -594,48 +877,97 @@ function renderReviewPanel(review) {
           </div>
         </div>`).join("")}
 
-      ${review.reviewed_at && !open.length
-        ? `<p class="edit-hint muted">Every picture opened cleanly${
-            review.asked_the_agent ? " and the agent found nothing to report" : ""}.</p>`
-        : ""}
     </div>`;
 }
 
-async function runExtractionReview(rerender) {
+async function runExtractionReview(page) {
   const button = select("#review-extraction-button");
-  // Remembered, not read fresh from a checkbox the last redraw reset: someone
-  // who turned the agent off meant it for more than one run.
-  const askAgent = applicationState.reviewAsksTheAgent !== false;
-  button.disabled = true;
-  button.textContent = askAgent ? "Checking and reading…" : "Checking…";
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Checking…";
+  }
 
   try {
-    const review = await requestJsonFromApi(projectApiPath("/extraction/review"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ask_agent: askAgent }),
-    });
+    const review = await requestJsonFromApi(
+      projectApiPath("/extraction/review"), { method: "POST" });
     applicationState.extractionReview = review;
     showStageNotice(review.error_count ? "warn" : "ok",
       review.open_count
         ? `${review.open_count} thing(s) to look at.`
-        : "Nothing wrong found in the extraction.");
+        : "The checks found nothing wrong.");
   } catch (reviewFailure) {
     console.error("extraction review failed", reviewFailure);
     showStageNotice("bad", reviewFailure.message);
   } finally {
-    await rerender();
+    await page.refresh();
   }
 }
 
-function wireReviewPanel(rerender) {
-  const askAgent = select("#review-ask-agent");
-  if (askAgent) {
-    askAgent.onchange = () => { applicationState.reviewAsksTheAgent = askAgent.checked; };
+/** Walk the slides: one call each, so every answer is small and one slide
+ *  that fails loses nothing else. Each answer lands in the chat as it comes;
+ *  pressing the button again stops after the slide under way. */
+async function runSlideReview(button) {
+  if (slideReview) {
+    slideReview.stopped = true;
+    button.disabled = true;
+    button.textContent = "Stopping after this slide…";
+    return;
   }
+  const fileName = applicationState.previewFileName;
+  const document = loaded?.extraction.documents.find(d => d.file_name === fileName);
+  if (!document) return;
+  const slides = slidesToReview(document);
+  const progress = select(".x-review-progress");
+  const run = slideReview = { stopped: false };
+  const failed = [];
+  let conversationId = "";
+  let reviewed = 0;
+  button.textContent = "Stop the review";
+  progress.hidden = false;
 
+  for (const [index, number] of slides.entries()) {
+    if (run.stopped || !progress.isConnected) break;
+    progress.textContent = number
+      ? `Reviewing slide ${number} (${index + 1} of ${slides.length})…` : "Reviewing…";
+    showProgress({
+      label: number ? `Agent reviewing slide ${number} of ${fileName}` : `Agent reviewing ${fileName}`,
+      done: index, total: slides.length > 1 ? slides.length : 0,
+    });
+    try {
+      const thread = await requestJsonFromApi(projectApiPath("/extraction/agent/review-slide"), {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          file_name: fileName, slide_number: number, conversation_id: conversationId,
+        }),
+      });
+      conversationId = thread.conversation_id;
+      reviewed += 1;
+      if (select(".x-agent")?.dataset.agentFor === fileName) showAgentThread(thread);
+    } catch (failure) {
+      console.error(`reviewing slide ${number} failed`, failure);
+      failed.push(number ? `slide ${number} (${failure.message})` : failure.message);
+    }
+  }
+  slideReview = null;
+  hideProgress();
+  if (!progress.isConnected) return;
+
+  progress.textContent = (slides[0]
+    ? `Reviewed ${reviewed} of ${slides.length} slides${run.stopped ? " — stopped" : ""}.`
+    : reviewed ? "Reviewed." : "")
+    + (failed.length ? ` Could not review ${failed.join("; ")}.` : "");
+  button.disabled = false;
+  button.textContent = slides[0]
+    ? `Review all ${slides.length} slide${slides.length === 1 ? "" : "s"} with the agent`
+    : "Review with the agent";
+}
+
+function wireReviewPanel(page) {
   const reviewButton = select("#review-extraction-button");
-  if (reviewButton) reviewButton.onclick = () => runExtractionReview(rerender);
+  if (reviewButton) reviewButton.onclick = () => runExtractionReview(page);
+
+  const slidesButton = select("#review-slides-button");
+  if (slidesButton) slidesButton.onclick = () => runSlideReview(slidesButton);
 
   document.querySelectorAll("[data-acknowledge]").forEach(button => {
     button.onclick = async () => {
@@ -649,7 +981,7 @@ function wireReviewPanel(rerender) {
         showStageNotice("bad", acknowledgeFailure.message);
         return;
       }
-      await rerender();
+      await page.refresh();
     };
   });
 
@@ -671,11 +1003,11 @@ function wireReviewPanel(rerender) {
             body: JSON.stringify({ instruction }),
           });
         showStageNotice("ok", `Picture drawn by ${drawn.model} and marked as generated.`);
-        await runExtractionReview(rerender);
+        await runExtractionReview(page);
       } catch (drawFailure) {
         console.error("drawing a figure failed", drawFailure);
         showStageNotice("bad", drawFailure.message);
-        await rerender();
+        await page.refresh();
       }
     };
   });
@@ -692,97 +1024,98 @@ function wireReviewPanel(rerender) {
             encodeURIComponent(input.dataset.replaceFigure)}/picture`),
           { method: "POST", body });
         showStageNotice("ok",
-          "Picture replaced. Running extraction again will take it from the source document.");
+          "Picture replaced. Transfer again from the Final tab to hand it to the next layer.");
         // The finding it fixes is only gone once the checks run again.
-        await runExtractionReview(rerender);
+        await runExtractionReview(page);
       } catch (uploadFailure) {
         console.error("figure replacement failed", uploadFailure);
         showStageNotice("bad", uploadFailure.message);
-        await rerender();
+        await page.refresh();
       }
     };
   });
 }
 
-/** Redraw the run bar from the server's current view of the extraction. */
-async function refreshRunBar(rerender) {
-  const bar = document.querySelector(".run-bar");
-  if (!bar) return;
+/* ---- the collection: extract one file, remove one, confirm all ----------- */
 
+/** Re-read the extraction after a setting changes, which can make the source
+ *  need extracting again, and redraw just the source panel -- redrawing the
+ *  stage would re-render a 50 MB deck in the preview for one switch. */
+async function refreshCollection() {
   let extraction;
   try {
     extraction = await requestJsonFromApi(projectApiPath("/extraction"));
   } catch (refreshFailure) {
-    console.error("run bar refresh failed", refreshFailure);
+    console.error("collection refresh failed", refreshFailure);
     return;
   }
-  if (!bar.isConnected) return;
-
-  const sources = sortedSources();
-  const included = includedSourceNames(sources, extraction);
-  bar.outerHTML = renderRunBar(included.size, sources.length, extraction);
-
-  const heading = select("#files-to-process-heading");
-  if (heading) heading.textContent = filesToProcessHeading(included.size, sources.length);
-
-  for (const file of sources) {
-    const badge = document.querySelector(`[data-status-for="${CSS.escape(file.name)}"]`);
-    if (badge) badge.outerHTML = renderFileStatus(file, included, extraction);
-  }
-
-  const runButton = select("#run-extraction-button");
-  if (runButton && !runButton.disabled) {
-    runButton.onclick = () => runExtraction(runButton, rerender);
+  if (loaded) loaded.extraction = extraction;
+  const panel = document.querySelector(".x-source");
+  if (panel) {
+    panel.outerHTML = renderSourcePanel(applicationState.selectedProject?.source, extraction);
+    wireExtractButton(currentPage);
   }
 }
 
-function filesToProcessHeading(includedCount, totalCount) {
-  return includedCount === totalCount
-    ? `Files to process (${totalCount})`
-    : `Files to process (${includedCount} of ${totalCount})`;
+let currentPage = null;
+
+function wireCollection(page) {
+  currentPage = page;
+  wireExtractButton(page);
+  const confirmButton = select("#confirm-extraction-button");
+  if (confirmButton && !confirmButton.disabled) {
+    confirmButton.onclick = () => confirmCollection(confirmButton, page);
+  }
 }
 
-/** Tick or untick a file for extraction, saved with the project.
- *
- *  The tick moves at once; the run bar is then redrawn from the server, which is
- *  what decides whether the extraction still matches. Unticking a file that was
- *  extracted makes it out of date -- later stages are still reading it -- while
- *  a file that was never extracted can be left out without any warning at all.
- */
-async function toggleFileInclusion(checkbox, rerender) {
-  if (applicationState.isSavingSettings) {
-    showStageNotice("warn", "Still saving the last change — try again in a moment.");
-    return;
-  }
-  applicationState.isSavingSettings = true;
+function wireExtractButton(page) {
+  const button = select("#extract-file-button");
+  if (button && !button.disabled) button.onclick = () => extractSource(button, page);
+}
 
-  const include = !checkbox.classList.contains("on");
-  showFileIncluded(checkbox, include);
-  const excluded = [...document.querySelectorAll("[data-toggle-file]")]
-    .filter(box => !box.classList.contains("on"))
-    .map(box => box.dataset.toggleFile);
-
+/** Read the source file, then show what came out. */
+async function extractSource(button, page) {
+  const source = applicationState.selectedProject?.source;
+  if (applicationState.extractingFileName || !source) return;
+  applicationState.extractingFileName = source.name;
+  showProgress({ label: `Extracting ${source.name}` });
+  button.disabled = true;
+  button.textContent = "Extracting…";
   try {
-    await requestJsonFromApi(projectApiPath("/extraction/sources"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ excluded }),
+    const result = await requestJsonFromApi(projectApiPath("/extraction/run"), {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: "{}",
     });
-    await refreshRunBar(rerender);
-  } catch (saveFailure) {
-    console.error("file selection save failed", saveFailure);
-    showFileIncluded(checkbox, !include);
-    showStageNotice("bad", `Could not save that choice — ${saveFailure.message}`);
+    const done = result.extracted;
+    // Land on what came out: running a stage and seeing no change is the most
+    // confusing possible outcome.
+    applicationState.extractionTab = "review";
+    showStageNotice(done.warnings.length ? "warn" : "ok",
+      `Extracted ${done.word_count} words, ${done.block_count} blocks. Review it here, then `
+      + `transfer it from Final.${done.warnings.length ? ` ${done.warnings.join(" ")}` : ""}`);
+  } catch (runFailure) {
+    console.error("extraction failed", runFailure);
+    showStageNotice("bad", `Could not extract ${source.name} — ${runFailure.message}`);
   } finally {
-    applicationState.isSavingSettings = false;
+    applicationState.extractingFileName = null;
+    hideProgress();
   }
+  await Promise.all([refreshProjectSummary(), page.refresh()]);
 }
 
-function showFileIncluded(checkbox, included) {
-  checkbox.classList.toggle("on", included);
-  checkbox.setAttribute("aria-checked", String(included));
-  checkbox.title = included ? "Included in extraction" : "Left out of extraction";
-  checkbox.closest(".file-card")?.classList.toggle("left-out", !included);
+/** The hand-off: later stages read this collection from now on. *//** The hand-off: later stages read this collection from now on. */
+async function confirmCollection(button, page) {
+  button.disabled = true;
+  button.textContent = "Transferring…";
+  try {
+    const confirmed = await requestJsonFromApi(
+      projectApiPath("/extraction/confirm"), { method: "POST" });
+    showStageNotice("ok",
+      `Transferred to the next layer: ${confirmed.total_word_count} words.`);
+  } catch (confirmFailure) {
+    console.error("confirming the collection failed", confirmFailure);
+    showStageNotice("bad", confirmFailure.message);
+  }
+  await Promise.all([refreshProjectSummary(), page.refresh()]);
 }
 
 /** Move one control to a value without redrawing anything else. */
@@ -794,10 +1127,10 @@ function showOptionValue(optionKey, value) {
     return;
   }
   control.setAttribute("aria-checked", String(Boolean(value)));
-  control.querySelector(".switch")?.classList.toggle("on", Boolean(value));
+  control.querySelector(".checkbox")?.classList.toggle("on", Boolean(value));
 }
 
-async function persistOption(stage, optionKey, newValue, rerender) {
+async function persistOption(stage, optionKey, newValue, page) {
   // A control that silently does nothing reads as broken. Say why instead
   // of dropping the interaction.
   if (applicationState.isSavingSettings) {
@@ -832,7 +1165,7 @@ async function persistOption(stage, optionKey, newValue, rerender) {
     // a changed option can make it out of date. Only the run bar is redrawn --
     // redrawing the stage would re-download and re-render a 50 MB deck sitting
     // in the Preview tab for the sake of one switch.
-    await refreshRunBar(rerender);
+    await refreshCollection();
 
     const savedHint = select("#settings-saved-hint");
     if (savedHint) {
@@ -844,45 +1177,284 @@ async function persistOption(stage, optionKey, newValue, rerender) {
   } catch (saveFailure) {
     console.error("settings save failed", saveFailure);
     settings.values[optionKey] = previousValue;
-    await rerender();
+    await page.refresh();
     showStageNotice("bad", `Could not save that setting — ${saveFailure.message}`);
   } finally {
     applicationState.isSavingSettings = false;
   }
 }
 
-
-/** Parse every source document, then show what came out.
+/* ---- the Extraction agent: a conversation beside the blocks --------------
  *
- *  Extraction runs synchronously server-side and takes real time on a large PDF,
- *  so the button says what it is doing rather than going inert: a control that
- *  looks frozen is indistinguishable from one that is broken.
+ * Ask for a change -- merge these, reorder that, rewrite a heading, redraw or
+ * edit a picture -- and the agent replies with a proposal. Nothing changes
+ * until Apply; the last applied proposal can be undone.
  */
-async function runExtraction(button, rerender) {
-  const originalLabel = button.textContent;
-  button.disabled = true;
-  button.textContent = "Extracting...";
 
-  try {
-    const result = await requestJsonFromApi(
-      projectApiPath("/extraction/run"), { method: "POST" });
+function renderAgentPanel(extraction, fileName) {
+  const extracted = extraction.documents.some(d => d.file_name === fileName);
+  return `
+    <section class="x-agent" data-agent-for="${escapeHtml(fileName)}">
+      <div class="x-agent-head">
+        <h3 class="x-compare-title">Extraction agent</h3>
+        <div class="spacer"></div>
+        ${extracted ? `
+          <div class="x-agent-history" hidden>
+            <button class="btn" data-agent-history aria-expanded="false" aria-haspopup="true">
+              History</button>
+            <div class="x-agent-history-menu" hidden></div>
+          </div>
+          <button class="btn" data-agent-new>New chat</button>` : ""}
+      </div>
+      ${extracted ? `
+        <div class="x-agent-log" aria-live="polite">
+          <p class="muted x-agent-empty">Loading the conversation…</p>
+        </div>
+        <form class="x-agent-ask">
+          <textarea rows="2" maxlength="2000" aria-label="Message to the extraction agent"
+            placeholder="Ask to rewrite, merge, reorder or delete blocks, or to redraw, edit or add a picture…"
+          ></textarea>
+          <button class="btn btn-accent" type="submit">Send</button>
+        </form>`
+        : `<p class="muted x-agent-empty">Extract this file to work on it with the agent.</p>`}
+    </section>`;
+}
 
-    // Land on the tab that shows the result. Running a stage and seeing no
-    // visible change is the most confusing possible outcome.
-    applicationState.previewTab = "text";
-    await refreshProjectSummary();
-    await rerender();
+const TRASH_ICON = '<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>';
 
-    showStageNotice(
-      result.warnings.length ? "warn" : "ok",
-      result.warnings.length
-        ? result.warnings.join(" - ")
-        : `Extracted ${result.total_word_count} words from ${
-            result.audit.document_count} document(s).`);
-  } catch (runFailure) {
-    console.error("extraction run failed", runFailure);
-    button.disabled = false;
-    button.textContent = originalLabel;
-    showStageNotice("bad", `Extraction failed - ${runFailure.message}`);
+/** A click anywhere outside the History menu closes it. One listener for the
+ *  page, not one per redraw. */
+document.addEventListener("click", event => {
+  if (event.target.closest(".x-agent-history")) return;
+  document.querySelectorAll(".x-agent-history-menu:not([hidden])").forEach(menu => {
+    menu.hidden = true;
+    menu.parentElement.querySelector("[data-agent-history]")?.setAttribute("aria-expanded", "false");
+  });
+});
+
+const AGENT_STATUS = {
+  applied: "Applied", discarded: "Discarded", undone: "Undone",
+};
+
+function renderAgentTurn(turn, thread) {
+  if (turn.role === "person") {
+    return `
+      <div class="x-agent-turn person">
+        ${turn.slide_number ? `<span class="x-agent-slide">slide ${turn.slide_number}</span>` : ""}
+        <p>${escapeHtml(turn.text)}</p>
+      </div>`;
   }
+  const changes = turn.summaries.map((summary, index) => `
+    <li><b>${escapeHtml(summary)}</b>${turn.changes[index]?.reason
+      ? `<span>${escapeHtml(turn.changes[index].reason)}</span>` : ""}</li>`).join("");
+  const actions = turn.status === "proposed" ? `
+      <div class="x-agent-actions">
+        <button class="btn btn-accent" data-agent-apply="${turn.id}">Apply changes</button>
+        <button class="btn" data-agent-discard="${turn.id}">Discard</button>
+      </div>`
+    : turn.status ? `
+      <div class="x-agent-actions">
+        <span class="x-agent-status ${turn.status}">${AGENT_STATUS[turn.status] ?? turn.status}</span>
+        ${thread.undo_turn_id === turn.id
+          ? `<button class="btn" data-agent-undo="${turn.id}">Undo</button>` : ""}
+      </div>` : "";
+  return `
+    <div class="x-agent-turn agent">
+      ${turn.looked_at ? `<span class="x-agent-looked">Looked at ${escapeHtml(turn.looked_at)}</span>` : ""}
+      <p>${escapeHtml(turn.text)}</p>
+      ${changes ? `<ol class="x-agent-changes">${changes}</ol>` : ""}
+      ${turn.notes.map(note => `<p class="x-agent-note">${escapeHtml(note)}</p>`).join("")}
+      ${actions}
+    </div>`;
+}
+
+/** The conversation on screen, so a message goes on in the one being read. */
+let agentConversationId = "";
+
+function showAgentThread(thread) {
+  const log = select(".x-agent-log");
+  if (!log) return;
+  agentConversationId = thread.conversation_id;
+
+  const history = select(".x-agent-history");
+  if (history) {
+    history.hidden = !thread.conversations.length;
+    history.querySelector(".x-agent-history-menu").innerHTML = thread.conversations.map(chat => `
+      <div class="x-agent-history-row${chat.id === thread.conversation_id ? " on" : ""}">
+        <button class="x-agent-history-open" data-open-chat="${chat.id}">
+          <b>${escapeHtml(chat.title)}</b>
+          <span>${chat.started_at ? escapeHtml(whenItWas(chat.started_at)) : ""}${
+            chat.turn_count ? ` · ${chat.turn_count} message${chat.turn_count === 1 ? "" : "s"}` : ""}</span>
+        </button>
+        <button class="x-agent-history-delete" data-delete-chat="${chat.id}"
+                title="Delete this chat" aria-label="Delete the chat “${escapeHtml(chat.title)}”">
+          ${icon(TRASH_ICON, 15, 2)}</button>
+      </div>`).join("");
+  }
+  showProposalSlides(thread);
+  log.innerHTML = thread.turns.length
+    ? thread.turns.map(turn => renderAgentTurn(turn, thread)).join("")
+    : `<p class="muted x-agent-empty">Review every slide with the agent above, or ask it to
+         change what was extracted: rewrite, merge, reorder or delete blocks, or redraw, edit or
+         add a picture. It proposes; you apply.</p>`;
+  log.scrollTop = log.scrollHeight;
+}
+
+/** "Changes waiting on slides 2 · 5 · 9", each a button that shows the slide. */
+function showProposalSlides(thread) {
+  const box = select("[data-proposal-slides]");
+  if (!box) return;
+  const waiting = [...new Set(thread.turns
+    .filter(turn => turn.status === "proposed" && turn.slide_number)
+    .map(turn => turn.slide_number))].sort((a, b) => a - b);
+  box.hidden = !waiting.length;
+  box.innerHTML = waiting.length ? `
+    <span>Changes waiting on slide${waiting.length === 1 ? "" : "s"}</span>
+    ${waiting.map(number => `
+      <button class="x-slide-chip" data-show-slide="${number}"
+              title="Show slide ${number}">${number}</button>`).join("")}` : "";
+  box.onclick = event => {
+    const chip = event.target.closest("[data-show-slide]");
+    if (!chip) return;
+    const fileName = applicationState.previewFileName;
+    stepRawFile(fileName, Number(chip.dataset.showSlide) - 1 - (applicationState.previewSlideIndex ?? 0));
+    select(".x-compare")?.scrollIntoView({ block: "start", behavior: "smooth" });
+  };
+}
+
+/** The slide the agent should look at: the one on screen, for a deck. */
+function agentSlideNumber(fileName) {
+  const document = loaded?.extraction.documents.find(d => d.file_name === fileName);
+  const onSlides = document?.blocks.some(block => block.slide_number);
+  return onSlides ? (applicationState.previewSlideIndex ?? 0) + 1 : 0;
+}
+
+/** After an apply or an undo: the extraction changed, so the column is drawn
+ *  from the new one without refetching anything. */
+function showChangedExtraction(extraction, fileName) {
+  if (loaded) loaded.extraction = extraction;
+  const pane = document.querySelector("[data-extraction-for]");
+  if (pane?.dataset.extractionFor === fileName) {
+    pane.innerHTML = renderExtractionSide(extraction, fileName, applicationState.previewSlideIndex ?? 0);
+  }
+  refreshProjectSummary();
+}
+
+function wireAgentPanel() {
+  const panel = select(".x-agent");
+  const fileName = panel?.dataset.agentFor;
+  const form = panel?.querySelector(".x-agent-ask");
+  if (!form) return;
+
+  const path = `/extraction/agent`;
+  const post = (url, body) => requestJsonFromApi(projectApiPath(url), {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ file_name: fileName, ...body }),
+  });
+  const busy = (button, label, work) => async () => {
+    const original = button.textContent;
+    button.disabled = true;
+    button.textContent = label;
+    try {
+      await work();
+    } catch (failure) {
+      console.error("extraction agent failed", failure);
+      showStageNotice("bad", failure.message);
+      button.disabled = false;
+      button.textContent = original;
+    }
+  };
+
+  requestJsonFromApi(projectApiPath(`${path}?file_name=${encodeURIComponent(fileName)}`))
+    .then(showAgentThread)
+    .catch(failure => {
+      console.error("agent conversation load failed", failure);
+      panel.querySelector(".x-agent-log").innerHTML =
+        `<p class="muted x-agent-empty">Could not load the conversation — ${escapeHtml(failure.message)}</p>`;
+    });
+
+  const newChat = panel.querySelector("[data-agent-new]");
+  newChat.onclick = busy(newChat, "Starting…", async () => {
+    showAgentThread(await post(`${path}/new`, {}));
+    newChat.disabled = false;
+    newChat.textContent = "New chat";
+    textarea.focus();
+  });
+  // History: every chat about this file, to reopen one or delete it.
+  const toggle = panel.querySelector("[data-agent-history]");
+  const menu = panel.querySelector(".x-agent-history-menu");
+  const showMenu = open => {
+    menu.hidden = !open;
+    toggle.setAttribute("aria-expanded", String(open));
+  };
+  toggle.onclick = () => showMenu(menu.hidden);
+  menu.onclick = async event => {
+    const open = event.target.closest("[data-open-chat]");
+    const remove = event.target.closest("[data-delete-chat]");
+    try {
+      if (open) {
+        showMenu(false);
+        showAgentThread(await requestJsonFromApi(projectApiPath(
+          `${path}?file_name=${encodeURIComponent(fileName)}`
+          + `&conversation_id=${encodeURIComponent(open.dataset.openChat)}`)));
+      } else if (remove) {
+        if (!window.confirm("Delete this chat? Any changes it applied stay applied.")) return;
+        showAgentThread(await requestJsonFromApi(projectApiPath(
+          `${path}/conversations/${encodeURIComponent(remove.dataset.deleteChat)}`
+          + `?file_name=${encodeURIComponent(fileName)}`), { method: "DELETE" }));
+      }
+    } catch (failure) {
+      console.error("chat history failed", failure);
+      showStageNotice("bad", failure.message);
+    }
+  };
+
+  const textarea = form.querySelector("textarea");
+  const send = form.querySelector('button[type="submit"]');
+  form.onsubmit = event => {
+    event.preventDefault();
+    const message = textarea.value.trim();
+    if (!message) return;
+    busy(send, "Thinking…", async () => {
+      showAgentThread(await post(path, {
+        message, slide_number: agentSlideNumber(fileName), conversation_id: agentConversationId,
+      }));
+      textarea.value = "";
+      send.disabled = false;
+      send.textContent = "Send";
+    })();
+  };
+  textarea.onkeydown = event => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      form.requestSubmit();
+    }
+  };
+
+  // The log is redrawn after every step, so its buttons are handled by
+  // delegation rather than wired one by one.
+  panel.querySelector(".x-agent-log").onclick = event => {
+    const apply = event.target.closest("[data-agent-apply]");
+    const discard = event.target.closest("[data-agent-discard]");
+    const undo = event.target.closest("[data-agent-undo]");
+    if (apply) {
+      busy(apply, "Applying…", async () => {
+        const result = await post(`${path}/${apply.dataset.agentApply}/apply`, {});
+        showAgentThread(result.thread);
+        showChangedExtraction(result.extraction, fileName);
+        showStageNotice("ok", "Changes applied. Transfer again to hand them to the next layer.");
+      })();
+    } else if (discard) {
+      busy(discard, "Discarding…", async () => {
+        showAgentThread((await post(`${path}/${discard.dataset.agentDiscard}/discard`, {})).thread);
+      })();
+    } else if (undo) {
+      busy(undo, "Undoing…", async () => {
+        const result = await post(`${path}/undo`, {});
+        showAgentThread(result.thread);
+        showChangedExtraction(result.extraction, fileName);
+        showStageNotice("ok", "Undone: those blocks are back as they were.");
+      })();
+    }
+  };
 }

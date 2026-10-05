@@ -9,8 +9,8 @@
 
 import { requestJsonFromApi } from "/static/shared-client.js";
 import {
-  ICON, applicationState, escapeHtml, formatFileSize, icon, projectApiPath, select,
-  showStageNotice, stageIcon,
+  ICON, applicationState, escapeHtml, footerNav, formatFileSize, icon, projectApiPath,
+  select, showStageNotice, stageHeader, wireGotoButtons,
 } from "/static/ui-kit.js";
 
 const KIND_LABELS = {
@@ -36,17 +36,11 @@ export async function renderExportStage(stage, navigateToStage, renderAgentStage
   applicationState.exportManifest = manifest;
 
   body.innerHTML = `
-    <div class="card">
-      <div class="card-head">
-        <span class="card-icon">${stageIcon("export", 21)}</span>
-        <div>
-          <h2>Export</h2>
-          <p>The video, its transcript, its chapters and a description — as files.</p>
-        </div>
-        <button class="btn" id="export-agent-button">
-          ${icon(ICON.gear, 14, 1.8)} Agent &amp; instructions
-        </button>
-      </div>
+    ${stageHeader("export", "Export", {
+      agentButtonId: "export-agent-button",
+    })}
+
+    <div class="card stage-content">
 
       ${renderRunBar(manifest)}
       ${renderBlockers(manifest)}
@@ -134,23 +128,13 @@ function renderFiles(manifest) {
 }
 
 function renderFooterNav(stage) {
-  const { stageDefinitions } = applicationState;
-  const index = stageDefinitions.findIndex(s => s.key === stage.key);
-  const previous = stageDefinitions[index - 1];
-  return `
-    <div class="footer-nav">
-      ${previous ? `<button class="btn" data-goto="${previous.key}">
-        ${icon(ICON.arrowLeft)} Back to ${escapeHtml(previous.title)}</button>` : ""}
-      <div class="spacer"></div>
-    </div>`;
+  return footerNav(stage);
 }
 
 function wireExportStage(stage, navigateToStage, renderAgentStage) {
   const rerender = () => renderExportStage(stage, navigateToStage, renderAgentStage);
 
-  document.querySelectorAll("[data-goto]").forEach(button => {
-    button.onclick = () => navigateToStage(button.dataset.goto);
-  });
+  wireGotoButtons(navigateToStage);
   select("#export-agent-button").onclick = () => renderAgentStage(stage);
 
   select("#build-export-button").onclick = async () => {

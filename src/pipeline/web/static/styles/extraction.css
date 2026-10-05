@@ -15,11 +15,9 @@
 .option .help { font-size: 11.5px; color: var(--text-faint); margin-top: 5px; line-height: 1.45; }
 
 /* preview pane */
-.preview-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-
-.preview-tabs { margin-right: 4px; }
-
-.preview-tabs button { font-size: 12px; padding: 5px 12px; }
+.preview-head {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px;
+}
 
 /* --- options that are declared but not built ------------------------------ */
 .not-built {
@@ -35,11 +33,16 @@
 
 .toggle-row.inert .not-built { margin-left: auto; opacity: 1; }
 
-/* --- extraction: files left out ------------------------------------------ */
 /* --- extraction: action first, preview in place --------------------------- */
-/* Two columns rather than three: files and options stack, and the preview --
-   the thing being checked -- gets the width. */
-.extraction-workbench { grid-template-columns: 290px minmax(0, 1fr); }
+/* Extract tab. The preview -- the thing being checked -- gets the whole width.
+   The file list and the options sit side by side above it rather than in a
+   column beside it, which squeezed a slide into two thirds of the card. */
+.extraction-workbench { grid-template-columns: minmax(0, 1fr); }
+
+.extraction-workbench .workbench-side {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  align-items: start;
+}
 
 .preview-head .seg { flex: none; }
 
@@ -51,41 +54,200 @@
   letter-spacing: .02em;
 }
 
-/* Options nothing reads yet: present, so the plan is visible, but folded. */
-.planned-options {
-  margin-top: 10px; border-top: var(--edge) dashed var(--line); padding-top: 10px;
+/* --- three tabs: Extract, Review, Final & transfer ------------------------ */
+/* Folder tabs, drawn brutalist: solid fills, a heavy black outline and a hard
+   shadow, like the header above them. The active tab is the panel's own colour
+   and sits over the panel's top edge, so the two read as one shape; inactive
+   tabs sit behind it and the panel's edge runs across their feet.
+
+   The flares at each tab's foot are quarter-circles cut out of a square: a
+   transparent disc, then a ring of ink as wide as the outline, then the tab's
+   colour. `--tab-bg` paints the tab and both flares at once.
+
+   Inside, the stage's softened edges are put back to full weight, so every
+   panel and button in the tabs is outlined and shadowed the same way. */
+.extraction-tabs {
+  --x-ink: var(--stage-head-ink);
+  --x-body-bg: var(--c-yellow);
+  --x-tab-idle: var(--surface);
+  --x-edge: 3px;
+  --x-flare: 20px;
+  --edge: 2.5px;
+  --line: var(--x-ink);
+  --shadow-sm: 3px 3px 0 var(--x-ink);
+  --shadow: 5px 5px 0 var(--x-ink);
 }
 
-.planned-options summary {
-  cursor: pointer; font-size: 12.5px; font-weight: 800; list-style-position: inside;
+.x-tabs {
+  display: flex; align-items: flex-end;
+  padding: 0 calc(var(--x-flare) + 6px);
 }
 
-.planned-options summary .count {
-  display: inline-grid; place-items: center; min-width: 20px; height: 20px;
-  margin-left: 4px; border-radius: 99px; border: 1.5px solid var(--line);
-  font-size: 10.5px; background: var(--surface);
+.x-tab {
+  --tab-bg: var(--x-tab-idle);
+  position: relative; z-index: 0; flex: 1; min-width: 0;
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  margin: 0 calc(var(--x-flare) / 2) calc(var(--x-edge) * -1);
+  padding: 14px 18px calc(14px + var(--x-edge));
+  background: var(--tab-bg); color: var(--x-ink); text-align: left; cursor: pointer;
+  border: var(--x-edge) solid var(--x-ink); border-bottom: none;
+  border-radius: 22px 22px 0 0; box-shadow: none;
 }
 
-.planned-options[open] summary { margin-bottom: 10px; }
+.x-tab::before, .x-tab::after {
+  content: ""; position: absolute; bottom: 0; pointer-events: none;
+  width: var(--x-flare); height: var(--x-flare);
+}
 
-.planned-options .toggle-row .not-built,
-.planned-options .option .not-built { display: none; }
+.x-tab::before {
+  left: calc(var(--x-flare) * -1);
+  background: radial-gradient(circle at 0 0,
+    transparent calc(var(--x-flare) - var(--x-edge) - .5px),
+    var(--x-ink) calc(var(--x-flare) - var(--x-edge)),
+    var(--x-ink) calc(var(--x-flare) - .5px),
+    var(--tab-bg) var(--x-flare));
+}
+
+.x-tab::after {
+  right: calc(var(--x-flare) * -1);
+  background: radial-gradient(circle at 100% 0,
+    transparent calc(var(--x-flare) - var(--x-edge) - .5px),
+    var(--x-ink) calc(var(--x-flare) - var(--x-edge)),
+    var(--x-ink) calc(var(--x-flare) - .5px),
+    var(--tab-bg) var(--x-flare));
+}
+
+.x-tab.on { --tab-bg: var(--x-body-bg); z-index: 2; }
+
+.x-tab-number {
+  width: 30px; height: 30px; flex: none; border-radius: 50%; display: grid; place-items: center;
+  font-weight: 900; font-size: 14px;
+  border: 2.5px solid var(--x-ink); background: var(--surface); color: var(--x-ink);
+}
+
+.x-tab.on .x-tab-number { box-shadow: 2px 2px 0 var(--x-ink); }
+
+.x-tab-label {
+  font-size: 16px; font-weight: 900; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* The panel the tabs belong to: over the inactive tabs' feet, under the
+   active one. */
+.x-tab-body {
+  position: relative; z-index: 1;
+  background: var(--x-body-bg); border-radius: 18px; padding: 20px;
+  border: var(--x-edge) solid var(--x-ink); box-shadow: 6px 6px 0 var(--x-ink);
+}
+
+.x-tab-body > .workbench, .x-tab-body > .x-split { margin-bottom: 0; }
+
+/* Panels inside are plain white blocks on the yellow, outlined like everything else. */
+.extraction-tabs .panel { background: var(--surface); }
+
+@media (max-width: 760px) {
+  .extraction-tabs { --x-flare: 12px; }
+  .x-tab { padding: 10px 8px calc(10px + var(--x-edge)); gap: 8px; }
+  .x-tab-number { width: 22px; height: 22px; font-size: 11px; }
+  .x-tab-label { font-size: 13px; }
+}
+
+/* --- a list on the left, the thing it selects on the right --------------- */
+.x-split {
+  display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 16px;
+  align-items: start; margin-bottom: 16px;
+}
+
+@media (max-width: 900px) {
+  .x-split { grid-template-columns: minmax(0, 1fr); }
+}
+
+.x-pick {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+  width: 100%; margin-bottom: 8px; padding: 9px 11px; text-align: left; cursor: pointer;
+  border-radius: 10px; border: var(--edge) solid var(--line);
+  background: var(--surface); color: var(--text);
+}
+
+
+.x-pick.on { background: var(--c-blue); box-shadow: var(--shadow-sm); }
+
+.x-pick-name { font-weight: 800; font-size: 13px; overflow-wrap: anywhere; }
+
+.x-pick .file-status { margin-top: 0; }
+
+.x-pick-row { display: flex; align-items: flex-start; gap: 6px; }
+
+.x-pick-row .x-pick { flex: 1; min-width: 0; }
+
+.x-pick-row .btn-icon { margin-top: 6px; }
+
+.x-tab-empty {
+  display: grid; justify-items: center; gap: 10px; padding: 40px 20px;
+  text-align: center; color: var(--text-faint);
+}
+
+.x-tab-empty p { margin: 0; font-size: 13px; line-height: 1.5; }
+
+/* --- Final: what the next layer receives, and the button that sends it --- */
+.final-head {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 16px;
+  padding: 16px 18px; border-radius: var(--radius);
+  border: var(--edge) solid var(--line); box-shadow: var(--shadow-sm);
+  background: var(--surface);
+}
+
+.final-head.ready { background: var(--c-green); }
+
+.final-head.pending { background: var(--surface); }
+
+.final-head.stale { background: var(--c-orange); }
+
+.final-head .run-icon {
+  background: var(--surface); border: var(--edge) solid var(--line); color: var(--text);
+}
+
+.final-head.ready .run-icon { background: var(--ok); }
+
+.final-head .run-text { display: grid; gap: 3px; }
+
+.final-totals { font-family: var(--mono); font-size: 11.5px !important; }
+
+.btn-transfer { padding: 11px 18px; font-size: 14px; white-space: nowrap; }
+
+@media (max-width: 700px) {
+  .final-head { flex-wrap: wrap; }
+}
+
+/* --- what the vision model read ------------------------------------------- */
+.x-transcribed {
+  display: inline-block; margin-left: 8px; padding: 0 7px; border-radius: 99px;
+  border: 1.5px solid var(--line); background: var(--c-purple-soft);
+  font-size: 10px; font-weight: 800; vertical-align: middle; color: var(--text);
+}
 
 /* --- reviewing what extraction produced ----------------------------------- */
-.review-panel { background: var(--c-lime-soft); }
+.review-panel { background: var(--c-lime); }
 
-.review-panel.warn { background: var(--c-yellow-soft); }
+.review-panel.warn { background: var(--c-orange); }
 
-.review-panel.bad { background: var(--c-red-soft); }
+.review-panel.bad { background: var(--c-red); }
 
 .review-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
 
-.review-ask-agent {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 12px; font-weight: 700; color: var(--text-dim);
+.x-review-progress { margin: 0 0 10px; font-size: 13px; font-weight: 700; }
+
+/* The slides the agent proposed changes on, each a button that shows it. */
+.x-review-slides {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 0 0 10px;
+  font-size: 12.5px; font-weight: 800;
 }
 
-.review-ask-agent input { width: auto; margin: 0; }
+.x-slide-chip {
+  min-width: 34px; height: 30px; padding: 0 8px; cursor: pointer;
+  font: inherit; font-weight: 800; color: var(--x-ink); background: var(--c-yellow);
+  border: 2px solid var(--x-ink); border-radius: 8px; box-shadow: 2px 2px 0 var(--x-ink);
+}
 
 .finding {
   display: flex; gap: 10px; align-items: flex-start;
@@ -121,4 +283,336 @@
 .figure-thumb {
   width: 72px; height: 72px; object-fit: contain; background: #FFF;
   border: 1.5px solid var(--line); border-radius: 8px;
+}
+
+/* Status chips inside the tabs: solid, not tinted. */
+.extraction-tabs .file-status.ok { background: var(--c-green); }
+
+.extraction-tabs .file-status.warn { background: var(--c-yellow); }
+
+.extraction-tabs .file-status.muted { background: var(--surface); color: var(--x-ink); }
+
+.extraction-tabs .file-card.selected {
+  background: var(--c-blue); box-shadow: var(--shadow-sm);
+}
+
+.extraction-tabs .final-head {
+  border: var(--x-edge) solid var(--x-ink); box-shadow: 5px 5px 0 var(--x-ink);
+}
+
+/* Options: one checkbox per row, with room between the rows. The stage softens
+   every checkbox's outline; here it is drawn at full weight like the rows. */
+.extraction-tabs .toggle-row { margin-bottom: 10px; padding: 10px 12px; gap: 12px; }
+
+.extraction-tabs .toggle-row:last-child { margin-bottom: 0; }
+
+#stage-body .extraction-tabs .checkbox {
+  width: 22px; height: 22px; border-radius: 5px;
+  border: 2.5px solid var(--x-ink); box-shadow: 2px 2px 0 var(--x-ink);
+  background: var(--surface);
+}
+
+#stage-body .extraction-tabs .checkbox.on { background: var(--c-green); color: var(--x-ink); }
+
+/* The source list: each card previews its file, and ends in a big checkbox
+   that puts it in the next extraction; the one Extract button sits below. */
+.extraction-tabs .file-card { align-items: center; gap: 10px; }
+
+.file-card-main {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 11px;
+  padding: 0; background: none; border: none; color: inherit; text-align: left; cursor: pointer;
+}
+
+.x-select-mark {
+  width: 32px; height: 32px; flex: none; border-radius: 7px; padding: 0; cursor: pointer;
+  display: grid; place-items: center;
+  background: var(--surface); color: var(--x-ink);
+  border: 3px solid var(--x-ink); box-shadow: 3px 3px 0 var(--x-ink);
+}
+
+.x-select-mark.on { background: var(--c-green); }
+
+.x-select-mark:focus-visible { outline: 3px solid var(--x-ink); outline-offset: 2px; }
+
+.x-files-column { display: grid; gap: 16px; align-content: start; min-width: 0; }
+
+.x-extract-button {
+  width: 100%; justify-content: center; padding: 14px 18px; font-size: 16px; font-weight: 900;
+  border: var(--x-edge) solid var(--x-ink); box-shadow: 5px 5px 0 var(--x-ink);
+}
+
+/* A file that is extracted says so on the right, beside its checkbox. */
+.x-extracted-tag {
+  display: inline-flex; align-items: center; gap: 4px; flex: none; white-space: nowrap;
+  padding: 2px 9px; border-radius: 99px; font-size: 11.5px; font-weight: 900;
+  background: var(--c-green); color: var(--x-ink);
+  border: 2px solid var(--x-ink); box-shadow: 2px 2px 0 var(--x-ink);
+}
+
+.x-extracted-tag.stale { background: var(--c-orange); }
+
+/* Preview and Extraction, side by side: the file on the left, what was read
+   from it on the right, following the slide on screen. */
+.x-compare {
+  display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 16px;
+  align-items: start;
+}
+
+.x-compare-side { min-width: 0; }
+
+.x-compare-title {
+  margin: 0 0 10px; font-size: 13px; font-weight: 900;
+  letter-spacing: .08em; text-transform: uppercase;
+}
+
+@media (max-width: 1100px) {
+  .x-compare { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* The boundary between Preview and Extraction can be dragged. */
+.x-compare {
+  grid-template-columns: minmax(0, var(--x-split, 32%)) 16px minmax(0, 1fr); gap: 0;
+}
+
+.x-compare-divider {
+  align-self: stretch; cursor: col-resize; position: relative; touch-action: none;
+}
+
+/* A thin straight yellow line; the whole 16px column around it is what is
+   grabbed, so it is easy to catch without looking heavy. */
+.x-compare-divider::before {
+  content: ""; position: absolute; top: 34px; bottom: 0; left: 50%; width: 3px;
+  transform: translateX(-50%); background: var(--c-yellow);
+}
+
+.x-compare-divider:focus-visible { outline: none; }
+
+.x-compare-divider:focus-visible::before { box-shadow: 0 0 0 2px var(--x-ink); }
+
+.x-compare.resizing { user-select: none; cursor: col-resize; }
+
+/* One set of arrows under both columns: they move the preview and the
+   extraction together. */
+.x-pager {
+  display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 16px;
+}
+
+.x-pager-arrow {
+  width: 44px; height: 44px; padding: 0; border-radius: 50%; cursor: pointer;
+  display: grid; place-items: center;
+  background: #fff; color: var(--x-ink);
+  border: 3px solid var(--x-ink); box-shadow: 3px 3px 0 var(--x-ink);
+}
+
+.x-pager-arrow:disabled { opacity: .35; cursor: default; }
+
+.x-pager-count {
+  min-width: 84px; text-align: center; padding: 6px 14px; border-radius: 99px;
+  font-family: var(--mono); font-weight: 800; font-size: 13px;
+  background: #fff; border: 2.5px solid var(--x-ink);
+}
+
+@media (max-width: 1100px) {
+  .x-compare { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .x-compare-divider { display: none; }
+}
+
+/* The boundary between the files and options above and Preview / Extraction
+   below. A thin straight line, black because it sits on the yellow panel; the
+   whole strip around it is what is grabbed. */
+.x-row-divider {
+  position: relative; height: 16px; margin: -8px 0; cursor: row-resize; touch-action: none;
+}
+
+.x-row-divider::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 3px;
+  transform: translateY(-50%); background: var(--x-ink);
+}
+
+.x-row-divider:focus-visible { outline: none; }
+
+.x-row-divider:focus-visible::before { box-shadow: 0 0 0 2px var(--c-yellow); }
+
+.extraction-workbench.resizing { user-select: none; cursor: row-resize; }
+
+/* Every extracted block in the same box: the kind above, the content below. */
+.extraction-tabs .x-doc { display: grid; gap: 10px; padding: 12px; align-content: start; }
+
+.x-box {
+  min-width: 0; padding: 10px 12px; border-radius: 10px;
+  background: #fff; border: 2px solid var(--x-ink); box-shadow: 3px 3px 0 var(--x-ink);
+}
+
+.x-box-kind {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+  font-size: 10.5px; font-weight: 900; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.x-box-kind .x-transcribed { margin-left: 0; text-transform: none; letter-spacing: 0; }
+
+.x-box-text {
+  margin: 0; font-size: 13px; line-height: 1.55; color: var(--text); overflow-wrap: anywhere;
+}
+
+.x-box.heading .x-box-text { font-size: 15px; font-weight: 900; }
+
+.x-box-table {
+  margin: 0; overflow-x: auto; white-space: pre-wrap;
+  font-family: var(--mono); font-size: 12px; line-height: 1.5;
+}
+
+.x-box .x-figure { margin: 0; padding: 0; border: none; background: none; }
+
+/* The slide's own structure: a map of where each shape sits, and what is
+   behind them. */
+.x-box-note {
+  text-transform: none; letter-spacing: 0; font-weight: 700; color: var(--text-faint);
+}
+
+.x-box-caption { margin: 8px 0 0; font-size: 12px; font-weight: 600; color: var(--text-dim); }
+
+.x-layout-map {
+  position: relative; width: 100%; overflow: hidden;
+  background: #fff; border: 2px solid var(--x-ink); border-radius: 6px;
+}
+
+.x-layout-shape {
+  position: absolute; box-sizing: border-box; overflow: hidden; padding: 2px 3px;
+  border: 1.5px dashed var(--x-ink); color: var(--x-ink);
+  font-size: 9px; font-weight: 700; line-height: 1.2;
+  background: rgba(77, 150, 255, .16);
+}
+
+.x-layout-shape.title { background: rgba(255, 217, 61, .45); }
+
+.x-layout-shape.picture { background: rgba(56, 216, 155, .2); padding: 0; }
+
+.x-layout-shape.table { background: rgba(255, 138, 91, .25); }
+
+.x-layout-shape.chart { background: rgba(177, 151, 252, .3); }
+
+.x-layout-shape img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+.x-layout-shape > span {
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+.x-background-image {
+  display: block; max-width: 100%; max-height: 220px; margin-bottom: 8px;
+  border: 2px solid var(--x-ink); border-radius: 6px;
+}
+
+.x-swatch.wide { width: 64px; }
+
+.x-swatch {
+  display: inline-block; width: 16px; height: 16px; margin-right: 8px; vertical-align: -3px;
+  border: 2px solid var(--x-ink); border-radius: 4px;
+}
+
+/* --- the Extraction agent ------------------------------------------------ */
+.x-agent {
+  margin-top: 18px; padding-top: 16px; border-top: 3px solid var(--c-yellow);
+}
+
+.x-agent-log {
+  display: grid; gap: 10px; align-content: start;
+  max-height: 420px; overflow-y: auto; padding: 4px 4px 10px;
+}
+
+.x-agent-empty { margin: 0; font-size: 13px; }
+
+.x-agent-turn {
+  max-width: min(760px, 88%); padding: 10px 14px; border-radius: 12px;
+  border: 2px solid var(--x-ink); box-shadow: 3px 3px 0 var(--x-ink);
+  font-size: 13.5px; line-height: 1.5;
+}
+
+.x-agent-turn p { margin: 0; }
+
+.x-agent-turn.person { justify-self: end; background: var(--c-yellow); }
+
+.x-agent-turn.agent { justify-self: start; background: #fff; }
+
+.x-agent-slide {
+  display: inline-block; margin-bottom: 4px; font-size: 10.5px; font-weight: 900;
+  letter-spacing: .06em; text-transform: uppercase;
+}
+
+.x-agent-changes { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 6px; }
+
+.x-agent-changes li b { display: block; font-weight: 800; }
+
+.x-agent-changes li span { display: block; font-size: 12.5px; color: var(--text-dim); }
+
+.x-agent-note { margin-top: 6px !important; font-size: 12px; color: var(--text-dim); }
+
+.x-agent-actions { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+
+.x-agent-status {
+  padding: 2px 10px; border-radius: 99px; font-size: 11.5px; font-weight: 900;
+  border: 2px solid var(--x-ink); background: var(--c-green);
+}
+
+.x-agent-status.discarded, .x-agent-status.undone { background: var(--surface); }
+
+.x-agent-ask { display: flex; gap: 10px; align-items: flex-end; margin-top: 12px; }
+
+.x-agent-ask textarea {
+  flex: 1; min-width: 0; resize: vertical; padding: 10px 12px; border-radius: 10px;
+  font: inherit; font-size: 13.5px; background: #fff; color: var(--text);
+  border: 2.5px solid var(--x-ink); box-shadow: 3px 3px 0 var(--x-ink);
+}
+
+.x-agent-ask textarea:focus { outline: 3px solid var(--c-yellow); outline-offset: 1px; }
+
+.x-agent-ask .btn { padding: 11px 20px; }
+
+/* A new chat, and the earlier ones, beside the agent's title. */
+.x-agent-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+
+.x-agent-head .x-compare-title { margin: 0; }
+
+/* History: a button that opens every chat about the file, each with a
+   dustbin at its right end. */
+.x-agent-history { position: relative; }
+
+.x-agent-history-menu {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 20;
+  width: min(380px, 80vw); max-height: 320px; overflow-y: auto; padding: 6px;
+  display: grid; gap: 4px; background: #fff;
+  border: 3px solid var(--x-ink); border-radius: 12px; box-shadow: 5px 5px 0 var(--x-ink);
+}
+
+.x-agent-history-row {
+  display: flex; align-items: center; gap: 6px; padding: 2px; border-radius: 8px;
+}
+
+.x-agent-history-row.on { background: var(--c-yellow); }
+
+.x-agent-history-open {
+  flex: 1; min-width: 0; display: grid; gap: 1px; padding: 7px 8px; text-align: left;
+  background: none; border: none; cursor: pointer; color: var(--text); font: inherit;
+}
+
+.x-agent-history-open b {
+  font-size: 13px; font-weight: 800;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.x-agent-history-open span { font-size: 11.5px; color: var(--text-dim); }
+
+.x-agent-history-delete {
+  flex: none; width: 32px; height: 32px; padding: 0; cursor: pointer;
+  display: grid; place-items: center; background: #fff; color: var(--x-ink);
+  border: 2px solid var(--x-ink); border-radius: 8px; box-shadow: 2px 2px 0 var(--x-ink);
+}
+
+.x-agent-head .btn {
+  border: 2.5px solid var(--x-ink); box-shadow: 3px 3px 0 var(--x-ink);
+}
+
+.x-agent-looked {
+  display: block; margin-bottom: 4px; font-size: 10.5px; font-weight: 900;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--text-dim);
 }

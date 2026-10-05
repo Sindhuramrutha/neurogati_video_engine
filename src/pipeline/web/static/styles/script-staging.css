@@ -202,3 +202,15 @@ textarea.script-body:focus { outline: none; }
   max-width: 260px; background: var(--surface); color: var(--text); font: inherit;
   font-size: 12.5px; border: var(--edge) solid var(--line); border-radius: 8px; padding: 6px 8px;
 }
+
+/* --- four tabs, like the layers before it ------------------------------------ */
+/* Tabs, panes, the check table and the final list come from Extraction, Assets
+   and Scene Plan; only what differs here. */
+.script-tabs .script-grid { margin-bottom: 0; }
+
+.script-tabs .stranded-panel { margin-top: 16px; }
+
+.script-tabs .btn.danger {
+  background: var(--c-red-soft); color: var(--x-ink);
+  border: 2.5px solid var(--x-ink); box-shadow: 2px 2px 0 var(--x-ink);
+}

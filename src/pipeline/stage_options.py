@@ -82,37 +82,12 @@ class StageOption:
         }
 
 
+# "Extraction mode" and "Output format" were here, both disabled. They were not
+# unbuilt features but contradictions: the output is always structured blocks --
+# that is the stage's whole thesis -- and a greyed-out "Balanced (Recommended)"
+# recommends a choice that does nothing. A panel that offers settings it will
+# never honour teaches people to distrust the ones that work.
 EXTRACTION_OPTIONS: tuple[StageOption, ...] = (
-    StageOption(
-        key="extraction_mode",
-        kind=OptionKind.CHOICE,
-        label="Extraction mode",
-        default="balanced",
-        choices=(
-            OptionChoice("fast", "Fast",
-                         "Quickest pass. Text only, no layout analysis."),
-            OptionChoice("balanced", "Balanced (Recommended)",
-                         "Good accuracy and speed for most documents."),
-            OptionChoice("thorough", "Thorough",
-                         "Slowest. Full layout analysis; best for dense or scanned pages."),
-        ),
-        implemented=False,
-    ),
-    StageOption(
-        key="output_format",
-        kind=OptionKind.CHOICE,
-        label="Output format",
-        default="markdown",
-        choices=(
-            OptionChoice("markdown", "Structured text (Markdown)",
-                         "Preserves structure like headings, tables, lists."),
-            OptionChoice("plain", "Plain text",
-                         "Strips all structure. Smallest output."),
-            OptionChoice("blocks", "Positioned blocks (JSON)",
-                         "Keeps each block's page and coordinates."),
-        ),
-        implemented=False,
-    ),
     StageOption("extract_tables", OptionKind.TOGGLE, "Extract tables", True,
                 "Tables become structured rows rather than run-together text."),
     StageOption("extract_images", OptionKind.TOGGLE, "Extract images (with captions)", True,
@@ -129,12 +104,10 @@ EXTRACTION_OPTIONS: tuple[StageOption, ...] = (
                 "For decks: the theme's colour scheme, its heading and body fonts, "
                 "and the slide proportions, so the video can look like the deck "
                 "rather than the renderer's defaults."),
-    StageOption("detect_key_fields", OptionKind.TOGGLE, "Detect key fields (auto)", True,
-                "Pulls out labelled values — dates, references, totals.",
-                implemented=False),
     StageOption("handwriting_ocr", OptionKind.TOGGLE, "Use handwriting recognition (OCR)", False,
-                "Much slower. Only worth enabling for handwritten source pages.",
-                implemented=False),
+                "For PDFs: pages with no text layer — scanned or handwritten — are "
+                "read by the vision model and marked as transcribed. Slower, and "
+                "needs an API key. Pages that already have text are never sent."),
 )
 
 
