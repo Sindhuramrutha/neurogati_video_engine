@@ -1,4 +1,4 @@
-"""The script — narration per plan section, plus scenarios and variables.
+"""The script — narration per plan section, plus variables.
 
 The script does not own its own outline. Sections come from the plan, and script
 bodies are keyed by `PlanSection.id`, so renaming or reordering a section in
@@ -36,8 +36,6 @@ NARRATION_WORDS_PER_MINUTE = 150
 # long again is a different video from the one that was planned.
 OVER_BUDGET_TOLERANCE = 1.25
 
-MAXIMUM_SCENARIO_NAME_LENGTH = 60
-MAXIMUM_SCENARIO_DESCRIPTION_LENGTH = 200
 MAXIMUM_VARIABLE_NAME_LENGTH = 40
 MAXIMUM_VARIABLE_VALUE_LENGTH = 200
 MAXIMUM_SCRIPT_BODY_LENGTH = 20_000
@@ -62,24 +60,6 @@ def count_words(text: str) -> int:
 
 def estimate_seconds(text: str) -> int:
     return round(count_words(text) / NARRATION_WORDS_PER_MINUTE * 60)
-
-
-class Scenario(BaseModel):
-    """A variant of the same content for a different viewer."""
-
-    id: str = Field(default_factory=new_identifier)
-    name: str = ""
-    description: str = ""
-
-    @field_validator("name")
-    @classmethod
-    def _cap_name(cls, value: str) -> str:
-        return value.strip()[:MAXIMUM_SCENARIO_NAME_LENGTH]
-
-    @field_validator("description")
-    @classmethod
-    def _cap_description(cls, value: str) -> str:
-        return value.strip()[:MAXIMUM_SCENARIO_DESCRIPTION_LENGTH]
 
 
 class ScriptVariable(BaseModel):
@@ -186,8 +166,6 @@ class SectionScript(BaseModel):
 
 class Script(BaseModel):
     section_scripts: list[SectionScript] = Field(default_factory=list)
-    scenarios: list[Scenario] = Field(default_factory=list)
-    active_scenario_id: str | None = None
     variables: list[ScriptVariable] = Field(default_factory=list)
 
     def body_for(self, section_id: str) -> str:
@@ -232,9 +210,8 @@ class Script(BaseModel):
     def spoken_text(self, section_id: str) -> str:
         """Exactly what is said for this section: its narration, variables filled in.
 
-        The one place that answer comes from. The render used to take the raw
-        body while the review transcript substituted variables, so a reviewer
-        read "Neuroscience 101" while the video said "{{COURSE}}" out loud.
+        The one place that answer comes from. Reading the raw body instead would let
+        a reviewer read "Neuroscience 101" while the video says "{{COURSE}}" out loud.
         """
         return self.resolve(self.body_for(section_id))
 
@@ -309,7 +286,7 @@ class Script(BaseModel):
                 for s in self.section_scripts
             },
             # Narration no plan section points at, shown so it can be reattached
-            # or deleted. It used to be counted in a warning and seen nowhere.
+            # or deleted, rather than only counted in a warning.
             "orphaned": [
                 {
                     "section_id": s.section_id,
@@ -354,28 +331,6 @@ def over_budget_warning(section: dict) -> str:
     )
 
 
-def default_script() -> Script:
-    """A starting set of scenarios, so the stage is not an empty canvas.
-
-    These are the variants this pipeline was built for; they are ordinary data and
-    can be renamed or deleted.
-    """
-    general = Scenario(
-        name="General audience",
-        description="Plain language, engaging tone. Suits a broad viewer.",
-    )
-    return Script(
-        scenarios=[
-            general,
-            Scenario(name="Students",
-                     description="More worked examples, more patient pacing."),
-            Scenario(name="Practitioners",
-                     description="Concise. Assumes background; leads with the point."),
-        ],
-        active_scenario_id=general.id,
-    )
-
-
 class ScriptStore(JsonDocumentStore[Script]):
     """Persistence for the script. Durability behaviour lives in
     `JsonDocumentStore`; this only names the path, the model and the default."""
@@ -384,7 +339,7 @@ class ScriptStore(JsonDocumentStore[Script]):
         super().__init__(
             document_path=artifact_path(project_root, Stage.SCRIPT_STAGING),
             model_type=Script,
-            build_default=default_script,
+            build_default=Script,
             description="script",
         )
 

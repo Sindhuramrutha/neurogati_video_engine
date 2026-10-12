@@ -71,10 +71,9 @@ class Clip(BaseModel):
     # Which plan section a render wrote this clip from. Empty for a clip
     # somebody made by hand, and for timelines written before this existed.
     #
-    # Recorded rather than inferred: where each section starts used to be read
-    # back out of the *shape* of the timeline -- one scene clip per section --
-    # so changing how a section is drawn silently moved every measured number
-    # anything read out of it.
+    # Recorded rather than inferred from the *shape* of the timeline: changing how
+    # a section is drawn must not silently move every measured number read out
+    # of it.
     section_id: str = ""
 
     @field_validator("start_ms")
@@ -186,15 +185,12 @@ class Composition(BaseModel):
     def clip_count(self) -> int:
         return sum(len(track.clips) for track in self.tracks)
 
-    def track_by_id(self, track_id: str) -> Track | None:
-        return next((t for t in self.tracks if t.id == track_id), None)
-
     def audit(self, known_asset_ids: set[str] | None = None) -> dict:
         """Problems worth surfacing before a render is attempted.
 
         Missing assets are the expensive one: a render that fails ten minutes in
         because a clip points at a deleted file is exactly the kind of late failure
-        v1 was full of.
+        to catch before the render starts.
         """
         known = known_asset_ids or set()
 

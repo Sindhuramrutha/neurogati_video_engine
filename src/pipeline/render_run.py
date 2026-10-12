@@ -1,6 +1,6 @@
 """Rendering: narration first, then everything that is measured from it.
 
-Audio is the clock (ADR 0001). The narration is synthesised and measured, and
+Audio is the clock. The narration is synthesised and measured, and
 one timing function then drives the picture, the subtitles, the Studio timeline
 and the chapter marks -- so the four cannot disagree. Everything this module
 writes afterwards is derived from that one measurement.
@@ -13,7 +13,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from pipeline import progress, upstream
+from pipeline import progress, project_work, upstream
 from pipeline.core import OperationFailed, require_project
 from pipeline.render_job import (
     JOB,
@@ -89,13 +89,12 @@ def pictures_for_sections(project, plan: dict) -> dict[str, list[Path]]:
 
 
 def shots_for_sections(project, plan: dict) -> dict[str, list]:
-    """What Generation decided each scene shows, ready for the renderer.
+    """Each scene's program clip, ready for the renderer.
 
     Empty when the stage has not run, and the renderer falls back to dealing the
     section's own pictures out slide by slide -- a project that never opens
     Generation still gets a video.
     """
-    from pipeline.generation import VisualKind
     from pipeline.generation_handoff import visuals_for_later_stages
     from pipeline.rendering import Shot
 
@@ -118,15 +117,8 @@ def shots_for_sections(project, plan: dict) -> dict[str, list]:
         shots[section["id"]] = [
             Shot(
                 picture=file_at(visual.asset_path),
-                motion=visual.motion if visual.kind != VisualKind.TEXT else "hold",
-                # An animated diagram replaces the still and its camera move.
-                # The still stays on the visual, so a project whose animator is
-                # gone renders the same scene held rather than not at all.
                 clip=file_at(visual.clip_path),
                 headline=visual.headline,
-                points=list(visual.points),
-                # A composed slide is already a finished frame.
-                full_bleed=visual.kind == VisualKind.SLIDE,
             )
             for visual in ordered
         ]
@@ -162,7 +154,8 @@ def render_video(
             "to finish -- two at once make both several times slower.")
     clear_halt(slug)
     try:
-        return _render_video(slug, voice_provider, voice, resume)
+        with project_work.working_on(slug):
+            return _render_video(slug, voice_provider, voice, resume)
     finally:
         clear_halt(slug)
         progress.finish(slug, JOB)
@@ -173,9 +166,9 @@ def _render_video(slug: str, voice_provider: str, voice: str, resume: bool) -> d
 
     The order matters and is the point: **narration first, then picture.** Each
     section is synthesised, its real duration measured from the audio file, and
-    only then is the picture cut to fit ([ADR 0001]). Deciding the picture from
-    the plan's estimated seconds and hoping the voice matches is precisely how
-    v1's animation drifted out of sync with its narration.
+    only then is the picture cut to fit. Deciding the picture from
+    the plan's estimated seconds and hoping the voice matches is how animation
+    drifts out of sync with narration.
 
     Writes into `reviewing/output/`, registers the result as a version on the
     review, and returns where the file landed -- or, halted, what it had made.
@@ -189,10 +182,20 @@ def _render_video(slug: str, voice_provider: str, voice: str, resume: bool) -> d
         raise OperationFailed(
             f"{project.name} has no plan sections yet, so there is nothing to render."
         )
+    # Every scene is a program that passed its checks and was approved. Nothing
+    # falls back to a still with the voice over it.
+    from pipeline.generation_handoff import visuals_for_later_stages
+    from pipeline.scene_approval import render_blockers
+    blockers = render_blockers(visuals_for_later_stages(project).visuals)
+    if blockers:
+        raise OperationFailed(
+            f"{len(blockers)} scene(s) cannot be rendered yet: " + "; ".join(blockers[:8])
+            + ("; …" if len(blockers) > 8 else "")
+            + ". Make, check and approve each scene's program on Generation, then transfer.")
 
-    # The spoken text, variables filled in. The render used to take the raw body,
-    # so "{{COURSE}}" reached the voice, the subtitles and the Studio timeline
-    # while the review transcript showed the substituted value.
+    # The spoken text, variables filled in. The raw body would let "{{COURSE}}" reach
+    # the voice, the subtitles and the Studio timeline while the review transcript
+    # showed the substituted value.
     from pipeline.script_handoff import script_for_later_stages
     script_document = script_for_later_stages(project)
     undefined_variables = script_document.audit(
@@ -240,9 +243,8 @@ def _render_video(slug: str, voice_provider: str, voice: str, resume: bool) -> d
         # A fresh start replaces an unfinished render rather than keeping both.
         if previous.status in UNFINISHED:
             remove_leftovers(project, previous)
-        # Every render gets its own identity: a second render used to overwrite
-        # every earlier cut. Milliseconds, so two renders a second apart do not
-        # share one either.
+        # Every render gets its own identity, so a second render never overwrites an
+        # earlier cut. Milliseconds, so two renders a second apart do not share one.
         job = RenderJob(
             render_id=datetime.now(UTC).strftime("%Y%m%d-%H%M%S-%f")[:-3],
             started_at=job_now(), fingerprint=made_from, voice_provider=chosen_provider,

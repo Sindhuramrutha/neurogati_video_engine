@@ -33,13 +33,11 @@ from pipeline.scripting import (
 def cut_freshness(plan: Plan, composition: Composition) -> dict[str, Any]:
     """Whether the timeline still describes the plan it was built from.
 
-    This is the check whose absence let a finished project look finished while
-    being wrong. A plan was re-drafted from a different source document; the
-    timeline and the chapters stayed as the previous render had left them, and
-    every later render refused to rebuild them because they counted as
-    hand-edited. Studio and Reviewing went on showing five sections about
-    electrodes for a video whose script was about neural networks, and nothing
-    anywhere said so.
+    Without this check a finished project can look finished while being wrong:
+    a plan re-drafted from a different source document leaves the timeline and
+    the chapters as the previous render made them, later renders refuse to
+    rebuild them because they count as hand-edited, and Studio and Reviewing
+    keep showing sections about electrodes for a video about neural networks.
 
     Matched on titles, because a clip records what it shows rather than which
     section produced it. That is a weaker link than an id and is the reason this

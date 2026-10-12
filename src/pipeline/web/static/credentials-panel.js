@@ -80,8 +80,6 @@ function renderCredentialFields() {
         : `<p class="danger-text">${icon(ICON.alert, 12, 2)}
              <b>That file is not gitignored.</b> Add <code>.env</code> to
              <code>.gitignore</code> before saving a real key.</p>`}
-      <p>${icon(ICON.alert, 12, 2)}
-         Agents are not wired to a model yet, so nothing uses these keys so far.</p>
     </div>`;
 
   select("#credentials-save-button").onclick = saveCredentials;

@@ -36,7 +36,6 @@ from pipeline.freshness import narration_freshness
 from pipeline.plan_handoff import FAIL, NOT_APPLICABLE, PASS, WARN, plan_for_later_stages
 from pipeline.plan_handoff import handoff_state as plan_handoff_state
 from pipeline.scripting import OVER_BUDGET_TOLERANCE, Script, ScriptStore
-from pipeline.stage_options import video_preferences
 from pipeline.stages import Stage
 from pipeline.storage.documents import JsonDocumentStore
 from pipeline.storage.layout import artifact_path
@@ -127,13 +126,14 @@ def script_checks(project, script: Script) -> list[dict[str, str]]:
                      f"{s.estimated_seconds} s" for s in short[:4]])
         or "Every written section is close to its planned length."))
 
-    target = video_preferences(project.root)
-    shortest, longest = target.target_seconds
+    length = plan.length
     spoken = sum(by_id[s.id].estimated_seconds for s in sections if s.id in by_id)
     checks.append(_check(
-        "total", "Total length", f"Within the target duration ({target.target_phrase})",
-        NOT_APPLICABLE if not spoken else PASS if shortest <= spoken <= longest else WARN,
-        f"About {round(spoken / 60, 1)} min spoken against {target.target_phrase}."))
+        "total", "Total length", "Within the length the plan agreed",
+        NOT_APPLICABLE if not spoken or not length.is_known
+        else PASS if length.shortest_seconds <= spoken <= length.longest_seconds else WARN,
+        f"About {round(spoken / 60, 1)} min spoken. Agreed: {length.understood}"
+        if length.is_known else "The plan has no agreed length."))
 
     stale = narration_freshness(plan, script, ExtractionStore(project.root).load())
     checks.append(_check(

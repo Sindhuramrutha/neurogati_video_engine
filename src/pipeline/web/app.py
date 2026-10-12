@@ -1,8 +1,8 @@
 """Litestar application.
 
-Litestar over FastAPI for three specific reasons (docs/design/tech-stack.md):
-real dependency injection, first-class channels for streaming stage progress to
-the UI, and Pydantic-native DTOs matching the IR.
+Litestar over FastAPI for three specific reasons: real dependency injection,
+first-class channels for streaming stage progress to the UI, and Pydantic-native
+DTOs for the artifacts.
 
 The app is deliberately thin. It serves the pipeline surface and its routes; no
 pipeline logic lives here. That boundary is the point: the UI is a client, never
@@ -32,27 +32,19 @@ from pipeline.web.routes_generation_handoff import GENERATION_HANDOFF_ROUTES
 from pipeline.web.routes_lesson_plan import LESSON_PLAN_ROUTES
 from pipeline.web.routes_plan_handoff import PLAN_HANDOFF_ROUTES
 from pipeline.web.routes_project import (
-    accept_plan_draft_route,
     acknowledge_extraction_finding,
-    ask_agent,
     ask_orchestrator,
-    build_plan_from_slides,
     build_project_export,
-    build_scene_visuals,
-    change_scene_visual,
     clear_studio_timeline,
     confirm_extraction_route,
-    confirm_plan_route,
     confirm_section_narration_route,
     create_project,
     decide_asset_figure,
     delete_agent_conversation,
     delete_source_pages,
-    discard_plan_draft_route,
     download_export_file,
     download_narration,
     download_output,
-    draft_plan,
     draft_section_script,
     draft_unwritten_script_sections,
     draw_extracted_figure,
@@ -64,16 +56,11 @@ from pipeline.web.routes_project import (
     get_export,
     get_extraction,
     get_extraction_review,
-    get_model_status,
     get_plan,
-    get_plan_draft,
     get_project,
     get_review,
-    get_scene_renderers,
     get_scene_visuals,
     get_script,
-    get_section_source,
-    get_slide_coverage,
     get_stage_settings,
     get_voice_providers,
     list_agent_conversations,
@@ -89,9 +76,7 @@ from pipeline.web.routes_project import (
     put_review,
     put_script,
     put_stage_settings,
-    read_composed_slide,
     read_extracted_asset,
-    read_generated_asset,
     read_prepared_asset,
     read_source_file,
     refresh_assets,
@@ -101,7 +86,6 @@ from pipeline.web.routes_project import (
     run_extraction_route,
     seed_chapters,
     set_asset_look,
-    verify_renderer,
 )
 from pipeline.web.routes_project_admin import PROJECT_ADMIN_ROUTES
 from pipeline.web.routes_render_job import RENDER_JOB_ROUTES
@@ -187,13 +171,10 @@ def create_app() -> Litestar:
             put_composition,
             get_review,
             put_review,
-            build_plan_from_slides,
-            get_slide_coverage,
             seed_chapters,
             get_credentials,
             put_credentials,
             confirm_extraction_route,
-            get_model_status,
             get_extraction,
             run_extraction_route,
             clear_studio_timeline,
@@ -211,33 +192,20 @@ def create_app() -> Litestar:
             download_export_file,
             get_scene_visuals,
             plan_scene_visuals,
-            build_scene_visuals,
-            change_scene_visual,
-            get_scene_renderers,
-            verify_renderer,
             get_voice_providers,
             render_project_video,
             download_output,
             download_narration,
-            read_composed_slide,
             read_extracted_asset,
-            read_generated_asset,
             read_prepared_asset,
             read_source_file,
             preview_source_file,
-            accept_plan_draft_route,
-            ask_agent,
-            confirm_plan_route,
-            discard_plan_draft_route,
-            get_plan_draft,
             ask_orchestrator,
             list_agent_conversations,
             get_agent_conversation,
             delete_agent_conversation,
-            draft_plan,
             draft_section_script,
             draft_unwritten_script_sections,
-            get_section_source,
             confirm_section_narration_route,
             # no-cache: the browser asks every time (a 304 when unchanged). Without
             # it a browser reused an old module after an update and showed an old page.

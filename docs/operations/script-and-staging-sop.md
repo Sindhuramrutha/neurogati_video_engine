@@ -11,10 +11,10 @@ The words of the video, and what is on screen while each is said. Every
 section of the transferred Scene Plan gets narration, written as **scenes**:
 
 - **Said:** the narration, spoken as written. `{{VARIABLES}}` are filled in.
-- **On screen:** the brief, which says what is shown. Generation reads it to
-  decide each scene's picture.
+- **On screen:** the brief, which says what is shown. Each scene's agent in
+  Generation reads it, with the narration, to make the scene.
 
-Later stages read the script: the visuals, the render, Studio, the review and
+Later stages read the script: the scenes, the render, Studio, the review and
 the export.
 
 ## Guarantees
@@ -38,9 +38,8 @@ the export.
 
 ### 1. Setup
 
-- **Handed on by the Scene Plan** lists the sections with their planned length,
-  the audience and the objectives.
-- **Scenarios**: the same content told for a different viewer. One is active.
+- **Handed on by the Scene Plan** lists the sections with their planned length
+  and scene count, and the audience if one was given.
 - **Script variables**: `{{NAME}}` values filled in wherever they are spoken
   or shown. Names use capitals, digits and `_` only.
 - **Narration from earlier plans**: text written for sections the plan no
@@ -51,7 +50,10 @@ the export.
 
 - Pick a section on the left. Write its scenes in the middle. The right shows
   what it was planned with: target length (about 150 words a minute),
-  audience, objectives, source text, and any open review comments for Scripting.
+  audience, source text, and any open review comments for Scripting.
+- **The scenes are the plan's.** Each scene card shows what the plan says that
+  scene does, and its planned seconds. The script fills them; it does not add,
+  remove or reorder them. That is done on the Scene Plan.
 - **Out of date** means the plan section or its source changed since this was
   written. Update the narration, or use **Keep narration as is**.
 - Typing saves by itself within a second. Switching sections or tabs saves
@@ -65,7 +67,7 @@ the export.
 | Variables defined | Every `{{NAME}}` used is defined | **Fails** (spoken as literal braces) |
 | Variable names | Capitals, digits and `_` only | Warning |
 | Section lengths | Each written section between 50% and 125% of its planned length | Warning |
-| Total length | Within the target duration from the Scene Plan's Brief | Warning |
+| Total length | Within the length the Scene Plan agreed | Warning |
 | Up to date | Written against the plan section and source as they are now | Warning |
 | On-screen briefs | Every scene says what is shown | Warning |
 | Review comments | No open review comment sent back to Scripting | Warning |

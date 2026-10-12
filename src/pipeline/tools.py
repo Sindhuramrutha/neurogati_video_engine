@@ -1,14 +1,13 @@
-"""Tool and resource catalogue — what agents can actually operate.
+"""Tool and resource catalogue: what each agent's work involves.
 
-An AGENT.md declares which of these its agent may use. That declaration is the
-grant: an agent cannot reach a tool it has not been given, so capability is
-inspectable in one markdown file rather than buried in code.
+An AGENT.md declares which of these its agent is given. That declaration is the
+grant, so what an agent is for is inspectable in one markdown file rather than
+buried in code, and the agent page lists it.
 
-Most of these do not execute yet: they are the contract the stages will implement
-against, and the thing the UI reads to show what each agent can do. The
-orchestration tools at the bottom are the exception -- those run, which is why
-the orchestrator is told it may actually use them and the stage agents are told
-they may not.
+Only the orchestration tools at the bottom are called by a model: the
+orchestrator really consults agents and reads artifacts. A stage agent answers
+questions about its stage; its tools name the work its stage does, and it is
+told it cannot call them.
 """
 
 from __future__ import annotations
@@ -54,15 +53,6 @@ RESOURCES: tuple[Resource, ...] = (
     Resource("asset-library", "library",
              "Project and shared assets: registered icons, figures, previously "
              "generated images.", "owned"),
-    Resource("openverse", "api",
-             "Openly licensed images aggregated across sources.", "CC / public domain"),
-    Resource("wikimedia-commons", "api",
-             "Freely licensed media, strong for scientific and anatomical figures.",
-             "CC / public domain"),
-    Resource("bootstrap-icons", "library",
-             "Flat vector icons for recognisable objects.", "MIT"),
-    Resource("openmoji", "library",
-             "Flat emoji-style pictograms.", "CC BY-SA 4.0"),
     Resource("image-generation", "api",
              "Generate an image from a description when nothing suitable exists.",
              "generated", requires_key=True),
@@ -118,29 +108,16 @@ TOOLS: tuple[Tool, ...] = (
     Tool("write_export", ToolKind.WRITE,
          "Write the transcript, chapter marks and description beside the video."),
 
-    # generation
     Tool("draw_chart", ToolKind.WRITE,
          "Chart the quantities a source states, using its own values."),
     Tool("choose_motion", ToolKind.WRITE,
          "Decide how the camera moves over a shot."),
 
-    # studio
+    # generation
     Tool("search_asset_library", ToolKind.READ,
          "Find an existing asset before making a new one.", ("asset-library",)),
-    Tool("fetch_external_asset", ToolKind.FETCH,
-         "Retrieve a licence-clear image or icon from an approved source.",
-         ("openverse", "wikimedia-commons", "bootstrap-icons", "openmoji")),
     Tool("generate_image", ToolKind.FETCH,
          "Generate an image when nothing suitable exists.", ("image-generation",)),
-    Tool("register_asset", ToolKind.WRITE,
-         "Add an asset to the library with its source and licence recorded.",
-         ("asset-library",)),
-    Tool("compose_scene", ToolKind.WRITE, "Lay out a scene on the timeline."),
-    Tool("measure_layout", ToolKind.MEASURE,
-         "Bounding boxes, overlaps and frame fit for a built scene."),
-    Tool("render_scene", ToolKind.RENDER, "Render a scene to video."),
-    Tool("edit_timeline", ToolKind.WRITE,
-         "Move, trim, retime or restack clips, assets and captions."),
 
     # reviewing
     Tool("run_checks", ToolKind.MEASURE, "Run the mechanical check suite over a scene."),
@@ -184,7 +161,7 @@ def resolve(names: list[str]) -> ToolGrant:
     """Unknown names are reported, not silently dropped.
 
     A typo in an AGENT.md would otherwise quietly remove a capability, and the
-    symptom -- an agent that stops doing something it used to -- is hard to trace
+    symptom -- an agent that stops doing something it did before -- is hard to trace
     back to a misspelling.
     """
     grant = ToolGrant()

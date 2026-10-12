@@ -38,14 +38,7 @@ from pipeline.assets_handoff import ConfirmedAssets, ConfirmedAssetStore
 from pipeline.core import OperationFailed, require_project
 from pipeline.extraction import ExtractionStore
 from pipeline.freshness import plan_freshness
-from pipeline.planning import (
-    MAXIMUM_REASONABLE_SECTION_SECONDS,
-    MINIMUM_REASONABLE_SECTION_SECONDS,
-    Plan,
-    PlanStore,
-)
-from pipeline.slide_plan import coverage_of, slides_in
-from pipeline.stage_options import video_preferences
+from pipeline.planning import SLIDE_ORDERS, Plan, PlanStore
 from pipeline.stages import Stage
 from pipeline.storage.documents import JsonDocumentStore
 from pipeline.storage.layout import artifact_path
@@ -96,10 +89,14 @@ def _check(key: str, name: str, rule: str, status: str, detail: str) -> dict[str
 
 def plan_checks(project, plan: Plan) -> list[dict[str, str]]:
     """Every check the plan goes through, in order, with what each found."""
+    from pipeline.plan_order import plan_order_report
+    from pipeline.plan_units import unit_word, units_of
+
     extraction = ExtractionStore(project.root).load()
     freshness = plan_freshness(plan, extraction)
     sections = plan.sections
-    target = video_preferences(project.root)
+    units = units_of(extraction)
+    word = unit_word(units)
     checks = []
 
     checks.append(_check(
@@ -114,64 +111,50 @@ def plan_checks(project, plan: Plan) -> list[dict[str, str]]:
         "; ".join(f"{m['title'] or 'Untitled'}: {', '.join(m['missing'])}" for m in missing)
         or "Every named source is in the extraction."))
 
-    from pipeline.lesson_plan import (
-        FRAME_ROLES,
-        MOST_SQUEEZE,
-        MOST_STRETCH,
-        objective_suggestions,
-        summary_problem,
-        timing,
-    )
-
-    body = [s for s in sections if s.role not in FRAME_ROLES]
+    report = plan_order_report(plan, units)
+    body = [s for s in sections if s.sources]
     checks.append(_check(
-        "frame", "Lesson frame", "An Opening says what the viewer will learn; a Recap and a "
-        "Close bring it together",
-        NOT_APPLICABLE if not body else PASS if plan.lesson_frame else WARN,
-        ("With " + ", ".join(p.capitalize() for p in plan.lesson_frame) + "."
-         + ("" if len(plan.lesson_frame) == 3 else " The rest is switched off."))
-        if plan.lesson_frame else "Switched off: the video starts and ends on the "
-        "material itself. Turn it on in the Brief."))
+        "order", f"{word.capitalize()} order", SLIDE_ORDERS[plan.slide_order],
+        NOT_APPLICABLE if not body else
+        (FAIL if plan.slide_order == "strict" else WARN) if report["order"] else PASS,
+        "; ".join(report["order"]).capitalize() + "." if report["order"]
+        else f"The {word}s keep the chosen order."))
 
-    without = [s for s in body if not s.sources]
     checks.append(_check(
-        "has-sources", "Every section has a source",
-        "Each teaching section names the content it teaches (the lesson frame is written "
-        "from the plan)",
-        WARN if without else PASS if sections else NOT_APPLICABLE,
-        f"{len(without)} section(s) name no source: "
-        + ", ".join(s.title or "Untitled" for s in without[:6]) if without
-        else "Every section names its source."))
+        "coverage", f"Every {word} covered",
+        f"Each {word} is in a section, or left out on purpose with why",
+        NOT_APPLICABLE if not body else WARN if report["coverage"] else PASS,
+        "; ".join(report["coverage"]).capitalize() + "." if report["coverage"]
+        else f"All {len(units)} {word}s are covered"
+        + (f", {len(plan.slides_left_out)} left out on purpose." if plan.slides_left_out
+           else ".")))
+
+    empty = [s.title or "Untitled" for s in sections if not s.scenes]
+    checks.append(_check(
+        "scenes", "Every section has scenes",
+        "Each section is broken into the scenes every later layer works on",
+        NOT_APPLICABLE if not sections else FAIL if empty else PASS,
+        f"No scenes yet: {', '.join(empty[:6])}." if empty
+        else f"{plan.scene_count} scenes in {len(sections)} sections."))
+
+    total = plan.total_estimated_seconds
+    length = plan.length
+    within = length.shortest_seconds <= total <= length.longest_seconds
+    checks.append(_check(
+        "length", "Length", "Within the length asked for, as understood",
+        NOT_APPLICABLE if not sections or not length.is_known else PASS if within else WARN,
+        f"About {round(total / 60, 1)} min planned. Asked for: {length.understood}"
+        if length.is_known else "No length is understood yet."))
 
     checks.append(_check(
         "extraction", "Matches the extraction",
-        "Drafted or checked against the extraction as it is now",
+        "Planned from the extraction as it is now",
         WARN if freshness["is_stale"] or freshness["is_unlinked"] else PASS if sections
         else NOT_APPLICABLE,
-        "The extraction changed since this plan was drafted or checked."
+        "The extraction changed since this plan was made."
         if freshness["is_stale"] else
         "Nothing records which extraction this plan was made from."
         if freshness["is_unlinked"] else "Made from the extraction as it is now."))
-
-    slides = slides_in(extraction)
-    follows = any(src.slide_number for s in sections for src in s.sources)
-    if slides and follows:
-        coverage = coverage_of(slides, sections)
-        problems = []
-        if coverage["missing_slides"]:
-            problems.append(f"slides not covered: "
-                            f"{', '.join(map(str, coverage['missing_slides'][:10]))}")
-        if not coverage["is_in_order"]:
-            problems.append("sections are out of the deck's order")
-        checks.append(_check(
-            "deck", "Follows the deck", "Every slide covered, in the deck's order",
-            WARN if problems else PASS,
-            "; ".join(problems).capitalize() if problems
-            else f"All {coverage['slide_count']} slides, in order."))
-    else:
-        checks.append(_check(
-            "deck", "Follows the deck", "Every slide covered, in the deck's order",
-            NOT_APPLICABLE, "The plan is not built slide by slide."))
 
     untitled = [i + 1 for i, s in enumerate(sections) if not s.title]
     checks.append(_check(
@@ -180,69 +163,6 @@ def plan_checks(project, plan: Plan) -> list[dict[str, str]]:
         f"Sections without a title: {', '.join(map(str, untitled))}." if untitled
         else "Every section has a title."))
 
-    odd = [s for s in sections if s.is_unusually_short or s.is_unusually_long]
-    checks.append(_check(
-        "durations", "Section lengths",
-        f"Each section between {MINIMUM_REASONABLE_SECTION_SECONDS} s and "
-        f"{MAXIMUM_REASONABLE_SECTION_SECONDS // 60} min",
-        WARN if odd else PASS if sections else NOT_APPLICABLE,
-        ", ".join(f"{s.title or 'Untitled'} ({s.estimated_seconds} s)" for s in odd[:6])
-        if odd else "Every section is a sensible length."))
-
-    shortest, longest = target.target_seconds
-    total = plan.total_estimated_seconds
-    checks.append(_check(
-        "length", "Total length", f"Within the target duration ({target.target_phrase})",
-        NOT_APPLICABLE if not sections else PASS if shortest <= total <= longest else WARN,
-        f"About {round(total / 60, 1)} min planned against {target.target_phrase}."))
-
-    included = [o for o in plan.learning_objectives if o.is_included]
-    # Judged on the body: the frame links every objective by itself, and counting
-    # that would say every objective is taught when none is.
-    uncovered = [o.text for o in included if not any(o.id in s.objective_ids for s in body)]
-    idle = [s.title or "Untitled" for s in body if not s.objective_ids]
-    suggested = len(objective_suggestions(plan, extraction))
-    checks.append(_check(
-        "objectives", "Learning objectives",
-        "At least one objective; each taught by a section, and each section teaching one",
-        NOT_APPLICABLE if not body else WARN if not included or uncovered or idle else PASS,
-        "No learning objective is selected." if not included else "; ".join(filter(None, [
-            f"Not taught by any section: {'; '.join(uncovered[:3])}" if uncovered else "",
-            f"{len(idle)} section(s) serve no objective" if idle else "",
-            f"{suggested} link(s) are suggested on the Outline tab" if suggested else "",
-        ])) + "." if uncovered or idle else f"{len(included)} objective(s), each taught."))
-
-    problems = [(s.title or "Untitled", problem) for s in body
-                if (problem := summary_problem(s))]
-    checks.append(_check(
-        "summaries", "Summaries", "Each teaching section says, in one line, what the viewer "
-        "learns -- not the source's text, and not \"the chapter explores\"",
-        NOT_APPLICABLE if not body else WARN if problems else PASS,
-        f"{len(problems)} of {len(body)}: " + "; ".join(
-            f"{title} ({problem})" for title, problem in problems[:4])
-        + (". Write them, or use AI · write summaries on the Outline tab." if problems else "")
-        if problems else "Every section says what the viewer learns."))
-
-    shares = timing(plan, extraction, target.target_seconds)
-    stretched, squeezed = shares["is_stretched"], shares["is_squeezed"]
-    checks.append(_check(
-        "timing", "Time for the material",
-        f"The target neither stretches the material past x{MOST_STRETCH} nor squeezes it "
-        f"below x{MOST_SQUEEZE}",
-        NOT_APPLICABLE if not body else WARN if stretched or squeezed else PASS,
-        f"The material needs about {round(shares['needed_total'] / 60, 1)} min; "
-        f"{target.target_phrase} stretches it x{shares['scale']}, so the narration will "
-        f"pad. Choose a shorter target, or add material." if stretched else
-        f"The material needs about {round(shares['needed_total'] / 60, 1)} min; "
-        f"{target.target_phrase} squeezes it x{shares['scale']}, so each section is cut "
-        f"hard. Choose a longer target, or split the video." if squeezed else
-        f"The material needs about {round(shares['needed_total'] / 60, 1)} min, "
-        f"shared out x{shares['scale']} to fit {target.target_phrase}."))
-
-    checks.append(_check(
-        "audience", "Audience", "One audience is chosen",
-        PASS if plan.selected_audience else WARN,
-        plan.selected_audience or "No audience is chosen."))
     checks.append(_assets_check(project))
     return checks
 

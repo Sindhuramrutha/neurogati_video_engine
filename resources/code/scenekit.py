@@ -28,6 +28,17 @@ import urllib.request
 from pathlib import Path
 
 
+class _Facts(dict):
+    """A dict whose keys also read as attributes: `brief.assets.pictures` and
+    `brief.assets["pictures"]` are the same thing."""
+
+    def __getattr__(self, name):
+        try:
+            return self[name]
+        except KeyError as missing:
+            raise AttributeError(name) from missing
+
+
 class Brief:
     """What the scene is told: `brief.json`, with attribute access.
 
@@ -37,7 +48,8 @@ class Brief:
     """
 
     def __init__(self, data: dict, out: Path) -> None:
-        self.__dict__.update(data)
+        self.__dict__.update({key: _Facts(value) if isinstance(value, dict) else value
+                              for key, value in data.items()})
         self.out = out
         self.frames = max(1, round(self.seconds * self.fps))
 

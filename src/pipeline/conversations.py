@@ -1,9 +1,8 @@
 """What was asked of the Orchestrator, and what it answered.
 
-Every ask used to be its own island: the panel held the exchange in the page and
-nothing was written down, so closing the drawer threw the thread away and the
-Orchestrator itself was never told what had already been said. Asking "and why
-is that?" started from nothing.
+Every ask belongs to a thread: it is written down, so closing the drawer keeps it
+and the Orchestrator is told what was already said. Asking "and why is that?"
+continues the conversation.
 
 A conversation is kept per project, with the agents each answer consulted, so a
 thread can be reopened later and an answer can still be traced to the agents that

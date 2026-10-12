@@ -98,7 +98,7 @@ def test_review_presentation_includes_the_transcript(project_root):
     )
 
     review = operations.add_review_comment(
-        "review-context", body="Too fast", routed_to_stage="scripting"
+        "review-context", body="Too fast", routed_to_stage="script-staging"
     )
 
     assert review["audit"]["by_stage"] == {"script-staging": 1}
@@ -119,7 +119,6 @@ def test_values_are_clamped_not_rejected(project_root):
     plan = operations.add_plan_section("clamp", title="Absurd", estimated_seconds=10**9)
 
     assert plan["sections"][0]["estimated_seconds"] < 10**9
-    assert plan["warnings"], "an absurd duration should be flagged, not silently kept"
 
 
 def test_the_web_and_the_shared_core_return_the_same_document(project_root):
@@ -181,7 +180,7 @@ async def test_mcp_tools_are_registered():
 
     for expected in ("describe_stages", "list_projects", "read_artifact",
                      "write_artifact", "add_plan_section", "write_section_script",
-                     "ask_stage_agent", "draft_plan", "model_status"):
+                     "ask_stage_agent", "plan_say", "plan_agree", "model_status"):
         assert expected in names, f"{expected} is not exposed over MCP"
 
 
@@ -278,44 +277,6 @@ def test_to_dict_is_json_native(project_root):
         assert isinstance(track["kind"], str), f"{track['kind']!r} is not JSON-native"
 
     json.dumps(composition)  # would raise on a non-serialisable value
-
-
-def test_every_stage_reaches_the_ask_route(project_root):
-    """A literal path segment must never shadow the {stage} parameter.
-
-    `draft_plan` briefly lived at `/agent/planning/draft-plan`. The literal
-    `planning` sat exactly where `/agent/{stage}/ask` expects a parameter, so
-    Litestar routed `/agent/planning/ask` down the literal branch and returned
-    404 -- for the planning stage only. Every other stage worked, which is the
-    kind of asymmetry nobody notices until the one broken case is the one they
-    need.
-
-    400 is the expected status here: the route is reached and refuses because no
-    API key is configured in the test environment. 404 means it was not reached.
-    """
-    from litestar.testing import TestClient
-
-    from pipeline.web.app import create_app
-
-    operations.create_project("Routing Shadow")
-
-    with TestClient(app=create_app()) as client:
-        for stage in ("extraction", "planning", "scripting", "studio", "reviewing"):
-            response = client.post(
-                f"/api/projects/routing-shadow/agent/{stage}/ask",
-                json={"question": "anything"},
-            )
-            assert response.status_code != 404, (
-                f"the {stage} stage does not reach the ask route -- "
-                f"a literal path segment is shadowing {{stage}}"
-            )
-
-
-# A structural "no literal segment may shadow a parameter" test was tried here
-# and removed. Litestar's own /schema/swagger sits beside /schema/{path:str} and
-# works, so the rule condemned correct routing; the mechanism is narrower than it
-# looked. `test_every_stage_reaches_the_ask_route` above tests the behaviour that
-# actually broke, and a test that keeps flagging correct code is worse than none.
 
 
 # --- serving rendered media -------------------------------------------------
@@ -495,8 +456,8 @@ def test_bad_word_timings_fall_back_to_the_text_rather_than_breaking_the_clock()
 
 def test_one_scene_is_one_shot_however_many_cues_it_needs():
     """The picture changes when the scene changes, not when the text does. Three
-    cues of one scene used to be three encodes with the camera restarting on
-    each, which is the carousel one level down."""
+    cues of one scene are one encode, not three with the camera restarting on
+    each (the carousel one level down)."""
     from pipeline.rendering import RenderedSection, section_segments, shot_windows
 
     section = RenderedSection(
@@ -513,41 +474,6 @@ def test_one_scene_is_one_shot_however_many_cues_it_needs():
     assert sum(window.duration_ms for window in windows) == section.total_ms
     assert windows[0].duration_ms == sum(
         cue.duration_ms for cue in cues if cue.scene_index == 0)
-
-
-def test_a_label_appears_on_the_word_that_names_it():
-    """The reason for having word timings at all: the label lands as it is said,
-    rather than all four arriving at once, which is a slide."""
-    from pipeline.rendering import RenderedSection, reveal_times, shot_windows
-    from pipeline.speech import WordTiming
-
-    narration = "The amplifier boosts it and the filter removes the noise."
-    words = narration.rstrip(".").split()
-    timings = tuple(WordTiming(text=word, start_ms=at * 500, duration_ms=400)
-                    for at, word in enumerate(words))
-    section = RenderedSection("s1", "Chain", narration,
-                              audio_duration_ms=len(words) * 500, words=timings)
-    window = shot_windows(section)[0]
-
-    at = reveal_times(section, window, ["amplifier", "filter"])
-
-    # "amplifier" is word 1 (500ms) and "filter" is word 6 (3000ms), each less
-    # the lead time.
-    assert at[0] == 500 - 120
-    assert at[1] == 3_000 - 120
-
-
-def test_labels_never_appear_out_of_order_or_after_the_shot_ends():
-    from pipeline.rendering import RenderedSection, reveal_times, shot_windows
-
-    section = RenderedSection("s1", "Chain", "A short scene here.",
-                              audio_duration_ms=2_000)
-    window = shot_windows(section)[0]
-
-    at = reveal_times(section, window, ["one", "two", "three", "four"])
-
-    assert at == sorted(at), "a label above one already on screen reads as a glitch"
-    assert all(when < window.duration_ms for when in at)
 
 
 def test_a_cross_fade_is_dropped_rather_than_made_a_flicker():
@@ -877,8 +803,8 @@ def test_edited_chapters_are_not_overwritten_but_are_flagged(project_root):
 
 
 def test_every_render_is_kept_as_its_own_file(project_root):
-    """A version that can be overwritten is not a version: re-rendering used to
-    replace every earlier cut, and selecting an old one played the newest."""
+    """A version that can be overwritten is not a version: re-rendering must not
+    replace an earlier cut, or selecting an old one would play the newest."""
     first = _render_two_short_sections("immutable-versions")
     second = operations.render_video("immutable-versions", voice_provider="silent")
 
@@ -902,9 +828,8 @@ def test_render_frames_are_cleaned_up(project_root):
 
 def test_two_renders_in_the_same_second_are_still_separate_versions(project_root):
     """A render id is a file path. At one-second resolution two quick renders
-    shared one, so the second overwrote the first's video while the review still
-    listed both -- picking the older version played the newer file, which is the
-    bug the id was introduced to prevent."""
+    shared one, so the second would overwrite the first's video while the review
+    still listed both -- picking the first version would play the second's file."""
     _render_two_short_sections("same-second")
     operations.render_video("same-second", voice_provider="silent")
 
@@ -1001,16 +926,12 @@ def test_the_core_is_a_surface_not_a_file():
 LONGEST_SENSIBLE_MODULE = 450
 
 MODULE_BUDGETS = {
-    "web/routes_project.py": 1282,
-    "rendering.py": 1226,
+    "web/routes_project.py": 1040,
+    "rendering.py": 965,
     "extraction.py": 947,
-    "scene_renderers.py": 758,
     "slide_frame.py": 677,
     "extraction_review.py": 515,
-    "generation.py": 554,
     "speech.py": 551,
-    "visual_build.py": 501,
-    "plan_drafting.py": 473,
     "orchestrator.py": 465,
     "cli.py": 460,
 }

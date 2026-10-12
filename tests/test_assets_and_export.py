@@ -25,7 +25,7 @@ from pipeline.extraction import (
     SlideLayout,
 )
 from pipeline.operations import OperationFailed
-from pipeline.planning import Plan, PlanSection, PlanStore
+from pipeline.planning import Plan, PlanScene, PlanSection, PlanStore
 from pipeline.review import Review, ReviewStore, VideoVersion
 from pipeline.scripting import Script, ScriptStore, SectionScript
 
@@ -150,7 +150,7 @@ def test_a_picture_that_left_the_extraction_keeps_its_decision(project_root):
 
 
 def test_a_new_transfer_is_gathered_when_the_page_opens(project_root):
-    """It used to wait for the Gather button, so the page kept showing the
+    """It does not wait for the Gather button, or the page would keep showing the
     previous transfer's pictures."""
     slug, project = project_with_pictures("Follows", [("Old chapter figure", (400, 300), "source")])
     operations.refresh_asset_library(slug)
@@ -180,7 +180,7 @@ def test_clearing_forgets_every_picture_and_decision(project_root):
 
     gathered = operations.refresh_asset_library(slug)
     assert [f["use"] for f in gathered["figures"]] == [FigureUse.UNDECIDED]
-    assert gathered["figures"][0]["id"] == figure_id,         "the same picture always has the same id: it is derived from the picture"
+    assert gathered["figures"][0]["id"] == figure_id, "the id is derived from the picture"
 
 
 def test_a_drawn_picture_is_marked_in_the_library(project_root):
@@ -254,7 +254,7 @@ def exportable_project(name, *, rendered=True, narration=True):
     slug = operations.create_project(name)["slug"]
     project = operations.require_project(slug)
     PlanStore(project.root).save(Plan(
-        selected_audience="Students new to the topic",
+        audience="Students new to the topic",
         sections=[
             PlanSection(id="s1", title="Signals", estimated_seconds=60),
             PlanSection(id="s2", title="Electrodes", estimated_seconds=60),
@@ -426,9 +426,10 @@ def project_with_sourced_sections(project_root):
     )], extracted_at="2026-09-17T00:00:00+00:00"))
 
     PlanStore(project.root).save(Plan(sections=[
-        PlanSection(id="s1", title="Signals", estimated_seconds=30,
+        PlanSection(id="s1", title="Signals", scenes=[PlanScene(does="Signals", seconds=30)],
                     sources=[SourceReference(file_name="chapter.docx", heading_path=["Signals"])]),
-        PlanSection(id="s2", title="Electrodes", estimated_seconds=30,
+        PlanSection(id="s2", title="Electrodes",
+                    scenes=[PlanScene(does="Electrodes", seconds=30)],
                     sources=[SourceReference(file_name="chapter.docx",
                                              heading_path=["Electrodes"])]),
     ]))
@@ -483,6 +484,11 @@ def test_a_trimmed_figure_is_what_the_video_actually_draws(project_root):
     assert trimmed["width"] == 480, "the stored size is still what the deck held"
     assert trimmed["prepared_width"] < trimmed["width"]
     assert (project.root / trimmed["prepared_path"]).exists()
+    # Not flush to the ink: a label at the figure's edge would touch the frame of
+    # the picture and read as cut off.
+    with Image.open(project.root / trimmed["prepared_path"]) as shown:
+        edge = [shown.convert("L").getpixel((x, 0)) for x in range(shown.width)]
+    assert min(edge) > 30, "the top row is still margin, not the black outline"
 
     chosen = pictures_for_sections(project, operations.read_artifact(slug, "plan"))
     assert chosen["s2"] == [project.root / trimmed["prepared_path"]]
@@ -547,50 +553,26 @@ def test_a_frame_actually_contains_the_picture(project_root):
     picture.write_bytes(picture_bytes("blue", size=(400, 300)))
     style = RenderStyle(background_colour=(255, 255, 255))
 
-    with_picture = _draw_frame("What a neuron does", ["threshold", "weights"],
-                               "Signals", "Section 1", style, picture=picture)
-    without = _draw_frame("What a neuron does", ["threshold", "weights"],
-                          "Signals", "Section 1", style)
+    with_picture = _draw_frame("What a neuron does", "Signals", "Section 1", style,
+                               picture=picture)
+    without = _draw_frame("What a neuron does", "Signals", "Section 1", style)
 
     blues = sum(1 for pixel in with_picture.getdata() if pixel[2] > 200 > pixel[0])
     assert blues > 50_000, f"the picture is not on the frame ({blues} of its pixels)"
     assert with_picture.tobytes() != without.tobytes()
 
 
-def test_a_frame_draws_the_headline_and_its_labels_not_the_narration(project_root):
+def test_a_frame_draws_the_headline_not_the_narration(project_root):
     """The words are being spoken. Printing them as well is what made this read
     as slides with a voice over them."""
-    from pipeline.rendering import (
-        RenderStyle,
-        _draw_frame,
-        _draw_point_layer,
-        _words_layout,
-    )
+    from pipeline.rendering import RenderStyle, _draw_frame
 
     style = RenderStyle(background_colour=(255, 255, 255))
-    points = ["threshold", "weights"]
 
-    bare = _draw_frame("What a neuron does", points, "Signals", "Section 1", style)
-    with_first = _draw_frame("What a neuron does", points, "Signals", "Section 1",
-                             style, revealed=1)
-    with_both = _draw_frame("What a neuron does", points, "Signals", "Section 1",
-                            style, revealed=2)
+    bare = _draw_frame("", "", "", style)
+    titled = _draw_frame("What a neuron does", "Signals", "Section 1", style)
 
-    assert bare.tobytes() != with_first.tobytes(), "a revealed label must be drawn"
-    assert with_first.tobytes() != with_both.tobytes()
-
-    # The overlay a label arrives on has to land where the frame would have
-    # drawn it, or a build jumps as each one appears.
-    layout = _words_layout("What a neuron does", points, style, False, False)
-    layer_path = project_root / "layer.png"
-    _draw_point_layer("What a neuron does", points, 0, style, False, layer_path)
-
-    from PIL import Image
-
-    with Image.open(layer_path) as layer:
-        drawn = layer.convert("RGBA").getbbox()
-    _text, left, top = layout.point_rows[0]
-    assert drawn is not None and drawn[0] >= left - 2 and abs(drawn[1] - top) < 60
+    assert bare.tobytes() != titled.tobytes(), "the headline must be drawn"
 
 
 def test_an_unreadable_picture_does_not_stop_the_render(project_root):
@@ -601,6 +583,6 @@ def test_an_unreadable_picture_does_not_stop_the_render(project_root):
     broken = project_root / "broken.png"
     broken.write_bytes(b"this is not an image")
 
-    frame = _draw_frame("What a neuron does", [], "Signals", "Section 1", picture=broken)
+    frame = _draw_frame("What a neuron does", "Signals", "Section 1", picture=broken)
 
     assert frame.size == (1920, 1080)

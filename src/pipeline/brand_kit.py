@@ -58,8 +58,9 @@ LIMITS = {
 SHOWS = ["whole", "first", "last", "range"]
 SHORTEST_CLIP_SECONDS = 0.5
 
-# The choices this kit had before placements: a corner, three sizes, three
-# opacities. Read once, to put an older kit's logo exactly where it was.
+# A logo can also be stored as a corner, one of three sizes and one of three
+# opacities. Those words are read into a placement, so the logo lands exactly
+# where it was saved.
 _OLD_SIZES = {"small": 0.06, "medium": 0.09, "large": 0.12}
 _OLD_OPACITIES = {"faint": 0.10, "light": 0.18, "clear": 0.30}
 _OLD_MARGIN_PX = 48

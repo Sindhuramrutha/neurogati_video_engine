@@ -1,6 +1,6 @@
 """Projects — the unit of work. Everything starts with a project name.
 
-Files are the source of truth (ADR 0005): a project is a directory, and its state is
+Files are the source of truth: a project is a directory, and its state is
 whatever is on disk. There is no database row that can disagree with it, and a project
 is portable by copying the folder.
 """
@@ -17,7 +17,7 @@ from pathlib import Path
 from pipeline.sources import SUPPORTED_SOURCE_FILE_SUFFIXES
 from pipeline.stages import STAGES, Stage
 from pipeline.storage.documents import read_json_object, write_text_atomically
-from pipeline.storage.layout import migrate_stage_folders, slugify
+from pipeline.storage.layout import slugify
 
 logger = logging.getLogger(__name__)
 
@@ -308,33 +308,36 @@ class ProjectStore:
         d = self.root / slug
         if not d.is_dir():
             return None
-        # Every operation goes through here, so this is the one place that can
-        # bring an older project's folders up to the names the stages now use
-        # without a migration command nobody would run.
-        moved = migrate_stage_folders(d)
-        if moved:
-            logger.info("moved %s to its current layout: %s", slug, ", ".join(moved))
         return self._load(d)
 
-    def delete(self, slug: str) -> Path | None:
-        """Take a project out of the app by moving its folder to `.trash/`, and
-        say where it went -- or None if `slug` is not a project folder.
-
-        Moved, not erased: a project is hours of work, and a mistaken click
-        should be recoverable by moving the folder back. The trash has no
-        `project.json` of its own, so listings never show it.
-        """
-        from datetime import UTC, datetime
+    def delete(self, slug: str) -> bool:
+        """Erase a project and everything in it, for good -- False if `slug` is not
+        a project folder. There is no trash and no way back: the page says so before
+        it asks."""
+        import os
+        import shutil
+        import stat
+        import time
 
         project_directory = self.root / slug
         if not (project_directory / "project.json").is_file():
-            return None
-        trash = self.root / ".trash"
-        trash.mkdir(exist_ok=True)
-        stamp = datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
-        destination = trash / f"{slug}-{stamp}"
-        project_directory.rename(destination)
-        return destination
+            return False
+
+        def writable_then_retry(remove, path, _error):
+            # Windows will not remove a read-only file: make it writable and go on.
+            os.chmod(path, stat.S_IWRITE)
+            remove(path)
+
+        for attempt in range(1, 7):
+            try:
+                shutil.rmtree(project_directory, onexc=writable_then_retry)
+                return True
+            except OSError:
+                # A process that was just killed may hold a file for a moment.
+                if attempt == 6:
+                    raise
+                time.sleep(0.5)
+        return True
 
     def create(self, name: str) -> Project:
         """Create a project directory, or fail without leaving a half-built one.

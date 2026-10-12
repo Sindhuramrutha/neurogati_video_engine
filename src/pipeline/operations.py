@@ -2,9 +2,7 @@
 
 Three interfaces reach this pipeline: a browser, a terminal, and an agent over
 MCP. Each one needs "open project X, read its plan, add a section, save". Writing
-that three times is how v1 failed: `workflow.py` built a graph that
-`run_chapter.py` then bypassed with its own reimplementation, the two drifted,
-and only one was ever exercised.
+that three times means the copies drift and only one is ever exercised.
 
 So the verbs live behind one name, and this module *is* that name. A client's job
 is to parse its own kind of input -- an HTTP body, an argv list, an MCP tool call
@@ -45,17 +43,12 @@ from pipeline.assets import (
     set_project_look,
 )
 from pipeline.authoring import (
-    accept_plan_draft,
     add_clip,
     add_plan_section,
     add_review_comment,
     chapters_for,
     clear_timeline,
-    confirm_plan_matches_extraction,
     confirm_section_narration,
-    discard_plan_draft,
-    read_plan_draft,
-    section_source_material,
     seed_review_chapters,
     write_section_script,
 )
@@ -77,9 +70,9 @@ from pipeline.extraction_run import (
     confirm_extraction,
     extracted_content_as_markdown,
     extraction_freshness,
+    extraction_options,
     extraction_page,
     freshness_warnings,
-    implemented_extraction_options,
     preview_source,
     run_extraction,
 )
@@ -90,11 +83,7 @@ from pipeline.freshness import (
     plan_freshness,
     source_outline,
 )
-from pipeline.generation import (
-    plan_visuals,
-    read_visuals,
-    set_scene_visual,
-)
+from pipeline.generation import plan_visuals, read_visuals
 from pipeline.presentation import (
     _script_in_plan_order,
     present_artifact,
@@ -109,40 +98,32 @@ from pipeline.render_run import list_voice_providers, render_video
 # `_script_in_plan_order` is private to the pipeline rather than to one module:
 # drafting a plan section and drafting its narration both reorder the script the
 # same way, and a second implementation of that is how two orderings appear.
-from pipeline.slide_plan import plan_from_slides, slide_coverage
-from pipeline.visual_build import build_visuals
 
 __all__ = [
     "ARTIFACTS",
     "ArtifactBinding",
     "OperationFailed",
     "_script_in_plan_order",
-    "accept_plan_draft",
     "add_clip",
     "add_plan_section",
-    "plan_from_slides",
-    "slide_coverage",
     "add_review_comment",
     "build_export",
-    "build_visuals",
     "chapters_for",
     "chapters_from_sections",
     "clear_timeline",
     "confirm_extraction",
-    "confirm_plan_matches_extraction",
     "confirm_section_narration",
     "create_project",
     "cut_freshness",
     "decide_figure",
     "describe_project",
     "describe_stages",
-    "discard_plan_draft",
     "export_readiness",
     "extracted_content_as_markdown",
     "extraction_freshness",
     "extraction_page",
     "freshness_warnings",
-    "implemented_extraction_options",
+    "extraction_options",
     "list_projects",
     "list_voice_providers",
     "narration_fingerprints",
@@ -157,18 +138,15 @@ __all__ = [
     "read_asset_library",
     "read_export",
     "read_visuals",
-    "read_plan_draft",
     "refresh_asset_library",
     "render_video",
     "require_artifact",
     "require_project",
     "run_extraction",
     "save_artifact",
-    "section_source_material",
     "section_start_times",
     "seed_review_chapters",
     "set_project_look",
-    "set_scene_visual",
     "source_outline",
     "write_artifact",
     "write_section_script",

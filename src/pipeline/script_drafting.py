@@ -43,7 +43,7 @@ from pipeline.operations import (
     present_artifact,
     require_project,
 )
-from pipeline.plan_drafting import MAXIMUM_SECTION_SOURCE_CHARACTERS, section_source_text
+from pipeline.plan_units import MAXIMUM_SECTION_SOURCE_CHARACTERS, section_source_text
 from pipeline.planning import Plan, PlanSection
 from pipeline.scripting import Script, ScriptScene, ScriptStore, SectionScript
 from pipeline.stage_options import video_preferences
@@ -202,13 +202,23 @@ def _write_section(
     notes: list[str] = []
     target_words = _target_words(section)
 
+    # The plan decided the scenes: how many, what each does, how long. The
+    # script writes into exactly those.
+    planned = section.scenes
+    shape = (
+        f"Write exactly {len(planned)} scenes, in this order -- the plan decided them; "
+        f"do not add, drop, merge or split any. Each scene's narration fills its seconds "
+        f"at about {round(WORDS_PER_SECOND_OF_SPEECH * 60)} words a minute."
+        if planned else
+        "Write it as a sequence of scenes of about 15 to 45 seconds (roughly 40 to 110 "
+        "words) each."
+    )
     system_prompt = (
         f"{build_system_prompt(agent)}\n\n"
-        f"---\nWrite ONE plan section as a sequence of scenes. Each scene has "
-        f"`narration`, spoken aloud and written for the ear, of about 15 to 45 "
-        f"seconds (roughly 40 to 110 words), and `brief`, exactly what is on "
-        f"screen while that narration plays, following your instructions on "
-        f"briefs. About {target_words} words of narration in total, to fill about "
+        f"---\nWrite ONE plan section. Each scene has `narration`, spoken aloud and "
+        f"written for the ear, and `brief`, exactly what is on screen while that "
+        f"narration plays, following your instructions on briefs. {shape} "
+        f"About {target_words} words of narration in total, to fill about "
         f"{section.estimated_seconds} seconds. Every fact must come from the "
         f"source material provided; do not add examples, numbers or analogies "
         f"that are not in it. Open where the previous section left off.\n\n"
@@ -219,19 +229,19 @@ def _write_section(
         f"even where the rest of the sentence is not in English."
     )
 
-    from pipeline.lesson_plan import FRAME_ROLES, frame_source
+    from pipeline.lesson_plan import plan_source
 
-    if section.role in FRAME_ROLES:
+    if not section.sources:
         # Written from the plan -- and the recap and close from what the body
         # said -- not from a source: an opening that re-read the source taught.
-        source, source_note = frame_source(plan, script, section), ""
+        source, source_note = plan_source(plan, script, section), ""
     else:
         source, source_note = _source_for(extraction, section)
     if source_note:
         notes.append(f'"{section.title}": {source_note}')
 
     user_prompt = "\n\n".join(part for part in (
-        f"Audience: {plan.selected_audience or 'not chosen'}"
+        f"Audience: {plan.audience or 'not stated'}"
         + (f"\nInstruction: {instruction.strip()}" if instruction.strip() else ""),
         f"--- the whole plan ---\n{compact_plan_text(plan, marked_section_id=section.id)}",
         "--- the section you are writing ---\n" + _section_brief(
@@ -241,12 +251,21 @@ def _write_section(
     ) if part)
 
     drafted = complete_structured(DraftedSection, system_prompt, user_prompt)
-    scenes = [
-        ScriptScene(narration=scene.narration.strip(), brief=scene.brief.strip())
-        for scene in drafted.scenes if scene.narration.strip()
-    ]
-    if not scenes:
+    written_scenes = [scene for scene in drafted.scenes if scene.narration.strip()]
+    if not written_scenes:
         raise ModelCallFailed("The agent returned no narration for this section.")
+    if planned:
+        # Kept to the plan's scenes and their ids, so every later layer -- one
+        # scene.py per scene -- lines up with what was agreed.
+        if len(written_scenes) != len(planned):
+            notes.append(f'"{section.title}": the agent wrote {len(written_scenes)} scenes '
+                         f"for {len(planned)} planned; matched in order.")
+        scenes = [ScriptScene(id=plan_scene.id, narration=scene.narration.strip(),
+                              brief=scene.brief.strip())
+                  for plan_scene, scene in zip(planned, written_scenes, strict=False)]
+    else:
+        scenes = [ScriptScene(narration=scene.narration.strip(), brief=scene.brief.strip())
+                  for scene in written_scenes]
 
     written = SectionScript(section_id=section.id, scenes=scenes)
     written.written_from = narration_fingerprints(section, extraction)
@@ -267,25 +286,18 @@ def section_pictures(project, plan: Plan) -> dict[str, list[str]]:
 
 def _section_brief(plan: Plan, section: PlanSection, target_words: int,
                    pictures: list[str] | None = None) -> str:
-    from pipeline.lesson_plan import ROLE_GUIDE, summary_problem
-
-    objectives = {o.id: o.text for o in plan.learning_objectives if o.is_included}
-    served = [objectives[oid] for oid in section.objective_ids if oid in objectives]
-    # A stand-in or raw source text is not a summary, and passing it on as one
-    # told the agent to read the slide out.
-    summary = section.summary if not summary_problem(section) else ""
     lines = [
         f"Title: {section.title}",
-        f"Summary: {summary or '(none given)'}",
+        f"Summary: {section.summary or '(none given)'}",
         f"Target: about {section.estimated_seconds} seconds, about {target_words} words",
     ]
-    if section.rendering_approach:
-        lines.append(f"Shown as: {section.rendering_approach}"
-                     + (f" -- {section.rendering_reason}" if section.rendering_reason else ""))
-    if served:
-        lines.append("Learning objectives it serves:\n" + "\n".join(f"- {o}" for o in served))
-    if ROLE_GUIDE.get(section.role):
-        lines.append(f"Its part in the lesson: {ROLE_GUIDE[section.role]}")
+    if section.scenes:
+        lines.append("Its scenes, as planned:\n" + "\n".join(
+            f"{number}. (~{scene.seconds} s"
+            + (f", slide {', '.join(map(str, scene.slides))}" if scene.slides else "")
+            + f") {scene.does}" for number, scene in enumerate(section.scenes, start=1)))
+    if section.how:
+        lines.append(f"How it is told: {section.how}")
     if pictures:
         lines.append("Pictures from the source this section shows (a scene may be built "
                      "around one; describe no picture that is not listed):\n"

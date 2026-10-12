@@ -1,10 +1,8 @@
 """Command-line entry point.
 
 The CLI, the web app and the MCP server are three clients of the same core --
-none of them owns pipeline logic. v1 split this badly: `workflow.py` built a
-LangGraph pipeline that `run_chapter.py` then bypassed with a reimplementation,
-so the two drifted and only one was ever exercised. Not repeated here: every
-command below is a thin call into `pipeline.operations`.
+none of them owns pipeline logic. Every command below is a thin call into
+`pipeline.operations`, so a rule enforced there holds for all three.
 
 **Designed for an agent with a shell, not only for a person.** Everything prints
 JSON to stdout by default, reads JSON from stdin where it needs a document, and
@@ -140,22 +138,28 @@ def command_plan_add_section(args: argparse.Namespace) -> int:
     )
 
 
-def command_plan_accept_draft(args: argparse.Namespace) -> int:
-    from pipeline.operations import accept_plan_draft
+def command_plan_show(args: argparse.Namespace) -> int:
+    from pipeline.plan_agent import read_planning
 
-    return emit(accept_plan_draft(args.project, args.section or None), args)
-
-
-def command_plan_discard_draft(args: argparse.Namespace) -> int:
-    from pipeline.operations import discard_plan_draft
-
-    return emit(discard_plan_draft(args.project), args)
+    return emit(read_planning(args.project), args)
 
 
-def command_plan_show_draft(args: argparse.Namespace) -> int:
-    from pipeline.operations import read_plan_draft
+def command_plan_say(args: argparse.Namespace) -> int:
+    from pipeline.plan_agent import send_message
 
-    return emit(read_plan_draft(args.project), args)
+    return emit(send_message(args.project, args.message), args)
+
+
+def command_plan_agree(args: argparse.Namespace) -> int:
+    from pipeline.plan_agent import agree
+
+    return emit(agree(args.project), args)
+
+
+def command_plan_discard(args: argparse.Namespace) -> int:
+    from pipeline.plan_agent import discard_proposal
+
+    return emit(discard_proposal(args.project), args)
 
 
 def command_script_write(args: argparse.Namespace) -> int:
@@ -185,12 +189,6 @@ def command_agent_ask(args: argparse.Namespace) -> int:
     from pipeline.agent_runtime import ask_stage_agent
 
     return emit(ask_stage_agent(args.project, args.stage, args.question), args)
-
-
-def command_agent_draft_plan(args: argparse.Namespace) -> int:
-    from pipeline.agent_runtime import draft_plan_with_agent
-
-    return emit(draft_plan_with_agent(args.project, args.instruction), args)
 
 
 def command_agent_draft_unwritten(args: argparse.Namespace) -> int:
@@ -330,20 +328,24 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--seconds", type=int, default=60, help="estimated duration")
     p.set_defaults(fn=command_plan_add_section)
 
-    p = add_parser(plan_sub, "show-draft", help="the pending drafted plan, if any")
+    p = add_parser(plan_sub, "show", help="the planning conversation and any proposed shape")
     p.add_argument("project")
-    p.set_defaults(fn=command_plan_show_draft)
+    p.set_defaults(fn=command_plan_show)
 
-    p = add_parser(plan_sub, "accept-draft",
-                   help="accept the drafted plan, or only the given --section ids")
+    p = add_parser(plan_sub, "say",
+                   help="tell the planning agent what you want; it proposes a shape (AI)")
     p.add_argument("project")
-    p.add_argument("--section", action="append", default=[],
-                   help="a drafted section id to append; repeat for several")
-    p.set_defaults(fn=command_plan_accept_draft)
+    p.add_argument("--message", required=True)
+    p.set_defaults(fn=command_plan_say)
 
-    p = add_parser(plan_sub, "discard-draft", help="throw away the drafted plan")
+    p = add_parser(plan_sub, "agree",
+                   help="agree to the proposed shape; its scenes are written (AI)")
     p.add_argument("project")
-    p.set_defaults(fn=command_plan_discard_draft)
+    p.set_defaults(fn=command_plan_agree)
+
+    p = add_parser(plan_sub, "discard", help="throw away the proposed shape")
+    p.add_argument("project")
+    p.set_defaults(fn=command_plan_discard)
 
     # --- script ---
     script = sub.add_parser("script", help="scripting shortcuts")
@@ -397,11 +399,6 @@ def build_parser() -> argparse.ArgumentParser:
                    choices=["extraction", "scene-plan", "script-staging", "studio", "reviewing"])
     p.add_argument("--question", required=True)
     p.set_defaults(fn=command_agent_ask)
-
-    p = add_parser(agent_sub, "draft-plan", help="propose a plan; returns it, saves nothing")
-    p.add_argument("project")
-    p.add_argument("--instruction", required=True)
-    p.set_defaults(fn=command_agent_draft_plan)
 
     p = add_parser(agent_sub, "draft-script",
                    help="write narration for one plan section; saves it")

@@ -1,10 +1,9 @@
 """Review — comments, chapters and version history for a finished cut.
 
-The important part is the comment log. v1's feedback existed only as prose typed
-into a terminal and was gone the moment the scrollback rolled: nobody could answer
+The important part is the comment log. Feedback typed once and lost cannot answer
 "what did we ask for last time, and did it get done?".
 
-Here a comment is anchored to a timecode, attributed, routed to the stage that can
+A comment is anchored to a timecode, attributed, routed to the stage that can
 actually fix it, and resolvable. Feedback becomes a record rather than an
 instruction shouted once.
 

@@ -188,9 +188,9 @@ class AssetLibrary(BaseModel):
     # Which transfer of the extraction this was gathered from. A newer transfer
     # re-gathers it, so the page always shows what the last layer handed on.
     gathered_from: str = ""
-    # What gathering recorded when this was made. A library from an older version
-    # is gathered again, once, so its pictures gain what is recorded now (the
-    # slide each came from, the edges a crop touches). Choices are kept.
+    # The version of gathering that made this. A library gathered by a lower
+    # version is gathered again, once, so its pictures gain what is recorded
+    # now (the slide each came from, the edges a crop touches). Choices are kept.
     gathered_version: int = 0
 
     @field_validator("figures")
@@ -204,8 +204,8 @@ class AssetLibrary(BaseModel):
 
     def usable(self) -> list[LibraryFigure]:
         """What a scene may show as its picture: handed on, and large and clear
-        enough to fill a frame. (A picture chosen with the older "Use" is always
-        usable: someone looked at it and said so.)"""
+        enough to fill a frame. (A picture someone chose with "Use" is always
+        usable: they looked at it and said so.)"""
         return [f for f in self.handed_on()
                 if f.fills_a_frame or f.use == FigureUse.USE]
 
@@ -352,9 +352,8 @@ def rebuild_library(
 def read_asset_library(slug: str) -> dict[str, Any]:
     """The library, re-gathered first if the extraction was transferred since.
 
-    It used to be gathered only when someone pressed the button, so a new
-    transfer left the page showing the previous one's pictures. Decisions are
-    kept either way.
+    Gathering on a press of the button alone would leave the page showing the
+    previous transfer's pictures. Decisions are kept either way.
     """
     project = require_project(slug)
     store = AssetLibraryStore(project.root)
@@ -370,9 +369,8 @@ def refresh_asset_library(slug: str, clear: bool = False) -> dict[str, Any]:
     """Bring the library in step with the transferred extraction, keeping
     decisions -- or, `clear`, empty it: every picture and every decision gone.
 
-    Cleared, it stays empty until someone gathers again. Clearing used to
-    gather again straight away, which put the same pictures back on screen and
-    looked like the button had done nothing.
+    Cleared, it stays empty until someone gathers again: gathering straight
+    away would put the same pictures back and look like the button did nothing.
     """
     project = require_project(slug)
     store = AssetLibraryStore(project.root)

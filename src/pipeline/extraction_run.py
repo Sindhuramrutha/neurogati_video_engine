@@ -56,15 +56,14 @@ def _now() -> str:
     return datetime.now(UTC).isoformat(timespec="seconds")
 
 
-def implemented_extraction_options(project: Project) -> dict[str, bool]:
-    """The Extraction options that change a run, as saved for this project."""
+def extraction_options(project: Project) -> dict[str, bool]:
+    """The Extraction options, as saved for this project."""
     from pipeline.stage_options import StageSettingsStore, options_for
 
     saved = StageSettingsStore(project.root).load(Stage.EXTRACTION).values
     return {
         option.key: bool(saved[option.key])
         for option in options_for(Stage.EXTRACTION)
-        if option.implemented
     }
 
 
@@ -95,7 +94,7 @@ def extraction_freshness(
     collection = collection or ExtractionCollectionStore(project.root).load()
     confirmed = confirmed or ExtractionStore(project.root).load()
     sizes = {source["name"]: source.get("bytes", 0) for source in project.sources()}
-    current = implemented_extraction_options(project)
+    current = extraction_options(project)
 
     in_collection = {document.file_name: document for document in collection.documents}
     removed = sorted(name for name in in_collection if name not in sizes)
@@ -205,7 +204,7 @@ def run_extraction(slug: str, file_name: str = "") -> dict[str, Any]:
         )
     progress.report(slug, "extraction", 0, 0, f"Extracting {path.name}")
     try:
-        options = implemented_extraction_options(project)
+        options = extraction_options(project)
         assets = extraction_asset_sink(project)
         try:
             document = extract_document(
@@ -284,10 +283,10 @@ def confirm_extraction(slug: str) -> dict[str, Any]:
 def preview_source(slug: str, file_name: str) -> dict[str, Any]:
     """Where a source file is and how it should be shown. Nothing is parsed.
 
-    **This deliberately does no extraction.** It used to return the pipeline's
-    parsed text, which put Extraction's work behind a chevron on the Inputs page:
-    two places deciding what a document says, and the slower one running every
-    time a row was opened. Inputs shows the file; Extraction reads it.
+    **This deliberately does no extraction.** Returning parsed text would put
+    Extraction's work behind a chevron on the Inputs page: two places deciding
+    what a document says, and the slower one running every time a row was opened.
+    Inputs shows the file; Extraction reads it.
 
     The browser renders every format from the raw bytes, so what is on screen is
     the file on disk rather than a conversion of it.

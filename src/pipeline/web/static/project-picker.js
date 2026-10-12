@@ -6,9 +6,9 @@
  * project is chosen -- the rest of the app reads and sets it -- and choosing
  * here sets it and fires its `change`, exactly as picking from it did.
  *
- * Deleting moves the project's folder to `projects/.trash/` on the server,
- * so a slip can be undone by moving it back; it is refused while the project
- * has a render queued or running.
+ * Deleting erases the project's folder on the server, for good: there is no
+ * trash and no way back, and the page says so before it asks. It always works:
+ * whatever is running in the project is stopped first, on the server.
  */
 
 import { requestJsonFromApi } from "/static/shared-client.js";
@@ -51,11 +51,11 @@ export function paintProjectPicker() {
 }
 
 async function deleteProject(slug, name, onDeleted) {
-  if (!window.confirm(`Delete the project “${name}”?\n\nIts folder is moved to `
-      + "projects/.trash, where it can be recovered by moving it back.")) return;
+  if (!window.confirm(`Delete the project “${name}” for good?\n\nIts folder and everything `
+      + "in it is erased. There is no trash and no way to get it back.")) return;
   try {
     await requestJsonFromApi(`/api/projects/${encodeURIComponent(slug)}`, { method: "DELETE" });
-    showStageNotice("ok", `Deleted “${name}”. Its folder is in projects/.trash if you need it back.`);
+    showStageNotice("ok", `Deleted “${name}”, for good.`);
     await onDeleted(slug);
   } catch (failure) {
     console.error("deleting the project failed", failure);

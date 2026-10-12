@@ -46,12 +46,6 @@ class StageOption:
     default: Any
     help_text: str = ""
     choices: tuple[OptionChoice, ...] = ()
-    # False for an option nothing reads yet. It is still declared, so the page
-    # can show what is planned -- but marked, and not operable, because a
-    # control that saves a value and changes nothing is indistinguishable from a
-    # broken one. Every option on the Extraction and Planning pages was exactly
-    # that until the first two below were wired in.
-    implemented: bool = True
 
     def coerce(self, raw_value: Any) -> Any:
         """Force a stored or submitted value into a valid one.
@@ -74,7 +68,6 @@ class StageOption:
             "label": self.label,
             "default": self.default,
             "help_text": self.help_text,
-            "implemented": self.implemented,
             "choices": [
                 {"value": c.value, "label": c.label, "help_text": c.help_text}
                 for c in self.choices
@@ -112,31 +105,6 @@ EXTRACTION_OPTIONS: tuple[StageOption, ...] = (
 
 
 SCENE_PLAN_OPTIONS: tuple[StageOption, ...] = (
-    StageOption(
-        key="target_duration",
-        kind=OptionKind.CHOICE,
-        label="Target duration",
-        default="7-10",
-        choices=(
-            OptionChoice("3-5", "3-5 minutes", "A single focused idea."),
-            OptionChoice("7-10", "7-10 minutes", "A chapter with room for an example."),
-            OptionChoice("12-18", "12-18 minutes", "A full module. Expect 8-12 sections."),
-        ),
-    ),
-    StageOption(
-        key="tone",
-        kind=OptionKind.CHOICE,
-        label="Tone",
-        default="professional",
-        choices=(
-            OptionChoice("professional", "Professional",
-                         "Measured and precise. Assumes the viewer is here to learn."),
-            OptionChoice("conversational", "Conversational",
-                         "Warmer and more direct, without losing rigour."),
-            OptionChoice("academic", "Academic",
-                         "Formal, careful with qualifiers, heavier on terminology."),
-        ),
-    ),
     StageOption(
         key="language",
         kind=OptionKind.CHOICE,
@@ -229,33 +197,14 @@ class StageSettingsStore:
 
 # --- what the Scene Plan's preferences actually mean ---------------------------------
 
-# The spoken length each choice is asking for, as (shortest, longest) seconds.
-# A range rather than a number: "about eight minutes" is the real intent, and a
-# plan that lands at 7:40 has not missed.
-TARGET_DURATIONS: dict[str, tuple[int, int]] = {
-    "3-5": (180, 300),
-    "7-10": (420, 600),
-    "12-18": (720, 1080),
-}
-
-# What a tone means, written as an instruction rather than an adjective: an agent
-# told "conversational" guesses, and told "use the second person" does not.
-TONE_GUIDANCE: dict[str, str] = {
-    "professional": (
-        "Measured and precise. Full sentences, no filler, no exclamation marks. "
-        "Assume the viewer is here to learn and does not need warming up."
-    ),
-    "conversational": (
-        "Warm and direct, without losing rigour. Address the viewer as \"you\", "
-        "use short sentences and contractions, and let one idea lead into the "
-        "next. Never chatty for its own sake: no jokes, no filler openers."
-    ),
-    "academic": (
-        "Formal and careful. Keep the field's terminology and define it on first "
-        "use, qualify claims the source qualifies, and prefer the passive where "
-        "the source uses it. Do not simplify away precision."
-    ),
-}
+# How every video speaks. The aim is fixed -- teaching -- so the voice is too: not
+# a choice, but one instruction, written as what to do rather than an adjective.
+TEACHING_TONE = (
+    "A teacher explaining to one viewer. Clear and direct: address the viewer as "
+    "\"you\", one idea at a time, each leading into the next, in full sentences. "
+    "Keep the source's terms and say what each means the first time it is used; "
+    "qualify what the source qualifies. No filler, no jokes, no exclamation marks."
+)
 
 # Each language, and the voice each provider has for it. A language with no voice
 # is still a language: the narration is written in it and the render says plainly
@@ -269,30 +218,17 @@ LANGUAGES: dict[str, dict[str, str]] = {
 
 @dataclass(frozen=True)
 class VideoPreferences:
-    """The Scene Plan's three choices, resolved into what each stage needs.
-
-    Read together because they are decided together and each is used by more
-    than one stage: the duration steers drafting and is checked against the
-    finished plan, the tone reaches the narration, and the language reaches both
-    the narration and the voice that speaks it.
+    """The video's language, resolved into what each stage needs: it reaches the
+    narration and the voice that speaks it. The length is the plan's own, set in
+    the person's words (`Plan.length_text`). There is no tone to choose: every
+    video teaches (`TEACHING_TONE`).
     """
 
-    target_duration: str
-    tone: str
     language: str
 
     @property
-    def target_seconds(self) -> tuple[int, int]:
-        return TARGET_DURATIONS.get(self.target_duration, TARGET_DURATIONS["7-10"])
-
-    @property
-    def target_phrase(self) -> str:
-        shortest, longest = self.target_seconds
-        return f"{shortest // 60} to {longest // 60} minutes"
-
-    @property
     def tone_sentence(self) -> str:
-        return TONE_GUIDANCE.get(self.tone, TONE_GUIDANCE["professional"])
+        return TEACHING_TONE
 
     @property
     def language_name(self) -> str:
@@ -303,12 +239,7 @@ class VideoPreferences:
         return LANGUAGES.get(self.language, {}).get(provider_key, "")
 
     def to_dict(self) -> dict[str, Any]:
-        shortest, longest = self.target_seconds
         return {
-            "target_duration": self.target_duration,
-            "target_seconds": [shortest, longest],
-            "target_phrase": self.target_phrase,
-            "tone": self.tone,
             "language": self.language,
             "language_name": self.language_name,
         }
@@ -322,7 +253,5 @@ def video_preferences(project_root: Path) -> VideoPreferences:
     """
     saved = StageSettingsStore(project_root).load(Stage.SCENE_PLAN).values
     return VideoPreferences(
-        target_duration=str(saved.get("target_duration", "7-10")),
-        tone=str(saved.get("tone", "professional")),
         language=str(saved.get("language", "en")),
     )

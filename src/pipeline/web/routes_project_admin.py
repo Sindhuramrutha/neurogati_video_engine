@@ -1,41 +1,56 @@
 """Deleting a project. Its own module so `routes_project.py` does not grow.
 
-The folder is moved to `projects/.trash/`, not erased (`ProjectStore.delete`),
-and a project with a render queued, running or paused is refused: deleting it
-under a render would leave the queue pointing at nothing.
+The folder is erased for good (`ProjectStore.delete`): there is no trash and no
+recovery. And it always works: whatever is running in the project -- scenes being
+made, a render, queued jobs, their ffmpeg and browser processes -- is stopped first
+(`stop_everything`), then the folder is erased.
 """
 
 from __future__ import annotations
 
+import time
 from typing import Any
 
 from litestar import delete
-from litestar.exceptions import ClientException, NotFoundException
+from litestar.exceptions import NotFoundException
 from litestar.params import FromPath
 
-from pipeline import progress, render_queue
+from pipeline import progress, project_work, render_queue, scene_agent
 from pipeline.core import project_store
+
+STOP_WAIT_SECONDS = 30      # at most this long for running work to notice it was stopped
+
+
+def _still_running(slug: str) -> bool:
+    return scene_agent.is_working(slug) or any(
+        entry["slug"] == slug for entry in progress.running())
+
+
+def stop_and_wait(slug: str) -> None:
+    """Stop everything running for a project, and give it a moment to let go."""
+    scene_agent.stop_all(slug)                   # the queue is dropped
+    render_queue.drop_project(slug)              # its jobs go from the queue
+    project_work.stop_everything(slug)           # work stops; its processes are killed
+    deadline = time.monotonic() + STOP_WAIT_SECONDS
+    while _still_running(slug) and time.monotonic() < deadline:
+        time.sleep(0.25)
 
 
 @delete("/api/projects/{slug:str}", status_code=200, sync_to_thread=False)
 def delete_project(slug: FromPath[str]) -> dict[str, Any]:
-    """Move a project to the trash. Refused while it has unfinished renders or
-    anything else running."""
+    """Erase a project for good, whatever is running in it: that is stopped first."""
     store = project_store()
     project = store.get(slug)
     if project is None:
         raise NotFoundException(detail=f"no such project: {slug}")
-    waiting = [job for job in render_queue.queue_view()["jobs"]
-               if job["slug"] == slug and job["status"] in render_queue.UNFINISHED]
-    if waiting:
-        raise ClientException(detail=(
-            f"{project.name} has a render in the queue ({waiting[0]['status']}). "
-            f"Delete that render job first."))
-    if any(entry["slug"] == slug for entry in progress.running()):
-        raise ClientException(detail=f"{project.name} has work running. Wait for it to finish.")
-    moved_to = store.delete(slug)
-    return {"deleted": slug, "name": project.name,
-            "moved_to": str(moved_to.relative_to(store.root)).replace("\\", "/")}
+    stop_and_wait(slug)
+    store.delete(slug)
+    # Work that was slow to let go may have written a little back: erase that too.
+    time.sleep(0.5)
+    if (store.root / slug).exists():
+        import shutil
+        shutil.rmtree(store.root / slug, ignore_errors=True)
+    return {"deleted": slug, "name": project.name}
 
 
 PROJECT_ADMIN_ROUTES = [delete_project]

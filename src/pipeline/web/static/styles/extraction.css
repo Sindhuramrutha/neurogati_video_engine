@@ -19,20 +19,6 @@
   display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px;
 }
 
-/* --- options that are declared but not built ------------------------------ */
-.not-built {
-  display: inline-block; margin-left: 6px; vertical-align: middle;
-  font-size: 9.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
-  padding: 1px 7px; border-radius: 99px;
-  border: 1.5px solid var(--line); background: var(--c-yellow-soft); color: var(--text);
-}
-
-.option.inert select, .toggle-row.inert { opacity: .55; cursor: not-allowed; }
-
-.option.inert .help { opacity: .7; }
-
-.toggle-row.inert .not-built { margin-left: auto; opacity: 1; }
-
 /* --- extraction: action first, preview in place --------------------------- */
 /* Extract tab. The preview -- the thing being checked -- gets the whole width.
    The file list and the options sit side by side above it rather than in a
@@ -169,18 +155,11 @@
   background: var(--surface); color: var(--text);
 }
 
-
 .x-pick.on { background: var(--c-blue); box-shadow: var(--shadow-sm); }
 
 .x-pick-name { font-weight: 800; font-size: 13px; overflow-wrap: anywhere; }
 
 .x-pick .file-status { margin-top: 0; }
-
-.x-pick-row { display: flex; align-items: flex-start; gap: 6px; }
-
-.x-pick-row .x-pick { flex: 1; min-width: 0; }
-
-.x-pick-row .btn-icon { margin-top: 6px; }
 
 .x-tab-empty {
   display: grid; justify-items: center; gap: 10px; padding: 40px 20px;
@@ -243,6 +222,8 @@
   font-size: 12.5px; font-weight: 800;
 }
 
+.x-apply-all { margin-left: 12px; }
+
 .x-slide-chip {
   min-width: 34px; height: 30px; padding: 0 8px; cursor: pointer;
   font: inherit; font-weight: 800; color: var(--x-ink); background: var(--c-yellow);
@@ -292,10 +273,6 @@
 
 .extraction-tabs .file-status.muted { background: var(--surface); color: var(--x-ink); }
 
-.extraction-tabs .file-card.selected {
-  background: var(--c-blue); box-shadow: var(--shadow-sm);
-}
-
 .extraction-tabs .final-head {
   border: var(--x-edge) solid var(--x-ink); box-shadow: 5px 5px 0 var(--x-ink);
 }
@@ -316,25 +293,6 @@
 
 /* The source list: each card previews its file, and ends in a big checkbox
    that puts it in the next extraction; the one Extract button sits below. */
-.extraction-tabs .file-card { align-items: center; gap: 10px; }
-
-.file-card-main {
-  flex: 1; min-width: 0; display: flex; align-items: center; gap: 11px;
-  padding: 0; background: none; border: none; color: inherit; text-align: left; cursor: pointer;
-}
-
-.x-select-mark {
-  width: 32px; height: 32px; flex: none; border-radius: 7px; padding: 0; cursor: pointer;
-  display: grid; place-items: center;
-  background: var(--surface); color: var(--x-ink);
-  border: 3px solid var(--x-ink); box-shadow: 3px 3px 0 var(--x-ink);
-}
-
-.x-select-mark.on { background: var(--c-green); }
-
-.x-select-mark:focus-visible { outline: 3px solid var(--x-ink); outline-offset: 2px; }
-
-.x-files-column { display: grid; gap: 16px; align-content: start; min-width: 0; }
 
 .x-extract-button {
   width: 100%; justify-content: center; padding: 14px 18px; font-size: 16px; font-weight: 900;
@@ -342,14 +300,6 @@
 }
 
 /* A file that is extracted says so on the right, beside its checkbox. */
-.x-extracted-tag {
-  display: inline-flex; align-items: center; gap: 4px; flex: none; white-space: nowrap;
-  padding: 2px 9px; border-radius: 99px; font-size: 11.5px; font-weight: 900;
-  background: var(--c-green); color: var(--x-ink);
-  border: 2px solid var(--x-ink); box-shadow: 2px 2px 0 var(--x-ink);
-}
-
-.x-extracted-tag.stale { background: var(--c-orange); }
 
 /* Preview and Extraction, side by side: the file on the left, what was read
    from it on the right, following the slide on screen. */

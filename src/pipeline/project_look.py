@@ -8,8 +8,7 @@ and body text to either of its fonts. Ready-made themes are starting points
 built from the deck's own palette. Nothing is guessed: every choice is a value
 a person set, and the same choices always draw the same frames.
 
-A choice is never a no-op. The renderer used to draw panels white on any light
-background whatever was chosen; `style_for` honours the panel a person picked,
+A choice is never a no-op: `style_for` honours the panel a person picked,
 and `readability` says how well the text reads on it.
 
 `effective_look` turns the stored look and choices into what the renderer reads

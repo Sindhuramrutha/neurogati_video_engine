@@ -23,28 +23,11 @@
 .shot-frame .shot-words {
   padding: 10px 12px; font-size: 12px; color: var(--text-dim); text-align: center;
 }
-.shot-motion {
-  position: absolute; left: 7px; bottom: 7px; padding: 2px 7px; border-radius: 99px;
-  background: rgba(20, 17, 15, .72); color: #FFF; font-size: 10px; font-weight: 800;
-  letter-spacing: .03em;
-}
 
 .shot-brief { font-size: 12.5px; line-height: 1.45; }
 .shot-brief b { display: block; font-size: 11px; text-transform: uppercase;
   letter-spacing: .05em; color: var(--text-faint); margin-bottom: 2px; }
 .shot-note { font-size: 11.5px; color: var(--text-dim); font-style: italic; }
-.shot-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-.shot-actions select {
-  background: var(--surface); color: var(--text); font: inherit; font-size: 11.5px;
-  border: var(--edge) solid var(--line); border-radius: 8px; padding: 4px 7px;
-}
-.shot-prompt { font-size: 11.5px; }
-.shot-prompt summary { cursor: pointer; font-weight: 700; color: var(--text-dim); }
-.shot-prompt pre {
-  margin: 5px 0 0; padding: 8px; white-space: pre-wrap; overflow-wrap: anywhere;
-  font-family: var(--mono); font-size: 11px; line-height: 1.5;
-  background: var(--surface-raised); border: 1.5px solid var(--line); border-radius: 8px;
-}
 
 /* --- what the viewer reads ------------------------------------------------- */
 /*
@@ -52,18 +35,7 @@
  * larger than the brief below them, because the brief is what was *asked* for
  * and these are what will actually be there.
  */
-.shot-reads {
-  display: flex; flex-direction: column; gap: 5px;
-  padding: 8px 10px; border-radius: 9px;
-  background: var(--surface-raised); border: 1.5px solid var(--line);
-}
-.shot-headline { font-size: 13.5px; line-height: 1.3; }
-.shot-points { margin: 0; padding-left: 16px; font-size: 12px; line-height: 1.5; }
-.shot-points li { color: var(--text-dim); }
-.shot-diagram {
-  font-size: 11.5px; color: var(--text-faint); line-height: 1.45;
-  overflow-wrap: anywhere;
-}
+
 .shot-animated {
   position: absolute; right: 7px; bottom: 7px; padding: 2px 7px; border-radius: 99px;
   background: var(--accent); color: #FFF; font-size: 10px; font-weight: 800;
@@ -80,50 +52,17 @@
  * which kinds are proved, which failed and why, and the one command that
  * installs what is missing.
  */
-.renderer-panel {
-  margin-bottom: 12px; padding: 9px 12px; border-radius: 10px;
-  background: var(--surface-raised); border: 1.5px solid var(--line);
-}
-.renderer-panel.flat { border-color: var(--warn-line, var(--line)); }
-.renderer-panel summary {
-  cursor: pointer; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap;
-}
-.renderer-panel summary .renderer-state { font-weight: 800; font-size: 12.5px; }
-.renderer-panel summary .muted { font-size: 11.5px; }
-.renderer-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
-.renderer-row {
-  padding: 9px 10px; border-radius: 9px;
-  background: var(--surface); border: 1.5px solid var(--line);
-}
-.renderer-row.off { opacity: .78; }
-.renderer-head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.renderer-head b { font-size: 12.5px; }
-.renderer-row p { margin: 5px 0 0; font-size: 11.5px; line-height: 1.45; }
-.renderer-install code {
-  font-family: var(--mono); font-size: 11px; padding: 1px 5px; border-radius: 5px;
-  background: var(--surface-raised);
-}
-.renderer-detail { color: var(--text-dim); font-style: italic; }
-.renderer-kinds, .renderer-kinds-all {
-  display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px;
-}
-.renderer-kinds-all { padding-top: 9px; border-top: 1.5px solid var(--line); }
+
 .kind {
   padding: 2px 7px; border-radius: 99px; font-size: 10.5px; font-weight: 700;
   border: 1.5px solid var(--line); color: var(--text-dim); cursor: help;
 }
 .kind.ok { border-color: var(--accent); color: var(--accent); }
 .kind.bad { border-color: var(--bad-line, #C2453F); color: var(--bad-text, #C2453F); }
-.kind.unproved, .kind.off { opacity: .6; }
+.kind.off { opacity: .6; }
 
-/* --- five tabs, like the layers before it ------------------------------------ */
+/* --- three tabs, like the layers before it ----------------------------------- */
 .generation-tabs .run-bar { margin-bottom: 16px; }
-
-.generation-decisions select { max-width: 220px; }
-
-.generation-brief { margin-top: 3px; font-size: 12px; line-height: 1.4; }
-
-.generation-preview { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 3px; font-size: 13px; }
 
 .generation-final-strip { margin-top: 12px; }
 
@@ -179,3 +118,66 @@
 }
 
 .generation-unfit { margin: 4px 0 0; padding-left: 18px; font-size: 12.5px; line-height: 1.5; }
+
+/* A scene program's specification, beside its preview. */
+.scene-spec { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px;
+  margin: 10px 0; font-size: 13px; }
+.scene-spec dt { font-weight: 800; }
+.scene-spec dd { margin: 0; }
+.scene-beats { margin: 0 0 10px; font-size: 12.5px; }
+.scene-beats ol { margin: 6px 0 0; padding-left: 22px; display: grid; gap: 3px; }
+.scene-state { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+/* --- a scene's agent: its state, its question, what it did ------------------------ */
+.scene-agent { border: var(--edge) solid var(--line); border-radius: 10px; padding: 12px 14px;
+  margin: 12px 0; background: var(--surface-raised); }
+.scene-agent.waiting { border-color: var(--warn-line, #D9A300); }
+.scene-agent.failed, .scene-agent.stopped { border-color: var(--bad-line, #C2453F); }
+.scene-agent-head { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+.agent-steps { margin-top: 10px; }
+.agent-steps ol { margin: 8px 0 0; padding-left: 20px; max-height: 320px; overflow-y: auto;
+  font-size: 13px; line-height: 1.45; }
+.agent-steps li { margin-bottom: 4px; }
+.agent-step-kind { font-family: var(--mono); font-size: 11px; text-transform: uppercase;
+  color: var(--text-dim); margin-right: 6px; }
+
+/* --- every scene at a glance -------------------------------------------------------- */
+.scene-status { margin: 0 0 16px; }
+.scene-status-bar { display: flex; height: 18px; border: 2px solid var(--x-ink, #1a1a1a);
+  border-radius: 9px; overflow: hidden; background: var(--surface); }
+.scene-status-part + .scene-status-part { border-left: 2px solid var(--x-ink, #1a1a1a); }
+.scene-status-key { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 8px;
+  font-size: 13px; align-items: center; }
+.scene-status-key b { margin-left: 4px; }
+.scene-status-dot { display: inline-block; width: 11px; height: 11px; border-radius: 3px;
+  margin-right: 6px; vertical-align: -1px; border: 1.5px solid var(--x-ink, #1a1a1a); }
+.scene-status-part.approved, .scene-status-dot.approved { background: #1f9d55; }
+.scene-status-part.passed, .scene-status-dot.passed { background: #8fd18f; }
+.scene-status-part.working, .scene-status-dot.working { background: #3d7eff; }
+.scene-status-part.queued, .scene-status-dot.queued { background: #a9c4ff; }
+.scene-status-part.asking, .scene-status-dot.asking { background: #ffcc33; }
+.scene-status-part.stopped, .scene-status-dot.stopped { background: #e5534b; }
+.scene-status-part.waiting, .scene-status-dot.waiting { background: #e9e4d8; }
+
+/* --- what a scene's agent is doing, and how far into its budget --------------------- */
+.shot-progress { display: grid; gap: 4px; margin: 6px 0 8px; font-size: 12.5px; }
+.shot-progress-doing { font-weight: 700; }
+.shot-progress-bar { height: 8px; border-radius: 4px; background: #e9e4d8; overflow: hidden;
+  border: 1.5px solid var(--x-ink, #1a1a1a); }
+.shot-progress-bar i { display: block; height: 100%; background: #3d7eff; }
+.shot-progress.queued { color: var(--text-dim); }
+
+/* --- the scenes in collapsible rows, one per section ---------------------------------- */
+.scene-section { margin: 0 0 12px; border: 2px solid var(--x-ink, #1a1a1a); border-radius: 12px;
+  background: var(--surface); }
+.scene-section > summary { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px;
+  padding: 11px 14px; cursor: pointer; list-style: none; font-size: 14px; }
+.scene-section > summary::-webkit-details-marker { display: none; }
+.scene-section > summary::before { content: "▸"; font-size: 13px; }
+.scene-section[open] > summary::before { content: "▾"; }
+.scene-section-title { font-weight: 800; font-size: 15px; }
+.scene-section-dots { display: inline-flex; gap: 4px; }
+.scene-section-dots .scene-status-dot { margin: 0; }
+.scene-section[open] > summary { border-bottom: 2px solid var(--x-ink, #1a1a1a); }
+.scene-section > .shot-grid { padding: 12px; }

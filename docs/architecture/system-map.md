@@ -1,19 +1,26 @@
-# System Map — boundaries, contracts, invariants
+# System map
 
-What crosses which boundary, what each side promises, and what happens when a
-promise is broken.
+What crosses which boundary, what each side promises, and what holds the whole
+thing together. The contracts are written down because the failure that matters is
+rarely "the code is wrong": it is "two modules disagreed about who validates what".
 
-This exists because the failure mode that matters is not "the code is wrong" — it
-is "the code is fine but two modules disagreed about who validates what." That
-disagreement is only visible when the contracts are written down.
+## The layers
 
----
+```text
+Inputs → Extraction → Assets & Design → Scene Plan → Script & Staging → Generation → Render
+                                                                                       │
+                                                       Studio · Reviewing · Export ◄───┘
+```
+
+Each layer reads only what the one before it **transferred**. A layer's working
+copy is its own; a transfer freezes it for the next. When a layer is transferred
+again, every layer after it is flagged out of date and says what changed
+([change-flags-sop.md](../operations/change-flags-sop.md)). The diagram of what each
+layer does, and what it keeps on disk, is [WORKFLOW-DIAGRAM.md](../../WORKFLOW-DIAGRAM.md).
 
 ## Boundaries
 
-Every failure originates at one of these.
-
-```
+```text
    browser ──① HTTP ──► Litestar ──② calls ──► domain modules
       │                                             │
    ①b its own state                          ③ filesystem
@@ -22,296 +29,173 @@ Every failure originates at one of these.
 
 ### ① Browser → HTTP
 
-**Contract:** `requestJsonFromApi` in
-[shared-client.js](../../src/pipeline/web/static/shared-client.js) is the only
-sanctioned way for a page to reach the API. It returns parsed JSON (or `null` for
-204), or it throws `ApiRequestFailed`. It never returns a partial value.
+`requestJsonFromApi` in [shared-client.js](../../src/pipeline/web/static/shared-client.js)
+is the only way a page reaches the API. It returns parsed JSON (or `null` for 204)
+or throws `ApiRequestFailed`; it never returns a partial value, so a caller cannot
+mistake a failure for data.
 
-That "never partial" clause is the point: a caller must not be able to mistake a
-failure for data. An earlier page made raw `fetch` calls and checked none of them,
-so a failed POST advanced the UI exactly as a successful one did — the write was
-lost silently.
+| Failure | The user sees | Recoverable |
+| --- | --- | --- |
+| Server unreachable | "Could not reach the server. Is it still running?" | Retry |
+| Offline | "You appear to be offline." | Retry |
+| 4xx / 5xx | the API's `detail` | Depends on the route |
+| 200 with malformed JSON | "The server returned a malformed response." | No: a server bug |
 
-| Failure | User sees | Developer sees | Recoverable |
-|---|---|---|---|
-| Server unreachable | "Could not reach the server. Is it still running?" | `console.error` + `isNetworkFailure: true` | Retry button |
-| Offline | "You appear to be offline." | same, `navigator.onLine` checked | Retry button |
-| 4xx / 5xx | the API's `detail` field | `statusCode` on the error | Depends on the route |
-| 200 with malformed JSON | "The server returned a malformed response." | named explicitly | No — server bug |
-
-**Invariant:** no module may call `fetch` directly. Enforced by
-`tests/test_frontend_contracts.js`, not by inspection.
+No module calls `fetch` directly. `tests/test_frontend_contracts.js` enforces it.
 
 ### ①b Browser → its own state
 
-A second boundary inside the browser, promoted to one here because ignoring it
-produced the worst defect found so far.
-
-**Contract:** everything scoped to a project lives in
-`PROJECT_SCOPED_STATE_DEFAULTS` in
+Everything scoped to a project lives in `PROJECT_SCOPED_STATE_DEFAULTS` in
 [ui-kit.js](../../src/pipeline/web/static/ui-kit.js), and switching project calls
-`clearProjectScopedState()` — which resets *every* field, because it is derived
-from that one object rather than written out by hand.
-
-**Why it exists:** selecting a different project used to leave the previous
-project's plan, script, composition and review in memory while `projectApiPath`
-already resolved to the new slug. Editing anything then wrote one project's
-document into another project's file. Silent, immediate, unrecoverable.
-
-**Second guard, belt and braces:** every save captures the project slug before it
-starts and discards the response if the slug changed while it was in flight. A
-network round-trip is long enough for a user to switch projects.
-
-| Invariant | Enforced by |
-|---|---|
-| Every project-scoped field is cleared on switch | `test_frontend_contracts.js` |
-| Every save verifies the project mid-request | `test_frontend_contracts.js` |
-| One optimistic-save implementation, not four | `test_frontend_contracts.js` |
-| No in-flight guard silently drops a user action | `test_frontend_contracts.js` |
-
-That last one is a character requirement as much as a correctness one: a button
-that does nothing because a previous save is still running teaches the user that
-the app is unreliable. It now says *"Still saving the last change — try again in a
-moment."*
+`clearProjectScopedState()`, which resets every field because it is derived from
+that one object. Every save also captures the project's slug before it starts and
+discards its response if the slug changed in flight, so one project's document is
+never written into another's file. Both rules are asserted in
+`test_frontend_contracts.js`, as is "no in-flight guard silently drops a user
+action": a button that does nothing teaches the user the app is unreliable, so it
+says "Still saving the last change — try again in a moment."
 
 ### ② HTTP → domain
 
-**Contract:** routes are thin. They resolve a project, call one domain function,
-and shape the response. No route contains pipeline logic.
-
-Validation happens at this boundary, not deeper, so bad input fails where it
-arrives rather than inside an unrelated component later.
+Routes are thin: they resolve a project, call one domain function, and shape the
+response. Validation happens here, where bad input arrives.
 
 | Input | Validated by | On rejection |
-|---|---|---|
-| Uploaded source file | `validate_uploaded_source_file` | Per-file reason, 201 with a `rejected` list |
+| --- | --- | --- |
+| Uploaded source file | `store_uploaded_source_file` (`sources.py`) | Per-file reason |
 | Project name | `create_project` route | 400 with a reason |
-| Stage key | `Stage(...)` enum coercion | 404 |
+| Stage key | `Stage(...)` coercion | 404 |
 | Stage options | the declaration in `stage_options.py` | Unknown keys dropped; invalid values fall back |
-| Plan / script / composition / review | the Pydantic model for that artifact | Clamped or trimmed, never rejected |
-| Agent body | none — free text by design | — |
+| Plan / script / composition / review | the Pydantic model of that artifact | Clamped or trimmed, never rejected |
 
-**Partial success is a first-class outcome.** Uploading five files where one is
-unsupported stores the four and reports the fifth. An all-or-nothing 500 would
-tell the user nothing about which file was the problem.
-
-**Artifacts clamp rather than reject.** A section with a 40-hour duration is
-clamped and flagged in `warnings`; it is not a 400. Someone editing a plan should
-never lose the rest of their edit because one number was absurd. Warnings are
-advisory and never block a save — asserted by
-`test_warnings_are_advisory_and_never_block_a_save`.
+**Partial success is an outcome.** Five files with one unsupported store the four
+and report the fifth. **Artifacts clamp rather than reject**: a 40-hour section is
+clamped and flagged in `warnings`, never a 400, so one absurd number never loses
+the rest of an edit. Warnings never block a save
+(`test_warnings_are_advisory_and_never_block_a_save`).
 
 ### ③ Domain → filesystem
 
-**Contract:** files are the source of truth
-([ADR 0005](../decisions/0005-files-as-source-of-truth.md)).
+Files are the source of truth; there is no database. Every artifact path is derived
+in [storage/layout.py](../../src/pipeline/storage/layout.py) from the `produces` field
+each stage declares in [stages.py](../../src/pipeline/stages.py), so the path shown in
+the UI and the path written are the same string
+(`test_every_store_writes_where_its_stage_says_it_writes`).
 
-Every artifact path is derived in
-[storage/layout.py](../../src/pipeline/storage/layout.py) from the `produces`
-field each stage declares in [stages.py](../../src/pipeline/stages.py), so the
-path shown in the UI and the path written on disk are the same string.
+- **No write escapes its project directory.** Filenames are reduced to a bare name
+  under POSIX and Windows rules and the resolved destination is re-checked.
+- **Durable writes are atomic**: temp file, then rename, in one implementation,
+  `write_text_atomically` in [storage/documents.py](../../src/pipeline/storage/documents.py)
+  (`test_no_module_hand_rolls_an_atomic_write`).
+- **A corrupt file is never overwritten.** A store falls back to its default, logs
+  at ERROR, and leaves the file for manual recovery: a corrupt `script.json` may hold
+  hours of someone's writing.
+- **A failed create leaves nothing behind**, so a slug is never wedged.
+- **Deleting a project is permanent, and always works.** Whatever is running in it
+  (scenes being made, a render, queued jobs, their ffmpeg, Manim and browser
+  processes) is stopped first by `project_work.py`, then the folder is erased: no
+  trash, no recovery. A thread stuck in a model call is not waited for more than
+  30 seconds; it writes nothing when it returns.
 
-They were not always. Scripting advertised `scripting/scenes.json` while writing
-`scripting/script.json`; Reviewing advertised `reviewing/report.json` while
-writing `reviewing/review.json`. Nothing failed, because a label is only ever read
-by a human. `test_every_store_writes_where_its_stage_says_it_writes` now closes it.
+## On disk
 
-**Invariants:**
-
-- **No write escapes its project directory.** Enforced in
-  [sources.py](../../src/pipeline/sources.py) by reducing filenames to a bare name
-  under both POSIX and Windows conventions *and* re-checking the resolved
-  destination. Both, because sanitisation alone is one refactor away from being
-  wrong.
-- **All durable writes are atomic** — temp file then rename, in exactly one
-  implementation: `write_text_atomically` in
-  [storage/documents.py](../../src/pipeline/storage/documents.py). An interrupted
-  write must never leave a truncated file that the reader then rejects, because
-  the symptom is someone's work silently vanishing.
-  `test_no_module_hand_rolls_an_atomic_write` fails the suite if a module
-  reimplements it.
-- **A corrupt file is never overwritten.** Every store falls back to a default,
-  logs at ERROR, and leaves the file on disk for manual recovery. A corrupt
-  `script.json` may hold hours of someone's writing; silently replacing it with an
-  empty default is the worst possible response.
-- **A failed create leaves nothing behind.** A half-built project directory would
-  be invisible to `list()` but block `create()` — a wedged slug with no way to
-  recover from the UI.
-
-## What is actually on disk
-
-Verified against the code, not aspirational:
-
-```
+```text
 projects/<slug>/
-  project.json                    name, created timestamp
-  sources/<uploaded file>         admitted by sources.py, nothing else
-  settings/<stage>.json           per-stage option choices
-  agents/<stage>/AGENT.md         project override of the shipped default
-  inputs/  extraction/            created empty; extraction has no writer yet
-  planning/plan.json
-  scripting/script.json
+  project.json
+  sources/                         the uploaded document, unchanged
+  extraction/content.json          structured blocks; assets/ holds the figures
+  assets/library.json              which pictures to use, and the video's look
+  scene-plan/plan.json
+  script-staging/script.json
+  generation/visuals.json          one entry per scene; scenes/ one folder per scene
   studio/composition.json
-  reviewing/review.json
+  reviewing/review.json            comments, chapters, versions; output/ the renders
+  export/                          manifest, transcript, chapters, description
+  settings/  agents/  drafts/      stage options, agent overrides, plan proposals
 ```
 
-The wider layout in [data-layout.md](../design/data-layout.md) — chapters, scene
-audio, an IR, render logs — is a **design for stage execution, not a description
-of this repository**. That document now says so at the top. It did not before, and
-the confusion had a measurable cost: `.gitignore` was written against the
-fictional layout, matched nothing, and staged a demo project including an uploaded
-PDF for commit.
+## Rules that hold the system together
 
-## Data flow
+**One source file per project.** A project is made from one document (a deck, PDF,
+Word, Markdown or text file) and it runs through every layer. A second upload
+replaces the first only when the request says `replace`. Replacing it leaves later
+work in place and flags it out of date, keyed by slide or heading rather than by
+file, so a new version of a deck shows the slides that differ.
 
-```
-source documents ──► extraction ──► planning ──► scripting ──► studio ──► reviewing
-     (you)            content        plan        narration     timeline    comments
-                                                      │                        │
-                                                word timings              routed to the
-                                                      │                   stage that can
-                                              the timing authority           fix it
-                                              for beats + subtitles
-```
+**One chain.** Assets & Design hands on to the Scene Plan alone: the plan attaches
+pictures to sections, and its transfer carries them, the brand kit and the look
+(`TransferredPlan.assets`). Every later reader goes through
+`plan_pictures.assets_for_later_stages`.
 
-Five properties worth stating explicitly:
+**Every scene is a program that is looked at.** Generation has no shot to choose:
+each scene is a program written, rendered, checked and fixed (`scene_maker.py`)
+until the fixed checks pass and a vision review of its frames says it teaches.
+Each round is one model call asked afresh, answering with a few-line edit or the
+whole file. The renderer is the model's choice (a web page, Revideo, Manim,
+matplotlib or Pillow). It never stops to ask; the render refuses scenes that are
+not approved programs. Scenes are made on the server a few at a time
+(`scene_agent.py`) and every model call waits for a place in the provider's
+per-minute limit (`llm_pace.py`). See
+[scene-programs-sop.md](../operations/scene-programs-sop.md).
 
-**One source file per project.** A project is made from exactly one file -- a
-deck, a PDF, a Word, Markdown or text file -- and it runs through every layer.
-Upload takes one file; a second replaces the first only when the request says
-`replace` (`web/routes_source.py`). An extraction run replaces the extraction
-whole. Records keep a `file_name`, so nothing on disk depends on the rule, but
-no layer lists files or asks which one. Replacing the file leaves later work in place and flags it out
-of date (`upstream.py`), keyed by slide or heading, not by file, so a new version
-of a deck shows the slides that differ. Tests: `test_a_project_takes_one_source_file`,
-`test_a_second_file_replaces_the_first_only_when_asked`,
-`test_a_new_file_replaces_the_old_ones_result`,
-`test_a_replaced_source_shows_the_slides_that_differ_not_everything`.
+**The audio is the clock.** The render synthesises each section's narration,
+measures its real length, and cuts the picture to fit; word timings place both
+animation beats and subtitles, so they cannot drift apart.
 
-**One chain.** Extraction → Assets & Design → Scene Plan → Script → Generation →
-Render. Each layer reads only what the one before it transferred. Assets &
-Design hands on to the Scene Plan alone: the plan attaches pictures to sections
-and its transfer carries them, the brand kit and the look
-(`TransferredPlan.assets`); every later reader goes through
-`plan_pictures.assets_for_later_stages`. The plan's transfer is refused until
-Assets & Design is transferred. Tests: `tests/test_plan_pictures.py`.
+**Structured output over free text.** A model that produces an artifact returns a
+validated Pydantic model (`complete_structured`); a malformed answer fails next to
+the call that caused it and is re-asked against the schema, never repaired by hand.
+Free text is for prose a person reads.
 
-**Audio is the clock** ([ADR 0001](../decisions/0001-preserve-audio-first-timing.md)).
-Word timings from measured narration drive both animation beats and subtitles, so
-the two cannot drift apart. *Not built yet* — no narration is synthesised.
+**Mechanical checks come before human review.** Each layer's checks are fixed rules:
+the same work always gets the same results. A failing check blocks the transfer.
+A person is asked to judge only what a rule cannot.
 
-**Feedback flows backwards, and targets a stage.** "The pacing is frantic" is a
-Scripting defect, not a Studio one, and fixing it in Studio treats the symptom.
-This one *is* built: `Comment.routed_to_stage`, and `Review.comments_by_stage()`
-gives the count that tells an operator where to go next — six comments routed to
-Scripting means the script is the problem, not the timeline.
+**State is durable and incremental.** Every layer saves its artifact as it goes, so
+an interrupted run loses at most the step it was on, and a restart resumes from
+the files.
 
-**Time is integer milliseconds everywhere** — clip starts, durations, comment
-anchors, chapter starts. Not float seconds, not frames. Frames tie the data to a
-frame rate that can change; floats accumulate error across a timeline until two
-components disagree about where a beat is.
+**Feedback flows backwards to a stage.** "The pacing is frantic" is a Script &
+Staging defect, not a Studio one. A review comment carries `routed_to_stage`, and
+`Review.comments_by_stage()` says where to go next.
 
----
-
-## Stage state
-
-Derived from disk on every request, never cached. A stage is `ready` when its
-directory has content, `empty` otherwise.
-
-The design calls for a third state — `stale`, computed from content hashes so that
-editing narration for one section marks only that section's downstream work stale.
-**Nothing computes it, and nothing records the hashes.**
-
-A `storage/manifest.py` used to sit here claiming to be that mechanism. It was
-deleted in the second review: nothing imported it, it was keyed by `chapter` and
-scene id — a shape this pipeline never creates — and it declared a second `Stage`
-enum (`SOURCE/SCRIPT/AUDIO/IR/RENDER`) colliding by name with the real six.
-`downstream_of` in `stages.py` claimed to "pair with the manifest's content
-hashing", which was never possible: the two enums had no member in common. The
-design survives in
-[data-layout.md](../design/data-layout.md#the-manifest--incremental-rebuild); the
-code did not, because it modelled the wrong pipeline.
-
-Recording that here is the point: a reader who sees `stale` in the CSS and not in
-the API should find out why from this document rather than from `git log`.
-
----
+**Time is integer milliseconds** (clip starts, durations, comment anchors, chapters):
+frames tie data to a frame rate that can change, and floats accumulate error until
+two components disagree about where a beat is.
 
 ## Agents and tools
 
-An `AGENT.md` declares the tools its agent may operate. The declaration **is** the
-grant — an agent cannot reach a tool it was not given.
-
-Resolution is project-then-default. Edits always write the project override; the
-shipped default is never modified, so tuning one project cannot silently change
-another.
-
-**Unknown tool names are reported, never dropped.** A typo would otherwise quietly
-remove a capability, and the symptom — an agent that stops doing something it used
-to — is very hard to trace back to a misspelling. A test asserts every shipped
-agent declares only real tools.
-
-**Every fetch tool must name its resources.** Shipping someone else's copyrighted
-image is a real problem and the agent will not be the one to notice; a test
-enforces the declaration.
-
-**No agent is connected to a model.** The panel is a surface: it reads, edits and
-resets `AGENT.md`, and sends nothing anywhere.
-
----
+An `AGENT.md` ([agents/](../../agents)) is a stage's instructions and the tools it may
+operate; the declaration is the grant. A project can override a stage's agent;
+resolution is project, then default, and edits always write the project copy, so
+tuning one project never changes another. Unknown tool names are reported, never
+dropped (`test_unknown_tool_names_are_reported_not_dropped`), and every fetch tool
+must name its licence-clear resources (`test_fetch_tools_declare_licence_clear_resources`).
 
 ## Stage options
 
-Declared once in [stage_options.py](../../src/pipeline/stage_options.py) — key,
-label, help text, choices, default — and rendered generically by the UI. Adding an
-option is one entry; no template change, no new route.
-
-Unknown keys are dropped rather than persisted, and an invalid stored value falls
-back to its default rather than crashing the stage. A settings file hand-edited
-into nonsense must not make a tab unreachable.
-
----
+Declared once in [stage_options.py](../../src/pipeline/stage_options.py) (key, label,
+help, choices, default) and rendered generically by the UI: adding an option is one
+entry. Unknown keys are dropped and an invalid stored value falls back to its default,
+so a hand-edited settings file cannot make a tab unreachable.
 
 ## Configuration
 
-All environment configuration is read in one place,
-[config.py](../../src/pipeline/config.py), and nowhere else. Limits with domain
-meaning are named constants next to the logic that enforces them —
-`MAXIMUM_SOURCE_FILE_SIZE_IN_BYTES` rather than `67108864`.
-
-Explicit LLM `timeout` and `max_retries` are set there deliberately: v1 constructed
-its client with neither, so a dropped connection surfaced as a failed scene with no
-code generated, losing minutes of work per scene.
-
----
+All environment configuration is read in [config.py](../../src/pipeline/config.py) and
+nowhere else. Limits with domain meaning are named constants beside the logic that
+enforces them. Model calls set an explicit `timeout` and `max_retries` there, so a
+dropped connection is a reported failure, not a silent loss.
 
 ## Authentication
 
-**There is none.** The app binds to `127.0.0.1` and assumes a single trusted local
-operator.
+There is none. The app binds to `127.0.0.1` and assumes one trusted local operator.
+That is load-bearing for CSRF protection, per-request authorisation, rate limiting
+and `ProjectStore.get` trusting its slug. If the app is ever exposed beyond localhost,
+all four need to be added first.
 
-This is a deliberate current-state decision, not an oversight, and it is
-load-bearing for several others: no CSRF protection, no per-request authorisation,
-no rate limiting, and `ProjectStore.get` trusting its slug argument.
+## Limits
 
-**If this is ever exposed beyond localhost, all four need revisiting**, and the
-question of who operates the system
-([Q4](../open-questions.md#q4--who-operates-this)) has to be answered first.
-
----
-
-## Known gaps
-
-Recorded rather than quietly carried:
-
-| Gap | Consequence | Status |
-|---|---|---|
-| No stage executes | The UI is a surface over artifacts a human fills in | By design; next work |
-| No agent reaches a model | The agent panel edits text and sends nothing | Deliberate; surface only |
-| Nothing renders | Studio and Reviewing previews say so rather than showing a fake frame | Blocked on [ADR 0007](../decisions/0007-revideo-as-rendering-target.md) |
-| `stale` state unused | No content hashes are recorded anywhere | Blocked on stage execution |
-| Extraction has no writer | `extraction/content.json` is declared and never written | Next work |
-| No auth | Localhost only | Deliberate; see above |
-| Uploads read fully into memory | The 64 MB cap bounds one upload; concurrent ones multiply | Streaming to disk is the real fix |
-| `slugify` has no length cap | A very long project name makes a very long directory name | Not yet hit; worth a cap |
-| A project cannot be deleted | `ProjectStore.delete` exists, guarded and tested, but no route reaches it — projects accumulate and only `rm -rf` removes one | Deliberate for now: irreversible, and it needs a confirmation design |
+| Limit | Consequence |
+| --- | --- |
+| Scene programs in Manim, matplotlib or Pillow are not sandboxed | They run with the user's permissions: they can read the user's files and use the network (they are not given the server's API keys). Web and Revideo scenes are confined to their own files, the animation libraries and the pictures they were offered |
+| The provider's per-minute request limit paces every model call | A whole video takes tens of minutes. Raise it with `LLM_REQUESTS_PER_MINUTE` if the plan allows |

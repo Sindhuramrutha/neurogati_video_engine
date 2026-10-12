@@ -2,9 +2,7 @@
 
 `present_artifact` is the single path: the browser, the CLI and MCP all receive
 the same document, the same warnings and the same audit, because they run this
-code rather than assembling a response each. They did not, briefly -- the web
-routes assembled it and `operations` did not, so a script saved from the CLI came
-back reporting every section as orphaned.
+code rather than assembling a response each.
 
 Two of the artifacts cannot be judged alone. A script's orphan count is
 meaningless without the plan's section ids; the review's transcript comes from
@@ -58,14 +56,9 @@ def present_artifact(project: Project, artifact_name: str, document: Any) -> dic
     in each client is the whole point of this module: the browser, the CLI and
     MCP get the same audit, because they run the same code to compute it.
 
-    They did not, briefly. The web routes assembled it and `operations` did not,
-    so a script saved from the CLI came back reporting every section as orphaned
-    -- a warning that was pure noise and would have sent someone hunting a bug in
-    their own data.
     """
     if artifact_name == "plan":
-        from pipeline.lesson_plan import lesson_view, save_plan
-        from pipeline.plan_approaches import approach_view
+        from pipeline.lesson_plan import save_plan
         from pipeline.plan_pictures import is_behind, pictures_view
         if document.sections and is_behind(project, document):
             # Assets & Design was transferred since: the rule's pictures follow it.
@@ -78,10 +71,7 @@ def present_artifact(project: Project, artifact_name: str, document: Any) -> dic
             "freshness": freshness,
             "source_outline": source_outline(extraction),
             "has_pending_draft": PlanDraftStore(project.root).load() is not None,
-            "lesson": lesson_view(project, document),
             "pictures": pictures_view(project, document),
-            "approach_choices": approach_view(document, any(
-                b.slide_number for d in extraction.documents for b in d.blocks)),
         }
 
     if artifact_name == "script":
@@ -98,26 +88,21 @@ def present_artifact(project: Project, artifact_name: str, document: Any) -> dic
         out_of_date = narration_freshness(plan, ordered, extraction)
         if out_of_date:
             presented["warnings"] = [*presented["warnings"], (
-                f"{len(out_of_date)} section(s) were written against an earlier version "
+                f"{len(out_of_date)} section(s) were written against a different version "
                 f"of their plan section or source content"
             )]
 
         return presented | {
-            # Everything the writer needs next to the editor. The page used to get
-            # a title and a summary, so narration was written without the target
-            # length, the objectives or the source it was meant to come from.
+            # Everything the writer needs next to the editor: the target length, the
+            # planned scenes and the source the narration is meant to come from.
             "plan_sections": [
                 section.model_dump(mode="json", include={
                     "id", "title", "summary", "estimated_seconds", "sources",
-                    "rendering_approach", "rendering_reason", "objective_ids",
+                    "scenes", "how",
                 })
                 for section in plan.sections
             ],
-            "plan_objectives": [
-                {"id": o.id, "text": o.text}
-                for o in plan.learning_objectives if o.is_included
-            ],
-            "selected_audience": plan.selected_audience,
+            "audience": plan.audience,
             "out_of_date": out_of_date,
             "comments_by_section": _open_comments_by_section(project, plan, Stage.SCRIPT_STAGING),
             "measured_seconds": _measured_narration_seconds(project, plan),
@@ -218,8 +203,7 @@ def save_artifact(slug: str, artifact_name: str, document: Any) -> dict[str, Any
     """Persist an already-validated artifact from a client.
 
     The single write path for every client, so the rules below cannot be skipped
-    by picking a different interface. The web routes used to call the stores
-    directly and bypassed exactly this.
+    by picking a different interface.
     """
     project = require_project(slug)
     binding = require_artifact(artifact_name)

@@ -12,10 +12,8 @@
  * arrows instead, through `stepRawFile`. Either way the page on screen is
  * announced as a `deck-slide` event.
  *
- * A module of its own because two pages need it. It used to live inside app.js,
- * which the stage modules cannot import without a cycle, so the Extraction
- * page's Preview tab said "Document rendering is not built yet" while Inputs,
- * one tab away, rendered the same file perfectly.
+ * A module of its own because two pages need it, and the stage modules cannot
+ * import app.js without a cycle.
  */
 
 import { requestBytesFromApi, requestJsonFromApi } from "/static/shared-client.js";

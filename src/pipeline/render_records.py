@@ -49,12 +49,12 @@ def write_timeline_from_render(
         is_untouched = existing.generated_fingerprint == existing.fingerprint()
 
         if was_generated and not existing.generated_fingerprint:
-            # Written by a version that recorded no fingerprint, so whether it
-            # has since been edited is unknowable. Left alone, and said plainly:
+            # Written with no fingerprint recorded, so whether it has since been
+            # edited is unknowable. Left alone, and said plainly:
             # telling someone they made edits they did not make is its own bug.
             return (
-                "The Studio timeline was built by an earlier version that kept no "
-                "record of its contents, so it was left as it is. Delete its clips "
+                "The Studio timeline has no record of its contents, so it was left "
+                "as it is. Delete its clips "
                 "to have a render rebuild it."
             )
 
@@ -70,8 +70,7 @@ def write_timeline_from_render(
 
     for section in sections:
         # One video clip per shot -- what is actually on screen, for as long as
-        # it is on screen. A clip per section title described the render the
-        # renderer used to make, not this one.
+        # it is on screen.
         for window in shot_windows(section):
             shot = _shot_for(section, window.segments[0])
             # Numbered, and never the section title repeated. A section of

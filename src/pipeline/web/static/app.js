@@ -128,10 +128,8 @@ function recallSelectedProject() {
 
 /** Which project to open when nothing is selected yet.
  *
- *  It used to be `availableProjects[0]` -- the first alphabetically. After a
- *  reload that meant always landing on "Demystifying the Brain", an old test
- *  project, instead of "... - Module 2" where the video was. Reloading to clear
- *  the cache sent the user straight back to the wrong project, three times.
+ *  Not simply the first alphabetically: after a reload that would always land
+ *  on the same old project, whatever was being worked on.
  *  Now: the one they last had open, else the newest.
  */
 function chooseProjectToOpen(availableProjects) {
@@ -196,9 +194,9 @@ function navigateToStage(stageKey, { replaceAddress = false } = {}) {
  */
 const UPSTREAM_TABS = {
   assets: ["assetsTab", "extracted"],
-  "scene-plan": ["planTab", "outline"],
+  "scene-plan": ["planTab", "direction"],
   "script-staging": ["scriptTab", "write"],
-  generation: ["generationTab", "decide"],
+  generation: ["generationTab", "make"],
 };
 
 onUpstreamAction(async (layer, action) => {
@@ -210,9 +208,8 @@ onUpstreamAction(async (layer, action) => {
         notice = ["ok", "Gathered again from the new extraction. Your Use and Skip are kept."];
       }
       if (layer === "scene-plan") {
-        const plan = await requestJsonFromApi(projectApiPath("/plan/resync"), { method: "POST" });
-        notice = ["ok", `Re-synced with the deck: ${plan.resync.added.length} section(s) added, `
-          + `${plan.resync.removed.length} removed. Your edits are kept. Check it, then transfer.`];
+        notice = ["ok", "Tell the planning agent what changed in the source; it proposes a "
+          + "revised shape, and sections that did not change keep their scenes."];
       }
     } catch (failure) {
       notice = ["warn", `${failure.message} Redo this layer by hand, then transfer.`];
@@ -469,7 +466,10 @@ async function useSourceFile(stage, fileList) {
 async function deleteSourceFile(stage, fileName) {
   if (!window.confirm(`Remove ${fileName}?\n\nThe project has no source until you add one. `
       + "What was extracted and transferred stays where it is.")) return;
-  if (applicationState.isDeleteInFlight) return;
+  if (applicationState.isDeleteInFlight) {
+    showStageNotice("warn", "Still removing the last file — try again in a moment.");
+    return;
+  }
   applicationState.isDeleteInFlight = true;
   try {
     const deleteResult = await requestJsonFromApi(
@@ -710,12 +710,10 @@ startProjectPicker({
 
 /** Ask the orchestrator — the master agent, not the stage you happen to be on.
  *
- *  This panel used to send your question to whichever stage tab was open, so
- *  "hi" typed on Inputs was refused on the grounds that Inputs has no agent.
- *  That is backwards: a person asking a question should not have to know which
- *  stage owns the answer, or navigate to it first.
+ *  A person asking a question should not have to know which stage owns the
+ *  answer, or navigate to it first, so the question goes to the master agent.
  *
- *  The orchestrator sits above all six stages. It decides which stage agents to
+ *  The orchestrator sits above every stage. It decides which stage agents to
  *  put to work, runs several of them at once, and answers from what they send
  *  back. The reply lists everyone it consulted, so an answer can be checked
  *  against the agents that produced it.
@@ -840,14 +838,12 @@ function wireConsultedAgents(log) {
 /**
  * The panel keeps threads, rather than one exchange that dies with the drawer.
  *
- * Closing the panel used to throw the conversation away: the log lived in the
- * DOM and nothing was written down, so a question and its answer were gone the
- * moment the drawer was shut, and the agent itself was never told what had
- * already been said.
+ * Closing the panel keeps the conversation: it is written down, and the agent is
+ * told what was already said.
  */
 const INTRO_MESSAGE = `
   <div class="msg muted" id="drawer-intro">
-    This is the <b>Orchestrator</b> — the master agent, above all six stages.
+    This is the <b>Orchestrator</b> — the master agent, above every stage.
     Ask it anything about this project from any tab; it works out which stage
     agents can answer, puts several of them to work at once, and replies from
     what they send back.

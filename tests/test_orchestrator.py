@@ -124,20 +124,20 @@ def test_it_consults_the_agents_it_names_then_answers(project, monkeypatch):
     monkeypatch.setattr(orchestrator, "ask_stage_agent", fake_ask)
     monkeypatch.setattr(orchestrator, "complete_structured", scripted(
         OrchestratorTurn(consult=[
-            Consultation(stage="planning", question="how many sections?"),
-            Consultation(stage="scripting", question="any section over budget?"),
+            Consultation(stage="scene-plan", question="how many sections?"),
+            Consultation(stage="script-staging", question="any section over budget?"),
         ]),
-        OrchestratorTurn(answer="Planning and Scripting both report it is fine."),
+        OrchestratorTurn(answer="Scene Plan and Script & Staging both report it is fine."),
     ))
 
     result = orchestrator.ask_the_orchestrator(project, "is this project healthy?")
 
-    assert [stage for stage, _ in asked] == ["planning", "scripting"]
-    assert result["answer"] == "Planning and Scripting both report it is fine."
+    assert [stage for stage, _ in asked] == ["scene-plan", "script-staging"]
+    assert result["answer"] == "Scene Plan and Script & Staging both report it is fine."
     assert result["agent"] == "Orchestrator"
-    assert [c["agent"] for c in result["consulted"]] == ["Planning", "Scripting"]
+    assert [c["agent"] for c in result["consulted"]] == ["Scene-Plan", "Script-Staging"]
     # The originals are kept, so a summary can be checked against them.
-    assert result["consulted"][0]["answer"] == "planning says fine"
+    assert result["consulted"][0]["answer"] == "scene-plan says fine"
 
 
 def test_consulted_agents_run_at_the_same_time(project, monkeypatch):
@@ -162,7 +162,7 @@ def test_consulted_agents_run_at_the_same_time(project, monkeypatch):
     started = time.monotonic()
     found = orchestrator.run_consultations(project, [
         Consultation(stage=stage, question="q")
-        for stage in ("extraction", "planning", "scripting", "studio", "reviewing")
+        for stage in ("extraction", "scene-plan", "script-staging", "studio", "reviewing")
     ])
     elapsed = time.monotonic() - started
 
@@ -180,7 +180,7 @@ def test_one_unreachable_agent_does_not_lose_the_others(project, monkeypatch):
     monkeypatch.setattr(orchestrator, "ask_stage_agent", flaky_ask)
 
     found = orchestrator.run_consultations(project, [
-        Consultation(stage="planning", question="q"),
+        Consultation(stage="scene-plan", question="q"),
         Consultation(stage="studio", question="q"),
     ])
 
@@ -197,7 +197,7 @@ def test_it_will_not_run_more_agents_than_there_are(project, monkeypatch):
     )
 
     found = orchestrator.run_consultations(project, [
-        Consultation(stage="planning", question=f"q{n}") for n in range(20)
+        Consultation(stage="scene-plan", question=f"q{n}") for n in range(20)
     ])
 
     assert len(found) == orchestrator.MAXIMUM_CONSULTATIONS_PER_ROUND
@@ -246,7 +246,7 @@ def test_it_stops_gathering_and_answers(project, monkeypatch):
         lambda slug, stage_key, question: {"agent": stage_key, "answer": "ok"},
     )
     never_satisfied = scripted(
-        OrchestratorTurn(consult=[Consultation(stage="planning", question="more?")]),
+        OrchestratorTurn(consult=[Consultation(stage="scene-plan", question="more?")]),
     )
     monkeypatch.setattr(orchestrator, "complete_structured", never_satisfied)
 
@@ -289,9 +289,9 @@ def test_the_prompt_tells_the_agent_its_tools_actually_run(project, monkeypatch)
     system_prompt = seen.calls[0]["system"]
 
     assert "Your tools do run" in system_prompt
-    assert "not executable" not in system_prompt
+    assert "you cannot call them" not in system_prompt
     # And it knows who it commands.
-    assert "Planning" in system_prompt and "Scripting" in system_prompt
+    assert "Scene Plan" in system_prompt and "Script & Staging" in system_prompt
 
 
 # --- the web route ------------------------------------------------------------
@@ -352,8 +352,7 @@ def _answering(text, monkeypatch):
 
 
 def test_an_answer_is_kept_so_the_panel_can_be_closed_and_reopened(project, monkeypatch):
-    """The panel used to hold the exchange in the page alone, so closing the
-    drawer threw the thread away."""
+    """The exchange is written down, so closing the drawer keeps the thread."""
     _answering("Section 2 runs long.", monkeypatch)
 
     reply = orchestrator.ask_the_orchestrator(project, "How is the pacing?")
@@ -368,8 +367,8 @@ def test_an_answer_is_kept_so_the_panel_can_be_closed_and_reopened(project, monk
 
 
 def test_a_follow_up_is_told_what_was_already_said(project, monkeypatch):
-    """Every ask used to start from nothing, so "and why is that?" referred to
-    a conversation only the person could remember."""
+    """A follow-up is told what was said, so "and why is that?" does not refer to
+    a conversation only the person can remember."""
     first = _answering("Section 2 runs long.", monkeypatch)
     started = orchestrator.ask_the_orchestrator(project, "How is the pacing?")
 
@@ -458,7 +457,7 @@ def test_a_conversation_can_be_forgotten(project, monkeypatch):
 def test_the_consulted_agents_are_kept_with_the_answer(project, monkeypatch):
     """Without them a reopened thread is a claim with no way to check it."""
     monkeypatch.setattr(orchestrator, "complete_structured", scripted(
-        OrchestratorTurn(consult=[Consultation(stage="planning", question="Is it long?")]),
+        OrchestratorTurn(consult=[Consultation(stage="scene-plan", question="Is it long?")]),
         OrchestratorTurn(answer="Yes, section 2."),
     ))
     monkeypatch.setattr(orchestrator, "ask_stage_agent",
@@ -467,4 +466,4 @@ def test_the_consulted_agents_are_kept_with_the_answer(project, monkeypatch):
     reply = orchestrator.ask_the_orchestrator(project, "Is section 2 long?")
     reopened = orchestrator.read_conversation(project, reply["conversation_id"])
 
-    assert [c["stage"] for c in reopened["turns"][0]["consulted"]] == ["planning"]
+    assert [c["stage"] for c in reopened["turns"][0]["consulted"]] == ["scene-plan"]

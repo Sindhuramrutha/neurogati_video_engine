@@ -253,7 +253,7 @@ def add_review_comment(
         body: the feedback.
         author: who is saying it.
         at_ms: the timecode it refers to, in milliseconds.
-        routed_to_stage: extraction, planning, scripting or studio.
+        routed_to_stage: extraction, scene-plan, script-staging, generation or studio.
     """
     return guarded(
         operations.add_review_comment, project, body, author, at_ms, routed_to_stage
@@ -285,7 +285,7 @@ def ask_stage_agent(project: str, stage: str, question: str) -> str:
 
     Args:
         project: the project slug.
-        stage: extraction, planning, scripting, studio or reviewing.
+        stage: extraction, scene-plan, script-staging, generation, studio or reviewing.
         question: what to ask.
     """
     from pipeline.agent_runtime import ask_stage_agent as run
@@ -294,46 +294,43 @@ def ask_stage_agent(project: str, stage: str, question: str) -> str:
 
 
 @server.tool()
-def draft_plan(project: str, instruction: str) -> str:
-    """Have the Planning agent draft a plan from the whole extraction.
-
-    Reads every heading of every extracted document, then details each section
-    from its own text. The plan is not changed: the result is kept as a pending
-    draft. Accept it with `accept_plan_draft`, or discard it with
-    `discard_plan_draft`.
+def plan_say(project: str, message: str) -> str:
+    """Tell the planning agent what the video should be; it answers and proposes
+    the shape -- length, sections (each a run of slides), scenes per section. The
+    plan is not changed until the shape is agreed with `plan_agree`.
 
     Args:
         project: the project slug.
-        instruction: what the video should cover, and any constraints.
+        message: what you want, in your own words.
     """
-    from pipeline.agent_runtime import draft_plan_with_agent
+    from pipeline.plan_agent import send_message
 
-    return guarded(draft_plan_with_agent, project, instruction)
+    return guarded(send_message, project, message)
 
 
 @server.tool()
-def accept_plan_draft(project: str, section_ids: list[str] | None = None) -> str:
-    """Accept the pending drafted plan.
-
-    With no `section_ids`, the draft replaces the plan's sections, objectives and
-    key themes. With `section_ids`, only those drafted sections are appended to
-    the current plan, bringing their learning objectives with them.
+def plan_agree(project: str) -> str:
+    """Agree to the proposed shape: it becomes the plan, and the scenes of every
+    new or changed section are written (one model call per section).
 
     Args:
         project: the project slug.
-        section_ids: drafted section ids to append, or omit to accept everything.
     """
-    return guarded(operations.accept_plan_draft, project, section_ids)
+    from pipeline.plan_agent import agree
+
+    return guarded(agree, project)
 
 
 @server.tool()
-def discard_plan_draft(project: str) -> str:
-    """Throw away the pending drafted plan. The plan itself is not touched.
+def plan_discard(project: str) -> str:
+    """Throw away the proposed shape. The plan itself is not touched.
 
     Args:
         project: the project slug.
     """
-    return guarded(operations.discard_plan_draft, project)
+    from pipeline.plan_agent import discard_proposal
+
+    return guarded(discard_proposal, project)
 
 
 @server.tool()
@@ -341,7 +338,7 @@ def draft_section_script(project: str, section_id: str, instruction: str = "") -
     """Have the Scripting agent write one plan section as scenes, and save it.
 
     Each scene is narration plus a brief of what is on screen. Writes, unlike
-    `draft_plan`: narration is addressed by section id, so this replaces one
+    `plan_agree`: narration is addressed by section id, so this replaces one
     section's scenes and leaves the rest of the script alone.
 
     Args:

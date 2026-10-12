@@ -1,7 +1,7 @@
 """The verbs that edit an artifact on someone's behalf.
 
 Everything here is a small, complete change a client can ask for -- add a
-section, write one section's narration, accept a drafted plan, route a comment
+section, write one section's narration, route a comment
 to the stage that should fix it -- rather than "save this whole document", which
 is `presentation.save_artifact`.
 
@@ -21,13 +21,7 @@ from pipeline.extraction import (
     ExtractionStore,
 )
 from pipeline.freshness import narration_fingerprints
-from pipeline.planning import (
-    LearningObjective,
-    Plan,
-    PlanDraftStore,
-    PlanSection,
-    PlanStore,
-)
+from pipeline.planning import PlanSection, PlanStore
 from pipeline.presentation import (
     _mark_as_hand_edited,
     _script_in_plan_order,
@@ -63,124 +57,6 @@ def clear_timeline(slug: str) -> dict[str, Any]:
     composition.generated_from_render_at = ""
     composition.generated_fingerprint = ""
     return present_artifact(project, "composition", store.save(composition))
-
-def confirm_plan_matches_extraction(slug: str) -> dict[str, Any]:
-    """Record that someone checked this plan against the current extraction.
-
-    The way out of "out of date" without redrafting: the extraction changed, a
-    person looked, and the plan still holds. Refused when there is nothing
-    extracted to confirm against.
-    """
-    project = require_project(slug)
-    extraction = ExtractionStore(project.root).load()
-    if not extraction.documents:
-        raise OperationFailed("Nothing has been extracted yet, so there is nothing to confirm.")
-
-    store = PlanStore(project.root)
-    plan = store.load()
-    plan.extraction_fingerprint = extraction.content_fingerprint()
-    return present_artifact(project, "plan", store.save(plan))
-
-def read_plan_draft(slug: str) -> dict[str, Any]:
-    """The pending drafted plan, with what accepting it would do."""
-    project = require_project(slug)
-    draft = PlanDraftStore(project.root).load()
-    if draft is None:
-        return {"is_pending": False}
-
-    current = PlanStore(project.root).load()
-    script = ScriptStore(project.root).load()
-    narrated = {s.section_id for s in script.section_scripts if s.body.strip()}
-    proposed = Plan.model_validate(draft.get("plan", {}))
-    extraction = ExtractionStore(project.root).load()
-
-    return draft | {
-        "is_pending": True,
-        "plan": proposed.to_dict(),
-        # Accepting all replaces the sections, and narration is attached to
-        # section ids: say how much written narration would be left unattached
-        # before anyone clicks, not after.
-        "replaces_narrated_sections": sum(1 for s in current.sections if s.id in narrated),
-        "is_behind_extraction": (
-            draft.get("extraction_fingerprint", "") != extraction.content_fingerprint()
-        ),
-    }
-
-def accept_plan_draft(slug: str, section_ids: list[str] | None = None) -> dict[str, Any]:
-    """Take a drafted plan in whole, or some of its sections.
-
-    **All** replaces the sections, objectives and key themes, keeps the chosen
-    audience, and records the extraction the draft was made from.
-
-    **Some** appends just those sections to the current plan. Their learning
-    objectives come with them -- matched by wording against the plan's own, so
-    the same objective is never added twice -- and the rest of the plan is left
-    exactly as it was. Partly accepting a draft is not a claim that the plan
-    matches the extraction, so the plan's record of that is not changed.
-    """
-    project = require_project(slug)
-    drafts = PlanDraftStore(project.root)
-    draft = drafts.load()
-    if draft is None:
-        raise OperationFailed("There is no drafted plan to accept.")
-
-    proposed = Plan.model_validate(draft.get("plan", {}))
-    store = PlanStore(project.root)
-    plan = store.load()
-
-    from pipeline.lesson_plan import save_plan
-
-    if section_ids is None:
-        plan.sections = proposed.sections
-        for section in plan.sections:
-            section.summary_origin = "ai" if section.summary else ""
-        plan.learning_objectives = proposed.learning_objectives
-        plan.key_themes = proposed.key_themes or plan.key_themes
-        plan.extraction_fingerprint = draft.get("extraction_fingerprint", "")
-        saved = save_plan(project, plan)
-        drafts.clear()
-        return present_artifact(project, "plan", saved)
-
-    by_id = {section.id: section for section in proposed.sections}
-    unknown = [sid for sid in section_ids if sid not in by_id]
-    if unknown:
-        raise OperationFailed(f"The draft has no section(s) {', '.join(unknown)}.")
-
-    proposed_objectives = {o.id: o for o in proposed.learning_objectives}
-    existing_by_wording = {o.text.strip().lower(): o.id for o in plan.learning_objectives}
-
-    for section_id in section_ids:
-        section = by_id[section_id].model_copy(deep=True)
-        linked = []
-        for objective_id in section.objective_ids:
-            objective = proposed_objectives.get(objective_id)
-            if objective is None:
-                continue
-            wording = objective.text.strip().lower()
-            if wording not in existing_by_wording:
-                added = LearningObjective(text=objective.text)
-                plan.learning_objectives.append(added)
-                existing_by_wording[wording] = added.id
-            linked.append(existing_by_wording[wording])
-        # A fresh id each time, so adding the same proposed section twice gives
-        # two sections rather than two entries sharing one identity.
-        section.id = PlanSection().id
-        section.objective_ids = linked
-        section.summary_origin = "ai" if section.summary else ""
-        plan.sections.append(section)
-
-    saved = save_plan(project, plan)
-
-    accepted = sorted(set(draft.get("accepted_section_ids", [])) | set(section_ids))
-    if set(accepted) >= set(by_id):
-        drafts.clear()
-    else:
-        drafts.save(draft | {"accepted_section_ids": accepted})
-    return present_artifact(project, "plan", saved)
-
-def discard_plan_draft(slug: str) -> dict[str, Any]:
-    project = require_project(slug)
-    return {"discarded": PlanDraftStore(project.root).clear()}
 
 def add_plan_section(
     slug: str, title: str, summary: str = "", estimated_seconds: int = 60
@@ -247,37 +123,6 @@ def confirm_section_narration(slug: str, section_id: str) -> dict[str, Any]:
 
     written.written_from = narration_fingerprints(section, ExtractionStore(project.root).load())
     return present_artifact(project, "script", store.save(_script_in_plan_order(project, script)))
-
-def section_source_material(slug: str, section_id: str) -> dict[str, Any]:
-    """The full text of the content a plan section records, for reading while writing."""
-    from pipeline.plan_drafting import MAXIMUM_SECTION_SOURCE_CHARACTERS
-    from pipeline.plan_handoff import plan_for_later_stages
-
-    project = require_project(slug)
-    plan = plan_for_later_stages(project)
-    section = next((s for s in plan.sections if s.id == section_id), None)
-    if section is None:
-        raise OperationFailed(f"The plan has no section {section_id!r}.")
-
-    extraction = ExtractionStore(project.root).load()
-    parts, missing = [], []
-    for reference in section.sources:
-        document = extraction.document(reference.file_name)
-        if document is None or not document.has_location(reference.heading_path):
-            missing.append(reference.label)
-            continue
-        parts.append({"label": reference.label,
-                      "text": document.text_under(reference.heading_path)})
-
-    total = sum(len(part["text"]) for part in parts)
-    return {
-        "section_id": section_id,
-        "has_sources": bool(section.sources),
-        "parts": parts,
-        "missing": missing,
-        "characters": total,
-        "longer_than_an_agent_reads": total > MAXIMUM_SECTION_SOURCE_CHARACTERS,
-    }
 
 def add_clip(
     slug: str,

@@ -68,7 +68,10 @@ async function draw(spec) {
     height: spec.height ?? 1080,
     rate: spec.frameRate ?? 30,
   };
-  const projectFile = './project.ts';
+  // Every scene brings its own project file (scene_revideo.py).
+  const projectFile = spec.project;
+  if (!projectFile) throw new Error('the spec names no project file');
+  const timeoutMs = spec.timeoutMs ?? RENDER_TIMEOUT_MS;
   const fileName = `scene-${process.pid}`;
   const folderId = randomUUID();
   const working = join(tmpdir(), `revideo-${fileName}-${folderId}`);
@@ -97,10 +100,11 @@ async function draw(spec) {
       '--no-sandbox',
       '--disable-setuid-sandbox',
       '--disable-dev-shm-usage',
-      '--disable-gpu',
-      '--use-gl=swiftshader',
+      // Software rendering is the safe default for the small probes; a full
+      // scene asks for the GPU (`spec.gpu`), which is many times faster.
+      ...(spec.gpu ? [] : ['--disable-gpu', '--use-gl=swiftshader']),
     ],
-    protocolTimeout: RENDER_TIMEOUT_MS,
+    protocolTimeout: timeoutMs,
   });
 
   try {
@@ -129,13 +133,22 @@ async function draw(spec) {
       + `&workerId=0&totalNumOfWorkers=1&hiddenFolderId=${folderId}`;
     await page.goto(url, {waitUntil: 'domcontentloaded', timeout: 60000});
 
-    await Promise.race([
-      finished,
-      new Promise((_done, failed) =>
-        setTimeout(() => failed(new Error(
-          `the render did not finish in ${RENDER_TIMEOUT_MS / 1000}s`
-          + (said.length ? `: ${said[0]}` : ''))), RENDER_TIMEOUT_MS)),
-    ]);
+    // The limit's timer is cleared when the render finishes: a pending timer keeps
+    // Node alive, so a render would last its whole time limit (a clip done in
+    // 12 s would take 300 s to come back).
+    let limit;
+    try {
+      await Promise.race([
+        finished,
+        new Promise((_done, failed) => {
+          limit = setTimeout(() => failed(new Error(
+            `the render did not finish in ${timeoutMs / 1000}s`
+            + (said.length ? `: ${said[0]}` : ''))), timeoutMs);
+        }),
+      ]);
+    } finally {
+      clearTimeout(limit);
+    }
 
     // The wasm exporter writes the frames it muxed into its own working folder.
     // There is no audio to merge: the narration is muxed by the Python side,
@@ -147,8 +160,13 @@ async function draw(spec) {
     renameSync(visuals, output);
     return output;
   } finally {
-    await browser.close().catch(() => {});
-    await server.close().catch(() => {});
+    // A newer Chromium may never answer close(): it then waited out the whole
+    // protocol timeout -- the clip was done in seconds and the render took ten
+    // minutes. A few seconds' grace, then the process is ended.
+    const grace = new Promise(done => setTimeout(done, 5000));
+    await Promise.race([browser.close().catch(() => {}), grace]);
+    browser.process()?.kill('SIGKILL');
+    await Promise.race([server.close().catch(() => {}), new Promise(done => setTimeout(done, 3000))]);
     rmSync(working, {recursive: true, force: true});
   }
 }

@@ -1,21 +1,23 @@
 """The model client — the one place this pipeline talks to a provider.
 
-Two entry points, and the difference between them is the whole argument of
-[ADR 0002](../../docs/decisions/0002-structured-output-over-free-text.md):
+Two entry points, and the difference between them is the whole argument:
 
 - `complete_text` returns prose, for an agent answering a question.
 - `complete_structured` returns a **validated Pydantic model**, for an agent
   producing an artifact.
+- `complete_scene` is one round of making a scene, as plain text, with hidden
+  reasoning off and a time limit (a reasoning model once spent 70 minutes thinking
+  and wrote nothing). A cut-off reply is `ModelOutputTruncated`.
 
-v1 asked for free text and then parsed it with regexes, so a model that phrased
-its answer differently produced a crash three stages later, in a component that
-had nothing to do with the mistake. Here a malformed response fails inside
-`complete_structured`, next to the call that caused it, and is retried against
-the schema rather than repaired by hand.
+Free text parsed with regexes means a model that phrases its answer differently
+crashes three stages later, in a component that has nothing to do with the
+mistake. A malformed response fails inside `complete_structured`, next to the
+call that caused it, and is retried against the schema rather than repaired by
+hand.
 
-Timeout and retries are set explicitly, not left to defaults, because v1 left
-them unset and a dropped connection surfaced as a failed scene with no code
-generated -- minutes of work lost per scene, with no error that named the cause.
+Timeout and retries are set explicitly, not left to defaults, because with
+defaults a dropped connection surfaces as a failed scene with no code
+generated -- minutes of work lost, with no error that names the cause.
 Both come from `config.Settings`, so changing them is configuration.
 
 **No key is read here.** Credentials come from `get_settings()`, which resolves
@@ -47,6 +49,8 @@ MAXIMUM_SCHEMA_RETRIES = 2
 # went unwritten. The cost of a high ceiling is nothing when the response is
 # short; the cost of a low one is a stage that fails on its longest sections.
 STRUCTURED_OUTPUT_TOKEN_BUDGET = 16000
+PROGRAM_CALL_SECONDS = 600       # a scene agent's turn; it is asked to skip hidden reasoning
+NO_HIDDEN_REASONING = {"thinking": {"type": "disabled"}}
 
 
 class ModelNotConfigured(Exception):
@@ -60,6 +64,10 @@ class ModelNotConfigured(Exception):
 
 class ModelCallFailed(Exception):
     """The provider was reachable but the call did not produce a usable answer."""
+
+
+class ModelOutputTruncated(ModelCallFailed):
+    """The answer stopped at the token limit, so it is not the whole answer."""
 
 
 def is_configured() -> bool:
@@ -88,22 +96,21 @@ def describe_model() -> dict[str, Any]:
 
 
 def _build_client(base_url: str, api_key: str, purpose: str):
+    import httpx
     from openai import OpenAI
+
+    from pipeline.llm_pace import take_a_place
 
     if not api_key or api_key == "not-needed":
         raise ModelNotConfigured(
-            f"No API key set, so the {purpose} model cannot be reached. "
-            f"Add one in the API keys panel, or run: "
-            f"echo -n '<key>' | pipeline credentials set LLM_API_KEY"
-        )
-
+            f"No API key set, so the {purpose} model cannot be reached. Add one in the API "
+            f"keys panel, or run: echo -n '<key>' | pipeline credentials set LLM_API_KEY")
     settings = get_settings()
-    return OpenAI(
-        base_url=base_url,
-        api_key=api_key,
-        timeout=settings.llm_timeout_seconds,
-        max_retries=settings.llm_max_retries,
-    )
+    # Every request -- retries and re-asks included -- waits for a place in the
+    # provider's per-minute limit (llm_pace.py) instead of being refused.
+    paced = httpx.Client(event_hooks={"request": [lambda _request: take_a_place()]})
+    return OpenAI(base_url=base_url, api_key=api_key, http_client=paced,
+                  timeout=settings.llm_timeout_seconds, max_retries=settings.llm_max_retries)
 
 
 def _what_went_wrong(call_failure: Exception) -> str:
@@ -146,19 +153,32 @@ def _what_went_wrong(call_failure: Exception) -> str:
 
 def _chat(
     endpoint: tuple[str, str, str], purpose: str, messages: list[dict[str, Any]],
-    max_tokens: int,
-) -> str:
-    """One chat completion, answered as text, with the failure vocabulary above.
+    max_tokens: int, *, program: bool = False,
+) -> tuple[str, dict[str, int]]:
+    """One chat completion with the failure vocabulary above: the answer's text, and
+    what it used (hidden reasoning included).
 
     Every free-text call goes through here, so a provider error is described the
-    same way whether the question was words or a picture.
+    same way whether the question was words, a picture or a program. A `program`
+    call has a time limit, asks for no hidden reasoning (again without the switch
+    if the provider refuses it), and fails when cut off at the token limit.
     """
+    import openai
+
     base_url, api_key, model_name = endpoint
     client = _build_client(base_url, api_key, purpose)
+    if program:
+        client = client.with_options(timeout=PROGRAM_CALL_SECONDS)
+    ask = {"model": model_name, "max_tokens": max_tokens, "messages": messages}
 
     try:
-        response = client.chat.completions.create(
-            model=model_name, max_tokens=max_tokens, messages=messages)
+        try:
+            response = client.chat.completions.create(
+                **ask, **({"extra_body": NO_HIDDEN_REASONING} if program else {}))
+        except openai.BadRequestError:
+            if not program:
+                raise
+            response = client.chat.completions.create(**ask)
     except Exception as call_failure:
         logger.exception("%s completion failed", purpose)
         raise ModelCallFailed(
@@ -166,10 +186,19 @@ def _chat(
             or f"{type(call_failure).__name__}: {call_failure}"
         ) from call_failure
 
+    usage = getattr(response, "usage", None)
+    details = getattr(usage, "completion_tokens_details", None)
+    used = {"prompt": getattr(usage, "prompt_tokens", 0) or 0,
+            "completion": getattr(usage, "completion_tokens", 0) or 0,
+            "reasoning": getattr(details, "reasoning_tokens", 0) or 0}
     choices = getattr(response, "choices", None)
     if not choices:
         raise ModelCallFailed(f"{model_name} returned no answer.")
-    return (choices[0].message.content or "").strip()
+    if program and choices[0].finish_reason == "length":
+        raise ModelOutputTruncated(
+            f"The answer was cut off at the token limit ({used['completion']} tokens, "
+            f"{used['reasoning']} of them hidden reasoning).")
+    return (choices[0].message.content or "").strip(), used
 
 
 def complete_text(system_prompt: str, user_prompt: str, *, max_tokens: int = 2000) -> str:
@@ -185,7 +214,16 @@ def complete_text(system_prompt: str, user_prompt: str, *, max_tokens: int = 200
             {"role": "user", "content": user_prompt},
         ],
         max_tokens,
-    )
+    )[0]
+
+
+def complete_scene(system_prompt: str, user_prompt: str, *,
+                   max_tokens: int) -> tuple[str, dict[str, int]]:
+    """One round of making a scene, as plain text, and what it used."""
+    return _chat(get_settings().ir_llm, "scene",
+                 [{"role": "system", "content": system_prompt},
+                  {"role": "user", "content": user_prompt}],
+                 max_tokens, program=True)
 
 
 def _structured[ModelType: BaseModel](
@@ -404,4 +442,4 @@ def read_image_text(image_bytes: bytes, mime_type: str, instruction: str) -> str
             {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{encoded}"}},
         ]}],
         4000,
-    )
+    )[0]

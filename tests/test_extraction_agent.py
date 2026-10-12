@@ -18,12 +18,14 @@ from pipeline.extraction_agent import (
     AgentThreads,
     AgentThreadStore,
     AgentTurn,
-    apply_proposal,
     ask_extraction_agent,
     delete_conversation,
-    discard_proposal,
     read_thread,
     start_conversation,
+)
+from pipeline.extraction_agent_decisions import (
+    apply_proposal,
+    discard_proposal,
     undo_agent_changes,
 )
 from pipeline.extraction_edits import BlockChange
@@ -158,6 +160,36 @@ def test_undo_puts_the_blocks_back(project_root, monkeypatch):
     assert undone["thread"]["turns"][-1]["status"] == "undone"
     with pytest.raises(operations.OperationFailed, match="nothing to undo"):
         undo_agent_changes(slug, "deck.pptx")
+
+
+def test_apply_all_applies_every_waiting_change_and_one_undo_puts_them_back(
+        project_root, monkeypatch):
+    slug, project = a_deck_collection()
+    the_agent_proposes(monkeypatch, BlockChange(action="delete", block_ids=["t1"]))
+    ask_extraction_agent(slug, "deck.pptx", "delete it", slide_number=1)
+    the_agent_proposes(monkeypatch, BlockChange(action="edit_text", block_ids=["t2"],
+                                                text="clearer"))
+    ask_extraction_agent(slug, "deck.pptx", "reword it", slide_number=1)
+
+    # As the page does it: one by one, each naming the batch so far.
+    waiting = [t["id"] for t in read_thread(slug, "deck.pptx")["turns"]
+               if t["status"] == "proposed"]
+    batch = ""
+    for turn_id in waiting:
+        done = apply_proposal(slug, "deck.pptx", turn_id, continues=batch)
+        batch = done["thread"]["undo_turn_id"]
+    assert batch == ",".join(waiting), "the batch is recorded as it grows"
+    blocks = {b.id: b.text for b in blocks_of(project)}
+    assert "t1" not in blocks and blocks["t2"] == "clearer"
+    statuses = [t["status"] for t in done["thread"]["turns"] if t["role"] == "agent"]
+    assert statuses == ["applied", "applied"]
+
+    undone = undo_agent_changes(slug, "deck.pptx")
+
+    assert [b.id for b in blocks_of(project)] == ["h1", "t1", "t2", "f1", "t3"], \
+        "one Undo puts every change of the batch back"
+    statuses = [t["status"] for t in undone["thread"]["turns"] if t["role"] == "agent"]
+    assert statuses == ["undone", "undone"]
 
 
 def test_a_proposal_lands_whole_or_not_at_all(project_root, monkeypatch):
@@ -408,6 +440,9 @@ def test_a_slide_review_goes_in_its_own_conversation_one_answer_per_slide(
     from pipeline.extraction_slide_review import review_slide
 
     slug, project = a_deck_collection()
+    # Stood in for before the first question too: asked unpatched, this reached
+    # the real model on every test run.
+    the_agent_proposes(monkeypatch, reply="Hello.")
     ask_extraction_agent(slug, "deck.pptx", "hello", slide_number=1)
     seen = the_agent_proposes(monkeypatch, reply="Slide 2 matches.")
 

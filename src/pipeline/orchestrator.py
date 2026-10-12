@@ -3,8 +3,7 @@
 Every other agent in this pipeline owns a stage and sees only that stage. That is
 right for doing the work and wrong for talking to a person: it means whoever is
 asking has to already know which stage owns their question, and be standing on
-that tab before they ask it. The Agent panel used to work exactly that way, and
-saying "hi" on the Inputs tab got you a refusal telling you to go somewhere else.
+that tab before they ask it.
 
 This module is the agent that answers instead. It belongs to no stage. It has the
 stage agents as its instrument: it decides who to ask, asks **several of them at
@@ -78,7 +77,7 @@ class Consultation(BaseModel):
     """One question for one stage agent."""
 
     stage: str = Field(
-        description="One of: extraction, planning, scripting, studio, reviewing."
+        description="One of: extraction, scene-plan, script-staging, generation, studio, reviewing."
     )
     question: str = Field(
         description="A specific question about that stage's own work."

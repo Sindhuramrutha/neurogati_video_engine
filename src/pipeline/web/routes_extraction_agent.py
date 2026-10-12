@@ -15,12 +15,14 @@ from pydantic import BaseModel
 
 from pipeline.core import OperationFailed
 from pipeline.extraction_agent import (
-    apply_proposal,
     ask_extraction_agent,
     delete_conversation,
-    discard_proposal,
     read_thread,
     start_conversation,
+)
+from pipeline.extraction_agent_decisions import (
+    apply_proposal,
+    discard_proposal,
     undo_agent_changes,
 )
 from pipeline.extraction_slide_review import review_slide
@@ -35,6 +37,10 @@ class AgentMessage(BaseModel):
 
 class AgentFile(BaseModel):
     file_name: str
+
+
+class ProposalToApply(AgentFile):
+    continues: str = ""    # "apply all": the batch's ids so far, so one Undo undoes all
 
 
 class SlideToReview(BaseModel):
@@ -91,10 +97,10 @@ def review_extraction_slide(slug: FromPath[str], data: SlideToReview) -> dict[st
 
 @post("/api/projects/{slug:str}/extraction/agent/{turn_id:str}/apply", sync_to_thread=True)
 def apply_extraction_agent_proposal(
-    slug: FromPath[str], turn_id: FromPath[str], data: AgentFile,
+    slug: FromPath[str], turn_id: FromPath[str], data: ProposalToApply,
 ) -> dict[str, Any]:
     """Apply a proposal. Threaded: a picture change calls the image model."""
-    return _client_error(apply_proposal, slug, data.file_name, turn_id)
+    return _client_error(apply_proposal, slug, data.file_name, turn_id, data.continues)
 
 
 @post("/api/projects/{slug:str}/extraction/agent/{turn_id:str}/discard", sync_to_thread=False)

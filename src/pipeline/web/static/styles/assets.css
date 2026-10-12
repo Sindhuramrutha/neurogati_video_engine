@@ -1,13 +1,6 @@
 /** Assets & Design — the picture library and the video's look. */
 
 /* --- assets & design ------------------------------------------------------- */
-.assets-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 14px; align-items: start; }
-
-@media (max-width: 1150px) { .assets-grid { grid-template-columns: minmax(0, 1fr); } }
-
-.asset-filters { margin-bottom: 12px; flex-wrap: wrap; }
-
-.asset-filters .mono { opacity: .65; margin-left: 4px; }
 
 .figure-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
 
@@ -27,33 +20,15 @@
 
 .figure-body b { line-height: 1.35; overflow-wrap: anywhere; }
 
-.figure-where { font-size: 11px; color: var(--text-faint); font-family: var(--mono); overflow-wrap: anywhere; }
-
-.figure-facts { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
-
 .figure-note { color: var(--text-dim); font-style: italic; }
 
 .figure-actions { grid-column: 1 / -1; display: flex; gap: 6px; }
 
 .figure-actions .btn { padding: 5px 11px; font-size: 11.5px; }
 
-.look-panel { background: var(--c-yellow-soft); }
-
-.look-toggle { margin-bottom: 12px; }
-
-.look-facts { font-size: 12.5px; }
-
 .swatches { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 
-.swatch-chip {
-  display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px 3px 4px;
-  border-radius: 99px; border: 1.5px solid var(--line); background: var(--surface);
-  font-size: 10.5px; font-weight: 800;
-}
-
 .swatch { width: 14px; height: 14px; border-radius: 4px; border: 1.5px solid var(--line); display: inline-block; }
-
-.look-background img { width: 100%; border: 1.5px solid var(--line); border-radius: 8px; margin-top: 4px; }
 
 /* --- four tabs, like Extraction -------------------------------------------- */
 /* The tabs and the yellow body are Extraction's (`.extraction-tabs`); what
@@ -64,7 +39,6 @@
 /* 1. Extracted assets: where it came from and the library side by side, the
    pictures below. */
 .assets-gather { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
-
 
 .assets-source-row {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
@@ -95,23 +69,8 @@
 .assets-rule-table tr.stops td:last-child { font-weight: 800; }
 
 /* The pictures: grouped by the file they came from; the verdict says why. */
-.assets-file { margin-top: 22px; }
-
-.assets-file-name {
-  margin: 0 0 8px; font-size: 12px; font-weight: 900; letter-spacing: .06em;
-  text-transform: uppercase;
-}
 
 .figure-card.shows { background: var(--surface); }
-.figure-card.hidden-from-video { background: #F3EFE7; }
-.figure-card.hidden-from-video .figure-thumb { opacity: .55; }
-
-.figure-verdict { font-weight: 900; font-size: 12.5px; }
-.figure-verdict.yes { color: #0F7A4F; }
-.figure-verdict.no { color: #B42318; }
-.figure-verdict span { font-weight: 600; color: var(--text-dim); }
-
-.figure-reason { font-size: 12px; color: var(--text-dim); line-height: 1.4; }
 
 /* 2. Brand assets: four slots, then where they sit on a frame. */
 .brand-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
@@ -130,17 +89,11 @@
 
 .brand-facts { margin: 0; font-size: 12.5px; overflow-wrap: anywhere; }
 
-
 @media (max-width: 1150px) { .brand-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
 /* 3. Look: pick the source like a file on Extraction, see the frame, then adjust. */
-.look-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 16px; align-items: start; }
 
 .look-source { border: 2.5px solid var(--x-ink); }
-.look-source-detail { font-size: 12px; color: var(--text-dim); }
-.look-source.on .look-source-detail { color: inherit; }
-.look-strip { display: flex; gap: 3px; }
-.look-strip span { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--x-ink); }
 
 .look-frame {
   position: relative; aspect-ratio: 16 / 9; overflow: hidden; display: grid; place-items: center;
@@ -155,47 +108,12 @@
 .look-frame-panel b { font-size: 22px; line-height: 1.2; }
 .look-frame-panel span { font-size: 14px; }
 
-.look-adjust {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;
-  margin-top: 16px; align-items: start;
-}
 .look-art { grid-column: 1 / -1; }
 .look-role { display: grid; gap: 6px; margin-top: 12px; }
-.look-role-name { font-size: 12px; font-weight: 900; }
-.look-role .seg { flex-wrap: wrap; }
-.look-swatches { display: flex; flex-wrap: wrap; gap: 6px; }
-.look-swatch {
-  display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px 4px 5px; cursor: pointer;
-  font: inherit; font-size: 11px; font-weight: 800; color: var(--x-ink);
-  background: #fff; border: 2px solid var(--x-ink); border-radius: 99px;
-}
-.look-swatch.on { background: var(--c-blue); box-shadow: 2px 2px 0 var(--x-ink); }
-.look-hint { margin-top: 16px; }
 
-@media (max-width: 900px) { .look-top { grid-template-columns: minmax(0, 1fr); } }
+.look-role .seg { flex-wrap: wrap; }
 
 /* 3. Look: the styling beside the background art and its wash. */
-.assets-look { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
-
-.assets-look .toggle-row { width: 100%; margin: 6px 0 12px; }
-
-.assets-background {
-  width: 100%; max-height: 220px; object-fit: cover; border-radius: 10px;
-  border: 2px solid var(--x-ink); margin-bottom: 8px;
-}
-
-.assets-washes { display: grid; gap: 8px; }
-
-.assets-wash {
-  display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; text-align: left;
-  font: inherit; font-size: 13px; line-height: 1.4; cursor: pointer; color: var(--x-ink);
-  background: #fff; border: 2.5px solid var(--x-ink); border-radius: 10px;
-  box-shadow: 2px 2px 0 var(--x-ink);
-}
-
-.assets-wash.on { background: var(--c-yellow-soft); }
-
-.assets-wash .checkbox { flex: none; }
 
 /* 4. Final & transfer: what goes on, at a glance. */
 .assets-final { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 16px; align-items: start; }
@@ -208,28 +126,15 @@
 }
 
 @media (max-width: 900px) {
-  .assets-gather, .assets-look, .assets-final, .brand-editor, .brand-grid {
+  .assets-gather,
+.assets-final,
+.brand-editor,
+.brand-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
 /* --- extracted assets: a box per file, and cards that show without judging ------ */
-.asset-file {
-  margin-top: 18px; background: #fff; border: 2.5px solid var(--x-ink); border-radius: 14px;
-  box-shadow: 4px 4px 0 var(--x-ink); overflow: hidden;
-}
-.asset-file-head {
-  display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer;
-  list-style: none; background: var(--c-blue-soft, #DCEAFF);
-}
-.asset-file-head::-webkit-details-marker { display: none; }
-.asset-file[open] > .asset-file-head { border-bottom: 2.5px solid var(--x-ink); }
-.asset-file-chevron { display: grid; transition: transform .15s; }
-.asset-file[open] .asset-file-chevron { transform: rotate(90deg); }
-.asset-file-name { flex: 1; font-weight: 900; font-size: 14px; overflow-wrap: anywhere; }
-.asset-file-head .file-status { margin-top: 0; background: #fff; }
-.asset-file-head .file-status.left-out { background: var(--c-orange-soft); }
-.asset-file > .figure-grid { padding: 14px; }
 
 .assets-tabs .figure-card { grid-template-columns: 96px minmax(0, 1fr); }
 .figure-thumb { width: 96px; height: 96px; object-fit: contain; background: #fff;

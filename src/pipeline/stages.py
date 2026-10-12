@@ -1,18 +1,15 @@
 """The pipeline stages.
 
 One definition, used by the CLI, the API, the UI tabs, and the graph — so a stage
-cannot exist in the interface but not in the pipeline, which is exactly how v1's
-`workflow.py` and `run_chapter.py` drifted apart.
+cannot exist in the interface but not in the pipeline.
 
 Each stage:
   - consumes the previous stage's artifact
   - is governed by an AGENT.md the operator can edit (no code change, no redeploy)
   - produces an artifact on disk, at the path its `produces` field declares
 
-`AGENT.md` is the important part. v1 buried a 36 KB system prompt inside
-agents/scene_coder.py, where only a programmer could change how a stage behaved
-and every tweak was a commit. Skills move that into content: editable by whoever
-owns the material, diffable when output quality shifts, versionable in git.
+`AGENT.md` is the important part: a stage's instructions are content, editable by
+whoever owns the material, diffable when output quality shifts, versionable in git.
 """
 
 from __future__ import annotations
@@ -32,20 +29,6 @@ class Stage(StrEnum):
     REVIEWING = "reviewing"
     EXPORT = "export"
 
-    @classmethod
-    def _missing_(cls, value: object) -> Stage | None:
-        """Accept the names these stages used to have.
-
-        Two stages were renamed once their scope was clear: Planning became
-        Scene Plan, and Scripting became Script & Staging. Their old keys are
-        written into every project already on disk -- in review comments routed
-        back to a stage, in settings file names, in bookmarked URLs -- and a
-        rename that made those unreadable would be a rename that destroyed data.
-        """
-        return {
-            "planning": cls.SCENE_PLAN,
-            "scripting": cls.SCRIPT_STAGING,
-        }.get(str(value))
 
 
 @dataclass(frozen=True)
@@ -163,12 +146,9 @@ def downstream_of(stage: Stage) -> list[Stage]:
     """Stages invalidated when `stage` changes.
 
     Editing the Scene Plan agent makes Script & Staging, Studio and Reviewing
-    stale, and leaves Inputs and Extraction alone.
-
-    This computes *which* stages go stale, not *whether* they have. Answering
-    that needs content hashes of each stage's artifact, which nothing records
-    yet -- see docs/design/data-layout.md#the-manifest--incremental-rebuild for
-    the design and docs/open-questions.md for why it waits on stage execution.
+    stale, and leaves Inputs and Extraction alone. This is *which* stages come
+    after, not whether they are out of date: that is `upstream.py`, from what each
+    layer's last transfer was built from.
     """
     i = order(stage)
     return [s.key for s in STAGES[i + 1 :]]

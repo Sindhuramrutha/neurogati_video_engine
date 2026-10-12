@@ -7,7 +7,7 @@ instructions it follows.
     ---
     name: Graphics
     role: Realise each scene as a rendered clip.
-    tools: [search_asset_library, fetch_external_asset, render_scene]
+    tools: [read_plan, write_scenes]
     ---
 
     # instructions, in markdown
@@ -16,8 +16,8 @@ Why this shape:
 
 - **Capability is declared, not implicit.** An agent cannot use a tool it was not
   granted, so "what can this stage actually do?" is answerable by reading one file.
-- **It is content, not code.** v1 kept stage behaviour in a 36 KB Python string
-  inside agents/scene_coder.py; only a programmer could change how a stage behaved.
+- **It is content, not code.** Anyone who owns the material can change how a
+  stage behaves, without a programmer.
 - **Projects override, never edit, the defaults.** Tuning one project must not
   silently change another.
 
@@ -171,10 +171,3 @@ class AgentRegistry:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8")
         return path
-
-    def reset_override(self, stage: Stage) -> bool:
-        path = self._override_path(stage)
-        if path and path.exists():
-            path.unlink()
-            return True
-        return False

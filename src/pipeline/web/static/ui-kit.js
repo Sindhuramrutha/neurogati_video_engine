@@ -51,7 +51,7 @@ export const applicationState = {
   // save so a stale document cannot be written to a different project.
   documentsLoadedForSlug: null,
 
-  // Scripting. Narration keyed by plan section id, plus scenarios and
+  // Scripting. Narration keyed by plan section id, plus
   // variables; the server returns it already audited against the plan.
   script: null,
 
@@ -99,19 +99,6 @@ export const ICON = {
 };
 
 /* ---- formatting --------------------------------------------------------- */
-
-/** A label for an option the pipeline declares but does not read yet.
- *
- *  The control is shown, so the plan is visible, and disabled, so nobody spends
- *  time choosing a setting that changes nothing. Every Extraction and Planning
- *  option was operable and inert until this existed.
- */
-export function notBuiltYet(option) {
-  return option.implemented === false
-    ? `<span class="not-built" title="Saved values are kept, but no stage reads this yet."
-         >not built yet</span>`
-    : "";
-}
 
 export function formatFileSize(sizeInBytes) {
   if (sizeInBytes < 1024) return `${sizeInBytes} B`;
@@ -201,9 +188,8 @@ export function stageStateFor(stageKey) {
 const NOTICE_MILLISECONDS = { ok: 4000, warn: 8000, bad: 12000 };
 let stageNoticeTimer = null;
 
-/** A toast over the page, not a bar in it: it used to sit at the top of the
- *  stage and push everything down until the next navigation. Now it floats,
- *  leaves on its own, and a click sends it away sooner. */
+/** A toast over the page, not a bar in it, so it never pushes the stage down.
+ *  It floats, leaves on its own, and a click sends it away sooner. */
 export function showStageNotice(tone, message) {
   const host = select("#stage-notice");
   showNoticeIn(host, tone, message);
@@ -267,9 +253,9 @@ export async function refreshProjectSummary() {
  */
 const UPSTREAM_REDO = {
   assets: "Gather again",
-  "scene-plan": "Re-sync the plan",
+  "scene-plan": "Tell the planner what changed",
   "script-staging": "Go to the sections to redraft",
-  generation: "Decide the shots again",
+  generation: "Set up the scenes again",
   render: "Render again",
 };
 
@@ -352,9 +338,9 @@ document.addEventListener("click", event => {
  */
 const REMEMBERED_TABS = {
   assetsTab: "extracted",      // extracted | brand | look | final
-  planTab: "brief",            // brief | outline | check | final
+  planTab: "direction",        // direction | plan | final
   scriptTab: "setup",          // setup | write | check | final
-  generationTab: "setup",      // setup | decide | make | check | final
+  generationTab: "setup",      // setup | make | final
   extractionTab: "extract",
   reviewTab: "transcript",     // Reviewing: transcript | comments
   scriptEditorTab: "script",   // Script & Staging's writing pane: script | preview
@@ -430,15 +416,6 @@ export function clearProjectScopedState() {
   Object.assign(applicationState, structuredClone(PROJECT_SCOPED_STATE_DEFAULTS));
 }
 
-/**
- * True when a per-project document in state belongs to the project currently
- * selected. Stage views call this before persisting, so a save cannot be issued
- * against a document loaded for a different project.
- */
-export function isDocumentLoadedForCurrentProject(loadedForSlug) {
-  return loadedForSlug === applicationState.selectedProject?.slug;
-}
-
 /* ---- what each stage is for, behind an (i) beside its title ---------------
  *
  * The one-line description under every title said too little to help and took
@@ -479,21 +456,22 @@ const STAGE_INFO = {
     ],
   },
   "scene-plan": {
-    summary: "Shape the lesson: what is taught, in what order, for how long, and to what end.",
+    summary: "Agree the video's shape with the planning agent: its length, sections and scenes.",
     points: [
-      "Brief: what Extraction and Assets & Design handed on; the audience, objectives, lesson frame "
-        + "(Opening, Recap, Close) and preferences.",
-      "Outline: build it, then shape it -- time shared from the target, objective links and summaries "
-        + "proposed for you to accept. Each section gets the pictures from its own slides; attach or detach any.",
-      "Check: fixed rules, each pass / warning / fails; a failing check blocks the transfer.",
-      "Final & transfer: needs Assets & Design transferred first. Later stages read only the "
-        + "transferred plan, with the pictures, brand kit and look it carries.",
+      "Direction: say what the video should be, with the length in your own words and how strictly "
+        + "the slides' order is kept. The agent (AI) proposes the shape; you agree, or reply with "
+        + "what to change. Only then are the scenes written.",
+      "Plan: what was agreed -- sections, each a run of slides, and their scenes -- editable by "
+        + "hand, with each section's pictures.",
+      "Final & transfer: lists anything that blocks the transfer -- a broken strict slide order, a "
+        + "section with no scenes, Assets & Design not transferred. Later stages read only the "
+        + "transferred plan, with its scenes and the pictures, brand kit and look it carries.",
     ],
   },
   "script-staging": {
     summary: "Write each planned section as scenes.",
     points: [
-      "Setup: the sections the Scene Plan handed on, scenarios, variables, and leftover narration.",
+      "Setup: the sections the Scene Plan handed on, variables, and leftover narration.",
       "Write: each section as scenes — what is said and what is shown. The agent (AI) only drafts what you ask.",
       "Check: fixed rules; an unwritten section or an undefined {{VARIABLE}} blocks the transfer.",
       "Final & transfer: once transferred, later stages read only the transferred script.",

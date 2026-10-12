@@ -10,7 +10,7 @@ stage settings all need the same three properties:
    writing. Return a default so the UI still renders, log loudly so the operator
    knows, and leave the file exactly where it is for manual recovery.
 3. **Validation on read.** The stored shape is coerced through the model, so a file
-   hand-edited or written by an older version cannot reach the rest of the system
+   hand-edited or written to a different schema cannot reach the rest of the system
    as an unexpected shape.
 
 Before this module those three behaviours were reimplemented six times. They agreed
@@ -65,15 +65,21 @@ def write_text_atomically(destination_path: Path, text: str) -> None:
     destination_path.parent.mkdir(parents=True, exist_ok=True)
     temporary_path = destination_path.with_name(
         destination_path.name + TEMPORARY_WRITE_SUFFIX)
-    temporary_path.write_text(text, encoding="utf-8")
-    for attempt in range(40):
-        try:
-            temporary_path.replace(destination_path)
-            return
-        except PermissionError:
-            if attempt == 39:
-                raise
-            time.sleep(0.025)
+    try:
+        temporary_path.write_text(text, encoding="utf-8")
+        for attempt in range(40):
+            try:
+                temporary_path.replace(destination_path)
+                return
+            except PermissionError:
+                if attempt == 39:
+                    raise
+                time.sleep(0.025)
+    except BaseException:
+        # A write that failed part-way (a full disk) left a half file beside the
+        # real one; the real one is untouched, so the half one is only debris.
+        temporary_path.unlink(missing_ok=True)
+        raise
 
 
 def read_json_object(source_path: Path, description: str) -> dict | None:
@@ -139,8 +145,8 @@ class JsonDocumentStore[DocumentModel: BaseModel]:
         try:
             return self.model_type.model_validate(raw_document)
         except ValueError as invalid_shape:
-            # The file parsed as JSON but does not fit the model -- typically an
-            # older schema or a hand edit. Same rule as an unreadable file: never
+            # The file parsed as JSON but does not fit the model -- typically a
+            # different schema or a hand edit. Same rule as an unreadable file: never
             # overwrite, always report.
             logger.error(
                 "%s at %s does not match its expected shape (%s); using defaults "

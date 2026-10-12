@@ -1,9 +1,7 @@
 """Extraction — pull structured content out of the source documents.
 
-The stage that was declared and never written. Until now the Planning agent saw
-only the *names* of the source files, so asking it to plan a video about a
-document it could not read was a guarantee of invention: it would produce a
-plausible plan about the title.
+The later agents read this text, not file names: an agent asked to plan a video
+about a document it cannot read invents a plausible plan about the title.
 
 The output is deliberately **structural, not summarised**. Headings stay
 headings, tables stay tables, and nothing is paraphrased on the way in. Summarising

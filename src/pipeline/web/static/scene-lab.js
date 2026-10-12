@@ -9,17 +9,54 @@
  * - The resource library on the Setup tab is what the agent is shown each time
  *   it writes a scene; adding a file there is how it learns a technique.
  *
- * Writing is AI (up to a fixed number of calls per scene); running and checking
- * are not. A clip that fails a check is never used (`scene_lab.py`).
+ * Every scene is made by its agent, on the server (`scene_agent.py`): it writes,
+ * renders, looks at its own frames and improves the scene until the checks pass
+ * and the review says it teaches. Nothing waits on a question. Its steps and a
+ * Stop button are on the scene panel; the
+ * page refreshes itself while agents work. A clip that fails a check is never used.
  */
 
 import { requestJsonFromApi } from "/static/shared-client.js";
 import {
-  ICON, escapeHtml, hideProgress, icon, projectApiPath, refreshProjectSummary,
+  ICON, applicationState, escapeHtml, hideProgress, icon, projectApiPath, refreshProjectSummary,
   showProgress, showStageNotice,
 } from "/static/ui-kit.js";
 
-export const sceneLabState = { openId: null };
+export const sceneLabState = {
+  openId: null, navigate: null, agents: null, poll: null,
+  sectionOpen: {},      // section id -> what the person chose; absent: the default
+};
+
+const AGENT_LABELS = {
+  idle: "Not started", queued: "Queued", working: "Being made", done: "Made",
+  stopped: "Stopped", failed: "Could not be made",
+  interrupted: "Interrupted (the app restarted) — Make the missing resumes it",
+};
+
+/** Every scene's agent at a glance (for the bar and the cards). */
+export async function loadAgents() {
+  try {
+    sceneLabState.agents = await requestJsonFromApi(projectApiPath("/scene-agents"));
+  } catch (failure) {
+    console.error("could not read the scene agents", failure);
+    sceneLabState.agents = null;
+  }
+  return sceneLabState.agents;
+}
+
+export const agentOf = visualId =>
+  sceneLabState.agents?.scenes?.find(scene => scene.id === visualId) ?? null;
+
+/** While any agent works, look again in a few seconds -- never while you type. */
+export function keepWatching(rerender) {
+  clearTimeout(sceneLabState.poll);
+  if (!sceneLabState.agents?.running) return;
+  sceneLabState.poll = setTimeout(() => {
+    const typing = ["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName);
+    if (typing) keepWatching(rerender);
+    else rerender();
+  }, 4000);
+}
 
 const CHECK_LABELS = { pass: "Pass", warn: "Warning", fail: "Fails" };
 const RESOURCE_KINDS = [
@@ -51,35 +88,174 @@ export async function loadOpenScene() {
 /* ---- the bar on the Make tab ------------------------------------------------- */
 
 export function renderScriptedBar(preview) {
-  if (!preview.scripted) return "";
-  const waiting = preview.scripted_waiting;
+  if (!preview.scenes) return "";
+  const agents = sceneLabState.agents
+    ?? { running: 0, working: 0, queued: 0, interrupted: 0, failed: 0, scenes: [] };
+  const missing = preview.waiting;
+  const passed = preview.passed;
+  const toApprove = passed - preview.approved;
+  const busy = agents.running > 0;
+  const line = busy
+    ? `${agents.working} being made, ${agents.queued} queued (${agents.at_once} at a time, in
+       order, on the server). You can leave this page.`
+    : agents.interrupted
+      ? `${agents.interrupted} were interrupted by a restart: making the missing scenes resumes them.`
+      : missing ? "Each missing scene is made by its own agent, which keeps improving it until it is good."
+        : toApprove ? "Watch a scene's preview, then approve it — or approve every passed one at once."
+          : "Every scene passed and is approved: the render uses their clips.";
   return `
-    <div class="run-bar ${waiting ? "stale" : "ready"} scripted-bar">
-      <span class="run-icon">${icon(waiting ? ICON.alert : ICON.check, 17, 2.2)}</span>
+    <div class="run-bar ${!missing && !toApprove ? "ready" : "stale"} scripted-bar">
       <span class="run-text">
-        <b>${preview.scripted} scripted scene(s)${waiting ? `, ${waiting} without a clip that passed` : ""}</b>
-        <span>${waiting
-          ? `Each is written by the agent, run, checked, and fixed if a check fails: at most
-             ${preview.script_calls_at_most} model call(s) for these ${waiting}.`
-          : "Each has a clip that passed its checks. Open one to watch it, or to change its script."}</span>
+        <b>${preview.scenes} scenes: ${passed} passed, ${missing} still to make</b>
+        <span>${line}</span>
       </span>
-      ${waiting ? `<span class="plan-actions">
-        <button class="btn btn-accent" id="write-scripts-button">
-          Write the ${waiting} missing script(s) <span class="fact warn">AI</span></button>
-      </span>` : ""}
+      <span class="plan-actions">
+        ${missing && !busy ? `<button class="btn btn-accent" id="make-scenes-button">
+          Make the ${missing} missing <span class="fact warn">AI</span></button>` : ""}
+        ${toApprove ? `<button class="btn ${missing ? "" : "btn-accent"}"
+            id="approve-passed-button" data-count="${toApprove}">
+            Approve ${toApprove} passed</button>` : ""}
+        ${busy ? `<button class="btn" id="stop-all-button"
+            title="Working agents stop after the step they are on; the queue is dropped. Nothing is deleted.">
+            Stop all</button>` : ""}
+        <button class="btn" id="plan-visuals-button"
+                title="Read the transferred script again: new scenes are added, gone ones removed, unchanged ones keep their programs. No model is called.">
+          Set up again</button>
+        <button class="btn" id="rebuild-visuals-button"
+                title="Every scene's agent starts again from a fresh conversation">
+          Remake all <span class="fact warn">AI</span></button>
+      </span>
+    </div>`;
+}
+
+/* ---- every scene at a glance -------------------------------------------------------- */
+
+// In the order a scene goes through them; what its agent is doing now comes first.
+const SCENE_STATES = [
+  ["approved", "Approved"],
+  ["passed", "Passed, to watch"],
+  ["working", "Being made"],
+  ["queued", "Queued"],
+  ["stopped", "Stopped or failed"],
+  ["waiting", "Not started"],
+];
+
+function sceneState(visual) {
+  const status = agentOf(visual.id)?.status;
+  if (status === "working" || status === "queued") return status;
+  if (visual.approved_at) return "approved";
+  if (visual.clip_path) return "passed";
+  if (["failed", "stopped", "interrupted"].includes(status)) return "stopped";
+  return "waiting";
+}
+
+/** The scenes in rows, one collapsible row per section of the video. A row shows its
+ *  title, how many of its scenes are where, and a dot for each scene; it is open when
+ *  a scene in it is being made, unless the person opened or closed it themselves. */
+export function renderSceneSections(visuals, renderCard) {
+  const sections = [];
+  for (const visual of visuals) {
+    let section = sections.at(-1);
+    if (!section || section.id !== visual.section_id) {
+      section = { id: visual.section_id, title: visual.section_title, scenes: [] };
+      sections.push(section);
+    }
+    section.scenes.push(visual);
+  }
+  return sections.map(section => {
+    const states = section.scenes.map(sceneState);
+    const counts = SCENE_STATES
+      .map(([key, label]) => [label, states.filter(state => state === key).length])
+      .filter(([, count]) => count);
+    const byDefault = sections.length === 1 || states.includes("working");
+    const open = sceneLabState.sectionOpen[section.id] ?? byDefault;
+    return `
+      <details class="scene-section" data-section="${escapeHtml(section.id)}"
+               data-default="${byDefault ? "open" : "closed"}" ${open ? "open" : ""}>
+        <summary>
+          <span class="scene-section-title">${escapeHtml(section.title || "Untitled section")}</span>
+          <span class="scene-section-dots">${states.map(state => `
+            <i class="scene-status-dot ${state}"></i>`).join("")}</span>
+          <span class="muted">${section.scenes.length} scene(s) ·
+            ${counts.map(([label, count]) => `${count} ${label.toLowerCase()}`).join(" · ")}</span>
+        </summary>
+        <div class="shot-grid">${section.scenes.map(renderCard).join("")}</div>
+      </details>`;
+  }).join("");
+}
+
+/** One bar across all the scenes, coloured by where each one is, with the counts. */
+export function renderSceneStatus(visuals) {
+  if (!visuals.length) return "";
+  const counts = Object.fromEntries(SCENE_STATES.map(([key]) => [key, 0]));
+  visuals.forEach(visual => { counts[sceneState(visual)] += 1; });
+  const shown = SCENE_STATES.filter(([key]) => counts[key]);
+  return `
+    <div class="scene-status" aria-label="Where every scene is">
+      <div class="scene-status-bar">
+        ${shown.map(([key, label]) => `
+          <span class="scene-status-part ${key}" style="flex:${counts[key]}"
+                title="${escapeHtml(label)}: ${counts[key]}"></span>`).join("")}
+      </div>
+      <div class="scene-status-key">
+        ${shown.map(([key, label]) => `
+          <span><i class="scene-status-dot ${key}"></i>${escapeHtml(label)}
+            <b>${counts[key]}</b></span>`).join("")}
+        <span class="muted">of ${visuals.length} scene(s)</span>
+      </div>
     </div>`;
 }
 
 /* ---- the scene panel ------------------------------------------------------------ */
 
+function renderAgent(scene) {
+  const agent = scene.agent ?? { status: "idle", events: [], remarks: [] };
+  const busy = agent.running || ["queued", "working"].includes(agent.status);
+  const tokens = (agent.tokens?.prompt ?? 0) + (agent.tokens?.completion ?? 0);
+  return `
+    <div class="scene-agent ${escapeHtml(agent.status)}">
+      <div class="scene-agent-head">
+        <b>${escapeHtml(AGENT_LABELS[agent.status] ?? agent.status)}</b>
+        <span class="muted">${agent.renders} render(s) · ${agent.calls?.agent ?? 0} write and
+          ${agent.calls?.vision ?? 0} review call(s) · ${tokens.toLocaleString()} tokens this run</span>
+        <div class="spacer"></div>
+        ${busy ? `<button class="btn" id="stop-agent-button">Stop</button>` : ""}
+      </div>
+      ${busy && agent.doing ? `<p class="panel-sub"><b>${escapeHtml(agent.doing)}…</b></p>` : ""}
+      ${agent.status === "done" && agent.summary ? `
+        <p class="panel-sub"><b>It made:</b> ${escapeHtml(agent.summary)}</p>` : ""}
+      ${agent.remarks?.length ? `
+        <div class="agent-remarks"><b>The reviewer's remarks</b>
+          <ul>${agent.remarks.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>` : ""}
+      ${agent.status === "failed" ? `<p class="panel-sub">${escapeHtml(agent.error)}</p>` : ""}
+      ${!busy ? `
+        <div class="scene-actions">
+          <input id="scene-instruction" maxlength="600"
+                 placeholder="${scene.code ? "What to change, in your own words" : "Anything it should know (optional)"}">
+          <button class="btn ${scene.code ? "" : "btn-accent"}" id="agent-scene-button">
+            ${scene.code ? "Change it" : "Make it"} <span class="fact warn">AI</span></button>
+        </div>` : ""}
+      ${agent.events.length ? `
+        <details class="agent-steps" ${busy ? "open" : ""}>
+          <summary>What it did (${agent.events.length} step(s))</summary>
+          <ol>${agent.events.slice().reverse().map(event => `
+            <li><span class="agent-step-kind">${escapeHtml(event.kind.replaceAll("_", " "))}</span>
+              ${escapeHtml(event.text)}</li>`).join("")}</ol>
+        </details>` : ""}
+    </div>`;
+}
+
 export function renderScenePanel(scene) {
   if (!scene) return "";
   const { visual, checks } = scene;
   const failing = checks.filter(check => check.status === "fail").length;
-  const state = !scene.code ? ["blocked", "No script yet"]
+  const state = !scene.code ? ["blocked", "No program yet"]
     : !checks.length ? ["pending", "Not run yet"]
-      : failing ? ["stale", `${failing} check(s) fail: this clip is not used`]
-        : ["ready", "Passed its checks: this clip is what the scene shows"];
+      : failing ? ["stale", `${failing} check(s) fail: this scene cannot be rendered`]
+        : visual.approved_at ? ["ready", "Approved: the render uses this program's clip"]
+          : ["pending", "Passed every check: watch the preview, then approve it"];
+  const spec = scene.spec ?? {};
+  const range = scene.brief.time_range;
   return `
     <section class="panel scene-panel" data-scene="${escapeHtml(visual.id)}">
       <div class="panel-head">
@@ -89,16 +265,46 @@ export function renderScenePanel(scene) {
       </div>
       <p class="panel-sub mono">${escapeHtml(scene.folder || "No folder yet: it is made with the first script.")}</p>
       <div class="final-head ${state[0]} scene-state"><span class="run-text"><b>${state[1]}</b>
-        <span>${escapeHtml(visual.note || "")}</span></span></div>
+        <span>${escapeHtml(visual.note || "")}</span></span>
+        ${!failing && checks.length && scene.has_clip ? `
+          <button class="btn ${visual.approved_at ? "" : "btn-accent"}" id="approve-scene-button"
+                  data-approved="${visual.approved_at ? "1" : ""}">
+            ${visual.approved_at ? "Withdraw approval" : "Approve this scene"}</button>` : ""}
+        ${scene.has_preview ? `<button class="btn" id="studio-scene-button">Play in Studio</button>` : ""}
+      </div>
+
+      ${renderAgent(scene)}
+
+      <dl class="scene-spec">
+        <dt>Renderer</dt><dd>${escapeHtml(spec.renderer || "not chosen yet")}${
+          spec.approach ? ` — ${escapeHtml(spec.approach)}` : ""}</dd>
+        <dt>Narration</dt><dd>${scene.brief.narration_measured
+          ? `${scene.brief.seconds} s, measured from its voice` : "not measured yet"}${range
+          ? ` · ${range.start}–${range.end} s into its section${range.earlier_scenes_measured
+            ? "" : " (earlier scenes estimated)"}` : ""}</dd>
+        <dt>Source assets</dt><dd>${(spec.assets_used ?? []).length
+          ? spec.assets_used.map(a => escapeHtml(a.split(/[\\/]/).pop())).join(", ")
+          : "none used"}${scene.brief.assets?.pictures?.length
+          ? ` · ${scene.brief.assets.pictures.length} approved picture(s) offered` : ""}</dd>
+      </dl>
+      ${(spec.beats ?? []).length ? `
+        <details class="scene-beats" open><summary>Its ${spec.beats.length} visual beats</summary>
+          <ol>${spec.beats.map(beat => `<li><b>“${escapeHtml(beat.when_said)}”</b> — ${
+            escapeHtml(beat.shows)}</li>`).join("")}</ol>
+        </details>` : ""}
 
       <div class="scene-grid">
         <div>
-          ${scene.has_clip
-            ? `<video class="scene-clip" controls muted preload="metadata"
-                 src="${sceneFileUrl(visual.id, "render.mp4", scene.checked_at)}"></video>`
-            : `<div class="scene-clip scene-clip-empty">No clip yet</div>`}
-          <p class="panel-sub">Silent on purpose: the narration is added by the render. About
-            ${escapeHtml(String(scene.brief.seconds ?? "?"))} s, to fit what is said.</p>
+          ${scene.has_preview
+            ? `<video class="scene-clip" controls preload="metadata"
+                 src="${sceneFileUrl(visual.id, "preview.mp4", scene.checked_at)}"></video>
+               <p class="panel-sub">The preview: the program's clip with this scene's own
+                 narration.</p>`
+            : scene.has_clip
+              ? `<video class="scene-clip" controls muted preload="metadata"
+                   src="${sceneFileUrl(visual.id, "render.mp4", scene.checked_at)}"></video>
+                 <p class="panel-sub">Its clip, silent: it did not pass, so it has no preview.</p>`
+              : `<div class="scene-clip scene-clip-empty">No clip yet</div>`}
           ${checks.length ? `
             <table class="assets-rule-table plan-checks scene-checks">
               <tbody>${checks.map(check => `
@@ -120,16 +326,12 @@ export function renderScenePanel(scene) {
             <p><b>Said:</b> ${escapeHtml(scene.brief.narration ?? visual.narration_preview)}</p>
             <p><b>On screen:</b> ${escapeHtml(scene.brief.on_screen ?? visual.brief)}</p>
           </details>
-          <label class="scene-label" for="scene-code">scene.py</label>
+          <label class="scene-label" for="scene-code">${escapeHtml(scene.entry)}</label>
           <textarea id="scene-code" class="scene-code" spellcheck="false"
             placeholder="No script yet. Have the agent write one, or write it here.">${escapeHtml(scene.code)}</textarea>
           <div class="scene-actions">
-            <button class="btn btn-accent" id="run-scene-button" ${scene.code ? "" : "disabled"}>
+            <button class="btn" id="run-scene-button" ${scene.code ? "" : "disabled"}>
               Save and run</button>
-            <input id="scene-instruction" maxlength="400"
-                   placeholder="What to change, in your own words (optional)">
-            <button class="btn" id="write-scene-button">
-              ${scene.code ? "Rewrite it" : "Write it"} <span class="fact warn">AI · up to ${scene.maximum_attempts}</span></button>
           </div>
           ${scene.log ? `<details class="scene-log"><summary>What it printed (log.txt)</summary>
             <pre>${escapeHtml(scene.log)}</pre></details>` : ""}
@@ -185,6 +387,15 @@ const summarise = scene => {
 };
 
 export function wireSceneLab(rerender, visuals) {
+  // A section opened or closed by hand stays so through the page's own refreshes.
+  document.querySelectorAll("details.scene-section").forEach(row => {
+    row.addEventListener("toggle", () => {
+      const byDefault = row.dataset.default === "open";
+      if (row.open === byDefault && !(row.dataset.section in sceneLabState.sectionOpen)) return;
+      sceneLabState.sectionOpen[row.dataset.section] = row.open;
+    });
+  });
+
   document.querySelectorAll("[data-open-scene]").forEach(button => {
     button.onclick = async () => {
       sceneLabState.openId = button.dataset.openScene;
@@ -212,6 +423,22 @@ export function wireSceneLab(rerender, visuals) {
     await rerender();
   };
 
+  const approve = document.querySelector("#approve-scene-button");
+  if (approve) approve.onclick = () => busy(approve,
+    approve.dataset.approved ? "Withdrawing the approval" : "Approving the scene",
+    () => post(`/scenes/${encodeURIComponent(openId)}/approve`,
+      { approved: !approve.dataset.approved }));
+
+  const studio = document.querySelector("#studio-scene-button");
+  if (studio) studio.onclick = () => {
+    applicationState.studioWatch = {
+      slug: applicationState.selectedProject?.slug, kind: "scene",
+      url: sceneFileUrl(openId, "preview.mp4", String(Date.now())),
+      label: document.querySelector(".scene-panel h3")?.textContent ?? "Scene preview",
+    };
+    sceneLabState.navigate?.("studio");
+  };
+
   const run = document.querySelector("#run-scene-button");
   if (run) run.onclick = () => busy(run, "Running the scene's script",
     () => post(`/scenes/${encodeURIComponent(openId)}/run`,
@@ -220,52 +447,73 @@ export function wireSceneLab(rerender, visuals) {
     if (run) run.disabled = !event.target.value.trim();
   });
 
-  const write = document.querySelector("#write-scene-button");
-  if (write) write.onclick = () => {
-    const instruction = document.querySelector("#scene-instruction").value.trim();
-    if (!window.confirm("Have the agent write this scene's script?\n\nUp to 3 model calls: "
-        + "it writes, the script is run and checked, and it fixes what failed. "
-        + "The script there now is replaced.")) return undefined;
-    return busy(write, "Writing, running and checking the scene",
-      () => post(`/scenes/${encodeURIComponent(openId)}/write`, { instruction }));
-  };
-
-  const writeAll = document.querySelector("#write-scripts-button");
-  if (writeAll) writeAll.onclick = async () => {
-    const waiting = visuals.visuals.filter(v => v.kind === "scripted" && (!v.is_built || v.is_stale));
-    if (!window.confirm(`Write ${waiting.length} scene script(s)?\n\nAt most `
-        + `${waiting.length * 3} model calls. Each scene is written, run and checked in turn; `
-        + "you can leave this page and the ones already done are kept.")) return;
-    writeAll.disabled = true;
-    let passed = 0;
-    for (const [index, visual] of waiting.entries()) {
-      showProgress({ label: `Writing scene scripts: ${visual.section_title}`,
-        done: index, total: waiting.length });
-      try {
-        const scene = await post(`/scenes/${encodeURIComponent(visual.id)}/write`, {});
-        if (!scene.checks.some(check => check.status === "fail")) passed += 1;
-      } catch (failure) {
-        console.error("writing a scene failed", visual.id, failure);
-        showStageNotice("bad", `${visual.section_title}: ${failure.message}`);
-        break;
-      }
-    }
-    hideProgress();
-    await refreshProjectSummary();
-    await rerender();
-    showStageNotice(passed === waiting.length ? "ok" : "warn",
-      `${passed} of ${waiting.length} scene(s) passed their checks.`
-      + (passed === waiting.length ? "" : " Open the others to see what failed."));
-  };
-
-  const markAll = document.querySelector("#script-every-scene-button");
-  if (markAll) markAll.onclick = async () => {
-    if (!window.confirm("Make every scene a scripted scene?\n\nNothing is written yet: each "
-        + "scene waits for its script, which you write from the Make tab. Pictures already "
-        + "made for these scenes are no longer used.")) return;
+  const startAgents = async (button, body, notice) => {
+    button.disabled = true;
     try {
-      const marked = await post("/scenes/mark", {});
-      showStageNotice("ok", `${marked.changed} scene(s) are now scripted scenes, waiting for their scripts.`);
+      await post("/scene-agents", body);
+      showStageNotice("ok", notice);
+    } catch (failure) {
+      showStageNotice("bad", failure.message);
+    }
+    await loadAgents();
+    await rerender();
+  };
+
+  const agentScene = document.querySelector("#agent-scene-button");
+  if (agentScene) agentScene.onclick = () => {
+    const instruction = document.querySelector("#scene-instruction").value.trim();
+    if (!window.confirm("Make this scene?\n\nIt is written, rendered, checked, reviewed and "
+        + "fixed, for up to 6 rounds — paid model calls.")) return undefined;
+    return startAgents(agentScene, { visual_ids: [openId], instruction },
+      "It is being made on the server. Its steps appear here as it goes.");
+  };
+
+  const stop = document.querySelector("#stop-agent-button");
+  if (stop) stop.onclick = async () => {
+    stop.disabled = true;
+    await post(`/scenes/${encodeURIComponent(openId)}/agent/stop`, {});
+    showStageNotice("ok", "It stops after the step it is on.");
+    await loadAgents();
+    await rerender();
+  };
+
+  const makeAll = document.querySelector("#make-scenes-button");
+  if (makeAll) makeAll.onclick = () => {
+    const waiting = visuals.visuals.filter(v => !v.clip_path);
+    if (!window.confirm(`Make ${waiting.length} scene(s)?\n\nEach is written, rendered, checked, `
+        + "reviewed by looking at its frames, and fixed — up to 6 rounds, in the video's "
+        + "order, a few at a time, on the server. Paid model calls. You can leave this page; "
+        + "nothing will stop to ask you.")) return undefined;
+    return startAgents(makeAll, {}, `${waiting.length} scene(s) are being made on the server.`);
+  };
+
+  const stopAll = document.querySelector("#stop-all-button");
+  if (stopAll) stopAll.onclick = async () => {
+    stopAll.disabled = true;
+    try {
+      const done = await post("/scene-agents/stop", {});
+      showStageNotice("ok", `${done.stopped} scene agent(s) stopped: the queue is dropped and `
+        + "working ones stop after the step they are on. Nothing was deleted; Make the missing "
+        + "resumes them.");
+    } catch (failure) {
+      showStageNotice("bad", failure.message);
+    }
+    await loadAgents();
+    await rerender();
+  };
+
+  const approveAll = document.querySelector("#approve-passed-button");
+  if (approveAll) approveAll.onclick = async () => {
+    const count = approveAll.dataset.count;
+    if (!window.confirm(`Approve ${count} scene(s) whose programs passed every check?\n\n`
+        + "The render will use their clips as they are. Approving here does not mean you "
+        + "watched them: open any scene to watch its preview, and withdraw its approval "
+        + "there if it is not right.")) return;
+    approveAll.disabled = true;
+    try {
+      const done = await post("/scenes/approve-passed", {});
+      showStageNotice(done.not_passed ? "warn" : "ok", `${done.approved} scene(s) approved.`
+        + (done.not_passed ? ` ${done.not_passed} have no clip that passed, so are not.` : ""));
     } catch (failure) {
       showStageNotice("bad", failure.message);
     }
@@ -302,10 +550,4 @@ export function wireSceneLab(rerender, visuals) {
       await rerender();
     };
   });
-}
-
-/** Choosing "A scripted scene" in a kind picker goes to its own endpoint. */
-export async function markOneScripted(visualId) {
-  await post("/scenes/mark", { visual_ids: [visualId] });
-  sceneLabState.openId = visualId;
 }

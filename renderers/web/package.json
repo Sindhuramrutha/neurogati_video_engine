@@ -1,0 +1,11 @@
+{
+  "name": "pipeline-web-scenes",
+  "private": true,
+  "description": "Animation libraries a web scene may use, served locally to headless Chromium. Never loaded from a CDN.",
+  "dependencies": {
+    "animejs": "3.2.2",
+    "d3": "^7.9.0",
+    "gsap": "^3.13.0",
+    "three": "^0.170.0"
+  }
+}

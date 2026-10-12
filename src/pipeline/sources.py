@@ -1,9 +1,9 @@
 """Source-file admission — the single owner of "may this file enter a project?"
 
 Every source document entering the system passes through
-`validate_uploaded_source_file`. Nothing else is permitted to decide whether an
-upload is acceptable, so the answer cannot drift between the API, the CLI, and a
-future importer.
+`store_uploaded_source_file`. Nothing else is permitted to decide whether an
+upload is acceptable, so the answer cannot drift between the API, the CLI, and
+any other entry.
 
 Validation happens at the boundary, before a single byte is written, so a bad
 upload fails at the point it arrives rather than several stages later inside an
@@ -228,43 +228,6 @@ def check_source_file_content(original_file_name: str, suffix: str, head: bytes)
             f"{_BINARY_SIGNATURES[suffix]}. Check it opens, then save it again "
             f"in that format.",
         )
-
-
-def validate_uploaded_source_file(
-    original_file_name: str,
-    file_content: bytes,
-    destination_directory: Path,
-) -> AcceptedSourceFile:
-    """Admit a source file whose bytes are already in hand.
-
-    Kept for callers that genuinely hold the content -- tests, and any future
-    non-HTTP path. The HTTP upload uses `store_uploaded_source_file`, which
-    never holds a whole file in memory.
-    """
-    safe_file_name = check_source_file_name(original_file_name, destination_directory)
-
-    if len(file_content) == 0:
-        raise SourceFileRejected(original_file_name, "the file is empty")
-
-    if len(file_content) > MAXIMUM_SOURCE_FILE_SIZE_IN_BYTES:
-        actual_in_megabytes = len(file_content) / (1024 * 1024)
-        raise SourceFileRejected(
-            original_file_name,
-            f"the file is {actual_in_megabytes:.1f} MB, over the "
-            f"{describe_size_limit()} limit",
-        )
-
-    suffix = Path(safe_file_name).suffix.lower()
-    check_source_file_content(
-        original_file_name, suffix, file_content[:UPLOAD_CHUNK_SIZE_IN_BYTES])
-
-    return AcceptedSourceFile(
-        original_file_name=original_file_name,
-        safe_file_name=safe_file_name,
-        size_in_bytes=len(file_content),
-        suffix=suffix,
-        was_replaced=(destination_directory / safe_file_name).exists(),
-    )
 
 
 async def store_uploaded_source_file(

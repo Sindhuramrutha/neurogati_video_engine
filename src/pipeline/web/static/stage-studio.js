@@ -169,7 +169,7 @@ function renderPreview(composition) {
           · ${composition.frame_rate} fps</span></div>
       ${watch ? `
         <div class="studio-watch-head">
-          <span class="studio-watch-chip">Rendered video</span>
+          <span class="studio-watch-chip">${watch.kind === "scene" ? "Scene preview" : "Rendered video"}</span>
           <span class="mono muted studio-watch-file">${escapeHtml(watch.label || watch.file)}</span>
           <button class="btn" id="back-to-timeline" title="Show the timeline player again">
             Back to the timeline</button>
@@ -179,7 +179,7 @@ function renderPreview(composition) {
           ${renderStageFrame(composition, studioViewState.playheadMs)}
         </div>
         ${watch ? `<video class="studio-watch-video" controls autoplay preload="metadata"
-            src="${projectApiPath(`/output/${encodeURIComponent(watch.file)}`)}"></video>` : ""}
+            src="${watch.url ?? projectApiPath(`/output/${encodeURIComponent(watch.file)}`)}"></video>` : ""}
       </div>
 
       <div class="transport" ${watch ? "hidden" : ""}>
@@ -269,10 +269,8 @@ function renderStageFrame(composition, atMs) {
 
 /** Where the playhead line sits for `atMs`.
  *
- *  This used to be `calc(112px + X% * (100% - 112px) / 100%)`, which is not
- *  valid CSS: calc cannot multiply two percentages or divide by one. The browser
- *  discarded the whole rule, so the playhead never moved however the state
- *  changed. Multiplying by a plain number is valid.
+ *  Multiplied by a plain number: `calc` cannot multiply two percentages or
+ *  divide by one, and the browser discards the whole rule when it tries.
  */
 function playheadLeft(atMs, composition) {
   const fraction = Math.min(1, Math.max(0, atMs / visibleDurationMs(composition)));
@@ -390,7 +388,7 @@ function reportNarrationFailure(failure) {
 
 /** While narration is audible, the audio decides where the playhead is.
  *
- *  ADR 0001 again: audio is the clock. Advancing by wall-clock time alone lets
+ *  Audio is the clock. Advancing by wall-clock time alone lets
  *  the picture drift from the voice after a stall or a slow load.
  */
 function narrationClockMs(composition) {

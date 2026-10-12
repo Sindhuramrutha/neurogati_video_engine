@@ -3,9 +3,9 @@
 Rendering is not one button press. It is minutes a section, so it has to be
 visible while it runs, and it has to be something you can manage: line several
 up, reorder them, pause one, stop and delete one, retry one that failed, and
-see what finished and how long it took. Pressing Render three times used to
-start three renders of the same video at once, each three times slower, with
-nothing on screen to say so.
+see what finished and how long it took. Pressing Render three times
+would otherwise start three renders of the same video at once, each three times
+slower, with nothing on screen to say so.
 
 So renders go through one queue for the whole app (`projects/render-queue.json`):
 
@@ -178,6 +178,16 @@ def resume_job(job_id: str) -> dict[str, Any]:
     _change(edit)
     _wake.set()
     return queue_view()
+
+
+def drop_project(slug: str) -> None:
+    """Take every job of a project out of the queue, whatever its state (the project
+    is being deleted: nothing of it is kept, and a render under way is stopped by
+    `project_work.stop_everything`)."""
+    def edit(queue: RenderQueue) -> None:
+        queue.jobs = [job for job in queue.jobs if job.slug != slug]
+
+    _change(edit)
 
 
 def delete_job(job_id: str) -> dict[str, Any]:

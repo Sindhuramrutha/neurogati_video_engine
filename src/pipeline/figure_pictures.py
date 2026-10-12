@@ -1,8 +1,8 @@
 """How a figure's picture is changed: the one procedure every path follows.
 
 Four things change a picture -- the agent redrawing, editing or adding one,
-and the Review tab's upload and draw buttons. They used to each do it their own
-way, and two failures came of that:
+and the Review tab's upload and draw buttons. They share this one procedure,
+because done separately each had its own failure:
 
 - A drawn picture contained the whole slide. The image model was handed the
   slide's text as context with nothing saying it was context, and a style that

@@ -6,8 +6,8 @@ to be edited into the project's direction.
 
 **How to read it**
 
-- A box is a layer. Inside it are the actions it takes, in order, and at its
-  foot what it hands on.
+- Each band is a layer, top to bottom in the order the work flows. Inside it,
+  left to right, are the actions it takes, ending with what it hands on.
 - **(AI)** marks an action that calls a model. Everything else is a fixed rule
   or a person's choice.
 - A thick arrow is a **transfer**, labelled with what is handed on. A layer
@@ -20,7 +20,7 @@ flowchart TD
     %% ---------------------------------------------------------------- the layers
 
     subgraph INPUTS["1 · Inputs"]
-        direction TB
+        direction LR
         I1["Upload ONE source file<br/>deck · PDF · Word · Markdown · text"]
         I2["Preview it · Replace it · Remove it"]
         I3[/"sources/ — the one file"/]
@@ -28,7 +28,7 @@ flowchart TD
     end
 
     subgraph EXTRACTION["2 · Extraction"]
-        direction TB
+        direction LR
         E1["Extract: read text, headings, tables, figures,<br/>slide layout, backgrounds, styling<br/>handwriting OCR is optional (AI)"]
         E2["Review slide by slide<br/>fixed picture checks<br/>agent proposes fixes (AI) — you apply or discard"]
         E3[/"Transfer → the extraction"/]
@@ -36,7 +36,7 @@ flowchart TD
     end
 
     subgraph ASSETS["3 · Assets & Design"]
-        direction TB
+        direction LR
         A1["Extracted assets: gather every picture by slide<br/>trim plain borders · flag cut crops<br/>you leave out what you don't want"]
         A2["Brand assets: watermark · logo · intro · outro<br/>placed, sized, timed, trimmed, cross-faded"]
         A3["Look: the deck's styling or the renderer's own<br/>theme · colours · fonts · background art"]
@@ -45,19 +45,19 @@ flowchart TD
     end
 
     subgraph PLAN["4 · Scene Plan"]
-        direction TB
-        P1["Brief: audience · learning objectives<br/>lesson frame · target length · tone · language"]
-        P2["Build the outline by an approach<br/>follow the deck (rule) · group into ideas ·<br/>story first · concept first · question led (AI draft)"]
-        P3["Shape the lesson: Opening · Teach · Story · Recap · Close<br/>time shared from the target · objective links suggested<br/>one-line summaries (AI, proposals)"]
-        P6["Attach pictures: each section gets the pictures<br/>from its own slides by rule · attach or detach by hand"]
-        P4["Fixed checks · Assets & Design must be transferred"]
-        P5[/"Transfer → the plan, carrying<br/>section pictures · brand kit · look"/]
+        direction LR
+        P1["Setup: length in your own words · slide order<br/>(strict · nearly · loose · free) · audience (optional)<br/>language"]
+        P2["Conversation with the planning agent (AI)<br/>you say what the video should be ·<br/>it proposes the shape: length as understood,<br/>sections (runs of slides), minutes, scenes"]
+        P3["Code holds the slide order · a broken shape<br/>is sent back once · you agree or reply"]
+        P6["On agreement: each section broken into<br/>its scenes (AI, one call per section) ·<br/>pictures attached from its own slides"]
+        P4["Edit by hand · fixed checks ·<br/>Assets & Design must be transferred"]
+        P5[/"Transfer → the plan: sections · scenes ·<br/>section pictures · brand kit · look"/]
         P1 --> P2 --> P3 --> P6 --> P4 --> P5
     end
 
     subgraph SCRIPT["5 · Script & Staging"]
-        direction TB
-        S1["Write each section as scenes (AI)<br/>narration in the teacher's own voice<br/>+ what is on screen while it is said<br/>told the section's own pictures"]
+        direction LR
+        S1["Write each planned scene (AI)<br/>narration in the teacher's own voice<br/>+ what is on screen while it is said<br/>told the section's own pictures"]
         S2["Edit by hand · redraft a section (AI)"]
         S3["Fixed checks: every section written,<br/>length fits, teacher's voice, variables"]
         S4[/"Transfer → the script"/]
@@ -65,17 +65,17 @@ flowchart TD
     end
 
     subgraph GENERATION["6 · Generation"]
-        direction TB
-        G1["Decide each scene's shot by fixed rules<br/>the deck's slide › a picture attached to its section ›<br/>a chart › a drawn picture (AI) › words on screen"]
-        G2["Or a scripted scene: the agent writes scene.py (AI)<br/>it is run, and 8 fixed checks decide if its clip is used"]
-        G3["Make: on-screen words (AI) · pictures · diagrams · charts"]
-        G4["Fixed checks"]
-        G5[/"Transfer → frozen shots"/]
+        direction LR
+        G1["Set up one scene per scene of the script"]
+        G2["Each scene (AI), up to 3 rounds:<br/>write → render → fixed checks → review its frames → edit<br/>web page · Revideo · Manim · matplotlib · never stops to ask"]
+        G3["Fixed checks decide if a clip may be used"]
+        G4["You watch and approve each scene"]
+        G5[/"Transfer → frozen clips"/]
         G1 --> G2 --> G3 --> G4 --> G5
     end
 
     subgraph RENDER["7 · Render"]
-        direction TB
+        direction LR
         R1["Speak the narration (text-to-speech)<br/>the audio is the clock"]
         R2["Cut every shot to its narration · join the sections<br/>subtitles · timeline · chapters"]
         R3["Brand pass: logo · watermark · intro · outro<br/>the brand kit and look the plan carried"]
@@ -85,21 +85,21 @@ flowchart TD
     end
 
     subgraph STUDIO["8 · Studio"]
-        direction TB
+        direction LR
         T1["The timeline the render built<br/>viewer · inspector · tracks"]
         T2["Edit clips by hand · render again"]
         T1 --> T2
     end
 
     subgraph REVIEW["9 · Reviewing"]
-        direction TB
+        direction LR
         V1["Watch each version · chapters · transcript"]
         V2["Comment at a moment<br/>each comment is routed to the layer that can fix it"]
         V1 --> V2
     end
 
     subgraph EXPORT["10 · Export"]
-        direction TB
+        direction LR
         X1["The video and what travels with it<br/>transcript · chapters · subtitles · description"]
         X2[/"export/ — files to hand over"/]
         X1 --> X2
@@ -113,14 +113,14 @@ flowchart TD
     ASSETS == "pictures · brand kit · look" ==> PLAN
     PLAN == "the plan · section pictures · brand kit · look" ==> SCRIPT
     SCRIPT == "the script · the plan's pictures" ==> GENERATION
-    GENERATION == "frozen shots · the script · brand kit · look" ==> RENDER
+    GENERATION == "frozen clips · the script · brand kit · look" ==> RENDER
     RENDER == "a video version" ==> STUDIO
     RENDER == "a video version" ==> REVIEW
     RENDER == "a video version" ==> EXPORT
 
     %% ------------------------------------------- what runs across every layer
     subgraph ACROSS["Across every layer"]
-        direction TB
+        direction LR
         FLAGS{{"Change flags<br/>when a layer is transferred again,<br/>every layer after it is marked out of date<br/>and names the slides or sections that changed"}}
         BACK{{"Feedback<br/>a review comment is routed back<br/>to the layer that can fix it ·<br/>Studio edits go back to Render"}}
     end
@@ -130,7 +130,7 @@ flowchart TD
     classDef ai fill:#FFF4C9,stroke:#9A5B00,color:#1A1816
     classDef out fill:#D7F7EA,stroke:#0F7A4F,color:#1A1816
     classDef flag fill:#FFE0E0,stroke:#D92D20,color:#1A1816
-    class E2,P2,P3,S1,S2,G2,G3 ai
+    class E2,P2,P6,S1,S2,G2,G3 ai
     class I3,E3,A4,P5,S4,G5,R5,X2 out
     class FLAGS,BACK flag
 ```
@@ -156,7 +156,7 @@ flowchart TD
 | Assets & Design | `assets/library.json`, `brand.json` | `assets/library.confirmed.json` |
 | Scene Plan | `scene-plan/plan.json` | `scene-plan/plan.transferred.json`, with the assets it carries (after the first transfer) |
 | Script & Staging | `script-staging/script.json` | `script-staging/script.transferred.json` (after the first transfer) |
-| Generation | `generation/visuals.json`, `generation/scenes/` | `generation/visuals.transferred.json` (after the first transfer) |
+| Generation | `generation/visuals.json`, `generation/scenes/` (a folder per scene: program, agent record, clip) | `generation/visuals.transferred.json` (after the first transfer) |
 | Render | `reviewing/output/render-job.json` | a video version in `reviewing/output/` |
 | Studio | `studio/composition.json` | — |
 | Reviewing | `reviewing/review.json` | — |

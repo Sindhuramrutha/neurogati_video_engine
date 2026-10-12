@@ -6,7 +6,7 @@ tools: [read_plan, write_scenes, synthesize_speech, align_words, check_fidelity]
 
 # Script & Staging
 
-Plan to scenarios to scenes. Each scene gets spoken narration and a brief describing
+Plan to scenes. Each scene gets spoken narration and a brief describing
 what appears on screen.
 
 ## Narration

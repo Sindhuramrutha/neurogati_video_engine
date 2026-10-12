@@ -1,8 +1,8 @@
 """Text to speech — declared providers, one contract, swap without touching callers.
 
-v1 hardcoded Kokoro. That was fine until it was not: no GPU meant minutes per
-scene, no offline meant nothing at all, and changing it meant editing the audio
-code. Here a provider is a **declaration** — like tools and stage options — and
+A single hardcoded engine fails without a GPU (minutes per scene) or offline
+(nothing at all), and changing it means editing the audio code. A provider is a
+**declaration** — like tools and stage options — and
 the renderer only ever calls `synthesise_narration`.
 
 Every provider answers the same three questions before it is offered:
@@ -140,7 +140,7 @@ VOICE_PROVIDERS: tuple[VoiceProvider, ...] = (
         key="kokoro",
         label="Kokoro (local)",
         compute="local",
-        summary="Runs entirely on your machine, no network. What v1 used. Pulls "
+        summary="Runs entirely on your machine, no network. Pulls "
                 "roughly 1-2 GB of ML dependencies and is slow without a GPU.",
         required_module="kokoro",
         install_command="uv sync --extra audio",
@@ -325,7 +325,7 @@ def _write_silence(output_path: Path, duration_ms: int) -> None:
 def measure_audio_duration_ms(path: Path) -> int:
     """Measured, never estimated.
 
-    ADR 0001: audio is the clock. Guessing a duration from the word count is how
+    Audio is the clock. Guessing a duration from the word count is how
     animation drifts out of sync with narration, so the real file is measured
     even though every provider claims a length.
     """
@@ -382,7 +382,7 @@ def _speak_edge(text: str, output_path: Path, voice: str) -> list[WordTiming]:
 
     async def run() -> None:
         # Asked for explicitly: the default is sentence boundaries, which are
-        # too coarse to put a label on the word it names. An older edge-tts
+        # too coarse to put a label on the word it names. An edge-tts
         # without the argument still speaks; it just reports nothing.
         try:
             communicate = edge_tts.Communicate(
@@ -514,7 +514,7 @@ def synthesise_narration(
     """Speak `text` into `output_path`. The only entry point callers use.
 
     The returned duration is **measured from the file**, not estimated from the
-    text -- ADR 0001 makes audio the clock, and a clock that guesses is not one.
+    text -- audio is the clock, and a clock that guesses is not one.
     """
     provider = resolve_provider(provider_key)
 

@@ -28,16 +28,6 @@ node_modules/
 # --- secrets ---------------------------------------------------------------
 .env
 
-# --- vendored upstream source (vendor/README.md) ----------------------------
-#
-# Manim, Revideo and Motion Canvas, cloned shallowly so the code that drives
-# them can be read. Nothing imports or runs from here -- the working copies come
-# from pip and npm -- so it is 49MB of other people's code, under their own
-# licences, that this repository has no reason to carry. Delete these two lines
-# to commit it anyway; the pipeline behaves identically either way.
-vendor/
-!vendor/README.md
-
 # --- stray clones ----------------------------------------------------------
 # A nested git repository committed as a directory becomes a broken gitlink
 # that nobody can check out. Ignored so it cannot be staged by accident.

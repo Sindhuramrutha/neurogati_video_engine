@@ -1,7 +1,7 @@
 """Environment configuration, read in exactly one place.
 
-Same pattern as v1's config/settings.py, which was good design and survived a real
-provider migration as a config change -- typed here rather than hand-parsed.
+Typed settings rather than hand-parsed variables, so changing provider is a
+configuration change.
 """
 
 from __future__ import annotations
@@ -43,15 +43,12 @@ class Settings(BaseSettings):
     vision_api_key: str | None = None
     vision_model: str = "google/gemini-3.5-flash"
 
-    # Explicit, unlike v1 -- see docs/decisions/0003-durable-incremental-state.md.
-    # A dropped connection there surfaced as a failed scene with no code generated,
-    # losing minutes of work per scene.
+    # Explicit: a dropped connection otherwise surfaces as a failed scene with no
+    # code generated, losing minutes of work per scene.
     llm_timeout_seconds: float = 600.0
     llm_max_retries: int = 3
 
-    tts_voice: str = "af_heart"
-
-    # --- storage: files are the source of truth (ADR 0005) ---
+    # --- storage: files are the source of truth ---
     projects_dir: Path = REPO_ROOT / "projects"
 
     @property

@@ -12,7 +12,7 @@ and background in full, and a compact index of the rest of the file so it can
 act more widely when asked.
 
 Each file has its own conversations: a new one can be started at any time and
-an older one reopened. Kept at `extraction/agent.json`.
+a past one reopened. Kept at `extraction/agent.json`.
 """
 
 from __future__ import annotations
@@ -28,11 +28,8 @@ from pipeline.extraction import ExtractedDocument, ExtractionCollectionStore
 from pipeline.extraction_agent_pictures import agent_pictures, looked_at_summary
 from pipeline.extraction_edits import (
     BlockChange,
-    apply_changes,
     check_change,
     describe_change,
-    remember_for_undo,
-    undo_last,
     undo_point,
 )
 from pipeline.projects import Project
@@ -366,61 +363,3 @@ def ask_extraction_agent(
         del turns[:-MAXIMUM_TURNS_KEPT]
     store.save(threads)
     return view(project, file_name, conversation, conversations)
-
-
-def _find_turn(threads: AgentThreads, file_name: str, turn_id: str):
-    for conversation in threads.for_file(file_name):
-        for turn in conversation.turns:
-            if turn.id == turn_id:
-                return conversation, turn
-    return None, None
-
-
-def _proposal(project: Project, file_name: str, turn_id: str):
-    threads = AgentThreadStore(project.root).load()
-    conversation, turn = _find_turn(threads, file_name, turn_id)
-    if turn is None or turn.status != "proposed":
-        raise OperationFailed("That proposal is not open any more.")
-    return threads, conversation, turn
-
-
-def apply_proposal(slug: str, file_name: str, turn_id: str) -> dict[str, Any]:
-    """Apply every change in one proposal, and keep what it replaced for undo."""
-    from pipeline.extraction_run import extraction_page
-
-    project = require_project(slug)
-    threads, conversation, turn = _proposal(project, file_name, turn_id)
-    before, _after = apply_changes(project, file_name, turn.changes)
-    remember_for_undo(project, file_name, turn.id, before)
-    turn.status = "applied"
-    AgentThreadStore(project.root).save(threads)
-    return {
-        "thread": view(project, file_name, conversation, threads.for_file(file_name)),
-        "extraction": extraction_page(project),
-    }
-
-
-def discard_proposal(slug: str, file_name: str, turn_id: str) -> dict[str, Any]:
-    project = require_project(slug)
-    threads, conversation, turn = _proposal(project, file_name, turn_id)
-    turn.status = "discarded"
-    AgentThreadStore(project.root).save(threads)
-    return {"thread": view(project, file_name, conversation, threads.for_file(file_name))}
-
-
-def undo_agent_changes(slug: str, file_name: str) -> dict[str, Any]:
-    """Put back the blocks the last applied proposal changed."""
-    from pipeline.extraction_run import extraction_page
-
-    project = require_project(slug)
-    undone = undo_last(project, file_name)
-    store = AgentThreadStore(project.root)
-    threads = store.load()
-    conversation, turn = _find_turn(threads, file_name, undone["turn_id"])
-    if turn is not None:
-        turn.status = "undone"
-    store.save(threads)
-    return {
-        "thread": view(project, file_name, conversation, threads.for_file(file_name)),
-        "extraction": extraction_page(project),
-    }

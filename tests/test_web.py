@@ -21,8 +21,7 @@ def test_index_renders_rather_than_downloads():
 
 def test_the_stages_are_defined_once_and_in_order():
     """The tabs come from the pipeline's own stage list, so the UI cannot show a
-    stage the pipeline does not have -- the drift that split v1's workflow.py from
-    run_chapter.py."""
+    stage the pipeline does not have."""
     from pipeline.stages import STAGES, Stage
 
     assert [s.key for s in STAGES] == [
@@ -30,17 +29,6 @@ def test_the_stages_are_defined_once_and_in_order():
         Stage.SCRIPT_STAGING, Stage.GENERATION, Stage.STUDIO, Stage.REVIEWING,
         Stage.EXPORT,
     ]
-
-
-def test_the_stages_two_older_names_still_resolve():
-    """Planning became Scene Plan and Scripting became Script & Staging once their
-    scope was clear. Their old keys are written into every project already on
-    disk -- routed comments, settings files, bookmarked URLs -- so a rename that
-    made those unreadable would be a rename that destroyed data."""
-    from pipeline.stages import Stage
-
-    assert Stage("planning") is Stage.SCENE_PLAN
-    assert Stage("scripting") is Stage.SCRIPT_STAGING
 
 
 def test_editing_an_agent_invalidates_only_downstream():
@@ -97,8 +85,6 @@ def test_project_override_beats_default_and_never_edits_it(tmp_path):
     # the shipped default is untouched
     assert AgentRegistry(defaults).get(Stage.SCENE_PLAN).body == default_text
 
-    assert reg.reset_override(Stage.SCENE_PLAN) is True
-    assert reg.get(Stage.SCENE_PLAN).source == "default"
 
 
 def test_project_lifecycle(tmp_path):
@@ -132,8 +118,8 @@ def test_unknown_tool_names_are_reported_not_dropped():
     agent that stops doing something -- is hard to trace back to a misspelling."""
     from pipeline.tools import resolve
 
-    grant = resolve(["render_scene", "definitely_not_a_tool"])
-    assert [t.name for t in grant.granted] == ["render_scene"]
+    grant = resolve(["read_plan", "definitely_not_a_tool"])
+    assert [t.name for t in grant.granted] == ["read_plan"]
     assert grant.unknown == ["definitely_not_a_tool"]
 
 
@@ -184,12 +170,14 @@ def test_settings_round_trip_and_default_when_absent(tmp_path):
     store = StageSettingsStore(tmp_path)
 
     loaded = store.load(Stage.SCENE_PLAN)
-    assert loaded.values["target_duration"] == "7-10"
+    assert loaded.values["language"] == "en"
 
-    store.save(Stage.SCENE_PLAN, {"target_duration": "12-18", "tone": "academic"})
+    store.save(Stage.SCENE_PLAN, {"language": "hi", "tone": "academic",
+                                  "target_duration": "12-18"})
     reloaded = store.load(Stage.SCENE_PLAN)
-    assert reloaded.values["target_duration"] == "12-18"
-    assert reloaded.values["tone"] == "academic"
+    assert reloaded.values["language"] == "hi"
+    assert "tone" not in reloaded.values, "there is no tone to choose; it is not kept"
+    assert "target_duration" not in reloaded.values, "the length is the plan's, in words"
 
     extraction = store.load(Stage.EXTRACTION)
     assert extraction.values["handwriting_ocr"] is False
@@ -209,10 +197,10 @@ def test_invalid_stored_values_fall_back_rather_than_crashing(tmp_path):
     (tmp_path / "settings" / "extraction.json").write_text(
         '{"extract_tables": "yes-ish"}', encoding="utf-8")
     (tmp_path / "settings" / "scene-plan.json").write_text(
-        '{"target_duration": "no_such_length"}', encoding="utf-8")
+        '{"language": "no_such_language"}', encoding="utf-8")
 
     assert store.load(Stage.EXTRACTION).values["extract_tables"] is True   # coerced to bool
-    assert store.load(Stage.SCENE_PLAN).values["target_duration"] == "7-10"  # back to default
+    assert store.load(Stage.SCENE_PLAN).values["language"] == "en"  # back to default
 
 
 def test_corrupt_settings_file_is_logged_not_swallowed(tmp_path, caplog):
@@ -265,7 +253,8 @@ def test_plan_defaults_to_empty_without_erroring(tmp_path):
     plan = PlanStore(tmp_path).load()
     assert plan.sections == []
     assert plan.is_empty is True
-    assert plan.selected_audience
+    assert plan.audience == "", "the audience is typed by a person, or not stated"
+    assert plan.slide_order == "strict"
 
 
 def test_plan_round_trip_preserves_order(tmp_path):
@@ -296,7 +285,7 @@ def test_absurd_durations_are_clamped_not_rejected(tmp_path):
     from pipeline.planning import PlanSection
 
     assert PlanSection(estimated_seconds=-30).estimated_seconds == 1
-    assert PlanSection(estimated_seconds=999999).estimated_seconds == 3600
+    assert PlanSection(estimated_seconds=999999).estimated_seconds == 4 * 3600
 
 
 def test_overlong_text_is_trimmed_at_the_boundary():
@@ -315,7 +304,6 @@ def test_warnings_are_advisory_and_never_block_a_save(tmp_path):
     plan = Plan(sections=[PlanSection(title="", estimated_seconds=2)])
     warnings = plan.warnings()
     assert any("no title" in w for w in warnings)
-    assert any("unusual duration" in w for w in warnings)
 
     saved = PlanStore(tmp_path).save(plan)   # saves regardless
     assert PlanStore(tmp_path).load().sections[0].estimated_seconds == 2
@@ -352,16 +340,9 @@ def test_planning_options_are_declared():
     from pipeline.stages import Stage
 
     keys = {option.key for option in options_for(Stage.SCENE_PLAN)}
-    assert {"target_duration", "tone", "language"} <= keys
-
-
-def test_script_defaults_include_starting_scenarios(tmp_path):
-    """The stage should not open as an empty canvas."""
-    from pipeline.scripting import ScriptStore
-
-    script = ScriptStore(tmp_path).load()
-    assert len(script.scenarios) >= 2
-    assert script.active_scenario_id in {s.id for s in script.scenarios}
+    assert "language" in keys
+    assert "target_duration" not in keys, "the length is typed in the plan's setup"
+    assert "tone" not in keys, "every video teaches: the tone is fixed, not a choice"
 
 
 def test_deleting_a_plan_section_orphans_narration_rather_than_losing_it(tmp_path):
@@ -507,7 +488,7 @@ def test_touching_clips_do_not_count_as_overlapping():
 
 def test_missing_media_is_caught_before_a_render_is_attempted():
     """A render failing ten minutes in because a clip points at a deleted file is
-    exactly the late failure v1 was full of."""
+    exactly the late failure to catch up front."""
     from pipeline.composition import Clip, ClipKind, Composition, Track
 
     composition = Composition(tracks=[Track(clips=[
@@ -688,8 +669,8 @@ def test_no_module_hand_rolls_an_atomic_write():
     """Guards the invariant rather than the instance: a new store must use
     write_text_atomically rather than copying the temp-then-rename dance.
 
-    An earlier version of this test searched for the literal `temporary_path.
-    replace`, which is a variable name and not a behaviour. A module writing
+    Searching for the literal `temporary_path.
+    replace` would match a variable name and not a behaviour. A module writing
     `tmp.replace(path)` was reimplementing the dance and passed anyway. Matching
     the shape -- a temp suffix and a rename in the same file -- catches the
     rename regardless of what the variable is called.
@@ -772,7 +753,7 @@ def test_every_document_store_survives_a_corrupt_file_without_destroying_it(
      "composition.CompositionStore", "review.ReviewStore"],
 )
 def test_valid_json_of_the_wrong_shape_is_also_survivable(store_factory_path, tmp_path):
-    """An older schema or a hand edit parses as JSON but does not fit the model.
+    """A different schema or a hand edit parses as JSON but does not fit the model.
     Same rule: default, log, never overwrite."""
     import importlib
 

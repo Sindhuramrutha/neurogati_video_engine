@@ -19,8 +19,6 @@ from litestar.params import Body, FromPath
 from pydantic import BaseModel
 
 from pipeline.agent_runtime import (
-    ask_stage_agent,
-    draft_plan_with_agent,
     draft_section_script_with_agent,
 )
 from pipeline.agents import AgentRegistry
@@ -39,33 +37,24 @@ from pipeline.extraction_review import (
 from pipeline.generation import (
     plan_visuals,
     read_visuals,
-    set_scene_visual,
 )
-from pipeline.llm import describe_model
 from pipeline.operations import (
     OperationFailed,
-    accept_plan_draft,
     build_export,
     clear_timeline,
     confirm_extraction,
-    confirm_plan_matches_extraction,
     confirm_section_narration,
     decide_figure,
-    discard_plan_draft,
     extraction_page,
     list_voice_providers,
-    plan_from_slides,
     present_artifact,
     preview_source,
     read_export,
-    read_plan_draft,
     refresh_asset_library,
     render_video,
     run_extraction,
     save_artifact,
-    section_source_material,
     set_project_look,
-    slide_coverage,
 )
 from pipeline.orchestrator import (
     ask_the_orchestrator,
@@ -76,14 +65,12 @@ from pipeline.orchestrator import (
 from pipeline.planning import Plan, PlanStore
 from pipeline.projects import Project, ProjectStore
 from pipeline.review import Review, ReviewStore, chapters_from_plan
-from pipeline.scene_renderers import describe_scene_renderers, verify_scene_renderer
 from pipeline.scripting import Script, ScriptStore
 from pipeline.sources import (
     reduce_to_bare_file_name,
 )
 from pipeline.stage_options import StageSettingsStore
 from pipeline.stages import STAGES, Stage, downstream_of
-from pipeline.visual_build import build_visuals
 
 AGENTS_DIR = REPO_ROOT / "agents"
 
@@ -142,17 +129,6 @@ class LookChoice(BaseModel):
     use_source_styling: bool = False
 
 
-class BuildRequest(BaseModel):
-    # False builds only what is missing or stale, which is what a second press
-    # of the button should do.
-    rebuild: bool = False
-
-
-class VisualChoice(BaseModel):
-    kind: str | None = None
-    motion: str | None = None
-
-
 class AgentQuestion(BaseModel):
     question: str
     # Empty starts a new thread. The panel sends the id of the conversation it
@@ -168,17 +144,8 @@ class PageDeletion(BaseModel):
     pages: list[int]    # 1-based, as the page strip numbers them
 
 
-class PlanInstruction(BaseModel):
-    instruction: str = ""
-
-
 class UnwrittenSectionsInstruction(BaseModel):
     instruction: str = ""
-
-
-class DraftAcceptance(BaseModel):
-    # None accepts the whole draft; a list accepts just those sections.
-    section_ids: list[str] | None = None
 
 
 class SectionScriptInstruction(BaseModel):
@@ -461,32 +428,6 @@ def put_credentials(data: CredentialsEdit) -> dict[str, Any]:
 # --- running agents ---------------------------------------------------------
 
 
-@get("/api/model", sync_to_thread=False)
-def get_model_status() -> dict[str, Any]:
-    """Whether a model is reachable, and which one. Never includes the key."""
-    return describe_model()
-
-
-@post("/api/projects/{slug:str}/agent/{stage:str}/ask")
-async def ask_agent(
-    slug: FromPath[str], stage: FromPath[str], data: AgentQuestion
-) -> dict[str, Any]:
-    """Ask a stage's agent about this project. Writes nothing.
-
-    Async and off the event loop: the provider call can take the better part of a
-    minute under `llm_timeout_seconds`, and blocking the loop would freeze every
-    other request in the app while one question was answered.
-    """
-    import anyio
-
-    try:
-        return await anyio.to_thread.run_sync(
-            ask_stage_agent, slug, stage, data.question
-        )
-    except OperationFailed as failure:
-        raise ClientException(detail=str(failure)) from failure
-
-
 @post("/api/projects/{slug:str}/orchestrator/ask")
 async def ask_orchestrator(slug: FromPath[str], data: AgentQuestion) -> dict[str, Any]:
     """Ask the master agent. It decides which stage agents to put to work.
@@ -540,85 +481,6 @@ def delete_agent_conversation(
     """Forget one thread. Nothing the project produced is touched."""
     try:
         return forget_conversation(slug, conversation_id)
-    except OperationFailed as failure:
-        raise ClientException(detail=str(failure)) from failure
-
-
-@post("/api/projects/{slug:str}/plan/draft")
-async def draft_plan(slug: FromPath[str], data: PlanInstruction) -> dict[str, Any]:
-    """Have the Planning agent draft a plan. Kept as a pending draft; the plan
-    itself is not changed.
-
-    Deliberately *not* at `/agent/planning/draft-plan`. A literal `planning`
-    segment sitting where `/agent/{stage}/ask` expects a parameter shadowed it
-    for that one value: every stage but planning reached `ask`, and planning
-    alone 404'd -- the stage this feature exists for. Keeping the artifact routes
-    free of literal stage names makes the collision impossible rather than
-    merely fixed.
-    """
-    import anyio
-
-    try:
-        return await anyio.to_thread.run_sync(
-            draft_plan_with_agent, slug, data.instruction
-        )
-    except OperationFailed as failure:
-        raise ClientException(detail=str(failure)) from failure
-
-
-@get("/api/projects/{slug:str}/plan/draft", sync_to_thread=False)
-def get_plan_draft(slug: FromPath[str]) -> dict[str, Any]:
-    """The pending drafted plan, if there is one, and what accepting it would do."""
-    try:
-        return read_plan_draft(slug)
-    except OperationFailed as failure:
-        raise ClientException(detail=str(failure)) from failure
-
-
-@post("/api/projects/{slug:str}/plan/draft/accept", sync_to_thread=False)
-def accept_plan_draft_route(slug: FromPath[str], data: DraftAcceptance) -> dict[str, Any]:
-    """Take the drafted plan whole, or append chosen sections to the current plan."""
-    try:
-        return accept_plan_draft(slug, data.section_ids)
-    except OperationFailed as failure:
-        raise ClientException(detail=str(failure)) from failure
-
-
-@delete("/api/projects/{slug:str}/plan/draft", status_code=200, sync_to_thread=False)
-def discard_plan_draft_route(slug: FromPath[str]) -> dict[str, Any]:
-    try:
-        return discard_plan_draft(slug)
-    except OperationFailed as failure:
-        raise ClientException(detail=str(failure)) from failure
-
-
-@post("/api/projects/{slug:str}/plan/from-slides", sync_to_thread=False)
-def build_plan_from_slides(slug: FromPath[str]) -> dict[str, Any]:
-    """Replace the plan with one section per slide, in the deck's order.
-
-    Destructive and deliberately so: its whole purpose is to impose the deck's
-    order rather than negotiate with whatever sectioning was there.
-    """
-    try:
-        return plan_from_slides(slug)
-    except OperationFailed as failure:
-        raise ClientException(detail=str(failure)) from failure
-
-
-@get("/api/projects/{slug:str}/plan/slide-coverage", sync_to_thread=False)
-def get_slide_coverage(slug: FromPath[str]) -> dict[str, Any]:
-    """Whether the video still follows the deck: every slide, in order."""
-    try:
-        return slide_coverage(slug)
-    except OperationFailed as failure:
-        raise ClientException(detail=str(failure)) from failure
-
-
-@post("/api/projects/{slug:str}/plan/confirm-extraction", sync_to_thread=False)
-def confirm_plan_route(slug: FromPath[str]) -> dict[str, Any]:
-    """Record that the plan was checked against the current extraction."""
-    try:
-        return confirm_plan_matches_extraction(slug)
     except OperationFailed as failure:
         raise ClientException(detail=str(failure)) from failure
 
@@ -691,15 +553,6 @@ async def draft_unwritten_script_sections(
 
     try:
         return await anyio.to_thread.run_sync(draft_unwritten_sections, slug, data.instruction)
-    except OperationFailed as failure:
-        raise ClientException(detail=str(failure)) from failure
-
-
-@get("/api/projects/{slug:str}/script/sections/{section_id:str}/source", sync_to_thread=False)
-def get_section_source(slug: FromPath[str], section_id: FromPath[str]) -> dict[str, Any]:
-    """The full text of the content a plan section records, for writing from."""
-    try:
-        return section_source_material(slug, section_id)
     except OperationFailed as failure:
         raise ClientException(detail=str(failure)) from failure
 
@@ -900,101 +753,6 @@ def plan_scene_visuals(slug: FromPath[str]) -> dict[str, Any]:
         raise ClientException(detail=str(failure)) from failure
 
 
-@post("/api/projects/{slug:str}/visuals/build")
-async def build_scene_visuals(slug: FromPath[str], data: BuildRequest) -> dict[str, Any]:
-    """Make the pictures: draw the charts, and ask the image model for the rest.
-
-    Off the event loop: one image call per scene that needs one.
-    """
-    import anyio
-
-    try:
-        return await anyio.to_thread.run_sync(build_visuals, slug, data.rebuild)
-    except OperationFailed as failure:
-        raise ClientException(detail=str(failure)) from failure
-
-
-@post("/api/projects/{slug:str}/visuals/{visual_id:str}", sync_to_thread=False)
-def change_scene_visual(
-    slug: FromPath[str], visual_id: FromPath[str], data: VisualChoice
-) -> dict[str, Any]:
-    """Change what one scene shows, or how the camera moves over it."""
-    try:
-        return set_scene_visual(slug, visual_id, data.kind, data.motion)
-    except OperationFailed as failure:
-        raise ClientException(detail=str(failure)) from failure
-
-
-@get("/api/projects/{slug:str}/visuals/slides/{file_name:str}", sync_to_thread=False)
-def read_composed_slide(
-    slug: FromPath[str], file_name: FromPath[str],
-    projects: NamedDependency[ProjectService],
-) -> Response:
-    """A slide of a source deck, composed as a frame.
-
-    Its own route because it is its own folder: these are drawn from the deck
-    rather than made by the image model, and serving both from one path would
-    mean a request could not say which it meant. The name is reduced to a bare
-    file name first, so a crafted request cannot walk out of the folder.
-    """
-    project = projects.require(slug)
-    path = project.root / "generation" / "slides" / reduce_to_bare_file_name(file_name)
-    if not path.is_file():
-        raise NotFoundException(detail=f"no composed slide named {file_name}")
-    return Response(
-        content=path.read_bytes(),
-        media_type=MEDIA_TYPES_BY_SUFFIX.get(path.suffix.lower(), "image/png"),
-    )
-
-
-@get("/api/projects/{slug:str}/visuals/assets/{file_name:str}", sync_to_thread=False)
-def read_generated_asset(
-    slug: FromPath[str], file_name: FromPath[str],
-    projects: NamedDependency[ProjectService],
-) -> Response:
-    """A picture this stage made, by name.
-
-    Its own route rather than the extraction's: these files were produced here,
-    and serving both from one path would mean a request could not say which it
-    meant. The name is reduced to a bare file name first, so a crafted request
-    cannot walk out of the folder.
-    """
-    project = projects.require(slug)
-    path = project.root / "generation" / "assets" / reduce_to_bare_file_name(file_name)
-    if not path.is_file():
-        raise NotFoundException(detail=f"no generated picture named {file_name}")
-    return Response(
-        content=path.read_bytes(),
-        media_type=MEDIA_TYPES_BY_SUFFIX.get(path.suffix.lower(), "image/png"),
-    )
-
-
-@get("/api/scene-renderers", sync_to_thread=False)
-def get_scene_renderers() -> dict[str, Any]:
-    """Every scene renderer, with whether it is installed and whether it works.
-
-    Installed and working are different questions, and only the second one
-    matters: a renderer whose dependencies are all present can still fail on
-    this machine, and a page that showed it as available would be promising
-    animation that never arrives.
-    """
-    return describe_scene_renderers()
-
-
-@post("/api/scene-renderers/{key:str}/verify")
-async def verify_renderer(key: FromPath[str]) -> dict[str, Any]:
-    """Ask a renderer to draw a two-node diagram, and remember what happened.
-
-    Off the event loop: it starts a real renderer and waits for a real clip.
-    """
-    import anyio
-
-    try:
-        return await anyio.to_thread.run_sync(verify_scene_renderer, key)
-    except OperationFailed as failure:
-        raise ClientException(detail=str(failure)) from failure
-
-
 @get("/api/voices", sync_to_thread=False)
 def get_voice_providers() -> dict[str, Any]:
     """Every text-to-speech provider, with whether it is usable right now."""
@@ -1101,9 +859,9 @@ def media_response(
 ) -> Response:
     """A file response that answers HTTP Range requests.
 
-    **Range is the whole point.** A flat 200 meant no `Accept-Ranges` and no 206,
-    so a `<video>` or `<audio>` element had no way to seek and refused to start --
-    the file was fine and the player showed nothing.
+    **Range is the whole point.** A flat 200 means no `Accept-Ranges` and no 206,
+    so a `<video>` or `<audio>` element cannot seek and refuses to start --
+    the file is fine and the player shows nothing.
 
     `inline` is the other half: `attachment` downloads the file instead of
     playing it, the same trap that once made this app download its own index.

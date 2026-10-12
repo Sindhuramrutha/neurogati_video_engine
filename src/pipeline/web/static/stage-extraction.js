@@ -494,8 +494,6 @@ function renderPreviewPanel(sources, extraction) {
 
 /** The file itself, in the Preview tab: the same raw rendering as Inputs.
  *
- *  This tab used to say "Document rendering is not built yet" while the Inputs
- *  stage, one click away, drew the same deck slide by slide.
  */
 async function openPreviewedFile() {
   const host = document.querySelector("[data-raw-host]");
@@ -1146,9 +1144,8 @@ async function persistOption(stage, optionKey, newValue, page) {
   // A toggle that lags behind the pointer feels broken even when it works.
   //
   // In place, not by redrawing the stage. A redraw re-reads the settings from
-  // the server, and it used to run *before* the save was sent -- so it fetched
-  // the old value and put the switch straight back. Every toggle here looked
-  // dead while quietly saving.
+  // the server, and running before the save is sent would fetch the old value
+  // and put the switch straight back.
   settings.values[optionKey] = newValue;
   showOptionValue(optionKey, newValue);
 
@@ -1255,8 +1252,9 @@ function renderAgentTurn(turn, thread) {
     : turn.status ? `
       <div class="x-agent-actions">
         <span class="x-agent-status ${turn.status}">${AGENT_STATUS[turn.status] ?? turn.status}</span>
-        ${thread.undo_turn_id === turn.id
-          ? `<button class="btn" data-agent-undo="${turn.id}">Undo</button>` : ""}
+        ${undoneTogether(thread).at(-1) === turn.id
+          ? `<button class="btn" data-agent-undo="${turn.id}">${undoneTogether(thread).length > 1
+              ? `Undo all ${undoneTogether(thread).length}` : "Undo"}</button>` : ""}
       </div>` : "";
   return `
     <div class="x-agent-turn agent">
@@ -1268,13 +1266,28 @@ function renderAgentTurn(turn, thread) {
     </div>`;
 }
 
+/** The proposals the next Undo puts back: one, or every one "Apply all" applied. */
+const undoneTogether = thread => (thread.undo_turn_id || "").split(",").filter(Boolean);
+
+/** Picture changes call the image model: said before "Apply all" runs. */
+const PICTURE_ACTIONS = new Set(["redraw_image", "edit_image", "add_image"]);
+
+/** Set by the agent panel, which owns the requests; the chips call it. */
+let applyAllWaiting = null;
+/** While "Apply all" runs, its button counts down and cannot start a second run. */
+let applyingAll = false;
+
 /** The conversation on screen, so a message goes on in the one being read. */
 let agentConversationId = "";
+
+/** The thread on screen, for "Apply all" to walk its waiting proposals. */
+let currentThread = { turns: [] };
 
 function showAgentThread(thread) {
   const log = select(".x-agent-log");
   if (!log) return;
   agentConversationId = thread.conversation_id;
+  currentThread = thread;
 
   const history = select(".x-agent-history");
   if (history) {
@@ -1304,16 +1317,28 @@ function showAgentThread(thread) {
 function showProposalSlides(thread) {
   const box = select("[data-proposal-slides]");
   if (!box) return;
-  const waiting = [...new Set(thread.turns
-    .filter(turn => turn.status === "proposed" && turn.slide_number)
+  const proposed = thread.turns.filter(turn => turn.status === "proposed");
+  const waiting = [...new Set(proposed.filter(turn => turn.slide_number)
     .map(turn => turn.slide_number))].sort((a, b) => a - b);
+  const pictures = proposed.filter(turn =>
+    turn.changes.some(change => PICTURE_ACTIONS.has(change.action))).length;
   box.hidden = !waiting.length;
   box.innerHTML = waiting.length ? `
     <span>Changes waiting on slide${waiting.length === 1 ? "" : "s"}</span>
     ${waiting.map(number => `
       <button class="x-slide-chip" data-show-slide="${number}"
-              title="Show slide ${number}">${number}</button>`).join("")}` : "";
+              title="Show slide ${number}">${number}</button>`).join("")}
+    ${applyingAll ? `<button class="btn x-apply-all" disabled>Applying… ${proposed.length} left</button>`
+      : proposed.length > 1 ? `<button class="btn btn-accent x-apply-all" data-apply-all
+        data-count="${proposed.length}" data-pictures="${pictures}"
+        title="Apply every waiting change, slide by slide. One Undo puts them all back.">
+        Apply all ${proposed.length} changes</button>` : ""}` : "";
   box.onclick = event => {
+    const all = event.target.closest("[data-apply-all]");
+    if (all) {
+      applyAllWaiting?.(all);
+      return;
+    }
     const chip = event.target.closest("[data-show-slide]");
     if (!chip) return;
     const fileName = applicationState.previewFileName;
@@ -1363,6 +1388,46 @@ function wireAgentPanel() {
       button.disabled = false;
       button.textContent = original;
     }
+  };
+
+  applyAllWaiting = button => {
+    const count = Number(button.dataset.count);
+    const pictures = Number(button.dataset.pictures);
+    if (!window.confirm(`Apply all ${count} waiting changes, slide by slide?\n\n`
+        + (pictures ? `${pictures} of them redraw, edit or add a picture: each of those is `
+          + "a paid call to the image model.\n\n" : "")
+        + "One Undo puts every one of them back.")) return;
+    // One by one, so each slide's chip goes as its change lands; each apply names
+    // the batch so far, so one Undo still puts every one of them back.
+    busy(button, "Applying…", async () => {
+      const waiting = currentThread.turns.filter(turn => turn.status === "proposed");
+      applyingAll = true;
+      let batch = "";
+      let applied = 0;
+      for (const turn of waiting) {
+        showProgress({ label: `Applying the changes on slide ${turn.slide_number || "?"}`,
+          done: applied, total: waiting.length });
+        try {
+          const result = await post(`${path}/${turn.id}/apply`, { continues: batch });
+          batch = result.thread.undo_turn_id;
+          applied += 1;
+          showAgentThread(result.thread);
+          showChangedExtraction(result.extraction, fileName);
+        } catch (failure) {
+          applyingAll = false;
+          showAgentThread(currentThread);
+          hideProgress();
+          showStageNotice("warn", `${applied} applied; stopped at slide ${turn.slide_number || "?"}:`
+            + ` ${failure.message} ${waiting.length - applied} still waiting.`);
+          return;
+        }
+      }
+      applyingAll = false;
+      showAgentThread(currentThread);
+      hideProgress();
+      showStageNotice("ok", `All ${applied} changes applied. Transfer again to hand them to the `
+        + "next layer.");
+    })();
   };
 
   requestJsonFromApi(projectApiPath(`${path}?file_name=${encodeURIComponent(fileName)}`))

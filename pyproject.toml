@@ -5,19 +5,17 @@ description = "General-purpose pipeline that turns written academic content into
 requires-python = ">=3.12,<3.13"
 
 # Pinned to <3.13 because kokoro (TTS) declares Requires-Python >=3.10,<3.13.
-# uv provisions the interpreter itself, so this is a declaration rather than a
-# setup problem -- see docs/design/tech-stack.md#packaging--uv.
+# uv provisions the interpreter itself, so this is a declaration, not a setup step.
 
 dependencies = [
     # web
     "litestar[standard]>=2.13",
     "pydantic>=2.13",
     "pydantic-settings>=2.7",
-    # llm + orchestration
+    # llm
     "openai>=2.0",
     "instructor>=1.7",
-    "langgraph>=1.2",
-    "langchain-core>=1.0",
+    "httpx>=0.28",
     # ingestion
     "pypdf>=6.0",
     "python-docx>=1.2",
@@ -28,13 +26,14 @@ dependencies = [
     "edge-tts>=7.2.8",
     "pillow>=12.3.0",
     "python-pptx>=1.0.2",
+    # scene programs written as web pages are recorded in headless Chromium
+    "playwright>=1.62.0",
 ]
 
 [project.optional-dependencies]
 # Heavy ML deps, installed separately so the web app can run without them.
 audio = [
     "kokoro>=0.9.4",
-    "faster-whisper>=1.2",
 ]
 animation = [
     "manim>=0.21.0",
@@ -44,9 +43,7 @@ animation = [
 dev = [
     "pytest>=8.3",
     "pytest-asyncio>=0.25",
-    "httpx>=0.28",
     "ruff>=0.9",
-    "playwright>=1.62.0",
 ]
 
 [project.scripts]

@@ -1,7 +1,7 @@
 /**
  * Script & Staging — four tabs, in the order the work happens.
  *
- * 1. Setup: what the Scene Plan handed on, the scenarios and variables used
+ * 1. Setup: what the Scene Plan handed on, the variables used
  *    across the script, and narration left over from sections the plan dropped.
  * 2. Write: each section's narration as scenes, beside what it was planned
  *    with. The Scripting agent (AI) only writes empty sections, or one you ask
@@ -15,11 +15,11 @@
  *
  * A scene is what is said and what is on screen while it is said. The section
  * list is the *plan's*: narration is keyed by `PlanSection.id`, so renaming or
- * reordering in Planning carries it along, and narration a plan no longer has is
+ * reordering in the Scene Plan carries it along, and narration a plan no longer has is
  * shown -- to reattach or delete -- instead of only counted in a warning.
  *
  * Beside the editor sits everything the section was planned with: its summary,
- * target length, how it will be shown, its objectives and its source text, plus
+ * target length, how it will be shown, its planned scenes and its source text, plus
  * any review comments sent back to Scripting for it. Narration written against a
  * plan section or source that has since changed is flagged there.
  */
@@ -53,8 +53,6 @@ const scriptViewState = {
   draftingSectionId: null,
   isDraftingAll: false,
   draftInstruction: "",
-  sourceShownFor: null,
-  sourceCache: {},
 };
 
 /** Typing saves on a debounce rather than per keystroke: a POST per character
@@ -62,11 +60,6 @@ const scriptViewState = {
  *  next one. */
 const SCRIPT_AUTOSAVE_DELAY_MS = 700;
 const WORDS_PER_SECOND = 150 / 60;
-
-const APPROACH_LABELS = {
-  composition: "Composition", plot: "Plot", simulation: "Simulation",
-  code: "Code", still: "Still",
-};
 
 const isDrafting = () =>
   scriptViewState.isDraftingAll || scriptViewState.draftingSectionId !== null;
@@ -77,13 +70,6 @@ const formatClock = milliseconds => {
   const seconds = Math.round(milliseconds / 1000);
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 };
-/** Where a section draws from, in the source's own terms: "Slide 3", or the
- *  heading path. The project has one source file, so its name is never needed. */
-const referenceLabel = reference => reference.slide_number
-  ? `Slide ${reference.slide_number}${reference.heading_path.length
-      ? ` · ${reference.heading_path.at(-1)}` : ""}`
-  : reference.heading_path.length ? reference.heading_path.join(" › ") : "The whole source";
-
 export async function renderScriptStagingStage(stage, navigateToStage, renderAgentStage) {
   const body = select("#stage-body");
   if (!body.querySelector(".script-grid")) {
@@ -158,7 +144,6 @@ export async function renderScriptStagingStage(stage, navigateToStage, renderAge
             <div class="script-grid">
               ${renderSectionList(script, sections)}
               ${renderEditor(script, sections)}
-              <div>${renderSectionContext(script, sections)}</div>
             </div>`)}
           ${pane("check", renderScriptChecks(handoff))}
           ${pane("final", renderScriptFinal(script, sections, handoff, stage))}
@@ -180,19 +165,15 @@ function renderSetup(script, sections) {
       <section class="panel">
         <div class="panel-head"><h3>Handed on by the Scene Plan</h3></div>
         <p class="panel-sub">${sections.length} section(s), about ${Math.round(planned / 60)} min
-          planned${script.selected_audience ? `, for ${escapeHtml(script.selected_audience)}` : ""}.
-          Narration is written for these, and only these.</p>
+          planned${script.audience ? `, for ${escapeHtml(script.audience)}` : ""}.
+          Narration is written for these sections and their planned scenes, and only these.</p>
         <ol class="plan-final-list">
           ${sections.map(section => `<li><b>${escapeHtml(section.title || "Untitled section")}</b>
-            <span>${section.estimated_seconds} s</span></li>`).join("")}
+            <span>${section.estimated_seconds} s · ${(section.scenes ?? []).length} scene(s)</span>
+            </li>`).join("")}
         </ol>
-        ${(script.plan_objectives ?? []).length ? `
-          <p class="panel-sub" style="margin-top:12px">Objectives:</p>
-          <ol class="plan-final-list">${script.plan_objectives.map(o =>
-            `<li>${escapeHtml(o.text)}</li>`).join("")}</ol>` : ""}
       </section>
       <div>
-        ${renderScenarioPanel(script)}
         ${renderVariablePanel(script)}
       </div>
     </div>
@@ -405,8 +386,29 @@ function activeSectionScript(script) {
   return script.section_scripts.find(s => s.section_id === scriptViewState.activeSectionId);
 }
 
+/**
+ * The plan owns the scenes: a section's script scenes are its planned scenes, in
+ * order, by id. Narration written before the plan had scenes is matched to them
+ * in order; anything beyond them is shown as not in the plan.
+ */
+function alignToPlan(script, section) {
+  const planned = section?.scenes ?? [];
+  if (!planned.length) return;
+  const entry = ensureSectionScript(script, section.id);
+  const ids = new Set(planned.map(p => p.id));
+  if (!entry.scenes.some(scene => ids.has(scene.id))) {
+    entry.scenes.forEach((scene, index) => { if (planned[index]) scene.id = planned[index].id; });
+  }
+  const byId = new Map(entry.scenes.map(scene => [scene.id, scene]));
+  entry.scenes = [
+    ...planned.map(p => byId.get(p.id) ?? { id: p.id, narration: "", brief: "" }),
+    ...entry.scenes.filter(scene => !ids.has(scene.id)),
+  ];
+}
+
 function renderEditor(script, sections) {
   const section = sections.find(s => s.id === scriptViewState.activeSectionId);
+  alignToPlan(script, section);
   const written = activeSectionScript(script);
   const scenes = written?.scenes ?? [];
   const isScriptTab = applicationState.scriptEditorTab === "script";
@@ -428,13 +430,15 @@ function renderEditor(script, sections) {
         </button>
       </div>
 
+      ${renderSectionNotices(script, section)}
+
       ${isDraftingThis ? `
         <div class="notice ok" style="margin-bottom:10px">
           Writing “${escapeHtml(section.title)}” from its source text… Editing is paused
           until it is saved.
         </div>` : ""}
 
-      ${isScriptTab ? renderScenes(scenes) : renderPreview(script, scenes)}
+      ${isScriptTab ? renderScenes(scenes, section.scenes ?? []) : renderPreview(script, scenes)}
 
       <div class="editor-foot">
         <span id="section-word-count">Words ${words}</span>
@@ -447,11 +451,11 @@ function renderEditor(script, sections) {
     </div>`;
 }
 
-function renderScenes(scenes) {
+function renderScenes(scenes, planned = []) {
   // While a draft is written on the server, the page's copy of the script is
   // out of date: a save from it would put the old narration back over the draft.
   const locked = isDrafting() ? "disabled" : "";
-  if (!scenes.length) {
+  if (!scenes.length && !planned.length) {
     return `
       <div class="scenes-empty">
         <p>No narration yet. Draft this section from its source text, or add a scene and
@@ -468,8 +472,14 @@ function renderScenes(scenes) {
             <span class="outline-num">${index + 1}</span>
             <b>Scene ${index + 1}</b>
             <span class="mono muted scene-length" data-scene-length="${index}"
-              >~${secondsFor(countWords(scene.narration))}s</span>
+              >~${secondsFor(countWords(scene.narration))}s${
+                planned[index] ? ` of ${planned[index].seconds}s planned` : ""}</span>
             <div class="spacer"></div>
+            ${planned.length ? (index >= planned.length ? `
+              <span class="fact bad">not in the plan</span>
+              <button class="btn-icon danger" data-delete-scene="${index}" ${locked}
+                      title="Delete scene" aria-label="Delete scene">
+                ${icon(`<path d="M18 6 6 18M6 6l12 12"/>`, 14, 2)}</button>` : "") : `
             <button class="btn-icon" data-move-scene="${index}" data-direction="-1"
                     ${index === 0 ? "disabled" : locked} title="Move up" aria-label="Move scene up">
               ${icon(`<path d="M18 15l-6-6-6 6"/>`, 14, 2.2)}</button>
@@ -479,8 +489,10 @@ function renderScenes(scenes) {
               ${icon(`<path d="M6 9l6 6 6-6"/>`, 14, 2.2)}</button>
             <button class="btn-icon danger" data-delete-scene="${index}" ${locked}
                     title="Delete scene" aria-label="Delete scene">
-              ${icon(`<path d="M18 6 6 18M6 6l12 12"/>`, 14, 2)}</button>
+              ${icon(`<path d="M18 6 6 18M6 6l12 12"/>`, 14, 2)}</button>`}
           </div>
+          ${planned[index] ? `<p class="scene-planned"><b>Planned:</b> ${escapeHtml(planned[index].does)}${
+            (planned[index].slides ?? []).length ? ` · slide ${planned[index].slides.join(", ")}` : ""}</p>` : ""}
           <label class="scene-label" for="scene-narration-${index}">Said</label>
           <textarea id="scene-narration-${index}" class="scene-narration" spellcheck="true"
                     data-scene-field="narration" data-scene-index="${index}" ${locked ? "readonly" : ""}
@@ -492,7 +504,9 @@ function renderScenes(scenes) {
                     placeholder="Exactly what is shown: the real values and labels from the source."
                     >${escapeHtml(scene.brief)}</textarea>
         </div>`).join("")}
-      <button class="add-row" data-add-scene ${locked}>${icon(ICON.plus)} Add a scene</button>
+      ${planned.length ? `<p class="muted scene-planned-note">The scenes are decided on the Scene
+          Plan: add, remove or reorder them there.</p>`
+        : `<button class="add-row" data-add-scene ${locked}>${icon(ICON.plus)} Add a scene</button>`}
     </div>`;
 }
 
@@ -522,103 +536,28 @@ function renderPreview(script, scenes) {
     </div>`;
 }
 
-/* ---- what the section was planned with -------------------------------------- */
+/* ---- what needs the writer's attention on this section --------------------- */
 
-function renderSectionContext(script, sections) {
-  const section = sections.find(s => s.id === scriptViewState.activeSectionId);
-  const objectives = Object.fromEntries((script.plan_objectives ?? []).map(o => [o.id, o.text]));
-  const served = (section.objective_ids ?? []).map(id => objectives[id]).filter(Boolean);
+/** Shown in the editor only when there is something: narration that is out of
+ *  date with its plan, and review comments addressed to Scripting. */
+function renderSectionNotices(script, section) {
   const stale = (script.out_of_date ?? []).find(entry => entry.section_id === section.id);
   const comments = script.comments_by_section?.[section.id] ?? [];
-  const source = scriptViewState.sourceShownFor === section.id
-    ? scriptViewState.sourceCache[section.id] : null;
-
   return `
-    <div class="panel section-context" style="margin-bottom:14px">
-      <div class="panel-head"><h3>This section</h3></div>
-
-      ${stale ? `
-        <div class="notice warn context-notice">
-          <b>Out of date:</b> ${escapeHtml(stale.reasons.join(" and "))} since this was written.
-          <button class="btn" id="confirm-narration-button">Keep narration as is</button>
-        </div>` : ""}
-
-      ${comments.length ? `
-        <div class="context-comments">
-          <b>Review comments for Scripting</b>
-          ${comments.map(comment => `
-            <div class="context-comment">
-              <span class="mono">${formatClock(comment.at_ms)}</span>
-              <span><b>${escapeHtml(comment.author)}:</b> ${escapeHtml(comment.body)}</span>
-            </div>`).join("")}
-        </div>` : ""}
-
-      <p class="context-summary">${escapeHtml(section.summary || "No summary in the plan.")}</p>
-      <dl class="context-facts">
-        <dt>Target</dt><dd>~${section.estimated_seconds}s
-          (about ${Math.round(section.estimated_seconds * WORDS_PER_SECOND)} words)</dd>
-        ${section.rendering_approach ? `
-          <dt>Shown as</dt><dd><span class="fact approach ${escapeHtml(section.rendering_approach)}"
-            >${escapeHtml(APPROACH_LABELS[section.rendering_approach] ?? section.rendering_approach)}</span>
-            ${escapeHtml(section.rendering_reason ?? "")}</dd>` : ""}
-        ${served.length ? `
-          <dt>Objectives</dt><dd><ul>${served.map(o => `<li>${escapeHtml(o)}</li>`).join("")}</ul></dd>` : ""}
-        ${script.selected_audience ? `
-          <dt>Audience</dt><dd>${escapeHtml(script.selected_audience)}</dd>` : ""}
-      </dl>
-
-      <div class="context-sources">
-        <b>Source content</b>
-        ${(section.sources ?? []).length
-          ? `<div class="source-chips">${section.sources.map(r =>
-              `<span class="source-chip">${escapeHtml(referenceLabel(r))}</span>`).join("")}</div>
-             <button class="btn" id="toggle-source-button">
-               ${source ? "Hide source text" : "Show source text"}</button>`
-          : `<p class="muted edit-hint">The plan records no source for this section. Drafting
-               reads the whole extraction instead.</p>`}
-        ${source ? `
-          <div class="source-text">
-            ${source.parts.map(part => `
-              <div class="source-part">
-                <span class="scene-label">${escapeHtml(part.label)}</span>
-                <pre>${escapeHtml(part.text)}</pre>
-              </div>`).join("")}
-            ${source.missing.length ? `<p class="fact bad">No longer extracted:
-              ${source.missing.map(escapeHtml).join("; ")}</p>` : ""}
-          </div>` : ""}
-      </div>
-    </div>`;
-}
-
-function renderScenarioPanel(script) {
-  return `
-    <div class="panel" style="margin-bottom:14px">
-      <div class="panel-head">
-        <h3>Scenarios</h3>
-        <div class="spacer"></div>
-        <button class="btn-icon" id="add-scenario-button"
-                title="Add scenario" aria-label="Add scenario">${icon(ICON.plus, 15)}</button>
-      </div>
-      <p class="panel-sub">The same content, told for a different viewer.</p>
-
-      ${script.scenarios.length ? script.scenarios.map(scenario => `
-        <div class="scenario-row ${scenario.id === script.active_scenario_id ? "active" : ""}"
-             data-scenario="${scenario.id}" role="radio"
-             aria-checked="${scenario.id === script.active_scenario_id}" tabindex="0">
-          <span class="radio"></span>
-          <span class="body">
-            <span class="name">${escapeHtml(scenario.name || "Unnamed")}${
-              scenario.id === script.active_scenario_id
-                ? `<span class="badge-default">active</span>` : ""}</span>
-            <span class="desc">${escapeHtml(scenario.description)}</span>
-          </span>
-          <button class="btn-icon danger" data-delete-scenario="${scenario.id}"
-                  title="Remove" aria-label="Remove ${escapeHtml(scenario.name)}">
-            ${icon(`<path d="M18 6 6 18M6 6l12 12"/>`, 14)}
-          </button>
-        </div>`).join("")
-        : `<p class="muted" style="font-size:12.5px;margin:0">None yet.</p>`}
-    </div>`;
+    ${stale ? `
+      <div class="notice warn context-notice">
+        <b>Out of date:</b> ${escapeHtml(stale.reasons.join(" and "))} since this was written.
+        <button class="btn" id="confirm-narration-button">Keep narration as is</button>
+      </div>` : ""}
+    ${comments.length ? `
+      <div class="context-comments">
+        <b>Review comments for Scripting</b>
+        ${comments.map(comment => `
+          <div class="context-comment">
+            <span class="mono">${formatClock(comment.at_ms)}</span>
+            <span><b>${escapeHtml(comment.author)}:</b> ${escapeHtml(comment.body)}</span>
+          </div>`).join("")}
+      </div>` : ""}`;
 }
 
 function renderVariablePanel(script) {
@@ -819,7 +758,6 @@ function wireScriptingStage(stage, navigateToStage, renderAgentStage) {
   wireScenes(change);
   wireSectionContext(rerender);
   wireStrandedNarration(change);
-  wireScenarios(change);
   wireVariables(change);
 }
 
@@ -1042,28 +980,6 @@ async function flushPendingSave() {
 function wireSectionContext(rerender) {
   const sectionId = scriptViewState.activeSectionId;
 
-  const toggle = select("#toggle-source-button");
-  if (toggle) {
-    toggle.onclick = async () => {
-      if (scriptViewState.sourceShownFor === sectionId) {
-        scriptViewState.sourceShownFor = null;
-        await rerender();
-        return;
-      }
-      if (!scriptViewState.sourceCache[sectionId]) {
-        try {
-          scriptViewState.sourceCache[sectionId] = await requestJsonFromApi(
-            projectApiPath(`/script/sections/${encodeURIComponent(sectionId)}/source`));
-        } catch (sourceFailure) {
-          showStageNotice("bad", `Could not load the source — ${sourceFailure.message}`);
-          return;
-        }
-      }
-      scriptViewState.sourceShownFor = sectionId;
-      await rerender();
-    };
-  }
-
   const keep = select("#confirm-narration-button");
   if (keep) {
     keep.onclick = () => runScriptAction({
@@ -1105,46 +1021,6 @@ function wireStrandedNarration(change) {
       });
     };
   });
-}
-
-function wireScenarios(change) {
-  document.querySelectorAll("[data-scenario]").forEach(row => {
-    const activate = () => change(script => {
-      script.active_scenario_id = row.dataset.scenario;
-    });
-    row.onclick = event => {
-      if (event.target.closest("[data-delete-scenario]")) return;
-      activate();
-    };
-    row.onkeydown = event => {
-      if (event.key === "Enter" || event.key === " ") { event.preventDefault(); activate(); }
-    };
-  });
-
-  document.querySelectorAll("[data-delete-scenario]").forEach(button => {
-    button.onclick = event => {
-      event.stopPropagation();
-      change(script => {
-        script.scenarios = script.scenarios
-          .filter(s => s.id !== button.dataset.deleteScenario);
-        // Never leave the active scenario pointing at something deleted.
-        if (script.active_scenario_id === button.dataset.deleteScenario) {
-          script.active_scenario_id = script.scenarios[0]?.id ?? null;
-        }
-      });
-    };
-  });
-
-  select("#add-scenario-button").onclick = () => {
-    const name = window.prompt("Scenario name");
-    if (!name?.trim()) return;
-    change(script => {
-      script.scenarios.push({
-        id: newItemIdentifier(),
-        name: name.trim(), description: "",
-      });
-    });
-  };
 }
 
 function wireVariables(change) {

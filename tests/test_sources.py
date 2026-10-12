@@ -7,17 +7,54 @@ outside the project.
 """
 
 import io
+from pathlib import Path
 
 import pytest
 
 from pipeline.sources import (
     MAXIMUM_SOURCE_FILE_SIZE_IN_BYTES,
+    UPLOAD_CHUNK_SIZE_IN_BYTES,
     AcceptedSourceFile,
     SourceFileRejected,
+    check_source_file_content,
+    check_source_file_name,
+    describe_size_limit,
     reduce_to_bare_file_name,
     sanitize_source_file_name,
-    validate_uploaded_source_file,
 )
+
+
+def validate_uploaded_source_file(
+    original_file_name: str,
+    file_content: bytes,
+    destination_directory: Path,
+) -> AcceptedSourceFile:
+    """Admit a file whose bytes are in hand: the checks the streaming upload makes."""
+    safe_file_name = check_source_file_name(original_file_name, destination_directory)
+
+    if len(file_content) == 0:
+        raise SourceFileRejected(original_file_name, "the file is empty")
+
+    if len(file_content) > MAXIMUM_SOURCE_FILE_SIZE_IN_BYTES:
+        actual_in_megabytes = len(file_content) / (1024 * 1024)
+        raise SourceFileRejected(
+            original_file_name,
+            f"the file is {actual_in_megabytes:.1f} MB, over the "
+            f"{describe_size_limit()} limit",
+        )
+
+    suffix = Path(safe_file_name).suffix.lower()
+    check_source_file_content(
+        original_file_name, suffix, file_content[:UPLOAD_CHUNK_SIZE_IN_BYTES])
+
+    return AcceptedSourceFile(
+        original_file_name=original_file_name,
+        safe_file_name=safe_file_name,
+        size_in_bytes=len(file_content),
+        suffix=suffix,
+        was_replaced=(destination_directory / safe_file_name).exists(),
+    )
+
 
 # --- path traversal ----------------------------------------------------------
 
@@ -236,7 +273,7 @@ async def test_an_empty_upload_is_refused(tmp_path):
     ("notes.md", b"PK\x03\x04\x00\x00 binary"),
 ])
 async def test_contents_that_contradict_the_extension_are_refused(file_name, content, tmp_path):
-    """Passed by name, the file used to fail minutes later inside extraction
+    """Passed by name, the file would fail minutes later inside extraction
     with an error about zip archives."""
     from pipeline.sources import store_uploaded_source_file
 
@@ -262,7 +299,7 @@ async def test_a_pdf_header_after_leading_junk_is_still_a_pdf(tmp_path):
 
 async def test_a_second_upload_under_the_same_name_is_reported_as_a_replacement(tmp_path):
     """Two different files can sanitise to one name -- "Chapter 4: Networks" and
-    "Chapter 4_ Networks" -- and the loser used to vanish with an "accepted"."""
+    "Chapter 4_ Networks" -- and the loser must not vanish with an "accepted"."""
     from pipeline.sources import store_uploaded_source_file
 
     first = await store_uploaded_source_file(

@@ -20,8 +20,7 @@ import {
   applicationState, projectApiPath, refreshProjectSummary, showStageNotice,
 } from "/static/ui-kit.js";
 
-/** Short id for a new list item. One definition; it was previously inlined as
- *  `crypto.randomUUID().replace(...)` in nine places. */
+/** Short id for a new list item. One definition, used by every stage. */
 export function newItemIdentifier() {
   return crypto.randomUUID().replace(/-/g, "").slice(0, 12);
 }
@@ -76,12 +75,11 @@ export async function editStageDocument({
   applyEdit(applicationState[documentKind]);
 
   // The body is fixed *here*, straight after the edit and before any redraw.
-  // Every stage's render loads its document from the server, and the payload
-  // used to be built after the optimistic redraw -- from a document that redraw
-  // had just replaced with the unedited server copy. So every click-edit on
-  // Planning, Scripting, Studio and Reviewing was sent back unchanged and
-  // silently lost: choosing an audience, a scenario, hiding a track. Only typing
-  // survived, because it saves without redrawing.
+  // Every stage's render loads its document from the server, so a payload built
+  // after the optimistic redraw would come from a document that redraw had just
+  // replaced with the unedited server copy, and every click-edit (an audience,
+  // hiding a track) would be sent back unchanged and silently lost.
+  // Typing is safe, because it saves without redrawing.
   const payload = JSON.stringify(buildPayload(structuredClone(applicationState[documentKind])));
 
   if (!silent) await rerender();

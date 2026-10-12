@@ -13,10 +13,11 @@ file.
 
 This module opens each one and decides three things:
 
-- **Trim.** The uniform border around the picture is measured and removed, and
-  the trimmed copy is kept beside the original under a name derived from its
-  content. The original is never touched: the trim is a guess about framing, and
-  a guess that overwrites the source is not reversible.
+- **Trim.** The uniform border around the picture is measured and removed,
+  keeping a small margin around the ink, and the trimmed copy is kept beside
+  the original under a name derived from its content. The original is never
+  touched: the trim is a guess about framing, and a guess that overwrites the
+  source is not reversible.
 - **Reject.** Blank, near-blank, a sliver, or too small to read once trimmed --
   these are not proposed for use. Somebody can still choose one; the flag says
   what is wrong with it, not what they are allowed to do.
@@ -55,6 +56,12 @@ EDGE_INK_FRACTION = 0.10
 
 # Trimming less than this is not worth a second file on disk.
 SMALLEST_WORTHWHILE_TRIM = 0.03
+
+# The margin kept around the ink, as a share of the picture's longer side. Trimmed
+# flush, a label at the edge of a diagram touches the frame of the picture, and on
+# screen it reads as cut off.
+KEPT_MARGIN_FRACTION = 0.04
+SMALLEST_KEPT_MARGIN = 12
 
 PREPARED_DIRECTORY = "assets/prepared"
 
@@ -141,6 +148,11 @@ def prepare_figure(project_root: Path, asset_path: str) -> PreparedFigure:
         return PreparedFigure(width=width, height=height, flags=[FigureFlag.BLANK])
 
     cut_edges: list[str] = []
+    left, top, right, bottom = box
+    margin = max(SMALLEST_KEPT_MARGIN,
+                 round(KEPT_MARGIN_FRACTION * max(right - left, bottom - top)))
+    box = (max(0, left - margin), max(0, top - margin),
+           min(width, right + margin), min(height, bottom + margin))
     trimmed = picture.crop(box)
     kept = (trimmed.width * trimmed.height) / max(1, width * height)
     trimmed_fraction = round(1 - kept, 3)
@@ -161,7 +173,7 @@ def prepare_figure(project_root: Path, asset_path: str) -> PreparedFigure:
         flags.append(FigureFlag.BLANK)
     elif cut_edges := _edges_ink_runs_off(picture, mask):
         # Asked of the picture as it was stored, not of the trimmed copy: after
-        # trimming, every figure's ink is at the edge by construction, so a
+        # trimming, every figure's ink is near the edge by construction, so a
         # diagram drawn inside a box would flag every time and the flag would
         # mean nothing. Ink at the *original* edge is the signal -- there was no
         # margin there, because something was cut through.

@@ -66,9 +66,9 @@ def test_an_empty_plan_fails_and_warnings_do_not_block(project_root):
     slug, project = scripted_project("Checks")
     assert statuses(project)["sections"] == PASS
     plan = PlanStore(project.root).load()
-    plan.sections[0].estimated_seconds = 3            # unusually short: a warning
+    plan.sections[0].title = ""                       # untitled: a warning
     PlanStore(project.root).save(plan)
-    assert statuses(project)["durations"] == WARN
+    assert statuses(project)["titles"] == WARN
     transfer_plan(slug)                                # allowed
 
     PlanStore(project.root).save(plan.model_copy(update={"sections": []}))

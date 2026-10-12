@@ -17,15 +17,18 @@ from pipeline.extraction import (
 )
 from pipeline.operations import OperationFailed
 from pipeline.planning import (
-    LearningObjective,
     Plan,
     PlanSection,
     PlanStore,
     SourceReference,
 )
-from pipeline.rendering import _slides_for_narration
+from pipeline.rendering import _slides_with_scenes
 from pipeline.script_drafting import DraftedScene, DraftedSection
 from pipeline.scripting import Script, ScriptScene, ScriptStore, ScriptVariable, SectionScript
+
+
+def _slides_for_narration(narration: str) -> list[str]:
+    return [text for text, _scene in _slides_with_scenes(narration)]
 
 
 @pytest.fixture
@@ -64,15 +67,11 @@ def planned_project(name, *, extraction=CHAPTER):
     project = operations.require_project(slug)
     (project.sources_dir / "chapter.docx").write_text("source", encoding="utf-8")
     ExtractionStore(project.root).save(Extraction(documents=[extraction]))
-    objective = LearningObjective(text="Explain how a neural signal is recorded")
     PlanStore(project.root).save(Plan(
-        learning_objectives=[objective],
-        selected_audience="Students new to the topic",
+        audience="Students new to the topic",
         sections=[
             PlanSection(id="s1", title="Signals", summary="How small the signal is.",
-                        estimated_seconds=40, sources=[reference("Signals")],
-                        rendering_approach="plot", rendering_reason="Real amplitudes on axes.",
-                        objective_ids=[objective.id]),
+                        estimated_seconds=40, sources=[reference("Signals")]),
             PlanSection(id="s2", title="Electrodes", summary="What an electrode detects.",
                         estimated_seconds=40, sources=[reference("Electrodes")]),
             PlanSection(id="s3", title="Amplifiers", summary="Why amplification comes first.",
@@ -87,6 +86,7 @@ class FakeScriptModel:
 
     def __init__(self, fail_for=(), during_call=None):
         self.prompts = {}
+        self.systems = {}
         self.fail_for = set(fail_for)
         self.during_call = during_call
 
@@ -94,6 +94,7 @@ class FakeScriptModel:
         assert response_model is DraftedSection
         title = user_prompt.split("--- the section you are writing ---\nTitle: ")[1].split("\n")[0]
         self.prompts[title] = user_prompt
+        self.systems[title] = system_prompt
         if self.during_call:
             self.during_call(title)
         if title in self.fail_for:
@@ -220,17 +221,36 @@ def test_the_agent_is_shown_its_section_its_neighbours_and_its_own_source(
         "--- source material for this section ---")[1]
 
 
-def test_the_sections_objectives_and_presentation_reach_the_agent(project_root, monkeypatch):
-    slug, _ = planned_project("Objectives")
+def test_the_section_s_presentation_and_audience_reach_the_agent(project_root, monkeypatch):
+    slug, _ = planned_project("Presentation")
     fake = FakeScriptModel()
     monkeypatch.setattr(script_drafting, "complete_structured", fake)
 
     script_drafting.draft_section(slug, "s1")
     prompt = fake.prompts["Signals"]
 
-    assert "Shown as: plot -- Real amplitudes on axes." in prompt
-    assert "- Explain how a neural signal is recorded" in prompt
     assert "Audience: Students new to the topic" in prompt
+
+
+def test_the_script_fills_exactly_the_planned_scenes(project_root, monkeypatch):
+    """The plan owns the scenes: the script keeps their ids, so every later layer
+    lines up with what was agreed."""
+    from pipeline.planning import PlanScene
+
+    slug, project = planned_project("Planned Scenes")
+    plan = PlanStore(project.root).load()
+    plan.sections[0].scenes = [PlanScene(id="p1", does="How small", seconds=20),
+                               PlanScene(id="p2", does="Microvolts", seconds=20)]
+    PlanStore(project.root).save(plan)
+    fake = FakeScriptModel()
+    monkeypatch.setattr(script_drafting, "complete_structured", fake)
+
+    script_drafting.draft_section(slug, "s1")
+
+    assert "exactly 2 scenes" in fake.systems["Signals"]
+    assert "1. (~20 s) How small" in fake.prompts["Signals"]
+    written = ScriptStore(project.root).load().section_scripts
+    assert [scene.id for scene in written[0].scenes] == ["p1", "p2"]
 
 
 def test_drafting_one_section_leaves_the_others_alone(project_root, monkeypatch):
@@ -258,16 +278,21 @@ def test_what_is_saved_while_one_section_drafts_is_not_overwritten(project_root,
     assert script.body_for("s2").startswith("Electrodes opens here.")
 
 
-def test_a_section_with_no_sources_says_it_read_the_extraction(project_root, monkeypatch):
+def test_a_section_about_no_slide_is_written_from_the_rest_of_the_plan(
+        project_root, monkeypatch):
     slug, project = planned_project("No Sources")
     plan = PlanStore(project.root).load()
     plan.sections[1].sources = []
+    plan.sections[1].how = "Pause and ask the viewer what they expect next."
     PlanStore(project.root).save(plan)
-    monkeypatch.setattr(script_drafting, "complete_structured", FakeScriptModel())
+    fake = FakeScriptModel()
+    monkeypatch.setattr(script_drafting, "complete_structured", fake)
 
-    result = script_drafting.draft_section(slug, "s2")
+    script_drafting.draft_section(slug, "s2")
 
-    assert any("records no sources" in note for note in result["notes"])
+    prompt = fake.prompts["Electrodes"]
+    assert "The video's other sections, in order:" in prompt
+    assert "How it is told: Pause and ask the viewer" in prompt
 
 
 def test_drafting_an_unknown_section_is_refused(project_root):
@@ -423,12 +448,10 @@ def test_the_script_carries_each_sections_plan_details(project_root):
     script = operations.read_artifact(slug, "script")
     first = script["plan_sections"][0]
 
-    assert first["rendering_approach"] == "plot"
     assert first["sources"] == [
         {"file_name": "chapter.docx", "heading_path": ["Signals"], "slide_number": 0},
     ]
-    assert first["objective_ids"] == [script["plan_objectives"][0]["id"]]
-    assert script["selected_audience"] == "Students new to the topic"
+    assert script["audience"] == "Students new to the topic"
 
 
 def test_narration_no_section_points_at_is_shown(project_root):
@@ -447,7 +470,7 @@ def test_narration_no_section_points_at_is_shown(project_root):
 def test_review_comments_for_scripting_appear_on_their_section(project_root):
     slug, _ = planned_project("Comments")
     operations.add_review_comment(slug, body="Too fast here", at_ms=45_000,
-                                  routed_to_stage="scripting")
+                                  routed_to_stage="script-staging")
     operations.add_review_comment(slug, body="Wrong colour", at_ms=45_000,
                                   routed_to_stage="studio")
 
@@ -477,16 +500,6 @@ def test_the_scripting_chip_counts_sections_written(project_root):
     operations.write_section_script(slug, "s1", " ".join(["word"] * 150))
 
     assert project.stage_state(Stage.SCRIPT_STAGING).detail == "1 of 3 sections written · ~1 min"
-
-
-def test_the_source_for_a_section_can_be_read_whole(project_root):
-    slug, _ = planned_project("Source Route")
-
-    material = operations.section_source_material(slug, "s3")
-
-    assert material["parts"][0]["label"] == "chapter.docx › Amplifiers"
-    assert "a thousandfold" in material["parts"][0]["text"]
-    assert material["missing"] == []
 
 
 # --- agents read a compact plan ------------------------------------------------------------
@@ -532,9 +545,6 @@ def client(project_root):
 def test_the_scripting_routes(project_root, client, monkeypatch):
     slug, _ = planned_project("Routes")
     monkeypatch.setattr(script_drafting, "complete_structured", FakeScriptModel())
-
-    source = client.get(f"/api/projects/{slug}/script/sections/s1/source")
-    assert source.status_code == 200 and source.json()["parts"]
 
     drafted = client.post(f"/api/projects/{slug}/script/draft-unwritten", json={})
     assert drafted.status_code == 201, drafted.text

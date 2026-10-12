@@ -21,8 +21,8 @@ flag says so on every one of them, and says what changed.
 3. **The flag names the parts**: what is new, what changed, what is gone.
 4. **A layer further down is flagged too**, because what it was built on is now
    behind.
-5. **A project from before this existed** is taken as in step, once, as it
-   stands. It is not flagged for changes nobody made.
+5. **A project with no record yet** is taken as in step, once, as it stands.
+   It is not flagged for changes nobody made.
 
 ## What each layer reads
 
@@ -57,9 +57,9 @@ Work down the layers in order. On each flagged layer:
    | Layer | Redo | What it does |
    |---|---|---|
    | Assets & Design | Gather again | Gathers from the new extraction. Your Use and Skip are kept |
-   | Scene Plan | Re-sync the plan | For a deck plan: adds sections for new slides, removes sections whose slides are gone, keeps every edit. Otherwise, opens the Outline to redo by hand or redraft |
+   | Scene Plan | Tell the planner what changed | Opens the Direction tab. Tell the planning agent what changed; it proposes a revised shape, and sections whose slides and scene count did not change keep their scenes |
    | Script & Staging | Go to the sections to redraft | Opens the Write tab, where changed sections are marked |
-   | Generation | Decide the shots again | Opens the Decide tab. Unchanged scenes keep their shot |
+   | Generation | Set up the scenes again | Opens the Make tab and reads the transferred script again. Unchanged scenes keep their programs; a rewritten scene is unmade until its agent runs again |
    | Render | Render again | Opens the Render page |
 
 2. Check the layer, then **transfer** it on its Final tab. Transferring clears
@@ -72,5 +72,5 @@ its Final tab, where it can be transferred again unchanged.
 
 - The flag clears only by transferring the layer again. Redoing the work
   without transferring leaves it flagged.
-- Re-syncing a plan re-shares the time, so existing sections can show as
-  *changed* to the script even when only their length moved.
+- A section's time is the sum of its scenes, so editing one scene's seconds
+  shows that section as *changed* to the script.

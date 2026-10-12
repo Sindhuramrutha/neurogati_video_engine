@@ -3,8 +3,8 @@
 Each layer hands its work on with a transfer. A later layer built from that
 transfer is only right while the transfer stands: re-transfer the extraction
 with a slide changed, and the plan, the script, the shots and the render are all
-now about something that is no longer what was extracted. Nothing used to say
-so, layer by layer; a person had to remember.
+now about something that is no longer what was extracted. Something has to say
+so, layer by layer, or a person has to remember.
 
 So every transfer records what it was **built from** -- a small snapshot of each
 earlier layer it reads, part by part (each slide, each section, each scene, each
@@ -106,8 +106,8 @@ def _plan(project) -> dict[str, Any] | None:
     plan = transferred.plan
     parts = {s.id: [f"section “{s.title or 'Untitled'}”", _hash(s.model_dump(mode="json"))]
              for s in plan.sections}
-    parts["~brief"] = ["the brief (audience and objectives)", _hash([
-        plan.selected_audience, [o.model_dump() for o in plan.learning_objectives]])]
+    parts["~setup"] = ["the setup (length, slide order, audience)", _hash([
+        plan.length_text, plan.slide_order, plan.audience])]
     if transferred.assets is not None:
         parts["~assets"] = ["the pictures, brand kit and look it carries",
                             transferred.assets.fingerprint]

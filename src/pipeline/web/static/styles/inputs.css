@@ -28,8 +28,8 @@
 .dropzone.over { background: var(--stage); }
 
 /* --- the drop zone is the loudest thing on an empty page ---------------- */
-/* Full yellow at rest, not only under the pointer. With the colour no longer
-   changing on hover, hover lifts the box instead, so it still answers the
+/* Full yellow at rest, not only under the pointer. The colour does not change
+   on hover; hover lifts the box instead, so it still answers the
    pointer; dragging files over it turns it green. */
 .dropzone { background: var(--c-yellow); transition: background .15s, box-shadow .15s; }
 

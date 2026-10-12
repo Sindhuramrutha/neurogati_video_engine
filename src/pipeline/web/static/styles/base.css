@@ -89,9 +89,6 @@ button { cursor: pointer; }
   flex: none;
 }
 
-
-
-
 .project-select {
   background: var(--surface-raised);
   color: var(--text);
@@ -219,18 +216,6 @@ button { cursor: pointer; }
   font-weight: 600;
 }
 
-.help-card {
-  margin-top: auto;
-  background: var(--surface-raised);
-  border: var(--edge) solid var(--line);
-  border-radius: var(--radius);
-  padding: 13px;
-}
-
-.help-card h4 { margin: 0 0 4px; font-size: 13px; display: flex; align-items: center; gap: 7px; }
-
-.help-card p { margin: 0 0 11px; font-size: 12px; color: var(--text-dim); line-height: 1.5; }
-
 /* ---- main --------------------------------------------------------------- */
 .main { overflow-y: auto; padding: 18px 24px 40px; min-width: 0; }
 
@@ -245,15 +230,6 @@ button { cursor: pointer; }
 }
 
 .breadcrumb .current { color: var(--text-dim); }
-
-.status-pill {
-  display: inline-flex; align-items: center; gap: 7px;
-  font-size: 12.5px; color: var(--text-dim);
-}
-
-.status-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-faint); }
-
-.status-pill .dot.ready { background: var(--ok); }
 
 /* ---- cards -------------------------------------------------------------- */
 .card {
@@ -283,24 +259,6 @@ button { cursor: pointer; }
 .dropzone .cloud { color: var(--text-faint); margin-bottom: 12px; }
 
 /* ---- file list ---------------------------------------------------------- */
-.list-head {
-  display: flex; align-items: center; gap: 12px;
-  margin: 22px 0 10px;
-}
-
-.list-head h3 { margin: 0; font-size: 13.5px; font-weight: 600; }
-
-.file-row {
-  display: flex; align-items: center; gap: 13px;
-  padding: 11px 14px;
-  background: var(--surface-raised);
-  border: var(--edge) solid var(--line);
-  border-radius: 10px;
-  margin-bottom: 7px;
-  transition: border-color .13s, background .13s;
-}
-
-.file-row:hover { border-color: var(--line); background: var(--surface-hover); }
 
 .file-badge {
   width: 34px; height: 34px; border-radius: 8px; flex: none;
@@ -309,18 +267,6 @@ button { cursor: pointer; }
   letter-spacing: .3px; color: #fff;
   background: var(--badge, var(--txt));
 }
-
-.file-name {
-  flex: 1; min-width: 0;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-
-.file-size {
-  font-size: 12.5px; color: var(--text-dim); font-family: var(--mono);
-  flex: none; width: 62px; text-align: right;
-}
-
-.file-actions { display: flex; gap: 2px; flex: none; }
 
 /* ---- notices / empties -------------------------------------------------- */
 .notice {
@@ -405,19 +351,10 @@ h3.section {
   padding: 3px 10px; margin-bottom: 3px;
 }
 
-.x-heading {
-  color: var(--text); font-weight: 600; margin-top: 12px;
-  padding-left: calc(10px + (var(--depth, 1) - 1) * 12px);
-  font-size: calc(15px - (var(--depth, 1) - 1) * 1px);
-}
-
-.x-list { padding-left: 26px; position: relative; }
-
 /* The CSS escape for a bullet. It once reached this file through a Python
    string, where `\202` is an octal escape: the bullet became an invisible
    U+0082 followed by a "2", and that "2" showed in front of every extracted
    list item. */
-.x-list::before { content: "\2022"; position: absolute; left: 14px; color: var(--text-faint); }
 
 .x-table {
   font-family: var(--mono); font-size: 11.5px; white-space: pre;
@@ -470,7 +407,7 @@ h3.section {
   }
   .nav-item { width: auto; white-space: nowrap; }
   .nav-item .nav-label { display: none; }
-  .help-card { display: none; }
+  
   .main { padding: 16px; }
   .card-note { display: none; }
 }
@@ -505,25 +442,6 @@ h3.section {
 }
 
 /* selectable file cards */
-.file-card {
-  display: flex; align-items: center; gap: 11px;
-  padding: 10px 12px; margin-bottom: 7px;
-  background: var(--surface-raised);
-  border: var(--edge) solid var(--line); border-radius: 10px;
-  cursor: pointer; text-align: left; width: 100%;
-  transition: border-color .13s, background .13s;
-}
-
-
-.file-card:focus-visible { outline: 2px solid var(--accent-line); outline-offset: 1px; }
-
-.file-card .meta { flex: 1; min-width: 0; }
-
-.file-card .meta .name {
-  display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-
-.file-card .meta .sub { font-size: 11.5px; color: var(--text-faint); font-family: var(--mono); }
 
 .checkbox {
   width: 19px; height: 19px; border-radius: 6px; flex: none;
@@ -612,38 +530,7 @@ h3.section {
 }
 
 /* ---- planning ----------------------------------------------------------- */
-.plan-grid {
-  display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 16px;
-  align-items: start; margin-bottom: 16px;
-}
-
-@media (max-width: 1100px) { .plan-grid { grid-template-columns: minmax(0, 1fr); } }
-
 .panel-sub { font-size: 12px; color: var(--text-faint); margin: -6px 0 12px; }
-
-/* outline rows */
-.outline-row {
-  display: flex; align-items: center; gap: 11px;
-  padding: 12px 13px; margin-bottom: 8px;
-  background: var(--surface-raised);
-  border: var(--edge) solid var(--line); border-radius: 10px;
-  transition: border-color .13s, background .13s, opacity .13s;
-}
-
-.outline-row:hover { border-color: var(--line); }
-
-.outline-row.dragging { opacity: .4; }
-
-.outline-row.drop-target { border-style: dashed; }
-
-.grip {
-  color: var(--text-faint); cursor: grab; flex: none;
-  padding: 2px; border-radius: 4px; line-height: 0;
-}
-
-.grip:active { cursor: grabbing; }
-
-.outline-row:hover .grip { color: var(--text-dim); }
 
 .outline-num {
   width: 26px; height: 26px; border-radius: 50%; flex: none;
@@ -651,29 +538,7 @@ h3.section {
   background: var(--surface); border: var(--edge) solid var(--line); color: var(--text-dim);
 }
 
-.outline-row.editing .outline-num {
-  font-weight: 600;
-}
-
-/* objective checklist */
-.objective-row {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 7px 0;
-}
-
-.objective-row .checkbox { margin-top: 1px; }
-
-.objective-row .text { flex: 1; font-size: 13px; line-height: 1.45; }
-
-.objective-row .text.off { color: var(--text-faint); text-decoration: line-through; }
-
-.objective-row input.text-input {
-  flex: 1; background: var(--surface-raised); color: var(--text);
-  border: var(--edge) solid var(--line); border-radius: 7px; padding: 6px 9px; font-size: 13px;
-}
-
 /* pills */
-.pill-row { display: flex; flex-wrap: wrap; gap: 7px; }
 
 .pill {
   padding: 6px 13px; border-radius: 20px; font-size: 12.5px;
@@ -684,8 +549,6 @@ h3.section {
 .pill:hover { border-color: var(--text-faint); color: var(--text); }
 
 .pill.on { font-weight: 600; }
-
-.pill.ghost { border-style: dashed; }
 
 .pill.theme { font-family: var(--mono); font-size: 11.5px; padding: 4px 11px; }
 
@@ -721,23 +584,6 @@ h3.section {
 }
 
 .section-row .written-dot.written { background: var(--ok); }
-
-/* scenarios */
-.scenario-row {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 11px 12px; margin-bottom: 7px; width: 100%; text-align: left;
-  background: var(--surface-raised); border: var(--edge) solid var(--line);
-  border-radius: 10px; color: var(--text);
-  transition: border-color .13s, background .13s;
-}
-
-.scenario-row:hover { background: var(--surface-hover); }
-
-.scenario-row .body { flex: 1; min-width: 0; }
-
-.scenario-row .name { font-size: 13px; font-weight: 600; }
-
-.scenario-row .desc { font-size: 11.5px; color: var(--text-dim); line-height: 1.45; margin-top: 2px; }
 
 /* variables */
 .variable-row {
@@ -1048,7 +894,9 @@ b, strong { font-weight: 800; }
 
 /* Micro-labels are shouted, headings are large. The gap between the two is
    what gives a brutalist page its hierarchy -- there is no middle weight. */
-.panel-head h3, .list-head, .cred-group h4, .panel-sub {
+.panel-head h3,
+.cred-group h4,
+.panel-sub {
   font-size: 11.5px; font-weight: 800;
   text-transform: uppercase; letter-spacing: .1em;
 }
@@ -1066,9 +914,6 @@ b, strong { font-weight: 800; }
   padding: 14px 22px;
   gap: 16px;
 }
-
-
-
 
 /* --- pressable ----------------------------------------------------------- */
 .btn, .btn-icon, .project-select, .pill, .checkbox, .seg {
@@ -1135,7 +980,7 @@ b, strong { font-weight: 800; }
 
 /* The second column reads as a different material from the first, so a page is
    two blocks rather than one grid of identical boxes. */
-.plan-grid > :last-child .panel, .review-grid > :last-child .panel,
+.review-grid > :last-child .panel,
 .studio-top > :last-child { background: var(--stage-soft); }
 
 /* --- the stage header ---------------------------------------------------- */
@@ -1203,17 +1048,18 @@ b, strong { font-weight: 800; }
 
 .nav-badge.done { background: var(--ok); color: var(--line); }
 
-
 /* --- chips, pills, badges ------------------------------------------------ */
-.chip, .stage-chip, .stamp-chip, .cred-badge, .status-pill, .plan-total {
+.chip,
+.stage-chip,
+.stamp-chip,
+.cred-badge,
+.plan-total {
   border: var(--edge) solid var(--line);
   border-radius: 99px;
   background: var(--surface);
   font-weight: 800; font-size: 11.5px;
   padding: 4px 11px;
 }
-
-.status-pill { box-shadow: var(--shadow-sm); padding: 5px 13px; }
 
 /* --- fields -------------------------------------------------------------- */
 input, textarea, select {
@@ -1260,8 +1106,13 @@ input:focus, textarea:focus, select:focus {
 }
 
 /* --- rows ---------------------------------------------------------------- */
-.outline-row, .version-row, .chapter-row, .scenario-row, .source-row, .file-row,
-.transcript-row, .objective-row, .variable-row, .comment, .toggle-row {
+.version-row,
+.chapter-row,
+.source-row,
+.transcript-row,
+.variable-row,
+.comment,
+.toggle-row {
   border: var(--edge) solid var(--line);
   border-radius: 12px;
   background: var(--surface);
@@ -1269,13 +1120,15 @@ input:focus, textarea:focus, select:focus {
   transition: transform .07s ease, box-shadow .07s ease, background .12s ease;
 }
 
-.outline-row:hover, .version-row:hover, .chapter-row:hover, .scenario-row:hover,
-.source-row:hover, .file-row:hover, .transcript-row:hover {
+.version-row:hover,
+.chapter-row:hover,
+.source-row:hover,
+.transcript-row:hover {
   transform: translate(-2px, -2px); box-shadow: var(--shadow);
   background: var(--surface-hover);
 }
 
-.version-row.active, .outline-row.selected, .scenario-row.active {
+.version-row.active {
   background: var(--stage); box-shadow: var(--shadow);
 }
 
@@ -1288,13 +1141,6 @@ input:focus, textarea:focus, select:focus {
 .cloud { color: var(--line); }
 
 /* --- the help card ------------------------------------------------------- */
-.help-card {
-  background: var(--warn); color: var(--line);
-  border: var(--edge) solid var(--line); border-radius: 14px;
-  box-shadow: var(--shadow); font-weight: 600;
-}
-
-.help-card b { font-weight: 900; }
 
 .clip.selected { box-shadow: 5px 5px 0 var(--line); }
 
@@ -1346,22 +1192,15 @@ input:focus, textarea:focus, select:focus {
    5%-opacity wash, which is what these were when the ground was dark. */
 .nav-item.active .nav-icon { color: var(--line); }
 
-.help-card h4 svg, .info-dot { color: var(--line); }
-
-.status-pill .dot { border: 2px solid var(--line); width: 10px; height: 10px; }
-
-.status-pill .dot.ready { background: var(--ok); }
+.info-dot { color: var(--line); }
 
 .checkbox.on, .switch.on { background: var(--stage, var(--accent)); color: var(--line); }
 
-.scenario-row.active .radio::after { background: var(--line); }
-
-.file-card.selected, .section-row.active, .outline-row.editing,
-.scenario-row.active, .version-row.active, .comment.open .avatar {
+.section-row.active,
+.version-row.active,
+.comment.open .avatar {
   background: var(--stage-soft);
 }
-
-.outline-row.drop-target { border-style: dashed; background: var(--stage-soft); }
 
 .section-row .written-dot { border: 2px solid var(--line); }
 
@@ -1387,7 +1226,7 @@ input:focus, textarea:focus, select:focus {
 
 .stage-audio-badge { background: rgba(0, 0, 0, .62); color: var(--video-text); }
 
-.x-block mark, .x-heading { color: var(--line); }
+.x-block mark { color: var(--line); }
 
 /* ==========================================================================
    THE SPECTRUM
@@ -1418,79 +1257,112 @@ input:focus, textarea:focus, select:focus {
 }
 
 /* --- rows: the colour walks down the list ------------------------------- */
-.outline-row, .section-row, .scenario-row, .objective-row, .variable-row,
-.chapter-row, .version-row, .file-row, .source-row, .comment, .transcript-row,
-.toggle-row, .cred-field {
+.section-row,
+.variable-row,
+.chapter-row,
+.version-row,
+.source-row,
+.comment,
+.transcript-row,
+.toggle-row,
+.cred-field {
   --row: var(--c-blue); --row-soft: var(--c-blue-soft);
 }
 
-.outline-row:nth-child(9n+1), .section-row:nth-child(9n+1), .scenario-row:nth-child(9n+1),
-.objective-row:nth-child(9n+1), .chapter-row:nth-child(9n+1), .version-row:nth-child(9n+1),
-.file-row:nth-child(9n+1), .source-row:nth-child(9n+1), .comment:nth-child(9n+1),
-.transcript-row:nth-child(9n+1), .variable-row:nth-child(9n+1)
-  { --row: var(--c-yellow); --row-soft: var(--c-yellow-soft); }
+.section-row:nth-child(9n+1),
+.chapter-row:nth-child(9n+1),
+.version-row:nth-child(9n+1),
+.source-row:nth-child(9n+1),
+.comment:nth-child(9n+1),
+.transcript-row:nth-child(9n+1),
+.variable-row:nth-child(9n+1) { --row: var(--c-yellow); --row-soft: var(--c-yellow-soft); }
 
-.outline-row:nth-child(9n+2), .section-row:nth-child(9n+2), .scenario-row:nth-child(9n+2),
-.objective-row:nth-child(9n+2), .chapter-row:nth-child(9n+2), .version-row:nth-child(9n+2),
-.file-row:nth-child(9n+2), .source-row:nth-child(9n+2), .comment:nth-child(9n+2),
-.transcript-row:nth-child(9n+2), .variable-row:nth-child(9n+2)
-  { --row: var(--c-blue); --row-soft: var(--c-blue-soft); }
+.section-row:nth-child(9n+2),
+.chapter-row:nth-child(9n+2),
+.version-row:nth-child(9n+2),
+.source-row:nth-child(9n+2),
+.comment:nth-child(9n+2),
+.transcript-row:nth-child(9n+2),
+.variable-row:nth-child(9n+2) { --row: var(--c-blue); --row-soft: var(--c-blue-soft); }
 
-.outline-row:nth-child(9n+3), .section-row:nth-child(9n+3), .scenario-row:nth-child(9n+3),
-.objective-row:nth-child(9n+3), .chapter-row:nth-child(9n+3), .version-row:nth-child(9n+3),
-.file-row:nth-child(9n+3), .source-row:nth-child(9n+3), .comment:nth-child(9n+3),
-.transcript-row:nth-child(9n+3), .variable-row:nth-child(9n+3)
-  { --row: var(--c-green); --row-soft: var(--c-green-soft); }
+.section-row:nth-child(9n+3),
+.chapter-row:nth-child(9n+3),
+.version-row:nth-child(9n+3),
+.source-row:nth-child(9n+3),
+.comment:nth-child(9n+3),
+.transcript-row:nth-child(9n+3),
+.variable-row:nth-child(9n+3) { --row: var(--c-green); --row-soft: var(--c-green-soft); }
 
-.outline-row:nth-child(9n+4), .section-row:nth-child(9n+4), .scenario-row:nth-child(9n+4),
-.objective-row:nth-child(9n+4), .chapter-row:nth-child(9n+4), .version-row:nth-child(9n+4),
-.file-row:nth-child(9n+4), .source-row:nth-child(9n+4), .comment:nth-child(9n+4),
-.transcript-row:nth-child(9n+4), .variable-row:nth-child(9n+4)
-  { --row: var(--c-pink); --row-soft: var(--c-pink-soft); }
+.section-row:nth-child(9n+4),
+.chapter-row:nth-child(9n+4),
+.version-row:nth-child(9n+4),
+.source-row:nth-child(9n+4),
+.comment:nth-child(9n+4),
+.transcript-row:nth-child(9n+4),
+.variable-row:nth-child(9n+4) { --row: var(--c-pink); --row-soft: var(--c-pink-soft); }
 
-.outline-row:nth-child(9n+5), .section-row:nth-child(9n+5), .scenario-row:nth-child(9n+5),
-.objective-row:nth-child(9n+5), .chapter-row:nth-child(9n+5), .version-row:nth-child(9n+5),
-.file-row:nth-child(9n+5), .source-row:nth-child(9n+5), .comment:nth-child(9n+5),
-.transcript-row:nth-child(9n+5), .variable-row:nth-child(9n+5)
-  { --row: var(--c-purple); --row-soft: var(--c-purple-soft); }
+.section-row:nth-child(9n+5),
+.chapter-row:nth-child(9n+5),
+.version-row:nth-child(9n+5),
+.source-row:nth-child(9n+5),
+.comment:nth-child(9n+5),
+.transcript-row:nth-child(9n+5),
+.variable-row:nth-child(9n+5) { --row: var(--c-purple); --row-soft: var(--c-purple-soft); }
 
-.outline-row:nth-child(9n+6), .section-row:nth-child(9n+6), .scenario-row:nth-child(9n+6),
-.objective-row:nth-child(9n+6), .chapter-row:nth-child(9n+6), .version-row:nth-child(9n+6),
-.file-row:nth-child(9n+6), .source-row:nth-child(9n+6), .comment:nth-child(9n+6),
-.transcript-row:nth-child(9n+6), .variable-row:nth-child(9n+6)
-  { --row: var(--c-orange); --row-soft: var(--c-orange-soft); }
+.section-row:nth-child(9n+6),
+.chapter-row:nth-child(9n+6),
+.version-row:nth-child(9n+6),
+.source-row:nth-child(9n+6),
+.comment:nth-child(9n+6),
+.transcript-row:nth-child(9n+6),
+.variable-row:nth-child(9n+6) { --row: var(--c-orange); --row-soft: var(--c-orange-soft); }
 
-.outline-row:nth-child(9n+7), .section-row:nth-child(9n+7), .scenario-row:nth-child(9n+7),
-.objective-row:nth-child(9n+7), .chapter-row:nth-child(9n+7), .version-row:nth-child(9n+7),
-.file-row:nth-child(9n+7), .source-row:nth-child(9n+7), .comment:nth-child(9n+7),
-.transcript-row:nth-child(9n+7), .variable-row:nth-child(9n+7)
-  { --row: var(--c-teal); --row-soft: var(--c-teal-soft); }
+.section-row:nth-child(9n+7),
+.chapter-row:nth-child(9n+7),
+.version-row:nth-child(9n+7),
+.source-row:nth-child(9n+7),
+.comment:nth-child(9n+7),
+.transcript-row:nth-child(9n+7),
+.variable-row:nth-child(9n+7) { --row: var(--c-teal); --row-soft: var(--c-teal-soft); }
 
-.outline-row:nth-child(9n+8), .section-row:nth-child(9n+8), .scenario-row:nth-child(9n+8),
-.objective-row:nth-child(9n+8), .chapter-row:nth-child(9n+8), .version-row:nth-child(9n+8),
-.file-row:nth-child(9n+8), .source-row:nth-child(9n+8), .comment:nth-child(9n+8),
-.transcript-row:nth-child(9n+8), .variable-row:nth-child(9n+8)
-  { --row: var(--c-lime); --row-soft: var(--c-lime-soft); }
+.section-row:nth-child(9n+8),
+.chapter-row:nth-child(9n+8),
+.version-row:nth-child(9n+8),
+.source-row:nth-child(9n+8),
+.comment:nth-child(9n+8),
+.transcript-row:nth-child(9n+8),
+.variable-row:nth-child(9n+8) { --row: var(--c-lime); --row-soft: var(--c-lime-soft); }
 
-.outline-row:nth-child(9n+9), .section-row:nth-child(9n+9), .scenario-row:nth-child(9n+9),
-.objective-row:nth-child(9n+9), .chapter-row:nth-child(9n+9), .version-row:nth-child(9n+9),
-.file-row:nth-child(9n+9), .source-row:nth-child(9n+9), .comment:nth-child(9n+9),
-.transcript-row:nth-child(9n+9), .variable-row:nth-child(9n+9)
-  { --row: var(--c-red); --row-soft: var(--c-red-soft); }
+.section-row:nth-child(9n+9),
+.chapter-row:nth-child(9n+9),
+.version-row:nth-child(9n+9),
+.source-row:nth-child(9n+9),
+.comment:nth-child(9n+9),
+.transcript-row:nth-child(9n+9),
+.variable-row:nth-child(9n+9) { --row: var(--c-red); --row-soft: var(--c-red-soft); }
 
 /* The row wears its colour as a fill, and its number chip wears it solid. */
-.outline-row, .section-row, .scenario-row, .objective-row, .chapter-row,
-.version-row, .file-row, .source-row, .transcript-row, .comment, .variable-row {
+.section-row,
+.chapter-row,
+.version-row,
+.source-row,
+.transcript-row,
+.comment,
+.variable-row {
   background: var(--row-soft);
 }
 
-.outline-row:hover, .section-row:hover, .scenario-row:hover, .chapter-row:hover,
-.version-row:hover, .file-row:hover, .source-row:hover, .transcript-row:hover {
+.section-row:hover,
+.chapter-row:hover,
+.version-row:hover,
+.source-row:hover,
+.transcript-row:hover {
   background: var(--row);
 }
 
-.outline-row.selected, .outline-row.editing, .section-row.active,
-.scenario-row.active, .version-row.active, .transcript-row.current {
+.section-row.active,
+.version-row.active,
+.transcript-row.current {
   background: var(--row);
 }
 
@@ -1500,13 +1372,10 @@ input:focus, textarea:focus, select:focus {
 }
 
 /* --- panels: the column is not one colour ------------------------------- */
-.plan-grid > div > .panel:nth-of-type(1),
 .review-grid > div > .panel:nth-of-type(1) { background: var(--c-yellow-soft); }
 
-.plan-grid > div > .panel:nth-of-type(2),
 .review-grid > div > .panel:nth-of-type(2) { background: var(--c-teal-soft); }
 
-.plan-grid > div > .panel:nth-of-type(3),
 .review-grid > div > .panel:nth-of-type(3) { background: var(--c-purple-soft); }
 
 /* --- file types keep their own colours ---------------------------------- */
@@ -1523,7 +1392,7 @@ input:focus, textarea:focus, select:focus {
 
 /* --- controls ------------------------------------------------------------ */
 #choose-files-button, #add-section-button, #add-objective-button,
-#add-scenario-button, #add-variable-button, #add-chapter-button,
+#add-variable-button, #add-chapter-button,
 #add-version-button, #add-clip-button, #new-project-button {
   background: var(--c-green);
 }
@@ -1539,8 +1408,6 @@ input:focus, textarea:focus, select:focus {
 .btn-icon.danger:hover { background: var(--c-red); color: var(--line); }
 
 .seg button.on { background: var(--c-blue); }
-
-.status-pill { background: var(--c-green-soft); }
 
 .plan-total, .card-note { background: var(--c-yellow-soft); }
 
@@ -1579,25 +1446,16 @@ input:focus, textarea:focus, select:focus {
 .pill.on { background: var(--stage, var(--c-pink)); }
 
 /* --- extraction --------------------------------------------------------- */
-.x-heading { background: var(--c-purple-soft); border: var(--edge) solid var(--line);
-             border-radius: 8px; padding: 3px 8px; font-weight: 800; }
 
 .x-table { border: var(--edge) solid var(--line); background: var(--c-teal-soft); }
 
-.x-list { background: var(--c-yellow-soft); border: var(--edge) solid var(--line);
-          border-radius: 8px; }
-
 /* --- help --------------------------------------------------------------- */
-.help-card { background: var(--c-yellow); }
 
 .empty { background: var(--c-blue-soft); }
 
 /* --- a file row that opens ----------------------------------------------- */
 /* Uploaded files are one list of the same thing, so every row wears the same
    green rather than a rotating colour. */
-.file-entry { margin-bottom: 10px; }
-
-.file-entry .file-row { margin-bottom: 0; background: var(--c-green-soft); }
 
 [data-preview] svg { transition: transform .15s ease; }
 
@@ -1645,9 +1503,6 @@ input:focus, textarea:focus, select:focus {
 /* --- the deck's transport ------------------------------------------------ */
 /* The bundled controls count from zero and look nothing like the rest of this
    interface, so they are hidden and replaced rather than restyled. */
-.pptx-preview-wrapper-next,
-.pptx-preview-wrapper-pre,
-.pptx-preview-wrapper-pagination { display: none !important; }
 
 /* --- the raw document view ----------------------------------------------- */
 /* The renderer paints its wrapper black, which showed as a band above every
@@ -1728,8 +1583,8 @@ input:focus, textarea:focus, select:focus {
 
 .workbench-side { display: grid; gap: 16px; align-content: start; min-width: 0; }
 
-/* The preview scrolls inside itself. Extracted text used to grow the page to
-   twenty thousand pixels, carrying the file list and options away with it. */
+/* The preview scrolls inside itself, so long extracted text does not carry the
+   file list and options away with it. */
 .preview-panel { display: flex; flex-direction: column; min-width: 0; }
 
 .preview-panel .preview-stage {
@@ -1740,8 +1595,7 @@ input:focus, textarea:focus, select:focus {
 .preview-panel .preview-stage:not(.raw):not(.scrolls) { align-content: center; }
 
 /* The file brings its own frame -- a slide, a page, the PDF viewer -- so the
-   stage around it draws none and does not scroll. It used to be three borders
-   and two scrollbars deep, with the slide controls pushed out of sight. */
+   stage around it draws none and does not scroll. */
 .preview-panel .preview-stage.raw {
   height: auto; max-height: none; overflow: visible;
   padding: 0; border: none; background: none;
@@ -1768,25 +1622,12 @@ input:focus, textarea:focus, select:focus {
 
 /* File cards: the whole name, which file is on screen, and what the run made
    of it. A file name has no natural break points, so it may break anywhere. */
-.file-card { align-items: flex-start; }
-
-.file-card .meta .name {
-  white-space: normal; overflow-wrap: anywhere; line-height: 1.3;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-}
-
-.file-card .meta .sub { display: block; margin-top: 2px; }
 
 .file-status.ok { background: var(--c-green-soft); }
 
 .file-status.warn { background: var(--c-yellow); }
 
 .file-status.muted { background: var(--surface); color: var(--text-dim); }
-
-.file-card.selected {
-  background: var(--c-blue-soft);
-  box-shadow: inset 5px 0 0 var(--c-blue), var(--shadow-sm);
-}
 
 .run-bar.pending { background: var(--c-purple-soft); }
 
@@ -1799,7 +1640,6 @@ input:focus, textarea:focus, select:focus {
 .run-bar.working .run-icon { animation: working 1s steps(2, end) infinite; }
 
 /* Facts under a section: how it is shown, what it draws on, what it serves. */
-.section-facts { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
 
 .fact {
   display: inline-flex; align-items: center; padding: 1px 8px; border-radius: 99px;
@@ -1819,13 +1659,9 @@ input:focus, textarea:focus, select:focus {
 
 .fact.approach.plot { background: var(--c-teal-soft); }
 
-.fact.approach.simulation { background: var(--c-orange-soft); }
-
 .fact.approach.code { background: var(--c-purple-soft); }
 
 .fact.approach.still { background: var(--c-yellow-soft); }
-
-.outline-row .outline-num, .outline-row .grip, .outline-row .btn-icon { margin-top: 1px; }
 
 /* --- scripting in scenes --------------------------------------------------- */
 /* The title is a span: without `display` the old ellipsis never applied and long
@@ -1843,16 +1679,8 @@ input:focus, textarea:focus, select:focus {
 .scenes-empty p { margin: 0; color: var(--text-dim); }
 
 /* What the section was planned with. */
-.section-context { background: var(--c-teal-soft); font-size: 12.5px; }
 
 .source-text { display: grid; gap: 8px; max-height: 420px; overflow-y: auto; }
-
-.source-part pre {
-  margin: 3px 0 0; padding: 8px; white-space: pre-wrap; overflow-wrap: anywhere;
-  font-family: var(--mono); font-size: 11.5px; line-height: 1.5;
-  background: var(--surface); border: 1.5px solid var(--line); border-radius: 8px;
-}
-
 
 /* --- the stage body, softened --------------------------------------------
  *
@@ -1886,12 +1714,9 @@ input:focus, textarea:focus, select:focus {
 /* Fills stay, because the colour is what tells the stages apart -- but a row
    does not also need a hard outline to be a row. */
 #stage-body .panel,
-#stage-body .file-card,
-#stage-body .outline-row,
 #stage-body .section-row,
 #stage-body .figure-card,
 #stage-body .export-row,
-#stage-body .scenario-row,
 #stage-body .variable-row,
 #stage-body .comment,
 #stage-body .version-row,
@@ -1925,8 +1750,6 @@ input:focus, textarea:focus, select:focus {
 #stage-body .fact,
 #stage-body .chip,
 #stage-body .stage-chip,
-#stage-body .source-chip,
-#stage-body .swatch-chip,
 #stage-body .nav-badge { border-width: 1px; border-color: rgba(42, 38, 34, .22); }
 
 /* A state is information, not an alarm. Inside the stage the fills are the soft
@@ -2225,8 +2048,6 @@ input:focus, textarea:focus, select:focus {
 
 .rd-line.bad { font-weight: 700; }
 
-.rd-link { font-size: 13px; font-weight: 800; color: var(--stage-head-ink); }
-
 .rd-job-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
 .rd-empty { margin: 0; font-size: 13px; }
@@ -2281,14 +2102,14 @@ input:focus, textarea:focus, select:focus {
 .source-card .file-preview { margin-top: 14px; }
 .source-card-note { margin: 12px 0 0; font-size: 12.5px; color: var(--text-dim); }
 
-
 /* --- Extraction: the source and its one button ---------------------------------- */
-.x-source-file { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-.x-source-file span { display: grid; gap: 2px; min-width: 0; }
-.x-source-file b { font-size: 14px; overflow-wrap: anywhere; }
-.x-source-file small { font-size: 12px; color: var(--text-dim); }
+
 .x-source-state { margin: 0 0 12px; font-size: 13px; line-height: 1.45; }
 .x-source.ready .x-source-state b { color: #0F7A4F; }
 .x-source.stale .x-source-state b { color: #9A5B00; }
 .x-source .x-extract-button { width: 100%; }
 .x-final-text { margin-top: 16px; }
+
+/* A script scene's line from the plan: what the scene was planned to do. */
+.scene-planned { margin: 4px 0 6px; font-size: 12.5px; color: var(--text-dim); }
+.scene-planned-note { font-size: 12.5px; margin: 8px 0 0; }

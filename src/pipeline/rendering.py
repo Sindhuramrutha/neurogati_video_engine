@@ -1,38 +1,27 @@
 """Rendering — plan plus script becomes an actual video file.
 
-The stage that did not exist. Everything before this produced text; this produces
-`reviewing/output/<slug>.mp4` and a matching `.srt`.
+Writes `reviewing/output/<slug>.mp4` and a matching `.srt`/`.vtt`.
 
-**Audio is the clock** ([ADR 0001](../../docs/decisions/0001-preserve-audio-first-timing.md)).
-Each section's narration is synthesised first, its real duration is *measured*
-from the file, and only then is the picture cut to fit. The alternative --
-deciding the picture timing from the plan's estimated seconds and hoping the
-voice matches -- is exactly how v1's animations drifted out of sync with the
-narration, and no amount of prompting fixes a clock that guesses.
+**Audio is the clock.** Each section's narration is synthesised first, its real
+duration is *measured* from the file, and only then is the picture cut to fit.
+Deciding the picture timing from the plan's estimated seconds and hoping the
+voice matches is how animation drifts out of sync with narration, and no amount
+of prompting fixes a clock that guesses.
 
-**The video is made of the source material, not of defaults.** A section shows
-the pictures its own plan section draws on -- the diagrams from the deck or the
-chapter, chosen on Assets & Design -- beside the words being spoken. When the
-project follows the source's styling, the deck's background, its theme colours
-and its fonts are what the frames are drawn with. Everything here comes from a
-file somebody supplied: nothing is generated to fill a frame, and a section with
-no picture gets text on the project's own background rather than a stock image.
+**Every scene is a program's clip.** Generation makes one approved clip per
+scene; the render lays them end to end under the narration, a title card in
+front of each section. A project that never opened Generation still gets a
+video: a section shows the pictures its own plan section draws on (chosen on
+Assets & Design) beside the words being spoken, drawn with the source's own
+styling when the project asked for it. Nothing is generated to fill a frame; a
+section with no picture gets text on the project's own background.
 
-**The narration is never on screen.** It is being spoken; printing it as well is
-what made the output read as slides with a voice over them, and a viewer who is
-reading has stopped listening. Each scene shows the headline and the two to four
-labels Generation composed from its brief, and the labels appear one at a time,
-on the word that names them.
+**The narration is never on screen.** It is being spoken; printing it as well
+reads as slides with a voice over them. A scene shows its headline.
 
 **The picture changes per scene, not per sentence.** A scene whose narration
-fills three slides is one continuous shot, so the camera move runs across the
-whole of it, an animated diagram plays once instead of restarting, and one shot
-dissolves into the next.
-
-Animated scenes come from a scene renderer ([ADR 0007]
-(../../docs/decisions/0007-revideo-as-rendering-target.md)) when one is
-installed and its self-test passes; when none is, the same diagram is drawn as a
-still from the same nodes and held.
+fills three slides is one continuous shot, a clip plays once instead of
+restarting, and one shot dissolves into the next.
 
 ffmpeg does the muxing. It is an external process, so its failures are captured
 and reported with the command that produced them rather than surfacing as a
@@ -49,6 +38,7 @@ import textwrap
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from pipeline import project_work
 from pipeline.speech import WordTiming
 
 logger = logging.getLogger(__name__)
@@ -158,8 +148,10 @@ SECTION_TAIL_MS = 250
 CROSS_FADE_MS = 400
 SHORTEST_CROSS_FADE_MS = 90
 
-# Roughly how many characters of narration fit in one subtitle cue.
-CHARACTERS_PER_SLIDE = 260
+# How many characters of narration one subtitle cue holds: about two lines,
+# which can be read in the seconds it is on screen. A sentence longer than this
+# is still one cue: cutting mid-clause reads worse than a long line.
+CHARACTERS_PER_CUE = 90
 
 
 class RenderFailed(Exception):
@@ -168,30 +160,20 @@ class RenderFailed(Exception):
 
 @dataclass
 class Shot:
-    """One scene's picture and how the camera moves over it.
+    """One scene's picture, or the clip a program drew for it.
 
     A scene, not a slide: one scene's narration may fill three slides, and all
-    three are the same shot -- the camera keeps moving across them instead of
-    restarting, which is the difference between a film and a carousel.
+    three are the same shot, so a clip plays through once instead of restarting.
     """
 
     picture: Path | None = None
-    motion: str = "hold"
 
-    # A clip that animates this scene, when a renderer that can animate drew
-    # one. It replaces the still and its camera move: the diagram is already
-    # moving, and panning across an animation is two motions competing.
+    # The clip a scene program rendered. It replaces the still: a clip already
+    # carries its own words and motion.
     clip: Path | None = None
 
-    # What the viewer reads while this scene is spoken. Never the narration.
+    # The scene's headline, drawn over the still of a scene that has no clip.
     headline: str = ""
-    points: list[str] = field(default_factory=list)
-
-    # A finished frame -- the source's own slide, composed as its author
-    # designed it. Drawn edge to edge with nothing over it: it already has its
-    # heading, its body text and its artwork exactly where they belong, and
-    # anything this renderer adds is drawn on top of somebody's layout.
-    full_bleed: bool = False
 
 
 @dataclass
@@ -428,27 +410,16 @@ def _readable_picture(picture: Path | None) -> bool:
 
 @dataclass(frozen=True)
 class WordsLayout:
-    """Where the headline and each label sit on the frame.
-
-    One layout, used both to draw a frame and to draw the transparent layer a
-    label arrives on, so a label that appears eight seconds in lands on exactly
-    the pixel it would have occupied had it been there from the start.
-    """
+    """Where the headline sits on the frame."""
 
     heading_font: object
     headline_rows: tuple[tuple[str, int, int], ...]
-    point_font: object
-    # Each label as the rows it wrapped to, and where the first row sits.
-    point_rows: tuple[tuple[tuple[str, ...], int, int], ...]
-    point_size: int
 
 
 def _words_layout(
-    headline: str, points: list[str], style: RenderStyle,
-    showing_picture: bool, is_title: bool,
+    headline: str, style: RenderStyle, showing_picture: bool, is_title: bool,
 ) -> WordsLayout:
     headline_size = 82 if is_title else (56 if showing_picture else 68)
-    point_size = 34 if showing_picture else 40
     wrap_at = 20 if showing_picture else 30
 
     if showing_picture:
@@ -460,92 +431,28 @@ def _words_layout(
 
     lines = textwrap.wrap(headline, width=wrap_at)[:3] or [headline]
     line_height = int(headline_size * 1.22)
-
-    # A label wraps rather than running off the side of the frame. "1000 times
-    # smaller than the chest ECG" is a real label from real source material, and
-    # it was being cut off mid-word at the edge.
-    point_wrap = 26 if showing_picture else 44
-    wrapped = [textwrap.wrap(point, width=point_wrap)[:2] or [point] for point in points]
-
-    gap = 56 if points else 0
-    point_gap = int(point_size * 0.9)
-    block = (line_height * len(lines) + gap
-             + sum(len(rows) * int(point_size * 1.35) + point_gap for rows in wrapped))
-    y = max(top, (top + bottom - block) // 2)
-
-    headline_rows = tuple(
-        (line, left, y + index * line_height) for index, line in enumerate(lines))
-
-    point_rows = []
-    at = y + line_height * len(lines) + gap
-    for rows in wrapped:
-        point_rows.append((tuple(rows), left, at))
-        at += len(rows) * int(point_size * 1.35) + point_gap
+    y = max(top, (top + bottom - line_height * len(lines)) // 2)
 
     return WordsLayout(
         heading_font=_load_font(headline_size, bold=True, family=style.heading_font),
-        headline_rows=headline_rows,
-        point_font=_load_font(point_size, family=style.body_font),
-        point_rows=tuple(point_rows),
-        point_size=point_size,
+        headline_rows=tuple(
+            (line, left, y + index * line_height) for index, line in enumerate(lines)),
     )
-
-
-def _draw_point(draw, layout: WordsLayout, index: int, style: RenderStyle) -> None:
-    """One label, wrapped, with an accent rule where a bullet would be."""
-    rows, left, top = layout.point_rows[index]
-    middle = top + layout.point_size // 2
-    draw.rounded_rectangle(
-        [(left, middle - 4), (left + 26, middle + 4)], radius=4, fill=style.accent_colour)
-    for at, row in enumerate(rows):
-        draw.text((left + 52, top + at * int(layout.point_size * 1.35)), row,
-                  font=layout.point_font, fill=style.text_colour)
-
-
-def _fill_frame(picture: Path, style: RenderStyle = DEFAULT_STYLE):
-    """A finished frame, drawn edge to edge.
-
-    Contained rather than cropped: a slide composed at the video's own shape
-    lands exactly, and one from a 4:3 deck is letterboxed on the project's own
-    background rather than having its edges cut off. Losing a centimetre of
-    somebody's layout to fill a frame is not a trade worth making.
-    """
-    from PIL import Image
-
-    frame = Image.new("RGB", (FRAME_WIDTH, FRAME_HEIGHT), style.background_colour)
-    with Image.open(picture) as opened:
-        slide = opened.convert("RGB")
-    scale = min(FRAME_WIDTH / slide.width, FRAME_HEIGHT / slide.height)
-    fitted = slide.resize(
-        (max(1, round(slide.width * scale)), max(1, round(slide.height * scale))),
-        Image.LANCZOS,
-    )
-    frame.paste(fitted, ((FRAME_WIDTH - fitted.width) // 2,
-                         (FRAME_HEIGHT - fitted.height) // 2))
-    return frame
 
 
 def _draw_frame(
     headline: str,
-    points: list[str],
     footer: str,
     accent_text: str,
     style: RenderStyle = DEFAULT_STYLE,
     picture: Path | None = None,
     is_title: bool = False,
-    revealed: int = 0,
 ):
-    """One 1920x1080 frame: the background, the scene's picture, and the few
-    words the viewer reads.
+    """One 1920x1080 frame: the background, the scene's picture, and its headline.
 
     **Not the narration.** It is being spoken; printing it as well is what made
-    this read as slides with a voice over them. A headline of a few words and up
-    to four labels is what somebody can take in while listening to something
-    else -- and every one of them came from the scene's brief, so what is on
-    screen is what the script asked for rather than a transcript of it.
-
-    `revealed` is how many labels are already on the frame. The rest arrive as
-    overlays timed to the voice, so the base frame is drawn with none.
+    this read as slides with a voice over them. A headline of a few words is what
+    somebody can take in while listening to something else.
     """
     from PIL import Image, ImageDraw
 
@@ -558,14 +465,14 @@ def _draw_frame(
         showing_picture = _paste_picture(image, draw, picture, style)
 
     if not showing_picture:
-        # No picture: the words sit on a panel, as they always did.
+        # No picture: the words sit on a panel.
         draw.rounded_rectangle(
             [(110, 110), (FRAME_WIDTH - 110, FRAME_HEIGHT - 110)],
             radius=28, fill=style.panel_colour,
         )
         draw.rectangle([(110, 110), (FRAME_WIDTH - 110, 118)], fill=style.accent_colour)
 
-    layout = _words_layout(headline, points, style, showing_picture, is_title)
+    layout = _words_layout(headline, style, showing_picture, is_title)
     text_left = layout.headline_rows[0][1]
 
     if accent_text:
@@ -576,33 +483,11 @@ def _draw_frame(
     for line, left, top in layout.headline_rows:
         draw.text((left, top), line, font=layout.heading_font, fill=style.text_colour)
 
-    for index in range(min(revealed, len(layout.point_rows))):
-        _draw_point(draw, layout, index, style)
-
     if footer:
         draw.text((text_left, FRAME_HEIGHT - 190), footer,
                   font=_load_font(26, family=style.body_font), fill=style.dim_text_colour)
 
     return image
-
-
-def _draw_point_layer(
-    headline: str, points: list[str], index: int, style: RenderStyle,
-    showing_picture: bool, path: Path,
-) -> None:
-    """One label alone, on transparent, ready to be overlaid when it is said.
-
-    A layer per label rather than a frame per state: the shot is encoded once,
-    so the camera keeps moving while the labels arrive, and a four-label scene
-    costs four small PNGs instead of four more encodes.
-    """
-    from PIL import Image, ImageDraw
-
-    layer = Image.new("RGBA", (FRAME_WIDTH, FRAME_HEIGHT), (0, 0, 0, 0))
-    layout = _words_layout(headline, points, style, showing_picture, is_title=False)
-    _draw_point(ImageDraw.Draw(layer), layout, index, style)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    layer.save(path)
 
 
 # The whitespace after a sentence's closing punctuation, or after a closing
@@ -611,11 +496,6 @@ def _draw_point_layer(
 SENTENCE_BOUNDARY = re.compile(
     r"(?:(?<=[.!?\u2026])|(?<=[.!?\u2026][\"'\u201d\u2019)]))\s+"
 )
-
-
-def _slides_for_narration(narration: str) -> list[str]:
-    """Kept for callers that only want the words; see `_slides_with_scenes`."""
-    return [text for text, _scene in _slides_with_scenes(narration)]
 
 
 def _slides_with_scenes(narration: str) -> list[tuple[str, int]]:
@@ -641,7 +521,7 @@ def _slides_with_scenes(narration: str) -> list[tuple[str, int]]:
         current = ""
         for sentence in (s for s in SENTENCE_BOUNDARY.split(flattened) if s):
             candidate = f"{current} {sentence}".strip()
-            if len(candidate) > CHARACTERS_PER_SLIDE and current:
+            if len(candidate) > CHARACTERS_PER_CUE and current:
                 slides.append((_as_finished_sentence(current), scene_index))
                 current = sentence
             else:
@@ -771,10 +651,9 @@ class ShotWindow:
     """Consecutive segments that share one picture: a title card, or one scene.
 
     The picture changes when the *scene* changes, not when the text does. A
-    scene whose narration fills three cues used to be three stills with the
-    camera restarting on each, which is the carousel one level down; as one
-    window it is one continuous shot, an animated diagram plays once rather than
-    three times, and the labels build across the whole of it.
+    scene whose narration fills three cues is one continuous shot, not three
+    stills restarting (the carousel one level down): a clip plays once rather
+    than three times.
     """
 
     kind: str                # "title" or "scene"
@@ -811,76 +690,8 @@ def shot_windows(section: RenderedSection) -> list[ShotWindow]:
     return windows
 
 
-# A word worth matching a label against: long enough that finding it in the
-# narration means something. "the" matches everywhere and says nothing.
-SHORTEST_MATCHABLE_WORD = 4
-
-# A label appears a little before the word is finished being said, so it is
-# already there as the ear arrives at it.
-REVEAL_LEAD_MS = 120
-
-# Two labels landing within this of each other read as one flicker.
-SHORTEST_GAP_BETWEEN_REVEALS_MS = 200
-
-
-def _key_word(text: str) -> str:
-    """The word in a label worth looking for in the narration."""
-    words = [
-        "".join(character for character in word if character.isalnum()).lower()
-        for word in text.split()
-    ]
-    long_enough = [word for word in words if len(word) >= SHORTEST_MATCHABLE_WORD]
-    return max(long_enough, key=len) if long_enough else ""
-
-
-def reveal_times(section: RenderedSection, window: ShotWindow, points: list[str]) -> list[int]:
-    """When each label appears, in milliseconds from the start of its shot.
-
-    On the word that names it, when the voice reported its timings and that word
-    is spoken in this scene: the label lands as it is said, which is the only
-    reason to have word timings at all. Otherwise the labels are spread across
-    the first part of the shot -- still better than four appearing at once,
-    which is a slide.
-    """
-    if not points:
-        return []
-
-    narration_start_ms = section.start_ms + section.title_card_ms
-    window_start_ms = window.start_ms - narration_start_ms
-    window_end_ms = window_start_ms + window.duration_ms
-
-    found_times: list[int] = []
-    cursor = 0
-    for index, point in enumerate(points):
-        at_ms = None
-        key = _key_word(point)
-        if key and section.words:
-            for position in range(cursor, len(section.words)):
-                word = section.words[position]
-                if word.start_ms < window_start_ms or word.start_ms >= window_end_ms:
-                    continue
-                spoken = _key_word(word.text)
-                if spoken and (spoken == key or spoken.startswith(key) or key.startswith(spoken)):
-                    at_ms = word.start_ms - window_start_ms - REVEAL_LEAD_MS
-                    cursor = position + 1
-                    break
-        if at_ms is None:
-            share = (index + 1) / (len(points) + 1)
-            at_ms = int(window.duration_ms * share * 0.75)
-        found_times.append(max(0, min(at_ms, max(0, window.duration_ms - 500))))
-
-    # Never out of order, whatever the matching found: a label that appears
-    # above one already on screen reads as a glitch even when each landed on its
-    # own word.
-    ordered: list[int] = []
-    for at_ms in found_times:
-        floor = ordered[-1] + SHORTEST_GAP_BETWEEN_REVEALS_MS if ordered else 0
-        ordered.append(max(at_ms, floor))
-    return ordered
-
-
 def write_subtitles(sections: list[RenderedSection], path: Path) -> None:
-    """One cue per slide, from the same segments the picture is cut to."""
+    """One cue per sentence or two, from the same segments the picture is cut to."""
     entries: list[str] = []
     index = 1
 
@@ -911,7 +722,7 @@ def write_subtitles(sections: list[RenderedSection], path: Path) -> None:
 
 def _run_ffmpeg(arguments: list[str], step: str) -> None:
     try:
-        subprocess.run(arguments, capture_output=True, text=True, check=True, timeout=1800)
+        project_work.run(arguments, check=True, timeout=1800)
     except subprocess.CalledProcessError as failure:
         # The last lines of stderr say what ffmpeg actually objected to; the exit
         # code alone says nothing anyone can act on.
@@ -921,44 +732,11 @@ def _run_ffmpeg(arguments: list[str], step: str) -> None:
         raise RenderFailed(f"ffmpeg timed out while {step}") from timeout
 
 
-
-def _motion_filter(motion: str, duration_ms: int) -> str:
-    """The camera move, as an ffmpeg filter over a still.
-
-    `zoompan` rather than a frame sequence: a ten-second shot at thirty frames a
-    second is three hundred 1920x1080 PNGs, and a six-minute video would be
-    several gigabytes of intermediates to say "the picture drifts slowly left".
-    ffmpeg does the same thing from one still and never writes them down.
-
-    The move is slow on purpose -- about four per cent of the frame over the
-    whole shot. Anything faster reads as a screensaver and pulls attention off
-    the narration, which is the opposite of what a diagram is for.
-    """
-    frames = max(1, round(duration_ms / 1000 * FRAME_RATE))
-    common = f"d={frames}:s={FRAME_WIDTH}x{FRAME_HEIGHT}:fps={FRAME_RATE}"
-    # zoompan samples from the scaled input, so the still is enlarged first:
-    # zooming a 1920-wide frame directly is what makes a pan look like a
-    # slideshow of blurred crops.
-    scaled = f"scale={FRAME_WIDTH * 2}:-1"
-    centre = "x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)'"
-    middle = "y='ih/2-(ih/zoom/2)'"
-    drift = 0.04
-
-    moves = {
-        "push_in": f"zoompan=z='min(1+{drift}*on/{frames},1.5)':{centre}:{common}",
-        "pull_back": f"zoompan=z='max(1+{drift}-{drift}*on/{frames},1.0)':{centre}:{common}",
-        "pan_right": f"zoompan=z='1.06':x='(iw-iw/zoom)*on/{frames}':{middle}:{common}",
-        "pan_left": f"zoompan=z='1.06':x='(iw-iw/zoom)*(1-on/{frames})':{middle}:{common}",
-    }
-    return f"{scaled},{moves.get(motion, f'zoompan=z=1:{centre}:{common}')}"
-
-
 def _shot_for(section: RenderedSection, segment: Segment) -> Shot:
     """What is on screen for this slide.
 
     Generation decides per scene. Without it, the section's own pictures are
-    dealt out slide by slide, which is what the renderer did before there was a
-    stage to decide anything.
+    dealt out slide by slide.
     """
     if section.shots:
         if segment.kind == "title":
@@ -970,9 +748,9 @@ def _shot_for(section: RenderedSection, segment: Segment) -> Shot:
     if not section.pictures:
         return Shot()
     if segment.kind == "title":
-        return Shot(picture=section.pictures[0], motion="hold")
+        return Shot(picture=section.pictures[0])
     index = max(0, segment.scene_index) % len(section.pictures)
-    return Shot(picture=section.pictures[index], motion="hold")
+    return Shot(picture=section.pictures[index])
 
 
 def _cross_fade_ms(durations: list[int]) -> int:
@@ -993,9 +771,9 @@ def _shot_source(
 ) -> tuple[list[str], str]:
     """How this shot's picture enters ffmpeg, and the filter that sizes it.
 
-    An animated clip plays and then holds its last frame (`tpad`) rather than
-    looping: a diagram that finished assembling should stay assembled while the
-    narration talks about it, not start over.
+    A clip plays and then holds its last frame (`tpad`) rather than looping: a
+    scene that finished assembling should stay assembled while the narration
+    talks about it, not start over.
     """
     if shot.clip is not None and shot.clip.exists():
         return (
@@ -1004,7 +782,8 @@ def _shot_source(
             f"pad={FRAME_WIDTH}:{FRAME_HEIGHT}:-1:-1:color=black,fps={FRAME_RATE},"
             f"tpad=stop_mode=clone:stop_duration={length_ms / 1000:.3f}",
         )
-    return (["-loop", "1", "-i", str(frame_path)], _motion_filter(shot.motion, length_ms))
+    return (["-loop", "1", "-i", str(frame_path)],
+            f"scale={FRAME_WIDTH}:{FRAME_HEIGHT},fps={FRAME_RATE}")
 
 
 def _encode_shot(
@@ -1021,54 +800,22 @@ def _encode_shot(
     opens_the_video: bool = False,
     closes_the_video: bool = False,
 ) -> Path:
-    """One scene: its frame, its camera move, and its labels arriving on top.
-
-    The labels are overlaid rather than drawn into the frame, each switched on
-    with `enable` at the moment its word is said, so the whole shot is one
-    encode and the motion never restarts.
-    """
+    """One scene: its frame (or clip) and the fades at the ends of the video."""
     shot = _shot_for(section, window.segments[0])
     is_title = window.kind == "title"
     headline = section.title if is_title else (shot.headline or section.title)
 
-    # A clip and a composed slide both carry their own words: the renderer that
-    # drew one was given this scene's headline and labels, so overlaying them
-    # again prints each of them twice, over the top of what already shows them.
-    carries_its_own_words = (
-        (shot.clip is not None and shot.clip.exists())
-        or (shot.full_bleed and _readable_picture(shot.picture))
-    )
-    points = [] if is_title or carries_its_own_words else list(shot.points)
-    showing_picture = _readable_picture(shot.picture) and not carries_its_own_words
-
     frame_path = working_directory / f"{name}.png"
-    if shot.full_bleed and _readable_picture(shot.picture):
-        # Nothing of ours on it. Not a headline, not a kicker, not a footer:
-        # this is the author's slide and every mark we add is over their design.
-        _fill_frame(shot.picture, style).save(frame_path)
-    else:
-        _draw_frame(
-            headline, points, "" if is_title else section.title, kicker, style,
-            picture=None if shot.clip is not None else shot.picture,
-            is_title=is_title, revealed=0,
-        ).save(frame_path)
-
-    layer_paths: list[Path] = []
-    for at, _point in enumerate(points):
-        layer_path = working_directory / f"{name}_p{at}.png"
-        _draw_point_layer(headline, points, at, style, showing_picture, layer_path)
-        layer_paths.append(layer_path)
+    _draw_frame(
+        headline, "" if is_title else section.title, kicker, style,
+        picture=None if shot.clip is not None else shot.picture, is_title=is_title,
+    ).save(frame_path)
 
     inputs, chain = _shot_source(shot, frame_path, length_ms)
-    arguments = [ffmpeg, "-y", *inputs]
-    for layer_path in layer_paths:
-        arguments += ["-i", str(layer_path)]
-
     shot_path = working_directory / f"{name}.mp4"
-    arguments += [
-        "-filter_complex", ";".join(_shot_filters(
-            chain, layer_paths, reveal_times(section, window, points),
-            length_ms, opens_the_video, closes_the_video)),
+    arguments = [
+        ffmpeg, "-y", *inputs,
+        "-filter_complex", _shot_filter(chain, length_ms, opens_the_video, closes_the_video),
         "-map", "[out]",
         "-t", f"{length_ms / 1000:.3f}",
         "-r", str(FRAME_RATE), "-c:v", "libx264", "-preset", "veryfast",
@@ -1078,28 +825,16 @@ def _encode_shot(
     return shot_path
 
 
-def _shot_filters(
-    chain: str,
-    layer_paths: list[Path],
-    reveals: list[int],
-    length_ms: int,
-    opens_the_video: bool,
-    closes_the_video: bool,
-) -> list[str]:
-    """The filter graph for one shot: the move, the reveals, and the fades."""
-    steps = [f"[0:v]{chain}[v0]"]
-    for at, (_layer, at_ms) in enumerate(zip(layer_paths, reveals, strict=True)):
-        steps.append(
-            f"[v{at}][{at + 1}:v]overlay=enable='gte(t,{at_ms / 1000:.2f})'[v{at + 1}]"
-        )
-
+def _shot_filter(
+    chain: str, length_ms: int, opens_the_video: bool, closes_the_video: bool,
+) -> str:
+    """The filter graph for one shot: its sizing chain and the fades."""
     finish = ["format=yuv420p"]
     if opens_the_video:
         finish.insert(0, "fade=t=in:st=0:d=0.6")
     if closes_the_video:
         finish.insert(0, f"fade=t=out:st={max(0.0, length_ms / 1000 - 0.8):.3f}:d=0.8")
-    steps.append(f"[v{len(layer_paths)}]{','.join(finish)}[out]")
-    return steps
+    return f"[0:v]{chain},{','.join(finish)}[out]"
 
 
 def _cut_section(

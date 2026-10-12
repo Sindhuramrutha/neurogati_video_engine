@@ -189,10 +189,10 @@ first · Ready to transfer · Transferred.
 
 ## Things to know
 
-- A project from before transfers existed is treated as transferred once, as it
-  stood, the first time a later stage reads it.
-- A library gathered by an older version is gathered again once when the page
-  opens, so its pictures gain their slide. Your choices are kept.
+- A project with no transfer recorded is treated as transferred once, as it
+  stands, the first time a later stage reads it.
+- A library gathered by a lower gathering version is gathered again once when the
+  page opens, so its pictures gain their slide. Your choices are kept.
 - A brand kit saved with a corner, a size and an opacity keeps its logo on
   exactly the same pixels.
 - Re-extracting and transferring a file brings its pictures in again. Your

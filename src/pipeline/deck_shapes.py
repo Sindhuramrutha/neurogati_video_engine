@@ -288,17 +288,3 @@ def _first_run_style(shape) -> tuple[float, bool, str]:
     return 0.0, False, ""
 
 
-def _colour_of(fill) -> str:
-    """A fill's colour as "#RRGGBB", or empty when it is not a plain colour."""
-    try:
-        colour = fill.fore_color
-        if colour.type is not None and str(colour.type).startswith("RGB"):
-            return f"#{colour.rgb}"
-        # A theme colour resolves against the theme, which is captured
-        # separately; the name is more useful than a guessed hex.
-        if colour.type is not None:
-            return str(colour.theme_color).split(" ")[0].lower()
-    except (AttributeError, TypeError, ValueError):
-        return ""
-    return ""
-

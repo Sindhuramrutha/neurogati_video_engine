@@ -1,33 +1,29 @@
-"""A scene as a folder with a script: the script is free, the checks are fixed,
-and a clip that fails one is not used."""
+"""Every scene is a program: a folder with a scene.py that is run, checked by
+fixed rules, previewed with its own narration, and approved before the render
+may use it."""
 
 # ruff: noqa: F811
 import shutil
 
 import pytest
 
-from pipeline import operations, scene_author
+from pipeline import operations
 from pipeline.generation import VisualPlanStore
-from pipeline.scene_author import add_resource, mark_scripted, resource_index, script_scene
+from pipeline.scene_approval import approve_passed, approve_scene
+from pipeline.scene_author import add_resource, resource_index
 from pipeline.scene_lab import (
-    SCRIPTED,
     read_scene,
     resources_root,
     run_scene,
     save_scene_code,
     scene_folder,
 )
+from pipeline.scene_program import save_spec
 from pipeline.scripting import Script, ScriptScene, ScriptStore, SectionScript
-from pipeline.slide_plan import plan_from_slides
-from tests.test_slide_first import a_deck_project, project_root  # noqa: F401
+from tests.test_slide_first import a_deck_project, plan_from_slides, project_root  # noqa: F401
 
 pytestmark = pytest.mark.skipif(
     not (shutil.which("ffmpeg") and shutil.which("ffprobe")), reason="needs ffmpeg")
-
-# The library's own worked example, without its dependency block, so the test
-# runs it with this interpreter instead of asking uv to build an environment.
-EXAMPLE = (resources_root() / "methods" / "example_scene.py").read_text(
-    encoding="utf-8").split("# ///\n", 1)[1]
 
 CRASHES = "raise RuntimeError('the scene went wrong')\n"
 BLANK = '''
@@ -37,7 +33,21 @@ with VideoWriter(brief) as video:
     for _ in range(brief.frames):
         video.write(canvas(brief)[0])
 '''
-TOO_LONG = EXAMPLE.replace("range(brief.frames)", "range(brief.frames * 2)")
+# A program that changes throughout: a bar grows across the frame under a short
+# label, so every sampled moment differs.
+GOOD = '''
+from scenekit import VideoWriter, canvas, font, load_brief
+brief = load_brief()
+with VideoWriter(brief) as video:
+    for n in range(brief.frames):
+        t = n / max(1, brief.frames - 1)
+        image, draw = canvas(brief)
+        draw.text((200, 200), "Touch", font=font(brief, 72), fill=brief.look["text"])
+        draw.rectangle([200, 500, 200 + int(1500 * t), 700], fill=brief.look["accent"])
+        video.write(image)
+'''
+TOO_LONG = GOOD.replace("range(brief.frames)", "range(brief.frames * 2)")
+STILL = GOOD.replace("t = n / max(1, brief.frames - 1)", "t = 1.0")
 
 
 def scripted_project(name):
@@ -54,86 +64,106 @@ def scripted_project(name):
     return slug, project, visual
 
 
+def with_program(slug, project, visual, code, renderer="pillow"):
+    save_scene_code(slug, visual.id, code)
+    save_spec(scene_folder(project, visual, create=True),
+              {"renderer": renderer, "approach": "test", "beats": []})
+
+
 def checks_of(result):
     return {c["key"]: c["status"] for c in result["checks"]}
 
 
-def test_a_scene_that_passes_its_checks_becomes_what_the_scene_shows(project_root):
+def test_every_scene_is_planned_with_no_clip_until_its_program_is_made(project_root):
+    slug, project, _ = scripted_project("Programs")
+    scenes = VisualPlanStore(project.root).load().visuals
+    assert scenes and not any(v.clip_path or v.approved_at for v in scenes)
+
+
+def test_a_program_that_passes_every_check_has_a_preview_and_waits_for_approval(project_root):
     slug, project, visual = scripted_project("Good scene")
-    save_scene_code(slug, visual.id, EXAMPLE)
+    with_program(slug, project, visual, GOOD)
 
     result = run_scene(slug, visual.id)
 
-    assert set(checks_of(result).values()) == {"pass"}, result["checks"]
+    failing = {k: v for k, v in checks_of(result).items() if v == "fail"}
+    assert not failing, result["checks"]
+    assert checks_of(result)["layout"] == "warn", "Pillow does not record its text"
     made = result["visual"]
-    assert made["kind"] == SCRIPTED and made["is_built"]
     assert made["clip_path"].endswith("/render.mp4")
-    assert made["asset_path"].endswith("/poster.png")
+    assert result["has_preview"], "the clip with its own narration"
+    assert made["approved_at"] == "", "passing is not approving"
+    brief = result["brief"]
+    assert brief["narration_measured"] and brief["seconds"] > 0
+    assert brief["time_range"]["start"] == 0 and brief["section_scenes"][0]["this_scene"]
     folder = scene_folder(project, visual)
     assert {p.name for p in folder.iterdir()} >= {
-        "scene.py", "brief.json", "render.mp4", "poster.png", "checks.json", "log.txt"}
-    assert result["brief"]["seconds"] == 4.8, "measured from the narration: 12 words"
-    assert result["brief"]["slide_image"].endswith("slide.png"), "the deck's slide is kept"
+        "scene.py", "brief.json", "spec.json", "render.mp4", "preview.mp4", "poster.png",
+        "checks.json", "log.txt", "narration.json"}
 
 
 @pytest.mark.parametrize(("code", "failed"), [
-    (CRASHES, "ran"), (BLANK, "shows"), (TOO_LONG, "length")])
-def test_a_scene_that_fails_a_check_is_not_used(project_root, code, failed):
+    (CRASHES, "ran"), (BLANK, "not-blank"), (TOO_LONG, "duration"), (STILL, "moments")])
+def test_a_program_that_fails_a_check_is_not_used(project_root, code, failed):
     slug, project, visual = scripted_project(f"Bad {failed}")
-    save_scene_code(slug, visual.id, code)
+    with_program(slug, project, visual, code)
 
     result = run_scene(slug, visual.id)
 
-    assert checks_of(result)[failed] == "fail"
-    assert result["visual"]["clip_path"] == "" and not result["visual"]["is_built"]
-    assert "failed a check" in result["visual"]["note"]
     if failed == "ran":
+        assert checks_of(result)["ran"] == "fail"
         assert "the scene went wrong" in result["log"]
+    else:
+        assert checks_of(result)[failed] == "fail", result["checks"]
+    assert result["visual"]["clip_path"] == ""
+    assert "failed a check" in result["visual"]["note"]
 
 
-class FakeAuthor:
-    """Writes a script that crashes, then -- shown the failure -- one that works."""
-
-    def __init__(self):
-        self.requests = []
-
-    def __call__(self, model, system_prompt, user_prompt, **_):
-        self.requests.append((system_prompt, user_prompt))
-        code = CRASHES if len(self.requests) == 1 else EXAMPLE
-        return model(approach="A headline and three points.", code=code)
+def test_a_program_that_does_not_use_the_renderer_it_names_fails(project_root):
+    slug, project, visual = scripted_project("Not Manim")
+    with_program(slug, project, visual, GOOD, renderer="manim")      # GOOD draws with Pillow
+    assert checks_of(run_scene(slug, visual.id))["renderer"] == "fail"
 
 
-def test_the_agent_writes_runs_and_fixes_until_the_checks_pass(project_root, monkeypatch):
-    slug, project, visual = scripted_project("Authored")
-    author = FakeAuthor()
-    monkeypatch.setattr(scene_author, "complete_structured", author)
-    monkeypatch.setattr("pipeline.agent_runtime.build_system_prompt", lambda agent: "AGENT")
+def test_approval_needs_a_passing_program_and_a_new_run_withdraws_it(project_root):
+    slug, project, visual = scripted_project("Approve")
+    with pytest.raises(operations.OperationFailed, match="passed every check"):
+        approve_scene(slug, visual.id)
 
-    result = script_scene(slug, visual.id)
+    with_program(slug, project, visual, GOOD)
+    run_scene(slug, visual.id)
+    assert approve_scene(slug, visual.id)["visual"]["approved_at"]
 
-    assert [a["failed"] for a in result["attempts"]] == [
-        ["The script ran", "It made a video"], []]
-    assert result["visual"]["is_built"]
-    system, first = author.requests[0]
-    assert "scene-contract.md" in system and "scenekit.py" in system, "shown the library"
-    assert '"on_screen": "Touch. Movement. One picture of the body."' in first
-    assert "the scene went wrong" in author.requests[1][1], "the fix is shown the failure"
-    assert (scene_folder(project, visual) / "author.json").exists()
+    again = run_scene(slug, visual.id)
+    assert again["visual"]["approved_at"] == "", "watched and approved again"
 
 
-def test_deciding_again_keeps_a_scripted_scene_scripted(project_root):
-    slug, project, visual = scripted_project("Kept")
-    assert mark_scripted(slug, [visual.id]) == 1
+def test_every_passed_scene_can_be_approved_at_once(project_root):
+    slug, project, visual = scripted_project("Approve all")
+    assert approve_passed(slug)["approved"] == 0, "nothing passed, nothing approved"
 
-    script = ScriptStore(project.root).load()
-    script.section_scripts[1].scenes[0].narration = "Rewritten: the body map is learnt."
-    ScriptStore(project.root).save(script)
-    operations.plan_visuals(slug)
+    with_program(slug, project, visual, GOOD)
+    run_scene(slug, visual.id)
+    done = approve_passed(slug)
+    assert done["approved"] == 1
+    assert read_scene(slug, visual.id)["visual"]["approved_at"]
+    assert approve_passed(slug)["approved"] == 0, "an approved scene is not approved twice"
 
-    again = next(v for v in VisualPlanStore(project.root).load().visuals
-                 if v.scene_id == visual.scene_id)
-    assert again.kind == SCRIPTED and not again.is_built
-    assert "run its script again" in again.note
+
+def test_a_scene_program_never_sees_the_server_s_secrets(project_root, monkeypatch):
+    monkeypatch.setenv("SCENE_TEST_SECRET", "not for scene programs")
+    slug, project, visual = scripted_project("Sealed")
+    with_program(slug, project, visual,
+                 "import os\nassert 'SCENE_TEST_SECRET' not in os.environ\n" + GOOD)
+    assert checks_of(run_scene(slug, visual.id))["ran"] == "pass"
+
+
+def test_the_render_refuses_scenes_that_are_not_approved_programs(project_root):
+    from pipeline.scene_approval import render_blockers
+
+    slug, project, visual = scripted_project("Blocked")
+    blockers = render_blockers(VisualPlanStore(project.root).load().visuals)
+    assert len(blockers) == 2 and all("no program that passed" in b for b in blockers)
 
 
 def test_the_library_lists_what_is_in_it_and_takes_more(project_root, monkeypatch, tmp_path):
@@ -141,9 +171,8 @@ def test_the_library_lists_what_is_in_it_and_takes_more(project_root, monkeypatc
     monkeypatch.setattr("pipeline.scene_lab.REPO_ROOT", tmp_path)
 
     index = resource_index()
-    assert {"name": "scenekit.py",
-            "about": "scenekit -- the small toolkit every scene script can import."} \
-        in index["code"]
+    names = [entry["name"] for entry in index["code"]]
+    assert "scenekit.py" in names and "manimkit.py" in names
     assert "scene-contract.md" in [entry["name"] for entry in index["methods"]]
 
     added = add_resource("methods", "house-style.md", b"# Our house style\nUse the accent.")
@@ -158,19 +187,13 @@ def test_read_scene_of_a_scene_with_no_folder_is_empty_not_an_error(project_root
     assert scene["code"] == "" and scene["checks"] == [] and scene["folder"] == ""
 
 
-def test_a_scripted_clip_is_frozen_with_the_transfer_and_reaches_the_render(project_root):
+def test_a_program_s_clip_is_frozen_with_the_transfer(project_root):
     from pipeline.generation_handoff import _freeze
 
     slug, project, visual = scripted_project("Frozen")
-    save_scene_code(slug, visual.id, EXAMPLE)
+    with_program(slug, project, visual, GOOD)
     made = run_scene(slug, visual.id)["visual"]
 
     frozen = _freeze(project, made["clip_path"])
     assert frozen.startswith("generation/transferred/") and frozen.endswith(".mp4")
     assert (project.root / frozen).read_bytes() == (project.root / made["clip_path"]).read_bytes()
-
-    # Running the script again rewrites render.mp4; the frozen copy does not move.
-    save_scene_code(slug, visual.id, EXAMPLE.replace("88", "96"))
-    run_scene(slug, visual.id)
-    assert (project.root / frozen).exists()
-    assert _freeze(project, made["clip_path"]) != frozen, "a different clip, a different name"

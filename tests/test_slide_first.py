@@ -18,12 +18,12 @@ Two promises are tested here, because both were broken:
 from __future__ import annotations
 
 import io
+from typing import Any
 
 import pytest
 from PIL import Image, ImageDraw
 
 from pipeline import operations
-from pipeline.slide_plan import coverage_of, plan_from_slides, slide_coverage, slides_in
 
 
 @pytest.fixture
@@ -40,7 +40,7 @@ def a_deck(path, slides: int = 5, heading_size: int = 40):
     """A real .pptx with a heading in a plain text box on every slide.
 
     A text box, not a title placeholder, because that is how designed decks are
-    actually built -- and it is exactly the case that used to come through as
+    actually built -- and it is the case that must not come through as
     "Slide 7".
     """
     from pptx import Presentation
@@ -79,27 +79,58 @@ def a_deck_project(name: str, slides: int = 5):
     return slug, project
 
 
+def slides_in(extraction, file_name: str = "") -> list[dict[str, Any]]:
+    """Every slide of every deck in the extraction, in order.
+
+    Keyed on the slide number the blocks carry, not on their heading text: two
+    slides titled the same are two slides, and the title is all a heading path
+    records for a deck.
+    """
+    found: list[dict[str, Any]] = []
+    for document in extraction.documents:
+        if file_name and document.file_name != file_name:
+            continue
+        numbers = sorted({
+            block.slide_number for block in document.blocks if block.slide_number
+        })
+        for number in numbers:
+            blocks = [b for b in document.blocks if b.slide_number == number]
+            heading = next((b.text for b in blocks if b.kind == "heading"), "")
+            words = [b.text for b in blocks if b.kind != "heading" and b.text.strip()]
+            found.append({
+                "file_name": document.file_name,
+                "number": number,
+                "title": heading or f"Slide {number}",
+                "text": "\n".join(words),
+                "figure_count": sum(1 for b in blocks if b.kind == "figure"),
+            })
+    return found
+
+
+def plan_from_slides(slug: str) -> dict:
+    """One section per slide, in the deck's order: a plan to test later layers
+    against, without the planning agent."""
+    from pipeline.extraction import ExtractionStore
+    from pipeline.lesson_plan import save_plan
+    from pipeline.planning import Plan, PlanScene, PlanSection, SourceReference
+
+    project = operations.require_project(slug)
+    slides = slides_in(ExtractionStore(project.root).load())
+    save_plan(project, Plan(sections=[PlanSection(
+        id=f"slide-{slide['number']:03d}", title=slide["title"], summary=slide["title"],
+        scenes=[PlanScene(does=slide["title"], slides=[slide["number"]], seconds=20)],
+        sources=[SourceReference(file_name=slide["file_name"], heading_path=[slide["title"]],
+                                 slide_number=slide["number"])])
+        for slide in slides]))
+    return operations.read_artifact(slug, "plan")
+
+
 # --- every slide, in order ----------------------------------------------------------
 
 
-def test_a_plan_built_from_a_deck_has_one_section_per_slide_in_order(project_root):
-    slug, _ = a_deck_project("Ordered", slides=7)
-
-    built = plan_from_slides(slug)
-
-    assert built["slide_count"] == 7
-    assert built["section_count"] == 7
-    assert built["coverage"]["is_complete"]
-    assert [s["title"] for s in built["sections"]] == [
-        "Opening", *(f"Heading number {n}" for n in range(1, 8)), "Recap", "Close",
-    ], "the sections must follow the deck, carry its own headings, inside the lesson frame"
-    assert all(s["rendering_approach"] == "slide"
-               for s in built["sections"] if s["role"] == "teach")
-
-
 def test_the_deck_s_own_heading_survives_even_without_a_title_placeholder(project_root):
-    """Designed decks set headings as plain text boxes. Every slide used to come
-    through as "Slide 7", which lost the one line the author most wanted kept."""
+    """Designed decks set headings as plain text boxes. No slide comes
+    through as "Slide 7", which would lose the one line the author most wanted kept."""
     slug, _project = a_deck_project("Headings", slides=3)
 
     from pipeline.extraction import ExtractionStore
@@ -117,6 +148,8 @@ def test_a_kicker_above_a_title_does_not_become_the_heading(project_root):
     from pptx import Presentation
     from pptx.util import Inches, Pt
 
+    from pipeline.extraction import ExtractionStore
+
     slug = operations.create_project("Kicker")["slug"]
     project = operations.require_project(slug)
     (project.root / "sources").mkdir(parents=True, exist_ok=True)
@@ -132,99 +165,11 @@ def test_a_kicker_above_a_title_does_not_become_the_heading(project_root):
     operations.run_extraction(slug, "deck.pptx")
     operations.confirm_extraction(slug)
 
-    built = plan_from_slides(slug)
-    assert built["sections"][1]["title"] == "Networks that Learn"
-
-
-def test_scenes_may_outnumber_slides_but_never_the_reverse(project_root):
-    slug, project = a_deck_project("Counting", slides=4)
-    plan_from_slides(slug)
-
-    from pipeline.scripting import Script, ScriptScene, ScriptStore, SectionScript
-
-    sections = operations.read_artifact(slug, "plan")["sections"]
-    # Slide 2 is dense enough for three beats; the rest take one each.
-    ScriptStore(project.root).save(Script(section_scripts=[
-        SectionScript(
-            section_id=section["id"],
-            scenes=[ScriptScene(narration=f"Beat {beat}.", brief="x")
-                    for beat in range(1, 4 if index == 1 else 2)],
-        )
-        for index, section in enumerate(sections)
-    ]))
-
-    coverage = slide_coverage(slug)
-    assert coverage["slide_count"] == 4
-    assert coverage["scene_count"] == 6, "three beats on slide 2, one on each of the rest"
-    assert coverage["follows_the_deck"]
-    assert coverage["warnings"] == []
-
-
-def test_a_dropped_slide_is_reported_rather_than_rendered_anyway(project_root):
-    """The guarantee has to be checkable, because a re-plan or a hand edit can
-    break it silently and the video would just be missing a slide."""
-    slug, project = a_deck_project("Dropped", slides=5)
-    plan_from_slides(slug)
-
-    from pipeline.planning import PlanStore
-
-    store = PlanStore(project.root)
-    plan = store.load()
-    plan.sections = [s for s in plan.sections if s.id != "slide-003"]
-    store.save(plan)
-
-    coverage = slide_coverage(slug)
-    assert coverage["missing_slides"] == [3]
-    assert not coverage["follows_the_deck"]
-    assert any("not covered" in warning for warning in coverage["warnings"])
-
-
-def test_sections_out_of_the_deck_s_order_are_reported():
-    """Order is checked separately from coverage: every slide can be present and
-    the video still not follow the deck."""
-    slides = [{"number": n} for n in (1, 2, 3)]
-
-    class Section:
-        def __init__(self, number):
-            self.sources = [type("Ref", (), {"slide_number": number})()]
-
-    jumbled = coverage_of(slides, [Section(2), Section(1), Section(3)])
-
-    assert jumbled["missing_slides"] == []
-    assert not jumbled["is_in_order"]
-    assert not jumbled["is_complete"]
+    titles = [s["title"] for s in slides_in(ExtractionStore(project.root).load())]
+    assert titles[0] == "Networks that Learn"
 
 
 # --- the slide is shown, not rebuilt ------------------------------------------------
-
-
-def test_a_slide_scene_shows_the_composed_slide_and_says_which_one(project_root):
-    slug, project = a_deck_project("Shown", slides=3)
-    plan_from_slides(slug)
-
-    from pipeline.scripting import Script, ScriptScene, ScriptStore, SectionScript
-
-    sections = operations.read_artifact(slug, "plan")["sections"]
-    ScriptStore(project.root).save(Script(section_scripts=[
-        SectionScript(section_id=s["id"],
-                      scenes=[ScriptScene(narration="Some narration here.", brief="x")])
-        for s in sections
-    ]))
-
-    planned = operations.plan_visuals(slug)
-    # The lesson frame shows words; each slide section shows its slide.
-    assert [v["kind"] for v in planned["visuals"]] == ["text", *["slide"] * 3, "text", "text"]
-    assert [v["slide_number"] for v in planned["visuals"]] == [0, 1, 2, 3, 0, 0]
-
-    built = operations.build_visuals(slug)
-    assert built["audit"]["slides"] == 3
-    for visual in (v for v in built["visuals"] if v["slide_number"]):
-        assert visual["asset_path"].startswith("generation/slides/")
-        assert (project.root / visual["asset_path"]).exists()
-        # Its own heading, verbatim, and no composed labels: the slide already
-        # carries its text where the author put it.
-        assert visual["headline"] == f"Heading number {visual['slide_number']}"
-        assert visual["points"] == []
 
 
 def test_a_composed_slide_carries_the_deck_s_own_pixels(project_root):
@@ -261,37 +206,3 @@ def test_a_composed_slide_carries_the_deck_s_own_pixels(project_root):
     assert blues > 1_500_000, f"the slide's own artwork is not on the frame ({blues} px)"
 
 
-def test_a_full_bleed_shot_has_nothing_of_ours_drawn_over_it(project_root):
-    """The slide already has its heading, its body text and its artwork exactly
-    where they belong. Every mark this renderer adds is on somebody's layout."""
-    from pipeline.rendering import RenderedSection, Shot, _fill_frame, section_segments
-
-    slide = project_root / "slide.png"
-    Image.new("RGB", (1920, 1080), (12, 200, 90)).save(slide)
-
-    filled = _fill_frame(slide)
-    greens = sum(1 for pixel in filled.getdata() if pixel[1] > 150 > pixel[0])
-    assert greens == 1920 * 1080, "a 16:9 slide should land edge to edge"
-
-    # And the renderer treats such a shot as carrying its own words.
-    section = RenderedSection("s1", "A section", "Some narration here.",
-                              audio_duration_ms=4_000,
-                              shots=[Shot(picture=slide, full_bleed=True,
-                                          headline="ignored", points=["ignored"])])
-    assert [s.kind for s in section_segments(section)] == ["slide"]
-
-
-def test_a_letterboxed_deck_keeps_its_whole_layout(project_root):
-    """A 4:3 deck is letterboxed rather than cropped: losing a centimetre of
-    somebody's layout to fill the frame is not a trade worth making."""
-    from pipeline.rendering import _fill_frame
-
-    slide = project_root / "slide43.png"
-    Image.new("RGB", (1024, 768), (200, 30, 30)).save(slide)
-
-    filled = _fill_frame(slide)
-    reds = sum(1 for pixel in filled.getdata() if pixel[0] > 150 > pixel[1])
-
-    assert filled.size == (1920, 1080)
-    # 4:3 in 16:9 fills three quarters of the width, and none of it is cropped.
-    assert 0.70 < reds / (1920 * 1080) < 0.80

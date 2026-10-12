@@ -7,9 +7,13 @@ from pipeline.assets_handoff import confirm_assets
 from pipeline.plan_handoff import read_plan_handoff, transfer_plan
 from pipeline.planning import PlanStore
 from pipeline.script_handoff import transfer_script
-from pipeline.slide_plan import plan_from_slides, resync_plan_with_deck
 from pipeline.upstream import upstream_state
-from tests.test_slide_first import a_deck, a_deck_project, project_root  # noqa: F401
+from tests.test_slide_first import (  # noqa: F401
+    a_deck,
+    a_deck_project,
+    plan_from_slides,
+    project_root,
+)
 
 
 def change_the_deck(slug, project, slides):
@@ -63,7 +67,7 @@ def test_transferring_again_clears_the_flag_and_moves_it_down(project_root):
 
     operations.refresh_asset_library(slug)
     confirm_assets(slug)
-    resync_plan_with_deck(slug)
+    plan_from_slides(slug)   # re-planned for the new deck
     transfer_plan(slug)
     state = upstream_state(project)
 
@@ -82,30 +86,6 @@ def test_an_older_project_is_taken_as_in_step_once(project_root):
     assert (project.root / "handoffs.json").exists(), "adopted as it stands"
 
 
-def test_resync_keeps_edits_adds_new_slides_and_drops_removed_ones(project_root):
-    slug, project = a_deck_project("Resync", slides=3)
-    plan_from_slides(slug)
-    store = PlanStore(project.root)
-    plan = store.load()
-    edited = next(s for s in plan.sections if s.id == "slide-002")
-    edited.title, edited.summary, edited.summary_origin = "My title", "What you learn.", "you"
-    store.save(plan)
-
-    change_the_deck(slug, project, slides=4)
-    grown = resync_plan_with_deck(slug)
-    assert grown["resync"] == {"added": ["Heading number 4"], "removed": []}
-    assert [s["title"] for s in grown["sections"]] == [
-        "Opening", "Heading number 1", "My title", "Heading number 3", "Heading number 4",
-        "Recap", "Close"], "in the deck's order, inside the frame, the edit kept"
-
-    change_the_deck(slug, project, slides=2)
-    shrunk = resync_plan_with_deck(slug)
-    assert shrunk["resync"]["removed"] == ["Heading number 3", "Heading number 4"]
-    assert "My title" in [s["title"] for s in shrunk["sections"]]
-    assert resync_plan_with_deck(slug)["resync"] == {"added": [], "removed": []}, \
-        "the same plan and deck give the same result"
-
-
 def test_a_replaced_source_shows_the_slides_that_differ_not_everything(project_root):
     """One source per project, keyed by place: a new file of the same deck says
     which slides differ, and that the source file was replaced."""
@@ -121,7 +101,7 @@ def test_a_replaced_source_shows_the_slides_that_differ_not_everything(project_r
 
 
 def test_a_record_from_before_one_source_is_adopted_once(project_root):
-    """Parts used to be keyed by file name. A record in that form is taken as in
+    """A record whose parts are keyed by file name is taken as in
     step once, rather than flagging every slide as removed and new."""
     import json
 
@@ -150,7 +130,7 @@ def test_the_same_transfer_described_differently_is_not_a_change(project_root):
     record = project.root / "handoffs.json"
     stored = json.loads(record.read_text(encoding="utf-8"))
     plan_reads = stored["script-staging"]["scene-plan"]
-    plan_reads["parts"]["~brief"][1] = "described-the-old-way"
+    plan_reads["parts"]["~setup"][1] = "described-the-old-way"
     plan_reads["fingerprint"] = "old"
     record.write_text(json.dumps(stored), encoding="utf-8")
 

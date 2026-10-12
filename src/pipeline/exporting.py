@@ -116,14 +116,8 @@ def description_markdown(
 ) -> str:
     """What the video is, from what the project already decided."""
     lines = [f"# {project_name}", ""]
-    if plan.get("selected_audience"):
-        lines += [f"**For:** {plan['selected_audience']}", ""]
-
-    objectives = [o["text"] for o in plan.get("learning_objectives", []) if o.get("text")]
-    if objectives:
-        lines += ["**By the end of this video you will be able to:**", ""]
-        lines += [f"- {text}" for text in objectives]
-        lines.append("")
+    if plan.get("audience"):
+        lines += [f"**For:** {plan['audience']}", ""]
 
     if sections:
         lines += ["**Chapters**", ""]
@@ -131,10 +125,6 @@ def description_markdown(
             f"- {_clock(section['start_ms'])} — {section['title']}" for section in sections
         ]
         lines.append("")
-
-    themes = [t for t in plan.get("key_themes", []) if t]
-    if themes:
-        lines += ["**Topics:** " + ", ".join(themes), ""]
     return "\n".join(lines)
 
 

@@ -202,7 +202,7 @@ def test_a_run_stores_figures_under_the_project(project_root, tmp_path):
 
 
 def test_replacing_the_file_removes_figures_nothing_refers_to(project_root):
-    """A picture-heavy deck replaced by another used to leave its images behind
+    """A picture-heavy deck replaced by another must not leave its images behind
     for good. Pictures the extraction no longer uses go -- unless what was
     transferred still points at them."""
     slug = operations.create_project("Pruning")["slug"]
@@ -512,7 +512,7 @@ def test_the_asset_route_cannot_reach_outside_the_assets_folder(project_root, cl
 
 
 def test_extraction_round_trips_with_figures():
-    """An older content.json has no asset_path; it must still load."""
+    """A content.json with no asset_path must still load."""
     old_shape = {"documents": [{"file_name": "a.docx", "blocks": [
         {"kind": "paragraph", "text": "hello", "heading_path": []},
     ]}], "extracted_at": "2026-01-01T00:00:00+00:00"}
@@ -542,25 +542,21 @@ def set_extraction_options(project, **values):
     store.save(Stage.EXTRACTION, {**current, **values})
 
 
-def test_every_option_is_built():
+def test_every_option_is_read():
     """A toggle that is saved and read by nothing is indistinguishable from a
-    broken one -- and the page no longer has anywhere to put one."""
+    broken one, so every declared option is one a stage reads."""
     from pipeline.stage_options import options_for
     from pipeline.stages import Stage
 
-    assert all(option.implemented for option in options_for(Stage.EXTRACTION))
     assert {option.key for option in options_for(Stage.EXTRACTION)} == {
         "extract_tables", "extract_images", "extract_layout",
         "extract_backgrounds", "extract_styling", "handwriting_ocr",
     }
 
-    # The Scene Plan's three preferences are read: the duration steers drafting
-    # and is checked against the finished plan, the tone reaches the narration,
-    # and the language reaches both the narration and the voice that speaks it.
-    assert {option.key for option in options_for(Stage.SCENE_PLAN) if option.implemented} == {
-        "target_duration", "tone", "language",
-    }
-    assert all("implemented" in option.to_dict() for option in options_for(Stage.SCENE_PLAN))
+    # The Scene Plan's one preference is read: the language reaches both the
+    # narration and the voice that speaks it. The tone is fixed: it teaches. The
+    # length is typed in the plan's own setup.
+    assert {option.key for option in options_for(Stage.SCENE_PLAN)} == {"language"}
 
 
 def test_switching_images_off_extracts_no_figures(project_root):

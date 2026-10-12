@@ -8,9 +8,13 @@ turned up a fifth that no agent had noticed. Each test here is one of those.
 import pytest
 
 from pipeline import operations
-from pipeline.rendering import RenderedSection, _slides_for_narration, section_segments
+from pipeline.rendering import RenderedSection, _slides_with_scenes, section_segments
 from pipeline.review import Review, VideoVersion
 from pipeline.scripting import Script, SectionScript
+
+
+def _slides_for_narration(narration: str) -> list[str]:
+    return [text for text, _scene in _slides_with_scenes(narration)]
 
 
 @pytest.fixture
@@ -170,7 +174,7 @@ def test_reviewing_repeats_the_length_warning(project_root):
 
 def test_versions_sharing_one_file_are_reported():
     """Renders from before per-render file names all wrote the same path: three
-    versions listed, one video, and picking an older one played the newest."""
+    versions listed, one video, and picking a past one plays the newest."""
     review = Review(versions=[
         VideoVersion(label="a", file_path="out/video.mp4"),
         VideoVersion(label="b", file_path="out/video.mp4"),
@@ -214,10 +218,10 @@ def _timeline_with_titles(slug, titles):
 
 
 def test_a_timeline_from_an_abandoned_script_is_reported(project_root):
-    """The defect this exists for: a plan was re-drafted from a different source,
-    the timeline and chapters stayed as an earlier render left them, and every
-    later render refused to rebuild them because they counted as hand-edited.
-    Studio and Reviewing went on describing a video nobody was making."""
+    """The defect this exists for: a plan re-drafted from a different source leaves
+    the timeline and chapters as the previous render made them, later renders
+    refuse to rebuild them because they count as hand-edited, and Studio and
+    Reviewing go on describing a video nobody is making."""
     slug, _ = planned_project("Wrong Cut", [
         ("Perceptrons: Architecture and Learning", 90),
         ("Backpropagation: The Breakthrough", 90),
@@ -268,7 +272,7 @@ def test_reviewing_repeats_that_the_cut_is_wrong(project_root):
 
 
 def test_emptying_the_timeline_lets_a_render_rebuild_it(project_root):
-    """The only way out used to be deleting clips one at a time."""
+    """One action empties the timeline, rather than deleting clips one at a time."""
     slug, _ = planned_project("Emptied", [("Perceptrons", 90)])
     _timeline_with_titles(slug, ["Something else entirely"])
 

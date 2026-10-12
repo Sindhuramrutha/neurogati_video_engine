@@ -1,9 +1,9 @@
 /**
  * The Render page: its own tab in the sidebar, before Studio.
  *
- * Rendering is minutes of work a section, and it used to be a button that
- * said "Rendering..." -- or, after a redraw, "Render video" again while three
- * renders ran unseen. Modelled on an editor's Deliver page instead:
+ * Rendering is minutes of work a section, so it is not a button that says
+ * "Rendering..." (or, after a redraw, "Render video" again while three renders
+ * run unseen). Modelled on an editor's Deliver page:
  *
  * - A bar: what is rendering, how far it has got, how long it has taken and
  *   roughly how long is left, with Pause and Delete.
@@ -82,7 +82,6 @@ function renderBar() {
     now = `
       <div class="rd-now">
         <div class="rd-now-text">
-          <b>${escapeHtml(rendering.project)}</b>
           <span>${escapeHtml(rendering.progress?.label || "Starting…")}</span>
         </div>
         ${track(percent)}

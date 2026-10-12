@@ -1,9 +1,9 @@
 """A render as a job: one at a time, stoppable, and resumable.
 
 A render is minutes of work -- a voice per section, then a picture per
-section -- and it used to be all or nothing. A second click started a second
-render beside the first, three at once slowed each other to eight minutes a
-section, and a render that stopped for any reason threw everything away.
+section -- so it must not be all or nothing. A second click must not start a
+second render beside the first (three at once slow each other to eight minutes a
+section), and a render that stops for any reason must not throw everything away.
 
 So a render keeps a record, `reviewing/output/render-job.json`, updated at
 every section:

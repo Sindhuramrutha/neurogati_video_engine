@@ -122,7 +122,9 @@ function renderFiles(manifest) {
             ? `<a class="btn" download
                   href="${projectApiPath(`/export/files/${encodeURIComponent(file.name)}`)}"
                >Download</a>`
-            : `<a class="btn" download href="${projectApiPath("/output")}">Download</a>`}
+            : `<a class="btn" download
+                  href="${projectApiPath(`/output/${encodeURIComponent(file.name)}`)}"
+               >Download</a>`}
         </div>`).join("")}
     </div>`;
 }

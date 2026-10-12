@@ -1,9 +1,8 @@
 """How far a long job has got, for the page to show while it waits.
 
-A render is one request that takes minutes, and the page used to say
-"Rendering..." for all of them: a silent five-minute wait reads the same as a
-hang. The job reports each step here as it reaches it; the page asks every
-second and fills a bar.
+A render is one request that takes minutes, and a page that only says
+"Rendering..." reads the same as a hang. The job reports each step here as it reaches it; the
+page asks every second and fills a bar.
 
 In memory, per project and job, and only while the job runs. It is a view of
 work in progress, not a record: nothing is lost if the server restarts, because

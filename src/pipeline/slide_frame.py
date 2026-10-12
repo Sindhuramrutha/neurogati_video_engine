@@ -1,9 +1,8 @@
 """Drawing a deck's own slide as a video frame.
 
-The video used to show the renderer's template with an extracted figure dropped
-into it: a section title on the left, a picture on the right, on our background.
-A deck that people designed came out looking generated, and the comparison
-against the real slide was not close.
+Showing the renderer's template with an extracted figure dropped into it -- a
+section title on the left, a picture on the right, on our background -- makes a
+deck that people designed look generated.
 
 This draws the slide instead. The deck's background, its pictures, its heading
 and its body text, at its own positions, in its own fonts and colours.
@@ -14,7 +13,7 @@ first paragraph -- and carries no fill, alpha, line or font family. Extending it
 until it could describe a slide would mean re-modelling DrawingML in our own
 schema. The source file is kept in `sources/`, so this reads it directly and the
 artifact records the *result*: a PNG on disk, which is still a file as the source
-of truth (ADR 0005).
+of truth.
 
 **Why hand-built.** There is no pure-Python renderer for PPTX. Drawing a slide
 means implementing PowerPoint's layout and fill model, so the honest options are
@@ -37,7 +36,6 @@ is what real decks actually contain: pictures, rectangles and text runs.
 
 from __future__ import annotations
 
-import hashlib
 import logging
 from dataclasses import dataclass
 from pathlib import Path
@@ -216,15 +214,6 @@ def compose_slide(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     frame.save(output_path)
     return Composed(output_path, slide_number, drawn, tuple(notes))
-
-
-def cached_slide_path(directory: Path, pptx_path: Path, slide_number: int) -> Path:
-    """Where a composed slide lives, named for the deck it came from."""
-    stem = "".join(
-        character if character.isalnum() else "-" for character in pptx_path.stem
-    ).strip("-").lower()[:40]
-    digest = hashlib.sha256(str(pptx_path).encode()).hexdigest()[:8]
-    return directory / f"{stem}-{digest}-{slide_number:03d}.png"
 
 
 # --- one shape ----------------------------------------------------------------------

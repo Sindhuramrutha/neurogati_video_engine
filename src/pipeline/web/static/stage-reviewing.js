@@ -1,9 +1,8 @@
 /**
  * Reviewing stage — watch, comment, and decide whether it ships.
  *
- * The comment log is the point. v1's feedback was prose typed into a terminal and
- * gone with the scrollback, so nobody could answer "what did we ask for, and did
- * it get done?". Here each comment is timestamped, attributed, routed to the stage
+ * The comment log is the point: it answers "what did we ask for, and did it get
+ * done?". Each comment is timestamped, attributed, routed to the stage
  * that can fix it, and resolvable.
  */
 
@@ -99,7 +98,7 @@ function renderReadinessCard(review) {
   const isReady = review.is_ready_to_export;
   // With no open comments, any warning left is an advisory -- a section far over
   // its planned length, versions that share one file. They do not block export,
-  // but they are not "nothing": this card used to show a green tick over them.
+  // but they are not "nothing", so the card shows no green tick over them.
   const warnings = review.warnings ?? [];
   const hasChecks = isReady && warnings.length > 0;
 
@@ -418,9 +417,7 @@ function wireReviewingStage(stage, navigateToStage, renderAgentStage) {
     };
   });
 
-  // Clicking a line seeks the video. It used to set a playhead variable and
-  // re-render, which did nothing visible once the player became a real <video>
-  // element with its own transport -- the click looked broken.
+  // Clicking a line seeks the video, which has its own transport.
   document.querySelectorAll("[data-jump]").forEach(row => {
     row.onclick = () => {
       const atMs = Number(row.dataset.jump) || 0;

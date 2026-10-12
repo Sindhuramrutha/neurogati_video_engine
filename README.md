@@ -3,7 +3,7 @@
 Turns written academic material (lecture notes, chapters, slide decks) into a narrated explainer video.
 
 ```text
-Inputs → Extraction → Assets & Design → Scene Planning → Script & Staging → Content Generation → Editing Studio → Reviewing → Export
+Inputs → Extraction → Assets & Design → Scene Plan → Script & Staging → Generation → Studio → Reviewing → Export
 ```
 
 The pipeline never hides work inside a model call. Every stage's output is a
@@ -40,9 +40,9 @@ timing is measured from the narration audio rather than estimated.
 | **Inputs** | Upload source documents: `.pdf`, `.docx`, `.pptx`, `.md`, `.txt`. Up to 512 MB per file, streamed to disk. Each file can be opened and viewed as itself: decks slide by slide, Word documents with their layout, PDFs in the browser's viewer. | `sources/` |
 | **Extraction** | Parses the sources into structured blocks: headings, paragraphs, lists, tables and figures, in document order and filed under the heading they belong to. No model is involved; it is parsing. Embedded images are saved as figures. For decks it can also capture the **slide layout** (where each title, picture and text box sits), the **background images** behind the slides, and the **styling** (theme colours and fonts). Its agent reviews what came out: every picture is opened and measured, and the agent reads the text for what the checks cannot see. | `extraction/content.json`, `extraction/assets/` |
 | **Assets & Design** | Every extracted picture, with what it measures and where it came from — the source, a person or a model — and a decision about each: use it or skip it. Decisions are keyed by the picture itself, so re-extracting never loses them. Also holds **the look**: the source deck's colours, fonts and proportions, and whether the video should follow them. | `assets/library.json` |
-| **Scene Plan** | Sections, learning objectives, audience and key themes. Each section records the extracted content it covers, how it should be shown and why, and which objectives it serves. The Planning agent drafts a plan from the whole extraction; the draft is reviewed next to your plan and accepted whole or section by section. Warns when the extraction has changed since the plan was made. | `scene-plan/plan.json` |
+| **Scene Plan** | The video's shape, agreed in a conversation with the planning agent: its length, its sections (each a run of slides) and the scenes each is made of. You set the length in your own words and how strictly the slides' order is kept; the agent proposes, you agree or say what to change, and only then are the scenes written. The order is held by code. The plan carries each section's pictures, the brand kit and the look on. | `scene-plan/plan.json`, `scene-plan/conversation.json` |
 | **Script & Staging** | Each plan section written as **scenes**: what is said, and a brief of what is on screen while it is said. The Scripting agent drafts one section or every unwritten one at once, from that section's own source text. Beside the editor sit the section's plan details, its source text and any review comments. Flags narration written against a plan section or source that has changed since, and narration whose section the plan no longer has. `{{VARIABLES}}` are filled everywhere they are spoken or shown. | `script-staging/script.json` |
-| **Generation** | One *shot* per scene: the few words that are on screen while it is spoken, the picture beside them, and how it moves. A headline and up to four labels, composed from the brief — never the narration. Then a picture: the author's own figure, a diagram drawn from the source's own terms and built up as it is described, a chart of the numbers the source states, a picture from an image model, or the words alone. Every shot records where it came from, and a drawn one keeps its prompt. | `generation/visuals.json`, `generation/assets/` |
+| **Generation** | Every scene made by a short loop: one screen, drawn by a program the model writes, renders, has reviewed and fixes until it is good, in time with the narration. Things come onto the screen as the words name them; some stay, some go, and new things keep arriving. The model chooses its renderer — a web page (GSAP, D3, three.js, anime.js), Revideo, Manim or matplotlib — is told what the slide's pictures show, and has its frames reviewed by a vision model. Fixed checks decide whether a clip may be used, then you approve it. | `generation/visuals.json`, `generation/scenes/` |
 | **Studio** | A multi-track timeline with playback, seeking and clip properties. Rendering synthesises the narration, measures each section's real audio length, and cuts the picture to fit. Each section is drawn with its own extracted pictures, and — when the project asks for it — the source deck's background, colours and fonts. | `studio/composition.json` |
 | **Reviewing** | Plays the rendered video with chapters and subtitles, keeps every render as a separate version, and collects comments routed back to the stage that should fix them. | `reviewing/review.json`, `reviewing/output/` |
 | **Export** | The video and everything that travels with it: a transcript, chapter marks a video host can read, a description built from the plan, and the subtitles. Every file is derived, never hand-written. Says plainly what would make the hand-over wrong — a cut built from an abandoned script, a section nobody narrated, a missing video file. | `export/manifest.json`, `export/` |
@@ -93,8 +93,9 @@ Open <http://127.0.0.1:8000>, then:
    (or build the plan by hand).
 6. On **Script & Staging**, click **Draft all unwritten** to have the agent
    write every section as scenes, then edit what it wrote.
-7. On **Generation**, click **Decide what to show**, look at the shots, then
-   **Make what is missing**.
+7. On **Generation**, click **Make the missing**: each scene is written,
+   rendered, reviewed and fixed, a few at a time, without stopping to ask.
+   Watch the previews, then approve them (**Approve N passed** does it in bulk).
 8. **Render video** from Studio or Reviewing.
 9. On **Export**, click **Build export** for the transcript, chapters and
    description — and for a straight answer about whether it is ready.
@@ -135,8 +136,6 @@ view is the file that moves on to the next stages.
   it up: slide, then layout, then master, then the theme.
 - **Extract styling** records the theme's colour scheme, its heading and body
   fonts, and the slide proportions.
-- **Options marked "not built yet"** are declared but not read by anything yet,
-  so they are disabled. Everything else on this page works.
 - **Extraction review** is the Extraction agent checking its own output. Every
   extracted picture is opened and measured first — missing, corrupt, blank,
   tiny and hairline images are facts, found without a model and identically
@@ -154,33 +153,23 @@ view is the file that moves on to the next stages.
 
 **Scene Plan.**
 
-- **Video preferences** are read by the stages they belong to. **Target
-  duration** is given to the agent when it drafts, and the finished draft is
-  measured against it — a draft that runs long says so rather than padding or
-  dropping material to hit a number. **Tone** becomes an instruction in the
-  narration prompt (*"address the viewer as you"*, not the word
-  "conversational"). **Language** decides what the narration and every on-screen
-  brief are written in, and which voice speaks them; a provider with no voice
-  for that language says so at render time instead of reading Hindi in English.
-- **Draft plan** has the Scene Plan agent read the whole extraction in two passes:
-  every heading of every document first (with a few words of any untitled slide
-  or page), then each section from its own full text. Optional guidance steers
-  it. Drafting takes a minute or two and is kept as a draft even if you leave.
-- **The draft appears next to your plan.** **Accept all** replaces your sections,
-  objectives and key themes; **Add to plan** appends one section and brings its
-  objectives with it; **Discard** throws the draft away. Your plan never changes
-  until you choose. Notes list anything the agent could not match to the
-  extraction, and any part of the source no section covers.
-- **Each section records** the extracted content it covers, how it should be
-  shown (composition, plot, simulation, code or still) with a one-line reason,
-  and the learning objectives it serves. All of it is editable in the section
-  editor, where sources are picked from the extraction's headings.
-- **The bar at the top** says whether the plan matches the current extraction.
-  It warns when the extraction has changed since the plan was drafted, flags
-  sections whose source content is no longer extracted, and reports a plan that
-  is not linked to the extraction at all. **Keep plan as is** records that you
-  checked it.
-- **Objectives show coverage**: which sections serve each one, or "not covered".
+- **A conversation with the planning agent.** Say what the video should be. The
+  setup beside it is sent with every message:
+  - the length in your own words ("about 1 hr, longer if needed, never shorter")
+  - how strictly the slides' order is kept: Strict, Nearly strict, Loose or Free
+  - an optional audience
+  - the language
+- **The agent proposes the shape:** the length as it understood it, then each
+  section's slides, minutes and scene count. Agree, or reply with what to
+  change. Nothing changes until you agree; then each new or changed section is
+  broken into its scenes, one call per section, with the count stated first.
+- **The slides' order is held by code.** Under Strict, a shape that puts a later
+  slide first is sent back with the exact problem, and a saved plan that breaks
+  it cannot be transferred.
+- **The Plan tab** shows what was agreed. Edit each section's slides, title and
+  pictures, and each scene: what it does, its slides and its seconds.
+- **The plan owns the scenes.** Script & Staging writes exactly these scenes,
+  and Generation draws one per scene.
 
 **Assets & Design.**
 
@@ -194,56 +183,44 @@ view is the file that moves on to the next stages.
   proportions and background. It is off by default — a video that silently
   adopted a client's brand colours would be worse than one that asked.
 
-**Scene Plan, from a deck.**
-
-- **Follow the deck** builds the plan mechanically: **one section per slide, in
-  the deck's order, every slide.** No model call and nothing to review, because
-  whoever made the deck already decided the order and the divisions, and a video
-  that regroups them is worse than one that follows.
-- Scenes may outnumber slides -- a dense slide is narrated in two or three beats
-  -- but never the reverse, and a slide is never skipped or moved. The bar says
-  so, and keeps saying so: a re-plan or a hand edit that drops slide 23 is
-  reported rather than silently rendered.
-
 **Generation.**
 
-- **Decide what to show** walks every scene and picks a shot, cheaply and with
-  no model call, so you can review the choices before paying for any of them.
-  The author's own figure first, then a chart of the source's own numbers, then
-  a drawn picture, then the words alone.
-- **Make what is missing** composes what the viewer *reads* and then draws it.
-  Per scene: a headline of a few words and up to four labels, taken from the
-  brief and the source — and the shape the material already has, if it has one.
-  Fifteen shapes are available (a sequence, a comparison, layers, a loop, a
-  hierarchy, a network, a curve, bars, a timeline, a table, a counting number, a
-  formula, the source's own figure, one thing becoming another, code), and only
-  the ones a renderer on this machine has *proved* it can draw are offered.
+- **Every scene is a program the model makes.** Not a choice of slide, picture or
+  chart: one screen, drawn in time with the narration, where things come on as
+  the words name them, some stay, some go, and new things arrive into what is
+  there.
+- **A short loop, not a conversation.** Write the program, render it, run the
+  checks, have the frames reviewed by a vision model, then fix a few lines (or
+  the whole file) — each round one model call, asked afresh from the brief, the
+  file as it is and what the last round found. It is done when the checks pass
+  *and* the review says the scene teaches, its motion explains, and it looks
+  finished. The slide's pictures are described once, and the last three scenes
+  are summarised, so scenes stay consistent.
+- **It never stops to ask.** Where the brief is silent it decides and says what
+  it assumed. After 3 rounds a scene is made from its best version, with any
+  failing checks and the reviewer's remaining remarks shown; if no round drew
+  anything, a plain stand-in is drawn, and only when not even that makes a clip
+  is it marked *could not be made*. You change a scene by saying what to change.
+- **It chooses the renderer.** A web page (GSAP, D3, three.js, anime.js) for rich
+  motion, charts and 3D; Revideo for physical, spring motion and typeset maths;
+  Manim for diagrams and flows; matplotlib for a chart.
+- **Fixed checks decide whether a clip may be used.** Text inside the frame, no
+  overlap, contrast, size, no paragraph, only words the narration or source
+  supports, no line through words, no box over another, the frame used, the
+  section's picture used, the idea
+  pictured, motion that explains, no blank frame, the right length. Then you
+  approve it; the render refuses what is not approved.
 - **The narration is never on screen.** It is being spoken; printing it as well
-  is what made earlier output read as slides with a voice over them, and a
-  viewer who is reading has stopped listening.
-- **A diagram is data, not a picture of one.** Its nodes are the source's own
-  terms, so whatever draws it cannot add a step — the difference between this
-  and asking an image model for "a diagram of the acquisition chain", which
-  produces something plausible that nobody can check.
-- **What can animate here is shown, and provable.** The panel at the top of the
-  page lists each renderer, whether it is installed, whether it *works*, and
-  which of the fifteen kinds it has drawn. **Verify** makes it draw the smallest
-  real example of every kind and records what happened. Installed and working
-  are different questions, and only the second one decides anything.
-- **A slide is shown, not rebuilt.** Where a section is a slide of a source
-  deck, the shot *is* that slide: its own background art, its own pictures, its
-  own heading and body text, at the deck's own positions and in its own fonts,
-  drawn edge to edge with nothing of the renderer's over it. Nothing is
-  paraphrased and nothing is generated -- the deck's design was made by people
-  and the video shows it.
-- **Every shot says where it came from.** A drawn picture keeps the prompt that
-  produced it, under *What was asked for*, because a picture nobody can trace is
-  a claim nobody can check.
-- **Rewriting a scene marks its shot out of date** rather than leaving a picture
-  of what the scene used to say.
-- **The camera move** is per scene and alternates by default — a push that ends
-  where the next one begins reads as one long zoom. A chart holds still, because
-  panning across numbers makes them harder to read.
+  is what makes output read as slides with a voice over them.
+- **What is happening is on the page.** A status bar across every scene, a card
+  per scene with what is happening now and which round it is on, and, on a scene,
+  the steps taken, the reviewer's remarks, a box to say what to change, and a
+  Stop button; **Stop all** stops everything, deleting nothing.
+- **Making is the only AI, and the page asks first.** Setting the scenes up again
+  and approving use no model; making and remaking do.
+- **The details** are in
+  [docs/operations/generation-sop.md](docs/operations/generation-sop.md) and
+  [docs/operations/scene-programs-sop.md](docs/operations/scene-programs-sop.md).
 
 **Script & Staging.**
 
@@ -254,8 +231,8 @@ view is the file that moves on to the next stages.
   **Draft all unwritten** writes every empty section at once and never touches
   narration that is already written -- including anything typed while it runs.
 - **Beside the editor** is everything the section was planned with: its summary,
-  target length, how it will be shown and why, the objectives it serves, its
-  source text, and any review comment routed back to Script & Staging for it.
+  target length, how it will be shown and why, its planned scenes, its source
+  text, and any review comment routed back to Script & Staging for it.
 - **Out of date** marks narration written against a plan section or a source
   that has changed since. **Keep narration as is** records that you checked it.
 - **Stranded narration** -- written for a section the plan no longer has -- is
@@ -273,7 +250,7 @@ warning, not only open comments, before calling a project ready.
 
 - **Build export** writes `transcript.md` (every spoken word under its section),
   `chapters.txt` (`0:00 Title` per line, ready to paste into a video host) and
-  `description.md` (audience, objectives and chapters from the plan), then lists
+  `description.md` (audience and chapters from the plan), then lists
   them beside the rendered video and its subtitles.
 - **It says what would make the hand-over wrong** before it says anything else:
   a timeline built from an abandoned script, a section with no narration, a
@@ -285,12 +262,12 @@ warning, not only open comments, before calling a project ready.
 
 **A cut that no longer matches its script is flagged.** Studio and Reviewing
 compare the timeline and the chapters against the current plan and say so when
-they describe sections it no longer has — the failure that let a project look
-finished while its video was built from an abandoned script. Studio offers to
+they describe sections it no longer has, so a project cannot look finished while
+its video was built from an abandoned script. Studio offers to
 empty the timeline so the next render rebuilds it.
 
-**Renders are versions.** Each render gets its own file name, so choosing an
-older version plays that cut. Chapters and the Studio timeline are rebuilt from
+**Renders are versions.** Each render gets its own file name, so choosing a
+past version plays that cut. Chapters and the Studio timeline are rebuilt from
 each render unless you have edited them by hand, in which case your edits are
 kept.
 
@@ -472,8 +449,9 @@ projects/<project>/
 ├── scene-plan/plan.json
 ├── script-staging/script.json
 ├── generation/
-│   ├── visuals.json            one shot per scene: what it shows, how it moves
-│   └── assets/                 the charts and drawn pictures this stage made
+│   ├── visuals.json            one entry per scene: its clip, its approval
+│   └── scenes/                 one folder per scene: its program, brief, checks,
+│                               agent record, clip, preview and frames
 ├── studio/composition.json
 ├── reviewing/
 │   ├── review.json             comments, chapters, versions
@@ -482,18 +460,12 @@ projects/<project>/
 │   ├── manifest.json           what was exported, and what would make it wrong
 │   ├── transcript.md           every spoken word, under its section
 │   ├── chapters.txt            0:00 Title, per line
-│   └── description.md          audience, objectives and chapters
-├── drafts/plan.json            a drafted plan waiting to be accepted or discarded
+│   └── description.md          audience and chapters
+├── drafts/plan.json            a proposed shape waiting to be agreed to or discarded
 ├── settings/                   stage options and which files are extracted
 ├── agents/conversations.json   threads with the Orchestrator
 └── agents/<stage>/AGENT.md     per-project agent overrides, if any
 ```
-
-Two stages were renamed once their scope was clear: **Planning → Scene Plan**
-and **Scripting → Script & Staging**. A project written under the old names is
-moved to the new folders the first time it is opened, and the old stage keys
-still resolve — so routed comments, saved settings and old bookmarks keep
-working.
 
 `projects/` is gitignored: it holds your documents and renders, not code.
 
@@ -506,11 +478,8 @@ The web app, the command line and the MCP server are thin clients of it, so a
 rule enforced in one place (validation, hand-edit protection, audits) applies to
 every client.
 
-`operations.py` itself is the *surface*: imports and `__all__`, no logic. It once
-held seventeen hundred lines and fifty-eight functions, at which point "one core"
-had become "one file everything is in" — the failure it exists to prevent,
-reached from the other direction. The verbs now sit in modules beside it, in a
-strict dependency order (core → freshness → presentation → the stage verbs), and
+`operations.py` itself is the *surface*: imports and `__all__`, no logic. The
+verbs sit in modules beside it, in a strict dependency order (core → freshness → presentation → the stage verbs), and
 tests enforce both that order and that nothing imports the surface back. Clients
 still import from `pipeline.operations` and never need to know which module a
 verb lives in.
@@ -535,7 +504,13 @@ src/pipeline/
 ├── planning.py          the Scene Plan's model and store
 ├── scripting.py         the script: scenes, variables, length checks
 ├── assets.py            the picture library and the video's look
-├── generation.py        one shot per scene: choosing it, making it, moving it
+├── generation.py        one entry per scene of the script; the order and the transfer
+├── scene_maker.py       making one scene: write, render, review, edit
+├── scene_agent.py       the queue: scenes a few at a time, in order; stop; what the page shows
+├── scene_lab.py         a scene's folder: running it, checking it, approving it
+├── scene_checks.py      the fixed checks on a scene's clip
+├── scene_web.py, scene_revideo.py   the web and Revideo renderers
+├── scene_review.py      the vision review of a scene's frames
 ├── exporting.py         the transcript, chapters and description
 ├── composition.py       tracks and clips
 ├── review.py            comments, chapters, versions
@@ -550,14 +525,13 @@ src/pipeline/
 ├── script_drafting.py   writing a section as scenes, from that section's source
 ├── llm.py               model clients (text and structured output)
 ├── tools.py             the tool and resource catalogue agents may be granted
-├── stage_options.py     per-stage options, and whether each is built
+├── stage_options.py     per-stage options
 ├── credentials.py       `.env` editing behind the API keys panel
 ├── projects.py          project store and stage status
 └── storage/             atomic JSON documents and artifact paths
 ```
 
-**Audio is the clock** ([ADR 0001](docs/decisions/0001-preserve-audio-first-timing.md)).
-Narration is synthesised first and measured; one timing function then drives the
+**Audio is the clock.** Narration is synthesised first and measured; one timing function then drives the
 picture, the subtitles and the Studio timeline, so the three cannot disagree.
 
 **The browser UI** is plain ES modules with no build step. One stylesheet per
@@ -598,49 +572,35 @@ Silent voice and need ffmpeg.
 
 | | |
 | --- | --- |
-| [docs/README.md](docs/README.md) | Design documentation: why v2 exists and how it is organised |
-| [docs/fundamentals/](docs/fundamentals/) | What the system is, and the quality model |
-| [docs/diagnosis/v1-postmortem.md](docs/diagnosis/v1-postmortem.md) | What went wrong in v1 |
-| [docs/design/](docs/design/) | Architecture options, tech stack, interfaces, data layout, agentic stack |
-| [docs/decisions/](docs/decisions/) | Architecture decision records |
-| [docs/open-questions.md](docs/open-questions.md) | Unresolved questions |
-
-Decision records. Every record is still marked **Proposed** in its own file;
-the last column says only what the code shows today.
-
-| ADR | Decision | In the code today |
-| --- | --- | --- |
-| [0001](docs/decisions/0001-preserve-audio-first-timing.md) | Audio-first timing | Rendering measures the narration, then cuts the picture to it. |
-| [0002](docs/decisions/0002-structured-output-over-free-text.md) | Structured output over free text | Drafted plans and narration come back as validated objects. |
-| [0003](docs/decisions/0003-durable-incremental-state.md) | Durable, incremental state | — |
-| [0004](docs/decisions/0004-mechanical-checks-before-human-review.md) | Mechanical checks before human review | — |
-| [0005](docs/decisions/0005-files-as-source-of-truth.md) | Files as the source of truth | No database; every artifact is a JSON file. |
-| [0006](docs/decisions/0006-langgraph-as-backbone.md) | LangGraph as the orchestration backbone | Installed as a dependency, not imported anywhere. |
-| [0007](docs/decisions/0007-revideo-as-rendering-target.md) | Revideo as the rendering target | Built, in the routing form: Manim draws fifteen scene kinds, Revideo nine, chosen per kind from probes that actually ran. Frames are still composited with Pillow and ffmpeg. |
+| [docs/README.md](docs/README.md) | Index of the documentation |
+| [docs/architecture/system-map.md](docs/architecture/system-map.md) | Layers, boundaries, contracts and the rules that hold them together |
+| [docs/operations/](docs/operations) | One procedure per layer: what it does and what it guarantees |
+| [WORKFLOW-DIAGRAM.md](WORKFLOW-DIAGRAM.md) | The layers and what each keeps on disk |
 
 ---
 
 ## Status and known limits
 
-This is an early working version. Things to know before relying on it:
+Things to know before relying on it:
 
-- **Animation depends on what is installed.** A scene whose shape can be drawn
-  is a real clip that assembles as the narration describes it — a step arriving
-  as it is named, a curve traced, a number counting up. That needs Manim
-  (`uv sync --extra animation`) or Revideo (`cd renderers/revideo && npm
-  install`); with neither, the same diagram is drawn from the same nodes as a
-  still and held, and Generation says so rather than claiming otherwise. Labels
-  arrive on the word that names them where the voice reports word timings
-  (edge-tts does); otherwise they are spread across the shot. The Studio
-  graphics track is still empty.
-- **One backend is much cheaper than the other.** A Manim clip takes a couple of
-  seconds; a Revideo clip takes about forty, because it starts a vite server and
-  a browser each time. Revideo is worth it for one thing in particular: it
-  typesets formulas with MathJax in the page, so a machine with no TeX
-  distribution still gets real mathematics.
+- **What a scene agent can use depends on what is installed.** Manim and
+  matplotlib come with `uv sync`; the web renderer needs `npm install` in
+  `renderers/web` (and Playwright's Chromium); Revideo needs `npm install` in
+  `renderers/revideo` and Node. An agent is only offered the renderers this
+  machine has.
+- **Making scenes is slow and paid.** Every round is a model call (plus a
+  review of the frames), and the provider limits requests per minute (TokenRouter: 30). Calls are paced under
+  that limit, so a whole video takes tens of minutes; scenes are made four at a
+  time (more used up this machine's memory). A render takes seconds (Manim,
+  web) to about twenty seconds for a 38-second Revideo scene.
+- **A scene program is not sandboxed.** Manim, matplotlib and Pillow programs
+  run with your user's permissions and are not given the server's API keys, but
+  can read any file you can and use the network. Web and Revideo scenes can only
+  reach their own files, the animation libraries and the pictures they were
+  offered.
 - **Handwriting recognition needs a vision model.** Scanned or handwritten PDF
   pages are read by the model named in `VISION_MODEL`; nothing else in extraction
-  calls a model. The Scene Plan's three preferences are read.
+  calls a model.
 - **Stage agents advise and draft; they do not act.** Their declared tools are
   not executable yet. The Scene Plan agent drafts plans (kept as a draft until you
   accept it); the Script & Staging agent writes narration straight into the script,
@@ -651,12 +611,9 @@ This is an early working version. Things to know before relying on it:
   where a figure failed to extract, and what it draws is marked `generated` so
   no later stage can present it as the author's own diagram. Nothing generates
   pictures on its own.
-- **A section's rendering approach is recorded but not yet used.** The renderer
-  still draws every section as text slides, whatever the plan chooses.
-- **Slide *layout* is captured but not yet drawn.** The video uses the
-  extracted pictures, the background, the theme colours and the fonts; where
-  each shape sat on its original slide is recorded and not yet used, and a
-  scene's on-screen brief is text the renderer does not read either.
+- **Slide *layout* is captured but not drawn.** The video uses the extracted
+  pictures, the background, the theme colours and the fonts; where each shape sat
+  on its original slide is recorded for the scene agent to read, not reproduced.
 - **A duration target steers, it does not enforce.** The agent is told the
   target and a drafted plan is measured against it, but nothing cuts or pads
   material to fit: a 28-minute chapter asked to be 5 minutes produces an honest
@@ -666,5 +623,5 @@ This is an early working version. Things to know before relying on it:
   PowerPoint files.
 - **Not every feature is in every client**, as listed under
   [MCP server](#mcp-server). The web app also has no voice picker.
-- **There is no undo** beyond editing an artifact back, and nothing deletes a
-  project for you.
+- **There is no undo** beyond editing an artifact back, and deleting a project is
+  permanent: its folder and everything running in it are erased.

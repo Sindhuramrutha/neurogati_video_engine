@@ -1,20 +1,20 @@
-"""The plan — Planning's output artifact, and the first thing a human edits directly.
+"""The plan: the video's agreed shape -- its sections, the slides each covers, and
+the scenes each is made of.
 
-Extraction has settings that shape a run. Planning is different: the plan itself is
-the artifact, it is hand-editable, and an agent can also generate or amend it. Both
-paths write the same document, so there is exactly one representation of "what this
-video will contain" rather than a generated one and an edited one that drift.
+The plan is made in a conversation with the planning agent (`plan_agent.py`).
+The person sets the length in their own words and how strictly the slides' order
+is kept. The agent proposes the shape: sections, minutes, scenes per section. The
+person agrees to it or says what to change, and only then are the scenes
+detailed. After that everything is editable by hand. Both paths write this one
+document.
 
-Stored at `projects/<slug>/planning/plan.json` — inside the stage directory,
-because unlike settings this genuinely *is* the stage's output, and
-`stage_state` reporting the stage as "ready" once a plan exists is correct.
+Stored at `projects/<slug>/scene-plan/plan.json`.
 """
 
 from __future__ import annotations
 
 import json
 import logging
-from enum import StrEnum
 from pathlib import Path
 
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -32,51 +32,30 @@ logger = logging.getLogger(__name__)
 
 MAXIMUM_SECTION_TITLE_LENGTH = 120
 MAXIMUM_SECTION_SUMMARY_LENGTH = 400
-MAXIMUM_OBJECTIVE_LENGTH = 200
 MAXIMUM_SECTIONS_PER_PLAN = 60
-MAXIMUM_RENDERING_REASON_LENGTH = 240
-MAXIMUM_SOURCES_PER_SECTION = 20
-
-# A section shorter than this cannot carry a complete thought; longer than this and
-# it should have been split. Advisory only -- the UI flags it, nothing rejects it.
-MINIMUM_REASONABLE_SECTION_SECONDS = 10
-MAXIMUM_REASONABLE_SECTION_SECONDS = 600
+MAXIMUM_SCENES_PER_SECTION = 60
+MAXIMUM_SOURCES_PER_SECTION = 40
+MAXIMUM_SCENE_TEXT_LENGTH = 400
+LONGEST_SETUP_TEXT = 300
 
 
-class RenderingApproach(StrEnum):
-    """How a section should be shown. The same choices the Scene Plan agent's
-    instructions describe, so what it is told to choose and what it can record
-    are the same list."""
-
-    COMPOSITION = "composition"
-    PLOT = "plot"
-    SIMULATION = "simulation"
-    CODE = "code"
-    STILL = "still"
-
-    # The source's own slide, drawn as the deck drew it. Not one of the original
-    # five: those all describe something the pipeline *composes*, and this one
-    # describes showing what somebody already designed. A deck-driven plan uses
-    # it for every section, and it is what stops a designed slide being
-    # re-typeset into the renderer's template.
-    SLIDE = "slide"
+# How strictly the slides' order is kept. Held by code (`plan_order.py`), not by
+# trusting the agent.
+SLIDE_ORDERS = {
+    "strict": "Strict: each section is an unbroken run of slides, in the deck's order.",
+    "nearly": "Nearly strict: sections follow the deck; a slide may move within a section.",
+    "loose": "Loose: the deck's order is a guide; no slide is used twice.",
+    "free": "Free: no need to follow the deck's order.",
+}
 
 
 class SourceReference(BaseModel):
-    """A place in the extracted content: a document, and a heading within it.
-
-    A location rather than a block id, because block ids are regenerated on every
-    extraction run and a reference to one would break the next time extraction
-    ran. An empty heading path means the whole document.
-    """
+    """A place in the extracted content: a document, a heading within it, and --
+    for a deck -- the slide. A location rather than a block id, because block ids
+    change on every extraction run."""
 
     file_name: str = ""
     heading_path: list[str] = Field(default_factory=list)
-
-    # The slide this section is about, 1-based, when the source is a deck. A
-    # heading path alone cannot say: for a deck it is just the slide's title, so
-    # two slides titled the same are one location. The number is what lets a
-    # video follow the deck's own order and cover every slide.
     slide_number: int = 0
 
     @property
@@ -85,10 +64,25 @@ class SourceReference(BaseModel):
         return f"{named} (slide {self.slide_number})" if self.slide_number else named
 
 
-# What a section does in the lesson (`lesson_plan.py`). The frame roles wrap the
-# body and are written from the plan itself; the body roles teach the source.
-SECTION_ROLES = ("opening", "teach", "story", "recap", "close")
-LESSON_FRAME_PARTS = ["opening", "recap", "close"]
+class PlanScene(BaseModel):
+    """One scene: what it does, the slides it is about, and how long it runs.
+    Every later layer works scene by scene -- the script writes its narration,
+    Generation its `scene.py` -- and this is where a scene is decided."""
+
+    id: str = Field(default_factory=new_identifier)
+    does: str = ""
+    slides: list[int] = Field(default_factory=list)
+    seconds: int = 30
+
+    @field_validator("does")
+    @classmethod
+    def _cap_does(cls, value: str) -> str:
+        return value.strip()[:MAXIMUM_SCENE_TEXT_LENGTH]
+
+    @field_validator("seconds")
+    @classmethod
+    def _clamp_seconds(cls, value: int) -> int:
+        return max(3, min(int(value), 900))
 
 
 class PlanSection(BaseModel):
@@ -97,51 +91,21 @@ class PlanSection(BaseModel):
     summary: str = ""
     estimated_seconds: int = 60
 
-    role: str = "teach"
-    # A length a person set. Pinned sections keep it; the rest share what is left
-    # of the target duration.
-    pinned: bool = False
-    # Who wrote the summary: "rule" (a stand-in), "ai" (accepted from a model),
-    # "you", or "" for a summary from before this was recorded.
-    summary_origin: str = ""
+    # How this section is told, in the planning agent's own words -- there are no
+    # fixed kinds of section. A section with no slides (an opening, a recap,
+    # whatever the video needs) is written from the rest of the plan.
+    how: str = ""
 
-    # What the section teaches from. Without these a plan could be about
-    # material that is not in the extraction at all -- and one was: every
-    # section of a real plan described a chapter the extraction no longer held.
+    # The slides (or headings) it covers. For a deck, one reference per slide.
     sources: list[SourceReference] = Field(default_factory=list)
 
-    # How it should be shown, and one sentence of why. The Planning agent was
-    # always told to choose these; the plan had nowhere to put them, so the
-    # choice was silently thrown away.
-    rendering_approach: str = ""
-    rendering_reason: str = ""
+    # The scenes it is made of. Its length is theirs once it has any.
+    scenes: list[PlanScene] = Field(default_factory=list)
 
-    # Which of the plan's learning objectives this section serves.
-    objective_ids: list[str] = Field(default_factory=list)
-
-    # The pictures it shows, from what Assets & Design transferred (by their
-    # extracted path), and whether a person chose them rather than the rule
-    # (`plan_pictures.py`). Later layers show these and no others.
+    # The pictures it shows, from what Assets & Design transferred, and whether a
+    # person chose them rather than the rule (`plan_pictures.py`).
     picture_paths: list[str] = Field(default_factory=list)
     pictures_chosen: bool = False
-
-    @field_validator("rendering_approach")
-    @classmethod
-    def _known_approach(cls, value: str) -> str:
-        # Unknown values become "not chosen" rather than an error: an older or
-        # hand-edited plan must still load.
-        cleaned = (value or "").strip().lower()
-        return cleaned if cleaned in {a.value for a in RenderingApproach} else ""
-
-    @field_validator("role")
-    @classmethod
-    def _known_role(cls, value: str) -> str:
-        return value if value in SECTION_ROLES else "teach"
-
-    @field_validator("rendering_reason")
-    @classmethod
-    def _cap_reason(cls, value: str) -> str:
-        return value.strip()[:MAXIMUM_RENDERING_REASON_LENGTH]
 
     @field_validator("sources")
     @classmethod
@@ -152,12 +116,17 @@ class PlanSection(BaseModel):
                 unique.append(reference)
         return unique[:MAXIMUM_SOURCES_PER_SECTION]
 
+    @field_validator("scenes")
+    @classmethod
+    def _cap_scenes(cls, value: list[PlanScene]) -> list[PlanScene]:
+        return value[:MAXIMUM_SCENES_PER_SECTION]
+
     @field_validator("title")
     @classmethod
     def _cap_title(cls, value: str) -> str:
         return value.strip()[:MAXIMUM_SECTION_TITLE_LENGTH]
 
-    @field_validator("summary")
+    @field_validator("summary", "how")
     @classmethod
     def _cap_summary(cls, value: str) -> str:
         return value.strip()[:MAXIMUM_SECTION_SUMMARY_LENGTH]
@@ -165,161 +134,93 @@ class PlanSection(BaseModel):
     @field_validator("estimated_seconds")
     @classmethod
     def _clamp_duration(cls, value: int) -> int:
-        # A negative or absurd duration would poison the plan total and, later,
-        # the narration budget. Clamped rather than rejected so a typo does not
-        # lose the rest of an edit.
-        return max(1, min(int(value), 3600))
+        return max(1, min(int(value), 4 * 3600))
+
+    @model_validator(mode="after")
+    def _length_is_its_scenes(self) -> PlanSection:
+        if self.scenes:
+            self.estimated_seconds = sum(scene.seconds for scene in self.scenes)
+        return self
+
+
+class PlanLength(BaseModel):
+    """The length the person asked for, as the agent understood it -- shown back
+    to them, and what the checks hold the plan to."""
+
+    shortest_seconds: int = 0
+    longest_seconds: int = 0
+    understood: str = ""     # in words, e.g. "About 60 min. May run longer, not shorter."
 
     @property
-    def is_unusually_short(self) -> bool:
-        return self.estimated_seconds < MINIMUM_REASONABLE_SECTION_SECONDS
-
-    @property
-    def is_unusually_long(self) -> bool:
-        return self.estimated_seconds > MAXIMUM_REASONABLE_SECTION_SECONDS
-
-
-class LearningObjective(BaseModel):
-    id: str = Field(default_factory=new_identifier)
-    text: str = ""
-    is_included: bool = True
-
-    @field_validator("text")
-    @classmethod
-    def _cap_text(cls, value: str) -> str:
-        return value.strip()[:MAXIMUM_OBJECTIVE_LENGTH]
+    def is_known(self) -> bool:
+        return self.longest_seconds > 0
 
 
 class Plan(BaseModel):
-    """Everything Planning decides, in one document."""
+    """Everything the Scene Plan decides, in one document."""
 
     sections: list[PlanSection] = Field(default_factory=list)
-    learning_objectives: list[LearningObjective] = Field(default_factory=list)
 
-    # Audiences are offered as choices and one is active, because tone and depth
-    # are written for a single reader -- "professionals and children" produces
-    # material that serves neither.
-    audience_choices: list[str] = Field(
-        default_factory=lambda: ["Students new to the topic", "Practitioners", "Mixed"]
-    )
-    selected_audience: str = "Students new to the topic"
+    # The setup, in the person's own words.
+    length_text: str = ""
+    length: PlanLength = Field(default_factory=PlanLength)
+    slide_order: str = "strict"
+    audience: str = ""
 
-    # Proposed by a drafted plan, from the source material, or added by hand.
-    # (This comment used to say Extraction fills these in. It never did.)
-    key_themes: list[str] = Field(default_factory=list)
+    # Slides the agreed shape leaves out on purpose, with why.
+    slides_left_out: dict[int, str] = Field(default_factory=dict)
 
-    # Which extraction this plan was drafted from, or last confirmed against, as
-    # the extraction's content fingerprint. Empty for a plan made by hand that
-    # nobody has checked against the extraction. Hand edits do not update it:
-    # editing a title is not a statement that the plan matches new material.
+    # When the person agreed to the shape; empty until they do.
+    shape_agreed_at: str = ""
+
+    # Which extraction this plan was made from, as its content fingerprint.
     extraction_fingerprint: str = ""
 
-    # Which parts of the lesson frame wrap the body. On for a new plan; a plan
-    # saved before the frame existed keeps none until someone turns it on, so
-    # opening it does not add sections nobody asked for.
-    lesson_frame: list[str] = Field(default_factory=lambda: list(LESSON_FRAME_PARTS))
-
-    # How the outline was last built (`plan_approaches.py`): the approach, its
-    # options, and what the person added in their own words.
-    approach: str = ""
-    approach_options: dict[str, str] = Field(default_factory=dict)
-    approach_notes: str = ""
-
-    # The Assets & Design transfer the sections' pictures were attached from;
-    # empty for a plan from before plans carried pictures.
+    # The Assets & Design transfer the sections' pictures were attached from.
     pictures_from: str = ""
 
-    @model_validator(mode="before")
+    @field_validator("slide_order")
     @classmethod
-    def _older_plans_have_no_frame(cls, data):
-        if isinstance(data, dict) and "lesson_frame" not in data and data.get("sections"):
-            data = {**data, "lesson_frame": []}
-        return data
+    def _known_order(cls, value: str) -> str:
+        return value if value in SLIDE_ORDERS else "strict"
 
-    @field_validator("lesson_frame")
+    @field_validator("length_text", "audience")
     @classmethod
-    def _known_frame_parts(cls, value: list[str]) -> list[str]:
-        return [part for part in LESSON_FRAME_PARTS if part in value]
+    def _cap_setup(cls, value: str) -> str:
+        return value.strip()[:LONGEST_SETUP_TEXT]
 
     @field_validator("sections")
     @classmethod
     def _cap_sections(cls, value: list[PlanSection]) -> list[PlanSection]:
         return value[:MAXIMUM_SECTIONS_PER_PLAN]
 
-    @model_validator(mode="after")
-    def _drop_links_to_missing_objectives(self) -> Plan:
-        # Deleting an objective must not leave sections pointing at it, whichever
-        # client did the deleting.
-        known = {objective.id for objective in self.learning_objectives}
-        for section in self.sections:
-            section.objective_ids = [oid for oid in section.objective_ids if oid in known]
-        return self
-
-    def objective_coverage(self) -> dict[str, list[str]]:
-        """For each included objective, the ids of the sections that serve it."""
-        return {
-            objective.id: [s.id for s in self.sections if objective.id in s.objective_ids]
-            for objective in self.learning_objectives if objective.is_included
-        }
-
     @property
     def total_estimated_seconds(self) -> int:
         return sum(section.estimated_seconds for section in self.sections)
 
     @property
+    def scene_count(self) -> int:
+        return sum(len(section.scenes) for section in self.sections)
+
+    @property
     def is_empty(self) -> bool:
-        return not self.sections and not self.learning_objectives
+        return not self.sections
 
     def to_dict(self) -> dict:
         return self.model_dump(mode="json") | {
             "total_estimated_seconds": self.total_estimated_seconds,
+            "scene_count": self.scene_count,
             "is_empty": self.is_empty,
-            "objective_coverage": self.objective_coverage(),
             "warnings": self.warnings(),
         }
 
     def warnings(self) -> list[str]:
-        """Advisory problems a reviewer should see before moving on.
-
-        Deliberately not errors: a plan mid-edit is allowed to be inconsistent,
-        and blocking on it would make the outline hostile to work in. The UI shows
-        these; nothing refuses to save because of them.
-        """
-        found: list[str] = []
-
-        untitled_count = sum(1 for section in self.sections if not section.title)
-        if untitled_count:
-            found.append(f"{untitled_count} section(s) have no title")
-
-        odd_durations = [
-            section for section in self.sections
-            if section.is_unusually_short or section.is_unusually_long
-        ]
-        if odd_durations:
-            found.append(f"{len(odd_durations)} section(s) have an unusual duration")
-
-        if self.sections and not any(o.is_included for o in self.learning_objectives):
-            found.append("no learning objectives are selected")
-
-        if not self.selected_audience:
-            found.append("no audience selected")
-
-        # Coverage is only judged once sections are linked to objectives at all;
-        # before that every objective would read as uncovered, which is noise.
-        if any(section.objective_ids for section in self.sections):
-            uncovered = [oid for oid, ids in self.objective_coverage().items() if not ids]
-            if uncovered:
-                found.append(
-                    f"{len(uncovered)} learning objective(s) are not covered by any section"
-                )
-
-        return found
+        """Advisory problems, shown on the page; nothing refuses to save."""
+        untitled = sum(1 for section in self.sections if not section.title)
+        return [f"{untitled} section(s) have no title"] if untitled else []
 
 
 class PlanStore(JsonDocumentStore[Plan]):
-    """Persistence for the plan. Durability behaviour lives in
-    `JsonDocumentStore`; this only names the path, the model and the default."""
-
     def __init__(self, project_root: Path) -> None:
         super().__init__(
             document_path=artifact_path(project_root, Stage.SCENE_PLAN),
@@ -330,25 +231,19 @@ class PlanStore(JsonDocumentStore[Plan]):
 
     @property
     def plan_path(self) -> Path:
-        """Kept as a named alias: tests and callers read better saying
-        `store.plan_path` than `store.document_path`."""
         return self.document_path
 
 
 class PlanDraftStore:
-    """A plan the Planning agent proposed, waiting to be accepted or discarded.
-
-    Kept on disk rather than only in the page because drafting reads the whole
-    source and makes one model call per section: a reload must not throw that
-    away. Stored outside `planning/` so a pending draft never makes the stage look
-    finished, and never mistaken for the plan itself.
-    """
+    """The planning agent's latest proposal, waiting to be agreed to or discarded.
+    On disk, so a reload does not lose a model's work; outside `scene-plan/`, so
+    it is never mistaken for the plan."""
 
     def __init__(self, project_root: Path) -> None:
         self.path = project_root / "drafts" / "plan.json"
 
     def load(self) -> dict | None:
-        return read_json_object(self.path, "plan draft")
+        return read_json_object(self.path, "plan proposal")
 
     def save(self, draft: dict) -> dict:
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -360,4 +255,3 @@ class PlanDraftStore:
             self.path.unlink()
             return True
         return False
-
