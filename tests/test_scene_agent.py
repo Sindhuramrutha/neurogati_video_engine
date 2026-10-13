@@ -520,3 +520,26 @@ def test_a_scene_answered_with_shots_has_its_program_written_for_it(project_root
     assert maker._written("system", brief, "", "", "scene.py", "", "", "", ["manim"], {},
                           scene_folder(project, visual), state) is None
     assert any("template must be one of" in e["text"] for e in state["events"])
+
+
+def test_shots_that_leave_the_narration_s_end_unshown_are_told_which_words():
+    """Every cue in the first half, the frame still through the rest: the model is
+    told the words left unshown, not only "keep things arriving"."""
+    from pipeline.scene_shots import uncovered
+
+    words = [{"text": word, "start_ms": 500 * i}
+             for i, word in enumerate(("Step two the nerve was stimulated and the heart slowed "
+                                       "down then nothing electrical had touched the second "
+                                       "heart none of its own nerves had been stimulated at "
+                                       "all and still it slowed").split())]
+    early = {"shots": [{"template": "hero", "picture": 0, "when": "Step two", "callouts": [
+        {"label": "Nerve", "at": [0.4, 0.4], "when": "the nerve"},
+        {"label": "Heart", "at": [0.6, 0.6], "when": "heart slowed"}]}]}
+
+    told = uncovered(early, words, 17.0)
+    assert "nothing electrical had touched" in told and "key_idea" in told
+
+    spread = {"shots": [early["shots"][0], {"template": "key_idea",
+                                            "statement": "Nothing electrical touched it",
+                                            "when": "its own nerves"}]}
+    assert uncovered(spread, words, 17.0) == ""

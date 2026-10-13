@@ -29,6 +29,7 @@ stays consistent with them; the slide's pictures are described once and kept.
 
 from __future__ import annotations
 
+import json
 import logging
 import time
 from pathlib import Path
@@ -63,7 +64,7 @@ from pipeline.scene_prompt import (  # noqa: F401 -- kit_api, compact: read thro
     system_prompt,
 )
 from pipeline.scene_round import render_round
-from pipeline.scene_shots import is_shots, program_for
+from pipeline.scene_shots import is_shots, program_for, uncovered
 from pipeline.scene_state import STOP, add_event, doing, load_state, save_state
 
 logger = logging.getLogger(__name__)
@@ -189,7 +190,8 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
             state["last_render"] = {k: result[k] for k in
                                     ("passed", "good", "reviewed", "failing", "problems",
                                      "polish", "scores", "score")}
-            feedback = result["feedback"]
+            feedback = "\n\n".join(part for part in (
+                result["feedback"], _still_stretch(folder, brief, spec)) if part)
             add_event(state, "render", f"Round {number}: " + (
                 "good" if result["good"] else "passed its checks" if result["passed"]
                 else f"{len(result['failing'])} check(s) fail: " + "; ".join(result["failing"])))
@@ -277,6 +279,18 @@ def _written(system, brief, notes, earlier, entry, code, feedback, instruction, 
             continue
         return written, merged, renderer, ENTRY_FILES[renderer], bool(answer.code)
     return None
+
+
+def _still_stretch(folder: Path, brief: dict[str, Any], spec: dict[str, Any]) -> str:
+    """For shots: the narration a long still stretch leaves unshown, quoted."""
+    timings = folder / "narration.mp3.words.json"
+    if not is_shots(spec) or not timings.exists():
+        return ""
+    try:
+        words = json.loads(timings.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return ""
+    return uncovered(spec, words, float(brief.get("seconds") or 0))
 
 
 def _stand_in(slug: str, visual_id: str, folder: Path, brief: dict[str, Any],

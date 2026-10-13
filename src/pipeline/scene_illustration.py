@@ -73,7 +73,7 @@ class Checked(BaseModel):
 def check(path: Path, asked: str, narration: str) -> Checked:
     """One look at the painted picture against what was asked and what is said. A
     painting showed human hearts for "two frog hearts" and nothing noticed."""
-    from pipeline.llm import complete_structured_with_images
+    from pipeline.llm import VISION_TOKENS, complete_structured_with_images
     from pipeline.scene_review import _jpeg
 
     return complete_structured_with_images(
@@ -82,7 +82,7 @@ def check(path: Path, asked: str, narration: str) -> Checked:
         "strict about the science: the wrong animal, organ, instrument or setup, extra "
         "or missing parts that matter, or any text in the picture, is a no.",
         f"It was asked to show: {asked}\n\nWhat is said while it is on screen:\n"
-        f"{narration[:1200]}", [("The illustration", _jpeg(path))], max_tokens=1500)
+        f"{narration[:1200]}", [("The illustration", _jpeg(path))], max_tokens=VISION_TOKENS)
 
 
 def blend(path: Path, background: str) -> None:

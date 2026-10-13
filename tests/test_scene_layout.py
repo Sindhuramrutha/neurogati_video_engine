@@ -261,7 +261,9 @@ class TheScene(ExplainerScene):
     def construct(self):
         end = self.brief.seconds
         self.hero("picture.png", title="The body", callouts=[
-            ("Touch", (0.3, 0.3), None), ("Movement", (0.7, 0.5), None)])
+            ("Touch", (0.3, 0.3), None), ("Movement", (0.7, 0.5), None),
+            ("Reach", (0.8, 0.2), None)],
+            moves=[([(0.1, 0.5), (0.5, 0.4), (0.9, 0.5)], None)])
         self.until(end * 0.2)
         self.clear()
         self.steps([("Touch", None, None), ("Movement", "picture.png", None),
@@ -295,7 +297,11 @@ def test_every_shot_template_passes_the_layout_checks_by_construction():
     slug, project, visual = scripted_project("Templates")
     with_program(slug, project, visual, TEMPLATED, renderer="manim")
     folder = scene_folder(project, visual)
-    Image.new("RGB", (800, 600), (90, 140, 200)).save(folder / "picture.png")
+    # A drawing in a wide white margin, as a painted illustration comes: the kit
+    # trims the margin, so the picture is shown at the size of what it shows.
+    picture = Image.new("RGB", (800, 600), (255, 255, 255))
+    picture.paste((90, 140, 200), (200, 150, 600, 450))
+    picture.save(folder / "picture.png")
 
     result = run_scene(slug, visual.id)
 

@@ -49,6 +49,8 @@ MAXIMUM_SCHEMA_RETRIES = 2
 # went unwritten. The cost of a high ceiling is nothing when the response is
 # short; the cost of a low one is a stage that fails on its longest sections.
 STRUCTURED_OUTPUT_TOKEN_BUDGET = 16000
+# A vision model thinks before it answers, and the thinking counts against this.
+VISION_TOKENS = 16000
 PROGRAM_CALL_SECONDS = 600       # a scene agent's turn; it is asked to skip hidden reasoning
 NO_HIDDEN_REASONING = {"thinking": {"type": "disabled"}}
 

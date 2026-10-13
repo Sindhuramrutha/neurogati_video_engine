@@ -81,6 +81,44 @@ from manim import Scene, Text, VMobject, tempconfig
 
 from scenekit import load_brief
 
+
+def _trimmed(path: str) -> str:
+    """The picture without its empty margin: a painted illustration came with
+    a wide white border, and a hero picture fitted to its box showed a small
+    drawing lost in white. A copy is kept beside the render, never in assets/."""
+    import hashlib
+    import tempfile
+
+    from PIL import Image, ImageChops
+    source = Path(path)
+    try:
+        key = hashlib.sha1(f"{source.resolve()}:{source.stat().st_mtime_ns}".encode()).hexdigest()
+        out = Path(tempfile.gettempdir()) / "manimkit-trimmed" / f"{key[:16]}.png"
+        if out.exists():
+            return str(out)
+        image = Image.open(source)
+        image.load()
+        if image.mode in ("RGBA", "LA") and image.getextrema()[-1][0] < 250:
+            box = image.getchannel("A").point(lambda a: 255 if a > 12 else 0).getbbox()
+        else:
+            rgb = image.convert("RGB")
+            plain = Image.new("RGB", rgb.size, rgb.getpixel((0, 0)))
+            box = ImageChops.difference(rgb, plain).convert("L").point(
+                lambda v: 255 if v > 24 else 0).getbbox()
+        if not box:
+            return path
+        width, height = image.size
+        pad = round(0.02 * max(width, height))
+        box = (max(0, box[0] - pad), max(0, box[1] - pad),
+               min(width, box[2] + pad), min(height, box[3] + pad))
+        if (box[2] - box[0]) * (box[3] - box[1]) > 0.92 * width * height:
+            return path
+        out.parent.mkdir(parents=True, exist_ok=True)
+        image.crop(box).save(out)
+        return str(out)
+    except OSError:
+        return path
+
 BRIEF = load_brief()
 FRAME_WIDTH_UNITS = 14.222
 FRAME_HEIGHT_UNITS = 8.0
@@ -389,6 +427,9 @@ class ExplainerScene(Scene):
 
     # --- text ---------------------------------------------------------------------------
 
+    def smallest_size(self) -> int:
+        return int(BRIEF.__dict__.get("smallest_text_px") or 36)
+
     def label(self, text: str, size: int = 44, color: str | None = None,
               at: tuple[float, float] | None = None, on: str | None = None,
               bold: bool = False, **kwargs) -> Text:
@@ -396,7 +437,7 @@ class ExplainerScene(Scene):
         `on` is the colour behind the text when it sits on a panel."""
         fill = color or self.look["text"]
         # Never under the smallest the platforms allow: larger for a classroom.
-        size = max(size, int(BRIEF.__dict__.get("smallest_text_px") or 36))
+        size = max(size, self.smallest_size())
         mobject = Text(text, font_size=size, color=fill,
                        weight="BOLD" if bold else "NORMAL", **kwargs)
         if at is not None:
@@ -543,9 +584,10 @@ class ExplainerScene(Scene):
         return whole
 
     def picture(self, path: str, height: float = 3.0, at: tuple[float, float] | None = None):
-        """A picture from the slides (a path from brief.assets.pictures)."""
+        """A picture from the slides (a path from brief.assets.pictures), its empty
+        margin trimmed so the size given is the size of what it shows."""
         from manim import ImageMobject
-        image = ImageMobject(path).set(height=height)
+        image = ImageMobject(_trimmed(path)).set(height=height)
         if at is not None:
             image.move_to([at[0], at[1], 0])
         return image
@@ -648,10 +690,22 @@ class ExplainerScene(Scene):
             self.until(self.when(cue))
 
     def _wrapped(self, text: str, width: float, size: int) -> Text:
-        """Words broken into lines that fit `width` (scene units) at `size`."""
-        import textwrap
-        per_line = max(8, int(width / (size * 0.0072)))
-        return self.label("\n".join(textwrap.wrap(text, per_line)) or text, size=size)
+        """Words broken into lines that fit `width` (scene units) at `size`,
+        measured -- between words only, never inside one ("Electroc/hemical"); a
+        word wider than the line sets the type smaller, down to the smallest."""
+        size = max(size, self.smallest_size())
+        words = text.split() or [text]
+        widest = max(Text(word, font_size=size).width for word in words)
+        if widest > width:
+            size = max(self.smallest_size(), int(size * width / widest))
+        lines: list[str] = []
+        for word in words:
+            trial = f"{lines[-1]} {word}" if lines else word
+            if lines and Text(trial, font_size=size).width <= width:
+                lines[-1] = trial
+            else:
+                lines.append(word)
+        return self.label("\n".join(lines), size=size)
 
     def _fit(self, path: str, width: float, height: float, at: tuple[float, float]):
         image = self.picture(path, height=1.0)
@@ -659,36 +713,108 @@ class ExplainerScene(Scene):
         image.move_to([at[0], at[1], 0])
         return image
 
-    def hero(self, picture: str, callouts: list, title: str = "", cue: str | None = None):
+    def hero(self, picture: str, callouts: list, title: str = "", cue: str | None = None,
+             moves: list | None = None):
         """One picture, large, and its parts named on it: `callouts` are
         (label, (x, y), cue) with (x, y) the part's place as fractions of the
         picture from its top left -- the picture's description gives them. The
-        labels stand in a column beside the picture, each joined to its part."""
-        from manim import Dot, Line
+        labels stand in a column beside the picture -- both sides, picture centred,
+        when the parts are spread across it -- each joined to its part by a line
+        that crosses the picture level and bends only in the gutter, so no two
+        lines cross. `moves` are ([(x, y), ...], cue): a pulse runs along those
+        points of the picture on the cue -- a signal travelling, liquid carried."""
+        from manim import Dot, VMobject
         top = 2.55 if title else 3.3
         if title:
             self.play(self.reveal(self.title(title)))
-        image = self._fit(picture, 7.6, top + 3.3, (-2.4, (top - 3.3) / 2))
+        xs = [fx for _, (fx, _), _ in callouts]
+        both = len(callouts) > 1 and min(xs) < 0.4 and max(xs) > 0.6
+        middle = (top - 3.3) / 2
+        # Each label column as wide as its longest word. Labels both sides only
+        # when that still leaves the picture nearly as large as one column would:
+        # the picture is the scene, the labels serve it.
+        longest = max((Text(word, font_size=max(self.LABEL_SIZE, self.smallest_size())).width
+                       for text, _, _ in callouts for word in text.split()), default=2.0)
+        room = max(2.4, longest + 0.15)
+        from PIL import Image as _Image
+        with _Image.open(_trimmed(picture)) as opened:
+            aspect = opened.width / max(1, opened.height)
+        tall = top + 3.3
+        centred = min(6.8, 2 * (self.SAFE_X - 0.85 - room))
+        beside = 2 * self.SAFE_X - 0.85 - room
+        both = both and min(centred, tall * aspect) >= 0.8 * min(beside, tall * aspect)
+        if both:
+            image = self._fit(picture, centred, tall, (0.0, middle))
+        else:
+            image = self._fit(picture, beside, tall, (0.0, middle))
+            image.align_to([-self.SAFE_X, 0, 0], manim.LEFT)
         self._at_cue(cue)
-        self.play(manim.FadeIn(image, run_time=0.6))
-        column = image.get_right()[0] + 0.9
-        room = self.SAFE_X - column
-        placed, floor = [], top
-        for text, (fx, fy), part_cue in sorted(callouts, key=lambda c: c[1][1]):
-            point = np.array([image.get_left()[0] + fx * image.width,
-                              image.get_top()[1] - fy * image.height, 0.0])
-            label = self._wrapped(text, room, self.LABEL_SIZE)
-            y = min(point[1], floor - label.height / 2)
-            label.move_to([column + label.width / 2, max(y, -self.SAFE_Y + label.height / 2), 0])
-            floor = label.get_bottom()[1] - 0.25
-            placed.append((label, point, part_cue))
-        for label, point, part_cue in sorted(placed, key=lambda p: self.when(p[2] or "")):
-            colour = self.colour(len(self._snapshots))
-            line = Line(_edge(label, point) + np.array([-0.08, 0, 0]), point, buff=0.05,
-                        color=colour, stroke_width=3)
-            self._at_cue(part_cue)
-            self.play(self.draw(line, run_time=0.4), manim.FadeIn(Dot(point, radius=0.08,
-                      color=colour)), self.reveal(label, run_time=0.4))
+        self.play(manim.FadeIn(image, scale=0.96, run_time=0.7))
+        sides = {1: [], -1: []}
+        for text, (fx, fy), part_cue in callouts:
+            sides[-1 if both and fx < 0.5 else 1].append((text, fx, fy, part_cue))
+        placed = []
+        for side, items in sides.items():
+            edge = (image.get_right() if side > 0 else image.get_left())[0]
+            gutter, column = edge + side * 0.15, edge + side * 0.85
+            room = self.SAFE_X - abs(column)
+            floor = top
+            for text, fx, fy, part_cue in sorted(items, key=lambda c: c[2]):
+                point = np.array([image.get_left()[0] + fx * image.width,
+                                  image.get_top()[1] - fy * image.height, 0.0])
+                label = self._wrapped(text, room, self.LABEL_SIZE)
+                y = max(min(point[1], floor - label.height / 2),
+                        -self.SAFE_Y + label.height / 2)
+                label.move_to([column + side * label.width / 2, y, 0])
+                floor = label.get_bottom()[1] - 0.25
+                start = np.array([column - side * 0.08, y, 0.0])
+                line = VMobject(stroke_width=4).set_points_as_corners(
+                    [start, [gutter, point[1], 0.0], point])
+                placed.append((label, point, line, part_cue))
+        def at(fx: float, fy: float):
+            return np.array([image.get_left()[0] + fx * image.width,
+                             image.get_top()[1] - fy * image.height, 0.0])
+
+        events = [(self.when(c or ""), "callout", (label, point, line))
+                  for label, point, line, c in placed]
+        events += [(self.when(c or ""), "move", [at(*xy) for xy in path])
+                   for path, c in (moves or []) if len(path) > 1]
+        named = 0
+        for moment, kind, what in sorted(events, key=lambda e: e[0]):
+            self.until(moment)
+            if kind == "move":
+                self._travel(what)
+                continue
+            label, point, line = what
+            colour = self.colour(named)
+            named += 1
+            # A halo of the background under the line, as a textbook plate
+            # draws it: a leader crossing the drawing stays readable.
+            line.set_stroke(colour, width=4).set_stroke(self.look["background"], width=11,
+                                                       background=True)
+            dot = Dot(point, radius=0.09, color=colour)
+            self.play(self.draw(line, run_time=0.45), manim.FadeIn(dot, scale=2.2),
+                      self.reveal(label, run_time=0.45))
+            self.play(manim.Flash(point, color=colour, line_length=0.22, num_lines=10,
+                                  flash_radius=0.3, run_time=0.5))
+
+    def _travel(self, points: list) -> None:
+        """A glowing pulse runs along `points` over the picture -- a signal down a
+        nerve, current through a wire, liquid carried across -- and leaves nothing
+        behind: what it shows is the movement."""
+        from manim import Dot, MoveAlongPath, ShowPassingFlash, VGroup, VMobject
+        path = VMobject().set_points_smoothly([np.array(p) for p in points])
+        length = sum(np.linalg.norm(np.array(b) - np.array(a))
+                     for a, b in zip(points, points[1:], strict=False))
+        colour = self.look.get("accent") or self.colour(0)
+        trail = path.copy().set_stroke(colour, width=10)
+        glow = Dot(points[0], radius=0.22, color=colour, fill_opacity=0.35)
+        pulse = VGroup(glow, Dot(points[0], radius=0.11, color=colour))
+        seconds = min(2.4, max(1.0, length / 3))
+        self.play(manim.FadeIn(pulse, scale=0.5, run_time=0.2))
+        self.play(MoveAlongPath(pulse, path), ShowPassingFlash(trail, time_width=0.5),
+                  run_time=seconds, rate_func=manim.linear)
+        self.play(manim.FadeOut(pulse, scale=1.8, run_time=0.3))
 
     def steps(self, steps: list, title: str = ""):
         """Two to four steps in order -- an experiment, a process: `steps` are

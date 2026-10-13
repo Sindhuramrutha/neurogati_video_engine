@@ -28,7 +28,10 @@ one to three of these, each {"template": ..., then its slots}; "picture" is an i
 the brief's assets.pictures, "when" the exact narration words a part arrives on:
 - hero: "title", "picture", "when", "callouts": [{"label", "at": [x, y], "when"}] -- one
   picture large and its parts named; at = the part's place as fractions of the picture
-  from its top left, from the picture's description
+  from its top left, from the picture's description. Optional "moves": [{"along": [[x, y],
+  ...2 to 8 points on the picture], "when"}] -- a glowing pulse runs along that path on
+  the words: a signal down a nerve, current through a wire, liquid carried across. Use it
+  wherever the narration says something travels; no need to write the scene by hand.
 - steps: "title", "steps": [{"label", "picture" (or null), "when"}] -- 2 to 4 steps in order
 - compare: "title", "left" and "right": {"heading", "picture" (or null), "points": [up to
   3 short], "when"}
@@ -37,6 +40,12 @@ the brief's assets.pictures, "when" the exact narration words a part arrives on:
 - flow: "title", "steps": [{"label", "when"}] -- boxes joined by arrows
 - hub: "title", "centre", "items": [{"label", "when"}] -- one idea and its parts
 - timeline: "title", "events": [{"label", "when"}] -- things in order
+Choosing: a thing that can be seen -- an experiment, an organ, an apparatus, a person -- is
+shown in its picture (hero, steps with pictures, person, compare with pictures), never as
+words in boxes; flow, hub and timeline are for ideas no picture shows. Narration that goes
+in steps ("step two... then...") is steps, or one shot per step, not one still hero. Spread
+the "when"s over the WHOLE narration: the frame must change on the later sentences too --
+end on a key_idea when the narration ends on its point.
 Labels are a few words from the narration. Write a program by hand only when no shot can
 show the idea: then send the file, and say why in "approach"."""
 
@@ -86,8 +95,19 @@ def _shot_code(shot: dict, pictures: int, at: int) -> list[str]:
             x, y = (min(1.0, max(0.0, float(v))) for v in point)
             callouts.append(f"({_text(c.get('label'), f'{where} callout label')!r}, "
                             f"({x:.2f}, {y:.2f}), {_when(c.get('when'))})")
+        moves = []
+        for number, move in enumerate(_items(shot.get("moves", []), f"{where} moves", 0, 3)):
+            along = move.get("along")
+            if not (isinstance(along, list) and 2 <= len(along) <= 8
+                    and all(isinstance(p, list) and len(p) == 2 for p in along)):
+                raise ValueError(f"{where} move {number + 1}: 'along' must be 2 to 8 [x, y] "
+                                 "points on the picture")
+            points = ", ".join(f"({min(1.0, max(0.0, float(x))):.2f}, "
+                               f"{min(1.0, max(0.0, float(y))):.2f})" for x, y in along)
+            moves.append(f"([{points}], {_when(move.get('when'))})")
         return [f"self.hero({_picture(shot.get('picture'), pictures, where, True)}, "
-                f"[{', '.join(callouts)}], title={title}, cue={_when(shot.get('when'))})"]
+                f"[{', '.join(callouts)}], title={title}, cue={_when(shot.get('when'))}"
+                + (f", moves=[{', '.join(moves)}]" if moves else "") + ")"]
     if template == "steps":
         steps = [f"({_text(s.get('label'), f'{where} step label')!r}, "
                  f"{_picture(s.get('picture'), pictures, where)}, {_when(s.get('when'))})"
@@ -146,6 +166,60 @@ def _diagram_code(template: str, shot: dict, where: str, title: str) -> list[str
             lines += [f"self._at_cue({when})",
                       f"self.play(self.reveal(d.dots[{number}]), self.reveal(d.labels[{number}]))"]
     return lines
+
+
+LONGEST_STILL_SECONDS = 8.0     # of narration with nothing new arriving
+
+
+def _cues(spec: dict) -> list[str]:
+    """Every `when` in the shots: the words each part arrives on."""
+    found: list[str] = []
+
+    def walk(value: Any) -> None:
+        if isinstance(value, dict):
+            for key, item in value.items():
+                if key in ("when", "line_when", "begins") and isinstance(item, str):
+                    found.append(item)
+                else:
+                    walk(item)
+        elif isinstance(value, list):
+            for item in value:
+                walk(item)
+    walk(spec.get("shots") or [])
+    return found
+
+
+def uncovered(spec: dict, words: list[dict], seconds: float) -> str:
+    """What to tell the model when its shots leave a long stretch of narration
+    with nothing new on screen. A measured scene put every cue in the first half
+    and stood still through "Nothing electrical had touched that heart..."; told
+    only "keep things arriving", six rounds did not move it."""
+    import re
+
+    def norm(text: str) -> list[str]:
+        return re.findall(r"[a-z0-9']+", text.lower())
+
+    spoken = [(norm(w.get("text", "")), w.get("start_ms", 0) / 1000) for w in words]
+    flat = [(word, at) for parts, at in spoken for word in parts]
+    times = [0.0, seconds]
+    for cue in _cues(spec):
+        wanted = norm(cue)
+        for start in range(len(flat) - len(wanted) + 1):
+            if wanted and [w for w, _ in flat[start:start + len(wanted)]] == wanted:
+                times.append(flat[start][1])
+                break
+    times.sort()
+    gap, begins = max((b - a, a) for a, b in zip(times, times[1:], strict=False))
+    if gap < max(LONGEST_STILL_SECONDS, 0.3 * seconds):
+        return ""
+    stretch = [w for w, at in flat if begins + 1.0 < at < begins + gap]
+    if len(stretch) < 6:
+        return ""
+    said = " ".join(stretch[:30]) + (" ..." if len(stretch) > 30 else "")
+    return (f"Nothing new arrives for {gap:.0f} s of the {seconds:.0f} s, from {begins:.0f} s: "
+            f'while the narration says "{said}" the frame stands still. Give those words a '
+            "shot that begins on them -- a key_idea with their point, or steps or compare -- "
+            "or set later parts' \"when\" on them.")
 
 
 def is_shots(spec: dict) -> bool:

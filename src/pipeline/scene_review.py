@@ -18,7 +18,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
-from pipeline.llm import complete_structured_with_images
+from pipeline.llm import VISION_TOKENS, complete_structured_with_images
 
 REVIEW_WIDTH = 960          # frames are shrunk to this before they are sent
 LONGEST_NARRATION = 1500
@@ -163,7 +163,8 @@ def review_frames(folder: Path, brief: dict[str, Any], question: str = "") -> Ve
         f"The agent asks you specifically: {question}" if question.strip() else "",
         "Look at the frames below, in order.",
     ] if part)
-    return complete_structured_with_images(Verdict, system, user, pictures, max_tokens=4000)
+    return complete_structured_with_images(Verdict, system, user, pictures,
+                                           max_tokens=VISION_TOKENS)
 
 
 def look_at_picture(path: Path, question: str) -> str:
@@ -173,5 +174,5 @@ def look_at_picture(path: Path, question: str) -> str:
         "You describe a picture from a lecture slide for an animator who must explain "
         "it on screen. Be specific: parts, labels, arrows, layout, what it teaches.",
         question.strip() or "What does this picture show, part by part?",
-        [(path.name, _jpeg(path))], max_tokens=1500)
+        [(path.name, _jpeg(path))], max_tokens=VISION_TOKENS)
     return answer.answer
