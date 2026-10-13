@@ -38,6 +38,9 @@ let openInStudio = () => {};
 
 const STATUS_LABELS = {
   rendering: "Rendering", queued: "Waiting", paused: "Paused", failed: "Failed", done: "Finished",
+  // Stopped by an outage that may pass (the voice service, the network): it
+  // carries on by itself from its last finished section (render_queue.py).
+  waiting: "Resumes by itself",
 };
 
 function clock(seconds) {
@@ -72,7 +75,7 @@ function track(percent) {
 function renderBar() {
   const rendering = view.jobs.find(job => job.status === "rendering");
   const count = status => view.jobs.filter(job => job.status === status).length;
-  const chips = ["queued", "paused", "failed", "done"]
+  const chips = ["queued", "waiting", "paused", "failed", "done"]
     .filter(status => count(status))
     .map(status => `<span class="rd-chip ${status}">${count(status)} ${
       STATUS_LABELS[status].toLowerCase()}</span>`).join("");
@@ -159,7 +162,7 @@ function jobDetail(job, index) {
     return `<p class="rd-line muted">${ahead ? `${ahead} job(s) ahead of it` : "Next up"}${
       job.continues ? " · continues from where it stopped" : ""}</p>`;
   }
-  if (job.status === "paused" || job.status === "failed") {
+  if (job.status === "paused" || job.status === "failed" || job.status === "waiting") {
     return `
       ${made ? `<p class="rd-line">${made}</p>` : ""}
       ${job.message ? `<p class="rd-line ${job.status === "failed" ? "bad" : "muted"}">${
@@ -182,6 +185,8 @@ function jobActions(job) {
     queued: button("up", "↑", "rd-small") + button("down", "↓", "rd-small")
       + button("pause", "Hold") + button("delete", "Delete", "danger"),
     paused: button("resume", "Resume", "btn-accent") + button("delete", "Delete", "danger"),
+    waiting: button("resume", "Resume now", "btn-accent") + button("pause", "Hold")
+      + button("delete", "Delete", "danger"),
     failed: button("resume", "Retry", "btn-accent") + button("delete", "Delete", "danger"),
     done: (job.video_file ? `<button class="btn btn-accent" data-rd="watch"
              data-slug="${escapeHtml(job.slug)}" data-file="${escapeHtml(job.video_file)}"

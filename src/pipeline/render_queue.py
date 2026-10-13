@@ -18,6 +18,11 @@ So renders go through one queue for the whole app (`projects/render-queue.json`)
   (`render_job`); **Resume** puts it back in the queue, and it continues from
   there. **Delete** stops it if it runs and throws its work away. A finished
   job's video is never deleted with it; removing it only clears the list.
+- **Waits out an outage.** A render stopped by something that may pass -- the
+  voice service throttling, the network dropping -- is not failed: it *waits*,
+  and resumes from its last finished section by itself, after 5 minutes, then
+  10, 20, 40, then every hour, for about five hours. A refusal (scenes not
+  approved, no script) fails at once, since waiting would not change it.
 - **Survives the page.** The job runs on the server; reloading the page loses
   nothing, and the panel finds it again. If the app itself stops mid-render,
   the job is found as paused on the next start, its work kept, ready to resume.
@@ -40,7 +45,10 @@ from pipeline.storage.documents import JsonDocumentStore, new_identifier
 logger = logging.getLogger(__name__)
 
 MAXIMUM_JOBS_KEPT = 50
-UNFINISHED = {"queued", "rendering", "paused", "failed"}
+UNFINISHED = {"queued", "rendering", "paused", "failed", "waiting"}
+FIRST_WAIT_SECONDS = 300
+LONGEST_WAIT_SECONDS = 3600
+MOST_AUTOMATIC_RESUMES = 8
 
 
 class QueueJob(BaseModel):
@@ -49,7 +57,7 @@ class QueueJob(BaseModel):
     project: str = ""
     voice_provider: str = ""
     voice: str = ""
-    status: str = "queued"     # queued | rendering | paused | failed | done
+    status: str = "queued"     # queued | rendering | waiting | paused | failed | done
     added_at: str = ""
     started_at: str = ""
     finished_at: str = ""
@@ -59,6 +67,8 @@ class QueueJob(BaseModel):
     video_file: str = ""
     duration_ms: int = 0
     message: str = ""
+    retry_at: float = 0.0      # waiting: when it resumes by itself (epoch seconds)
+    resumes: int = 0           # how many times it has resumed by itself
 
 
 class RenderQueue(BaseModel):
@@ -112,7 +122,7 @@ def queue_view() -> dict[str, Any]:
         if job.status == "rendering":
             live = progress.read(job.slug, render_job.JOB)
             entry["progress"] = live
-        if job.status in {"paused", "failed", "rendering"}:
+        if job.status in {"paused", "failed", "rendering", "waiting"}:
             record = render_job.job_view(job.slug)
             entry["sections"] = {"count": record["section_count"], "spoken": record["spoken"],
                                  "cut": record["cut"]}
@@ -157,7 +167,7 @@ def pause_job(job_id: str) -> dict[str, Any]:
         job = _find(queue, job_id)
         if job.status == "rendering":
             render_job.request_halt(job.slug)
-        elif job.status == "queued":
+        elif job.status in ("queued", "waiting"):
             job.status = "paused"
         else:
             raise OperationFailed(f"A {job.status} job cannot be paused.")
@@ -170,7 +180,7 @@ def resume_job(job_id: str) -> dict[str, Any]:
     """Back in the queue, to carry on from what it made (paused or failed)."""
     def edit(queue: RenderQueue) -> None:
         job = _find(queue, job_id)
-        if job.status not in {"paused", "failed"}:
+        if job.status not in {"paused", "failed", "waiting"}:
             raise OperationFailed(f"A {job.status} job has nothing to resume.")
         job.status, job.message = "queued", ""
         job.continues = render_job.job_view(job.slug)["can_resume"]
@@ -200,7 +210,7 @@ def delete_job(job_id: str) -> dict[str, Any]:
             job.deleting = True
             render_job.request_halt(job.slug, discard=True)
             return
-        if job.status in {"paused", "failed"}:
+        if job.status in {"paused", "failed", "waiting"}:
             render_job.discard(job.slug)
         queue.jobs.remove(job)
 
@@ -268,7 +278,9 @@ def _next_job() -> QueueJob | None:
         queue = store.load()
         if queue.paused:
             return None
-        job = next((job for job in queue.jobs if job.status == "queued"), None)
+        now = time.time()
+        job = next((job for job in queue.jobs if job.status == "queued"
+                    or (job.status == "waiting" and job.retry_at <= now)), None)
         if job is None:
             return None
         job.status, job.message = "rendering", ""
@@ -293,6 +305,7 @@ def _run(job: QueueJob) -> None:
     started = time.monotonic()
     outcome: dict[str, Any] = {}
     failure = ""
+    passing = False
     try:
         try:
             outcome = render_video(job.slug, job.voice_provider, job.voice, resume=job.continues)
@@ -306,8 +319,11 @@ def _run(job: QueueJob) -> None:
             outcome.setdefault("warnings", []).append(
                 f"Rendered from the beginning: {refused}")
     except Exception as error:   # the worker must outlive any one render
+        from pipeline.resilience import is_transient
+
         logger.exception("render job %s failed", job.id)
         failure = str(error) or type(error).__name__
+        passing = is_transient(error)
 
     def record(queue: RenderQueue) -> None:
         current = next((j for j in queue.jobs if j.id == job.id), None)
@@ -316,6 +332,15 @@ def _run(job: QueueJob) -> None:
         current.render_seconds += round(time.monotonic() - started)
         if current.deleting or outcome.get("discarded"):
             queue.jobs.remove(current)
+        elif failure and passing and current.resumes < MOST_AUTOMATIC_RESUMES:
+            # It may pass: wait, then carry on from the last finished section.
+            wait = min(LONGEST_WAIT_SECONDS, FIRST_WAIT_SECONDS * 2 ** current.resumes)
+            current.status, current.continues = "waiting", True
+            current.retry_at = time.time() + wait
+            current.resumes += 1
+            current.message = (f"Waiting: {failure[:300]} It carries on by itself at "
+                               f"{datetime.fromtimestamp(current.retry_at):%H:%M}, from "
+                               "its last finished section.")
         elif failure:
             current.status, current.message = "failed", failure
             current.continues = True
@@ -323,6 +348,7 @@ def _run(job: QueueJob) -> None:
             current.status, current.continues = "paused", True
         else:
             current.status, current.continues = "done", False
+            current.resumes, current.retry_at = 0, 0.0
             current.finished_at = _now()
             current.video_file = outcome.get("video_file_name", "")
             current.duration_ms = int(outcome.get("duration_ms", 0))

@@ -93,3 +93,53 @@ def test_a_job_left_rendering_by_a_stopped_app_is_found_paused(project_root, fak
     job = render_queue.queue_view()["jobs"][0]
 
     assert job["status"] == "paused" and "stopped while this was rendering" in job["message"]
+
+
+def test_a_render_stopped_by_an_outage_waits_and_carries_on_by_itself(
+        project_root, fakes, monkeypatch):
+    """The voice service dropped requests and the render failed, to be resumed
+    by hand. Now it waits and carries on from its last finished section."""
+    from pipeline import render_run
+
+    class NoAudioReceived(Exception):
+        pass
+
+    real, calls = render_run.render_video, []
+
+    def outage_once(*args, **kwargs):
+        calls.append(kwargs.get("resume"))
+        if len(calls) == 1:
+            try:
+                raise NoAudioReceived("No audio was received.")
+            except NoAudioReceived as dropped:
+                raise OperationFailed("The narration could not be spoken") from dropped
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(render_run, "render_video", outage_once)
+    monkeypatch.setattr(render_queue, "FIRST_WAIT_SECONDS", 3600)
+    slug, _ = three_sections("Outage")
+    render_queue.add_job(slug, "silent")
+
+    view = wait_for(lambda v: statuses(v) == ["waiting"])
+    assert "carries on by itself" in view["jobs"][0]["message"]
+
+    # Its time comes: it carries on, without anyone pressing anything.
+    render_queue._change(lambda queue: setattr(queue.jobs[0], "retry_at", 0.0))
+    render_queue._wake.set()
+    wait_for(lambda v: statuses(v) == ["done"])
+    assert calls[:2] == [False, True], "it came back to carry on, by itself"
+
+
+def test_a_render_refused_for_a_reason_waiting_will_not_change_fails_at_once(
+        project_root, fakes, monkeypatch):
+    from pipeline import render_run
+
+    def refused(*args, **kwargs):
+        raise OperationFailed("3 scene(s) cannot be rendered yet: scene 1 is not approved")
+
+    monkeypatch.setattr(render_run, "render_video", refused)
+    slug, _ = three_sections("Refused")
+    render_queue.add_job(slug, "silent")
+
+    view = wait_for(lambda v: statuses(v) == ["failed"])
+    assert "not approved" in view["jobs"][0]["message"]

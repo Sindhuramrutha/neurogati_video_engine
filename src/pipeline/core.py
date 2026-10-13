@@ -41,7 +41,13 @@ class OperationFailed(Exception):
     One exception type for all three clients: the web layer turns it into a 404
     or 400, the CLI prints it and exits non-zero, MCP returns it as tool output.
     The message is written for a human or a model to read, never a stack trace.
+
+    Raised as a refusal (no cause) it is permanent: asking again gets the same
+    answer. Raised from another error, that error says (resilience.classify).
     """
+
+    transient = False
+
 
 @dataclass(frozen=True)
 class ArtifactBinding:

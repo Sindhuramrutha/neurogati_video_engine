@@ -103,23 +103,34 @@ def _status(failure: BaseException) -> int | None:
     return value if isinstance(value, int) else None
 
 
-def classify(failure: BaseException) -> str:
-    """Transient or permanent, from the failure and everything it was raised from."""
-    for cause in _chain(failure):
-        said = getattr(cause, "transient", None)    # an error may say what it is
-        if isinstance(said, bool):
-            return TRANSIENT if said else PERMANENT
-        status = _status(cause)
-        if status is not None:
-            if status in (408, 409, 425, 429) or status >= 500:
-                return TRANSIENT
-            if 400 <= status < 500:
-                return PERMANENT
-        names = {kind.__name__ for kind in type(cause).__mro__}
-        if names & _PERMANENT_NAMES and not names & _TRANSIENT_NAMES:
-            return PERMANENT
-        if names & _TRANSIENT_NAMES:
+def _kind(cause: BaseException) -> str | None:
+    """What this one error says about itself, or None when it says nothing."""
+    said = getattr(cause, "transient", None)          # an error may say what it is
+    if isinstance(said, bool):
+        return TRANSIENT if said else PERMANENT
+    status = _status(cause)
+    if status is not None:
+        if status in (408, 409, 425, 429) or status >= 500:
             return TRANSIENT
+        if 400 <= status < 500:
+            return PERMANENT
+    names = {kind.__name__ for kind in type(cause).__mro__}
+    if names & _TRANSIENT_NAMES:
+        return TRANSIENT
+    if names & _PERMANENT_NAMES:
+        return PERMANENT
+    return None
+
+
+def classify(failure: BaseException) -> str:
+    """Transient or permanent. The root cause decides first: "the narration could
+    not be spoken" raised from a dropped connection is transient; the same words
+    raised as a deliberate refusal (no cause) are permanent. Unknown: transient,
+    since the job around it waits and tries again a bounded number of times."""
+    for cause in reversed(_chain(failure)):
+        kind = _kind(cause)
+        if kind is not None:
+            return kind
     return TRANSIENT
 
 

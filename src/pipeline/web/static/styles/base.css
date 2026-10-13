@@ -1958,7 +1958,7 @@ input:focus, textarea:focus, select:focus {
 
 .rd-chip.rendering { background: var(--c-yellow); }
 .rd-chip.queued { background: var(--c-purple-soft, #EDE3FF); }
-.rd-chip.paused, .rd-chip.held { background: var(--c-orange-soft); }
+.rd-chip.paused, .rd-chip.held, .rd-chip.waiting { background: var(--c-orange-soft); }
 .rd-chip.failed { background: var(--c-red-soft); }
 .rd-chip.done { background: var(--c-lime-soft); }
 
