@@ -88,6 +88,9 @@ def _items(value: Any, where: str, least: int, most: int) -> list[dict]:
 
 def _shot_code(shot: dict, pictures: int, at: int) -> list[str]:
     template = shot.get("template")
+    # A scene opens on its picture at once: a first shot waiting for its words
+    # left the screen blank until the narration reached "Galen".
+    opening = "None" if at == 0 else _when(shot.get("when"))
     where = f"shot {at + 1} ({template})"
     title = repr(_text(shot.get("title"), f"{where} title", required=False))
     if template == "hero":
@@ -117,7 +120,7 @@ def _shot_code(shot: dict, pictures: int, at: int) -> list[str]:
                                f"{min(1.0, max(0.0, float(y))):.2f})" for x, y in along)
             moves.append(f"([{points}], {_when(move.get('when'))})")
         return [f"self.hero({_picture(shot.get('picture'), pictures, where, True)}, "
-                f"[{', '.join(callouts)}], title={title}, cue={_when(shot.get('when'))}"
+                f"[{', '.join(callouts)}], title={title}, cue={opening}"
                 + (f", moves=[{', '.join(moves)}]" if moves else "") + ")"]
     if template == "steps":
         steps = [f"({_text(s.get('label'), f'{where} step label')!r}, "
@@ -139,12 +142,12 @@ def _shot_code(shot: dict, pictures: int, at: int) -> list[str]:
     if template == "person":
         return [f"self.person({_picture(shot.get('picture'), pictures, where, True)}, "
                 f"{_text(shot.get('name'), f'{where} name')!r}, "
-                f"{_text(shot.get('line'), f'{where} line')!r}, cue={_when(shot.get('when'))}, "
+                f"{_text(shot.get('line'), f'{where} line')!r}, cue={opening}, "
                 f"line_cue={_when(shot.get('line_when'))})"]
     if template == "key_idea":
         return [f"self.key_idea({_text(shot.get('statement'), f'{where} statement')!r}, "
                 f"{_picture(shot.get('picture'), pictures, where)}, "
-                f"cue={_when(shot.get('when'))})"]
+                f"cue={opening})"]
     if template in ("flow", "hub", "timeline"):
         return _diagram_code(template, shot, where, title)
     raise ValueError(f"{where}: template must be one of {', '.join(TEMPLATES)}")
