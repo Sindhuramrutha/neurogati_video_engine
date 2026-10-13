@@ -163,6 +163,7 @@ def write_brief(project, visual) -> dict[str, Any]:
     from pipeline.assets_handoff import _look_preview
     from pipeline.plan_handoff import plan_for_later_stages
     from pipeline.plan_pictures import assets_for_later_stages, pictures_of
+    from pipeline.scene_vetting import offered
     from pipeline.stage_options import video_preferences
     from pipeline.video_setup import platform_needs
 
@@ -176,6 +177,11 @@ def write_brief(project, visual) -> dict[str, Any]:
     library = assets_for_later_stages(project).library
     folder = scene_folder(project, visual, create=True)
     slide = keep_slide(project, visual, library)
+    # Only pictures that teach: a badge or a cover is not offered (scene_vetting).
+    on_screen, deck = offered(folder.parent, on_screen, [
+        str(project.root / f.shown_path) for f in _scene_pictures(
+            project, visual, section, pictures_of(section, plan, library)
+            if section else [], narration)])
 
     brief: dict[str, Any] = {
         "scene_id": visual.scene_id,
@@ -195,11 +201,7 @@ def write_brief(project, visual) -> dict[str, Any]:
         "look": {k: v for k, v in _look_preview(project, library.look).items() if k != "art"},
         # The scene's own illustration first, when the script asked for one.
         "pictures": [str(path) for path in [illustration.kept(
-            folder, on_screen, _look_preview(project, library.look))] if path]
-        + [str(project.root / f.shown_path)
-           for f in _scene_pictures(project, visual, section,
-                                    pictures_of(section, plan, library)
-                                    if section else [], narration)],
+            folder, on_screen, _look_preview(project, library.look))] if path] + deck,
         "slide_image": str(slide) if slide.exists() else "",
     }
     # Measured and grounded: the narration's own length and word timings, the

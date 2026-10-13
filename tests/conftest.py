@@ -40,5 +40,15 @@ def no_fact_check(request, monkeypatch):
                             lambda source, scenes, notes, title: [])
 
 
+@pytest.fixture(autouse=True)
+def pictures_teach(request, monkeypatch):
+    """Every picture is vetted by the vision model before a scene is offered it;
+    in tests each one teaches, unless a test is marked `real_vetting`."""
+    if request.node.get_closest_marker("real_vetting") is None:
+        monkeypatch.setattr("pipeline.scene_vetting._ask",
+                            lambda path: {"teaches": True, "what": "a figure"})
+
+
 def pytest_configure(config):
     config.addinivalue_line("markers", "real_fact_check: run the script's fact-check")
+    config.addinivalue_line("markers", "real_vetting: vet pictures with the stand-in model")

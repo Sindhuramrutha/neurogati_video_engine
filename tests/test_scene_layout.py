@@ -309,3 +309,29 @@ def test_every_shot_template_passes_the_layout_checks_by_construction():
     for key in ("ran", "bounds", "overlap", "contrast", "legible", "crossing", "collide",
                 "fills", "paragraphs"):
         assert checks[key]["status"] == "pass", (key, checks[key]["detail"])
+
+
+@pytest.mark.real_vetting
+@pytest.mark.usefixtures("project_root")
+def test_a_picture_that_does_not_teach_is_not_offered_and_one_is_painted(monkeypatch):
+    """A publisher's "Check for updates" badge was a scene's only picture. One
+    that does not teach is not offered; left with none, the scene asks for one
+    to be painted from what its brief says to draw."""
+    from pipeline import scene_vetting
+    from pipeline.scene_lab import write_brief
+
+    asked = []
+    monkeypatch.setattr(scene_vetting, "_ask", lambda path: asked.append(path) or {
+        "teaches": False, "what": "a Check for updates badge"})
+    slug, project, visual = scripted_project("Vetted")
+    monkeypatch.setattr("pipeline.scene_lab._scene_of", lambda *args: type("S", (), {
+        "narration": "The leg kicked.", "brief": "DRAW: a frog's leg on a brass hook"})())
+    monkeypatch.setattr("pipeline.scene_lab._scene_pictures",
+                        lambda *args: [type("F", (), {"shown_path": "badge.png"})()])
+
+    brief = write_brief(project, visual)
+
+    assert asked and brief["pictures"] == []
+    assert "ILLUSTRATE: a frog's leg on a brass hook" in brief["on_screen"]
+    write_brief(project, visual)
+    assert len(asked) == 1, "asked once per picture, then kept"

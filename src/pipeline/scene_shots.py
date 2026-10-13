@@ -23,6 +23,8 @@ from typing import Any
 TEMPLATES = ("hero", "steps", "compare", "person", "key_idea", "flow", "hub", "timeline")
 MOST_SHOTS = 3
 MOST_CALLOUT_WORDS = 4
+# A label with one of these says something ("thought is segmented"); it names nothing.
+STATING = {"is", "are", "was", "were", "be", "been", "has", "have", "had", "does", "did"}
 
 GUIDE = """Shots (the preferred answer -- no code): a ```json block with "shots", a list of
 one to three of these, each {"template": ..., then its slots}; "picture" is an index into
@@ -96,7 +98,8 @@ def _shot_code(shot: dict, pictures: int, at: int) -> list[str]:
                 raise ValueError(f"{where} callout {number + 1}: 'at' must be [x, y]")
             x, y = (min(1.0, max(0.0, float(v))) for v in point)
             label = _text(c.get("label"), f"{where} callout label")
-            if len(label.split()) > MOST_CALLOUT_WORDS or label.rstrip().endswith((".", "!")):
+            if (len(label.split()) > MOST_CALLOUT_WORDS or label.rstrip().endswith((".", "!"))
+                    or STATING.intersection(label.lower().split())):
                 # "It was electrical" pointed at an engraving names nothing in it.
                 raise ValueError(f"{where} callout {label!r} is a statement: a callout names "
                                  f"a part of the picture in 1 to {MOST_CALLOUT_WORDS} words "
