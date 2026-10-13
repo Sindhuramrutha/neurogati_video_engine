@@ -1,0 +1,35 @@
+[
+ {
+  "key": "spark",
+  "deck": "../../contents/01-DEMYSTIFYING THE BRAIN/Demystifying-the-Brain  Chapter 1.pptx",
+  "slides": [9, 10, 11],
+  "seconds": 300,
+  "scenes": 7,
+  "audience": "Curious learners new to neuroscience",
+  "title": "The Spark, the Physics, and the Chemical Signal",
+  "summary": "How electricity, then physics, then chemistry showed what a nerve signal is: Galvani and Volta, the physicists who measured it, and Otto Loewi's experiment proving nerves talk with chemicals.",
+  "how": "Three distinct mechanisms, each its own beat: electrophysiology, the physics that measured it, then the chemical signal told as the experiment that proved it. Show the deck's own pictures as each person is named."
+ },
+ {
+  "key": "aphasia",
+  "deck": "../../contents/01-DEMYSTIFYING THE BRAIN/Demystifying-the-Brain  Chapter 1.pptx",
+  "slides": [15, 16],
+  "seconds": 240,
+  "scenes": 6,
+  "audience": "Curious learners new to neuroscience",
+  "title": "Broca and Wernicke: When Speech Breaks",
+  "summary": "Two kinds of aphasia and the brain regions they revealed: Broca's patient Tan, who understood but could not speak, and Wernicke's patients, who spoke fluently but without meaning.",
+  "how": "Two human cases, told with restraint and sympathy. Show where each region is in the brain as it is named, and contrast the two."
+ },
+ {
+  "key": "behaviour",
+  "deck": "../../contents/01-DEMYSTIFYING THE BRAIN/Demystifying-the-Brain  Chapter 1.pptx",
+  "slides": [19, 20],
+  "seconds": 240,
+  "scenes": 6,
+  "audience": "Curious learners new to neuroscience",
+  "title": "Pavlov, Conditioning, and the Black Box",
+  "summary": "Pavlov's conditioning experiment, and how behaviourists such as Skinner and Thorndike treated the mind as a black box, studying only inputs and outputs.",
+  "how": "Tell Pavlov as the famous demonstration it is, step by step; then show why behaviourism set the inside of the mind aside, and what that cost."
+ }
+]

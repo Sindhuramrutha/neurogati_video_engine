@@ -183,7 +183,7 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
                 return
             state["last_render"] = {k: result[k] for k in
                                     ("passed", "good", "reviewed", "failing", "problems",
-                                     "polish")}
+                                     "polish", "scores", "score")}
             feedback = result["feedback"]
             add_event(state, "render", f"Round {number}: " + (
                 "good" if result["good"] else "passed its checks" if result["passed"]
@@ -197,7 +197,8 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
             # Otherwise it is refined, and a refinement is kept only when it is better:
             # after a pass, the reviewer is the judge of better.
             this = (rank(result["passed"], result["failing"], result["good"],
-                         len(result["problems"])) if has_clip(folder) else None)
+                         len(result["problems"]), result["score"])
+                    if has_clip(folder) else None)
             if this is not None and (best is None or this > best["rank"]
                                      or (this == best["rank"] and not result["passed"])):
                 keep_best(folder)

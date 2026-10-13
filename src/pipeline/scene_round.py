@@ -41,7 +41,8 @@ def render_round(slug: str, visual_id: str, folder: Path, renderer: str,
                 if c["status"] == "warn"]
     outcome: dict[str, Any] = {
         "passed": not failing, "good": False, "reviewed": False, "verdict": None,
-        "failing": [c["name"] for c in failing], "problems": [], "polish": []}
+        "failing": [c["name"] for c in failing], "problems": [], "polish": [],
+        "scores": {}, "score": 0.0}
 
     if failing:
         lines = ["These checks FAIL:"]
@@ -59,8 +60,13 @@ def render_round(slug: str, visual_id: str, folder: Path, renderer: str,
                                    f"{unavailable}")
             return outcome
         outcome.update(reviewed=True, good=verdict.good, verdict=verdict.model_dump(),
-                       problems=verdict.problems, polish=verdict.polish)
-        lines = ["Every check passed. A reviewer looked at the frames:"]
+                       problems=verdict.problems, polish=verdict.polish,
+                       scores=verdict.scores.model_dump(), score=verdict.scores.mean())
+        lines = ["Every check passed. A reviewer scored the frames, 1 to 5 (the bar: none "
+                 "below 3, teaches and accuracy 4 or more), weakest first -- fix the "
+                 "weakest first:",
+                 "  " + ", ".join(f"{name} {value}" for name, value
+                                  in verdict.scores.weakest())]
         lines += [f"- MUST FIX: {problem}" for problem in verdict.problems]
         lines += [f"- optional polish: {item}" for item in verdict.polish]
         if verdict.good:

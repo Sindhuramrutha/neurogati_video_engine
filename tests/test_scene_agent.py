@@ -17,15 +17,21 @@ from pipeline.scene_checks import motion_check
 from pipeline.scene_edit import apply_edits, parse_answer
 from pipeline.scene_lab import scene_folder
 from pipeline.scene_maker import make_scene
-from pipeline.scene_review import Verdict
+from pipeline.scene_review import Scores, Verdict
 from tests.test_scene_lab import CRASHES, GOOD, project_root, scripted_project  # noqa: F401
 
 pytestmark = pytest.mark.skipif(
     not (shutil.which("ffmpeg") and shutil.which("ffprobe")), reason="needs ffmpeg")
 
-GOOD_VERDICT = Verdict(teaches=True, motion_explains=True, looks_finished=True)
-BAD_VERDICT = Verdict(teaches=True, motion_explains=False, looks_finished=True,
-                      problems=["Labels only fade in and out."], polish=["Larger title."])
+def scored(*, low: int = 5, **lines) -> Scores:
+    """Every rubric line at `low`, with any named line set on its own."""
+    return Scores(**(dict.fromkeys(Scores.model_fields, low) | lines))
+
+
+GOOD_VERDICT = Verdict(scores=scored(), teaches=True, motion_explains=True, looks_finished=True)
+BAD_VERDICT = Verdict(scores=scored(low=4, motion=2), teaches=True, motion_explains=False,
+                      looks_finished=True, problems=["Labels only fade in and out."],
+                      polish=["Larger title."])
 SPEC = '```json\n{"renderer": "pillow", "approach": "A bar grows under the word touch."}\n```\n'
 
 
@@ -150,8 +156,8 @@ def test_a_pass_with_only_polish_left_ends_the_scene(project_root, monkeypatch):
     """Rounds spent on polish broke scenes that already worked: a pass is the end
     unless the reviewer names something that must change."""
     slug, project, visual = scripted_project("Polish")
-    polish_only = Verdict(teaches=True, motion_explains=True, looks_finished=False,
-                          polish=["A warmer accent."])
+    polish_only = Verdict(scores=scored(low=4, finish=3), teaches=True, motion_explains=True,
+                          looks_finished=False, polish=["A warmer accent."])
     model = Model(whole(GOOD), whole(GOOD))
     wired(monkeypatch, model, polish_only)
 
@@ -212,7 +218,8 @@ def test_a_refinement_the_reviewer_likes_less_does_not_replace_the_kept_one(proj
     real scene replaced one the reviewer had fewer complaints about."""
     slug, project, visual = scripted_project("Liked less")
     monkeypatch.setattr(scene_maker, "MOST_ROUNDS", 3)
-    worse = Verdict(teaches=False, motion_explains=False, looks_finished=True,
+    worse = Verdict(scores=scored(low=3, illustration=1, motion=1), teaches=False,
+                    motion_explains=False, looks_finished=True,
                     problems=["Only words in boxes.", "Nothing moves."])
     model = Model(whole(GOOD), whole(GOOD.replace("Touch", "Touching")), whole(GOOD))
     wired(monkeypatch, model, BAD_VERDICT, worse, GOOD_VERDICT)
@@ -457,3 +464,15 @@ def test_deleting_a_project_stops_the_scenes_being_made_in_it(project_root, monk
 
     assert ended.wait(5), "the work noticed it was stopped"
     assert not scene_agent.is_working(slug)
+
+
+def test_the_reviewer_scores_a_rubric_and_good_means_the_ship_bar():
+    """Yes/no passed cluttered frames and never once said "good". The bar: no line
+    below 3, teaching and accuracy at 4 or more."""
+    ships = Verdict(scores=scored(low=3, teaches=4, accuracy=4), teaches=True,
+                    motion_explains=True, looks_finished=True)
+    weak = Verdict(scores=scored(low=4, illustration=2), teaches=True,
+                   motion_explains=True, looks_finished=True)
+    assert ships.good and not weak.good
+    assert weak.scores.weakest()[0] == ("illustration", 2)
+    assert scored(teaches=9).teaches == 5, "out of range is clamped, not refused"

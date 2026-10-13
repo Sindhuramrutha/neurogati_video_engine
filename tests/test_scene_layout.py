@@ -11,7 +11,7 @@ import shutil
 import pytest
 
 from pipeline.scene_lab import run_scene, scene_folder
-from pipeline.scene_review import Verdict
+from pipeline.scene_review import Scores, Verdict
 from pipeline.scene_round import render_round
 from pipeline.storage.documents import TEMPORARY_WRITE_SUFFIX, write_text_atomically
 from tests.test_scene_lab import scripted_project, with_program
@@ -111,7 +111,9 @@ def test_a_failing_layout_is_looked_at_and_what_is_seen_is_passed_on(tmp_path, m
 
     def review(folder, brief, question=""):
         asked.append(question)
-        return Verdict(teaches=True, motion_explains=True, looks_finished=False,
+        scores = dict.fromkeys(Scores.model_fields, 3) | {"labels": 1, "composition": 2}
+        return Verdict(scores=Scores(**scores), teaches=True, motion_explains=True,
+                       looks_finished=False,
                        problems=["The ring is drawn over the label: put the label below it."])
 
     monkeypatch.setattr("pipeline.scene_review.review_frames", review)

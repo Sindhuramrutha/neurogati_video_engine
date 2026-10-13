@@ -24,7 +24,49 @@ REVIEW_WIDTH = 960          # frames are shrunk to this before they are sent
 LONGEST_NARRATION = 1500
 
 
+class Scores(BaseModel):
+    """The rubric (docs/plans/video-quality-plan.md, section 5), 1 to 5 each. A
+    yes/no reviewer passed cluttered frames and never once said "good"; scores say
+    how far off a scene is, and which part to fix first."""
+
+    teaches: int = Field(description="1-5. Does the picture show what is being said, at "
+                                     "the moment it is said? 5: a learner would get it "
+                                     "from the picture alone.")
+    accuracy: int = Field(description="1-5. Does every drawn thing, label, name and date "
+                                      "match what is said? 1: something is wrong (a human "
+                                      "heart for a frog's).")
+    illustration: int = Field(description="1-5. Is the subject a real, clear picture of the "
+                                          "thing? 1: only words in boxes; 3: crude shapes; "
+                                          "5: a clear picture in one style.")
+    composition: int = Field(description="1-5. One focal point, balanced, the frame used, "
+                                         "nothing overlapping or cut off.")
+    labels: int = Field(description="1-5. Few, short, readable labels, each beside what it "
+                                    "names; no line through words.")
+    motion: int = Field(description="1-5. Things build, move, connect or highlight on the "
+                                     "words that say so -- not only fade in and out.")
+    finish: int = Field(description="1-5. Would it pass as a finished course video: clean, "
+                                    "in colour, nothing crude or unfinished?")
+
+    @field_validator("*")
+    @classmethod
+    def _one_to_five(cls, value: int) -> int:
+        return max(1, min(5, int(value)))
+
+    def ships(self) -> bool:
+        """The ship bar: nothing below 3; teaching and accuracy 4 or more."""
+        values = self.model_dump()
+        return min(values.values()) >= 3 and self.teaches >= 4 and self.accuracy >= 4
+
+    def mean(self) -> float:
+        values = list(self.model_dump().values())
+        return sum(values) / len(values)
+
+    def weakest(self) -> list[tuple[str, int]]:
+        return sorted(self.model_dump().items(), key=lambda item: item[1])
+
+
 class Verdict(BaseModel):
+    scores: Scores = Field(description="The rubric, every line scored 1 to 5.")
     teaches: bool = Field(description="Would a learner understand the spoken idea from "
                                       "what is on screen, in time with the words?")
     motion_explains: bool = Field(description="Do things transform, move, grow, connect "
@@ -37,7 +79,9 @@ class Verdict(BaseModel):
                                              "alone is not a no.")
     problems: list[str] = Field(default_factory=list,
                                 description="At most 5 things that MUST be fixed, one short "
-                                            "sentence each, most important first.")
+                                            "sentence each, most important first: one for "
+                                            "every score below 4, naming its line "
+                                            "(\"illustration: ...\").")
     polish: list[str] = Field(default_factory=list,
                               description="Up to 3 optional improvements, one short sentence "
                                           "each. They do not stop the scene being finished.")
@@ -57,7 +101,8 @@ class Verdict(BaseModel):
 
     @property
     def good(self) -> bool:
-        return self.teaches and self.motion_explains and self.looks_finished
+        return (self.teaches and self.motion_explains and self.looks_finished
+                and self.scores.ships())
 
 
 class Seen(BaseModel):
@@ -82,7 +127,9 @@ def review_frames(folder: Path, brief: dict[str, Any], question: str = "") -> Ve
 
     frames = sorted((folder / "frames").glob("frame-*.png"))
     if not frames:
-        return Verdict(teaches=False, motion_explains=False, looks_finished=False,
+        nothing = dict.fromkeys(Scores.model_fields, 1)
+        return Verdict(scores=Scores(**nothing), teaches=False, motion_explains=False,
+                       looks_finished=False,
                        problems=["There is no render to look at yet: render first."])
     seconds = float(brief.get("seconds") or 0)
     pictures = [(f"Frame at {seconds * share:.1f} s of {seconds:.1f} s:", _jpeg(path))
