@@ -60,6 +60,11 @@ MAXIMUM_PREVIOUS_NARRATION_CHARACTERS = 3_000
 MAXIMUM_NEXT_NARRATION_CHARACTERS = 800
 
 
+# A section is every scene's narration and a full brief each, and the model's hidden
+# reasoning spends from the same budget: 16,000 ran out at seven scenes.
+SECTION_TOKENS = 65536
+
+
 class DraftedScene(BaseModel):
     narration: str = Field(
         description="What is said aloud in this scene, written for the ear: short "
@@ -256,7 +261,8 @@ def _write_section(
         f"--- source material for this section ---\n{source}",
     ) if part)
 
-    drafted = complete_structured(DraftedSection, system_prompt, user_prompt)
+    drafted = complete_structured(DraftedSection, system_prompt, user_prompt,
+                                  max_tokens=SECTION_TOKENS)
     written_scenes = [scene for scene in drafted.scenes if scene.narration.strip()]
     if not written_scenes:
         raise ModelCallFailed("The agent returned no narration for this section.")
