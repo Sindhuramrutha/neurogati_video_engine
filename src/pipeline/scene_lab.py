@@ -136,9 +136,30 @@ def keep_slide(project, visual, library=None) -> Path:
     return slide
 
 
+def _scene_pictures(project, visual, section, pictures: list, narration: str) -> list:
+    """The pictures of the scene's own slides, when it has any; the section's only
+    when it has none. Every scene was offered the whole section's pictures and took
+    the first: Galvani's engraving stood in for the physics of the next slide."""
+    from pipeline.extraction import ExtractionStore
+
+    planned = next((scene for scene in (section.scenes if section else [])
+                    if scene.id == visual.scene_id), None)
+    if not planned or not planned.slides:
+        return pictures
+    slide_of = {block.id: block.slide_number
+                for document in ExtractionStore(project.root).load().documents
+                for block in document.blocks}
+    own = [figure for figure in pictures if slide_of.get(figure.block_id) in planned.slides]
+    # The one the narration names first: "Alessandro Volta" for the scene about him.
+    said = set(re.findall(r"[a-z]{4,}", (narration or "").lower()))
+    return sorted(own or pictures, key=lambda figure: -len(
+        said & set(re.findall(r"[a-z]{4,}", figure.caption.lower()))))
+
+
 def write_brief(project, visual) -> dict[str, Any]:
     """What the script is told. Written before every run, so the script always
     draws the scene as it is now."""
+    from pipeline import scene_illustration as illustration
     from pipeline.assets_handoff import _look_preview
     from pipeline.plan_handoff import plan_for_later_stages
     from pipeline.plan_pictures import assets_for_later_stages, pictures_of
@@ -168,8 +189,13 @@ def write_brief(project, visual) -> dict[str, Any]:
         "width": FRAME_WIDTH, "height": FRAME_HEIGHT, "fps": FRAME_RATE,
         "language": video_preferences(project.root).language,
         "look": {k: v for k, v in _look_preview(project, library.look).items() if k != "art"},
-        "pictures": [str(project.root / f.shown_path)
-                     for f in (pictures_of(section, plan, library) if section else [])],
+        # The scene's own illustration first, when the script asked for one.
+        "pictures": [str(path) for path in [illustration.kept(
+            folder, on_screen, _look_preview(project, library.look))] if path]
+        + [str(project.root / f.shown_path)
+           for f in _scene_pictures(project, visual, section,
+                                    pictures_of(section, plan, library)
+                                    if section else [], narration)],
         "slide_image": str(slide) if slide.exists() else "",
     }
     # Measured and grounded: the narration's own length and word timings, the

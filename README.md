@@ -180,8 +180,8 @@ view is the file that moves on to the next stages.
   is marked as decoration and left out of "would be shown", but it is still
   listed: a small picture is usually a bullet and occasionally a diagram.
 - **The look** is the source deck's own: its colours, heading and body fonts,
-  proportions and background. It is off by default — a video that silently
-  adopted a client's brand colours would be worse than one that asked.
+  proportions and background. It is on by default, so the video looks like the
+  course it comes from; turn it off on Assets & Design for the renderer's own theme.
 
 **Generation.**
 

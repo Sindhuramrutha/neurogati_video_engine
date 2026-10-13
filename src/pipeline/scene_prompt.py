@@ -77,7 +77,11 @@ def kit_api(renderers: list[str]) -> str:
         "### Using a slide picture\n"
         "manim: self.picture(self.brief.assets.pictures[0], height=3.0, at=(x, y)) -- "
         "never a made-up file path. web: kit.picture(kit.pictures[0], {x, y, height}). "
-        "revideo: <Img src={pictures[0]} />. The brief lists them under assets.pictures.")
+        "revideo: <Img src={pictures[0]} />. The brief lists them under assets.pictures.\n"
+        "A picture named illustration-*.png was painted for this scene from its brief: "
+        "it has no text in it. Make it the scene's centre -- large, on screen most of the "
+        "scene -- and teach on top of it: labels placed beside what they name, arrows to "
+        "its parts, a highlight or zoom on what is being said. Never cover it with boxes.")
     return "\n\n".join(parts)
 
 
@@ -158,7 +162,8 @@ def answer_format(renderers: list[str]) -> str:
 def compact(brief: dict[str, Any]) -> dict[str, Any]:
     """The brief as the model reads it: word timings as one short line, not a list of
     objects, so the request stays small. The program reads brief.json in full."""
-    shown = {k: v for k, v in brief.items() if k != "words"}
+    # `pictures` is `assets.pictures` again: sent once.
+    shown = {k: v for k, v in brief.items() if k not in ("words", "pictures")}
     shown["word_starts"] = " ".join(f"{w['text']}@{w['start_ms'] / 1000:.2f}"
                                     for w in brief.get("words", []))
     shown["look"] = {k: v for k, v in brief.get("look", {}).items()

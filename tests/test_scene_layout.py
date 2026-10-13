@@ -140,3 +140,67 @@ def test_a_write_that_fails_part_way_leaves_no_half_file(tmp_path, monkeypatch):
 
     assert target.read_text(encoding="utf-8") == "{}", "the real file is untouched"
     assert not (tmp_path / ("visuals.json" + TEMPORARY_WRITE_SUFFIX)).exists()
+
+
+# --- what a scene is offered to show ----------------------------------------------------
+
+
+def test_a_scene_paints_its_illustration_once_and_only_when_asked(tmp_path, monkeypatch):
+    """Drawn from code, a frog's leg was two ellipses. The script asks for a picture
+    when no slide shows the thing; it is painted once, and every later round and a
+    scene made again use the same one."""
+    from pipeline import scene_illustration
+    from pipeline.llm import ModelCallFailed
+
+    painted = []
+    monkeypatch.setattr("pipeline.llm.draw_image",
+                        lambda prompt: painted.append(prompt) or b"\x89PNG picture")
+    look = {"background": "#ffffff", "accents": ["#4472c4", "#ed7d31"]}
+    brief = ("PICTURE: none\nDRAW: a frog's leg\nILLUSTRATE: a frog's leg on a bench, two "
+             "wires touching its nerve\nLABELS: Galvani")
+    state = {"calls": {"agent": 0, "vision": 0}, "events": []}
+
+    first = scene_illustration.paint(tmp_path, brief, look, state)
+    again = scene_illustration.paint(tmp_path, brief, look, state)
+
+    assert first == again == scene_illustration.kept(tmp_path, brief, look)
+    assert len(painted) == 1 and state["calls"]["image"] == 1
+    assert "no text" in painted[0].lower() and "#ffffff" in painted[0]
+    assert scene_illustration.paint(tmp_path, "PICTURE: none\nDRAW: a box", look, state) is None
+    assert scene_illustration.wanted("ILLUSTRATE: none") == ""
+
+    def down(prompt):
+        raise ModelCallFailed("no image model")
+
+    monkeypatch.setattr("pipeline.llm.draw_image", down)
+    other = brief.replace("frog's leg on a bench", "voltaic pile")
+    assert scene_illustration.paint(tmp_path, other, look, state) is None, "made without it"
+
+
+def test_a_scene_is_offered_its_own_slides_pictures_the_one_it_names_first(tmp_path,
+                                                                            monkeypatch):
+    """Every scene was offered the whole section's pictures and took the first:
+    Galvani's engraving stood in for the physics of the next slide."""
+    from types import SimpleNamespace as Thing
+
+    from pipeline import scene_lab
+
+    blocks = [Thing(id="b9", slide_number=9), Thing(id="b9v", slide_number=9),
+              Thing(id="b10", slide_number=10)]
+    monkeypatch.setattr("pipeline.extraction.ExtractionStore.load",
+                        lambda self: Thing(documents=[Thing(blocks=blocks)]))
+    title = Thing(block_id="b9", caption="The Spark of Life (slide 9)")
+    volta = Thing(block_id="b9v", caption="Alessandro Volta (slide 9)")
+    physics = Thing(block_id="b10", caption="Physics Meets Biology (slide 10)")
+    section = Thing(scenes=[Thing(id="s1", slides=[9]), Thing(id="s2", slides=[10]),
+                            Thing(id="s3", slides=[])])
+    project = Thing(root=tmp_path)
+    pictures = [title, volta, physics]
+
+    def offered(scene_id, narration=""):
+        return scene_lab._scene_pictures(project, Thing(scene_id=scene_id), section,
+                                         pictures, narration)
+
+    assert offered("s1", "Alessandro Volta invented the battery") == [volta, title]
+    assert offered("s2") == [physics]
+    assert offered("s3") == pictures, "a scene with no slides of its own gets the section's"

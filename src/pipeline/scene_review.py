@@ -101,7 +101,9 @@ def review_frames(folder: Path, brief: dict[str, Any], question: str = "") -> Ve
         "so far from what explains it that it does nothing.\n"
         "- Lines, arrows or boxes running over each other or over words.\n"
         "- Colourless outline boxes on an empty background, or most of the frame empty: "
-        "it looks unfinished.")
+        "it looks unfinished.\n"
+        "- A painted illustration that is wrong for what is said (the wrong thing drawn, "
+        "impossible anatomy or apparatus), or that has text in it.")
     user = "\n\n".join(part for part in [
         "Narration (spoken over the scene):\n"
         + str(brief.get("narration", ""))[:LONGEST_NARRATION],

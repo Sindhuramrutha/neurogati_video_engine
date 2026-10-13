@@ -57,10 +57,9 @@ THEMES = [
 class ProjectLook(BaseModel):
     """How the video should look, taken from the source material."""
 
-    # Off by default: a deck's styling is a decision, not an assumption, and a
-    # video that silently adopted a client's brand colours would be worse than
-    # one that asked.
-    use_source_styling: bool = False
+    # On by default: a video in the deck's own colours reads as the same course,
+    # and the app's dark default looked like nobody's. Turned off on Assets & Design.
+    use_source_styling: bool = True
 
     from_file: str = ""
     aspect_ratio: str = ""

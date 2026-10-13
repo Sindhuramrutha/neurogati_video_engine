@@ -70,7 +70,8 @@ class DraftedScene(BaseModel):
                     "instructions give: PICTURE (an offered picture's exact name, or "
                     "none), DRAW (the real things, named), LAYOUT, BEATS (\"exact words\" "
                     "-> what appears or changes), LABELS (at most five, from the "
-                    "narration). Never 'such as' or 'something like'."
+                    "narration), and ILLUSTRATE (what to paint) only when the scene needs a "
+                    "picture no offered one shows. Never 'such as' or 'something like'."
     )
 
 

@@ -39,6 +39,8 @@ from pipeline.core import require_project
 from pipeline.generation import VisualPlanStore
 from pipeline.llm import ModelCallFailed, ModelNotConfigured, ModelOutputTruncated
 from pipeline.scene_edit import apply_edits, parse_answer
+from pipeline.scene_illustration import paint as paint_illustration
+from pipeline.scene_illustration import wanted as wanted_illustration
 from pipeline.scene_kept import (
     adopt,
     drop_kept,
@@ -125,6 +127,12 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
 
     renderers = available_renderers()
     brief = write_brief(project, visual)
+    # Painted once, before the first round, when the script asked for a picture
+    # no slide has; the brief then offers it first.
+    if wanted_illustration(brief["on_screen"]):
+        doing(folder, state, "Painting the scene's illustration")
+        if paint_illustration(folder, brief["on_screen"], brief["look"], state):
+            brief = write_brief(project, visual)
     renderer, entry = entry_of(folder)
     code = "" if fresh or not (folder / entry).exists() else \
         (folder / entry).read_text(encoding="utf-8")

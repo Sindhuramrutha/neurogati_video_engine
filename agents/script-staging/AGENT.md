@@ -68,7 +68,17 @@ DRAW: the real things to draw, named -- "a frog's leg, its nerve, two metal wire
 LAYOUT: where each thing sits -- "the leg large on the left; the battery on the right"
 BEATS: "exact narration words" -> what appears, moves or changes then (one per idea)
 LABELS: the few words on screen, each from the narration -- at most five, short
+ILLUSTRATE: only when needed -- what to paint, see below
 ```
+
+**ILLUSTRATE, when the slides cannot show it.** If the scene's subject is a real thing
+that can be pictured — a frog's leg with wires on its nerve, two frog hearts in
+beakers, a voltaic pile — and no offered picture shows it, add an `ILLUSTRATE:` line
+describing that one picture: the subject, what it is doing, the angle. It is painted
+by an image model, with no text in it; the scene adds its own labels and motion on
+top. Leave the line out when an offered picture already shows the thing, or when the
+idea has no shape (a law, a debate, a comparison) — a scene can be a diagram.
+Describe only what the narration and source support.
 
 - **Show, not list.** If the narration names a thing that can be drawn — an organ, a
   cell, an instrument, an experiment, a person's discovery — DRAW it. Words in boxes

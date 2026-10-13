@@ -211,9 +211,9 @@ def test_gathering_before_extraction_is_refused(project_root):
 # --- the look ------------------------------------------------------------------------
 
 
-def test_the_look_is_read_from_the_deck_but_never_applied_on_its_own(project_root):
-    """A video that silently adopted a client's brand colours would be worse than
-    one that asked."""
+def test_the_look_is_read_from_the_deck_and_followed_by_default(project_root):
+    """The app's dark default looked like nobody's course: a video follows its
+    deck's colours unless the project turns that off."""
     slug, _ = project_with_pictures("Look", [("Figure 1", (400, 300), "source")], design=
         DocumentDesign(aspect_ratio="16:9", theme_name="Office Theme",
                        colours={"lt1": "#FFFFFF", "accent1": "#4472C4"},
@@ -222,7 +222,7 @@ def test_the_look_is_read_from_the_deck_but_never_applied_on_its_own(project_roo
     library = operations.refresh_asset_library(slug)
 
     assert library["look"]["is_available"] is True
-    assert library["look"]["use_source_styling"] is False
+    assert library["look"]["use_source_styling"] is True
     assert library["look"]["heading_font"] == "Calibri Light"
     assert library["look"]["background_colour"] == "#FFFFFF"
 
@@ -231,11 +231,11 @@ def test_choosing_the_look_survives_gathering_again(project_root):
     slug, _ = project_with_pictures("Look Kept", [("Figure 1", (400, 300), "source")], design=
         DocumentDesign(aspect_ratio="16:9", colours={"lt1": "#FFFFFF"}, major_font="Calibri"))
     operations.refresh_asset_library(slug)
-    operations.set_project_look(slug, True)
+    operations.set_project_look(slug, False)
 
     library = operations.refresh_asset_library(slug)
 
-    assert library["look"]["use_source_styling"] is True
+    assert library["look"]["use_source_styling"] is False, "turned off, it stays off"
 
 
 def test_following_a_look_that_was_never_extracted_says_so(project_root):
@@ -515,7 +515,7 @@ def test_a_picture_with_nothing_in_it_is_not_proposed_for_the_video(project_root
     assert len(AssetLibraryStore(project.root).load().usable()) == 1
 
 
-def test_the_video_keeps_the_app_look_until_the_project_asks_for_the_deck_s(project_root):
+def test_the_video_takes_the_deck_s_look_unless_the_project_turns_it_off(project_root):
     from pipeline.render_run import render_style_for
     from pipeline.rendering import DEFAULT_STYLE
 
@@ -527,14 +527,13 @@ def test_the_video_keeps_the_app_look_until_the_project_asks_for_the_deck_s(proj
         major_font="Calibri Light", minor_font="Calibri")
     ExtractionStore(project.root).save(extraction)
     operations.refresh_asset_library(slug)
-
-    assert render_style_for(project) is DEFAULT_STYLE
-
-    operations.set_project_look(slug, True)
-    assert render_style_for(project) is DEFAULT_STYLE, "not until it is transferred"
-
     from pipeline.assets_handoff import confirm_assets
 
+    operations.set_project_look(slug, False)
+    confirm_assets(slug)
+    assert render_style_for(project) is DEFAULT_STYLE, "turned off: the app's own look"
+
+    operations.set_project_look(slug, True)
     confirm_assets(slug)
     style = render_style_for(project)
 
