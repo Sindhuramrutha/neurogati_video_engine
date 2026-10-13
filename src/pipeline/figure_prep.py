@@ -49,6 +49,17 @@ WIDEST_USABLE_RATIO = 8.0
 # The whole picture within this much of one tone: a fill, a gradient, a blank.
 FLATTEST_USABLE_RANGE = 12
 
+# A plain graphic -- a chevron, a speech-bubble banner, a gradient backdrop -- is
+# slide furniture, not a figure. Offered as "Alessandro Volta" because it sat
+# beside his name, a purple chevron was a scene's first picture, and no picture
+# of Volta was painted because the scene seemed to have one. Measured on a
+# thumbnail: the share of pixels on an edge, and how few colours cover nearly
+# all of it. On a 21-slide deck every such graphic had at most 15 colours and
+# every real picture at least 46.
+PLAIN_DETAIL = 0.03          # smoother than this: shapes and gradients only
+PLAIN_COLOURS = 16           # this few colours ...
+PLAIN_COLOURED_DETAIL = 0.12  # ... and this little detail: a flat graphic
+
 # The outer band where ink means the crop probably went through something, and
 # how much ink in it counts as running off the edge.
 EDGE_BAND_FRACTION = 0.02
@@ -75,13 +86,15 @@ class FigureFlag:
     TINY = "tiny"
     CUT_OFF = "cut_off"
     UNREADABLE = "unreadable"
+    PLAIN = "plain"
 
 
 # The flags that mean "do not put this on a frame unless somebody says to". A
 # cut-off picture is not here: it is a guess, and a wrong guess that silently
 # drops the author's own diagram is worse than a caption with its feet cut off.
 DISQUALIFYING = frozenset({
-    FigureFlag.BLANK, FigureFlag.SLIVER, FigureFlag.TINY, FigureFlag.UNREADABLE})
+    FigureFlag.BLANK, FigureFlag.SLIVER, FigureFlag.TINY, FigureFlag.UNREADABLE,
+    FigureFlag.PLAIN})
 
 WHY = {
     FigureFlag.TRIMMED: "Trimmed: it had a uniform border around it.",
@@ -90,6 +103,7 @@ WHY = {
     FigureFlag.TINY: "Too small to read once its border was trimmed.",
     FigureFlag.CUT_OFF: "Ink runs off an edge, so the crop may have cut through a caption.",
     FigureFlag.UNREADABLE: "The file could not be opened.",
+    FigureFlag.PLAIN: "A plain graphic -- a shape, a banner or a gradient -- not a figure.",
 }
 
 
@@ -178,6 +192,8 @@ def prepare_figure(project_root: Path, asset_path: str) -> PreparedFigure:
         # mean nothing. Ink at the *original* edge is the signal -- there was no
         # margin there, because something was cut through.
         flags.append(FigureFlag.CUT_OFF)
+    if FigureFlag.BLANK not in flags and _is_plain(shown):
+        flags.append(FigureFlag.PLAIN)
 
     return PreparedFigure(
         width=width, height=height,
@@ -239,6 +255,26 @@ def _commonest_border_colour(flat) -> tuple[int, int, int]:
         *flat.crop((width - 1, 0, width, height)).getdata(),
     ]
     return Counter(ring).most_common(1)[0][0] if ring else (255, 255, 255)
+
+
+def _is_plain(picture) -> bool:
+    from PIL import Image, ImageFilter
+
+    small = picture.convert("RGB")
+    small.thumbnail((256, 256))
+    pixels = small.width * small.height
+    edges = small.convert("L").filter(ImageFilter.FIND_EDGES).histogram()
+    detail = sum(edges[41:]) / max(1, pixels)
+    if detail < PLAIN_DETAIL:
+        return True
+    counts = sorted((count for count, _ in small.quantize(
+        colors=64, method=Image.Quantize.MEDIANCUT).getcolors()), reverse=True)
+    covered, colours = 0, 0
+    for count in counts:
+        covered, colours = covered + count, colours + 1
+        if covered >= 0.97 * pixels:
+            break
+    return colours <= PLAIN_COLOURS and detail < PLAIN_COLOURED_DETAIL
 
 
 def _tonal_range(picture) -> int:

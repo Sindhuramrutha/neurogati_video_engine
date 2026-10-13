@@ -53,6 +53,15 @@ def picture_bytes(colour="blue", size=(480, 360)):
                    outline=(0, 0, 0), width=max(1, size[0] // 80))
     draw.line([inset, (size[0] - inset[0], size[1] - inset[1])],
               fill=(255, 255, 255), width=2)
+    # Detail in many tones, as a drawing has: a few flat shapes alone are a
+    # plain graphic (a banner, a chevron) and are not offered as a figure.
+    import random
+    rng = random.Random(size[0] * 7 + size[1])
+    for _ in range(max(1, size[0] * size[1] // 600)):
+        x, y = rng.randrange(inset[0], max(inset[0] + 1, size[0] - inset[0])), \
+            rng.randrange(inset[1], max(inset[1] + 1, size[1] - inset[1]))
+        draw.ellipse([x, y, x + rng.randrange(3, 14), y + rng.randrange(3, 14)],
+                     outline=tuple(rng.randrange(256) for _ in range(3)), width=2)
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
     return buffer.getvalue()
@@ -585,3 +594,19 @@ def test_an_unreadable_picture_does_not_stop_the_render(project_root):
     frame = _draw_frame("What a neuron does", "Signals", "Section 1", picture=broken)
 
     assert frame.size == (1920, 1080)
+
+
+def test_a_plain_graphic_is_not_offered_as_a_figure(tmp_path):
+    """A chevron beside "Alessandro Volta" was offered as his picture: a shape,
+    a banner or a gradient is slide furniture, not a figure."""
+    from pipeline.figure_prep import FigureFlag, prepare_figure
+
+    chevron = Image.new("RGB", (300, 520), (255, 255, 255))
+    ImageDraw.Draw(chevron).polygon([(20, 20), (150, 80), (280, 20), (280, 440),
+                                     (150, 500), (20, 440)], fill=(170, 160, 240),
+                                    outline=(130, 120, 230))
+    chevron.save(tmp_path / "chevron.png")
+    (tmp_path / "figure.png").write_bytes(picture_bytes())
+
+    assert FigureFlag.PLAIN in prepare_figure(tmp_path, "chevron.png").flags
+    assert prepare_figure(tmp_path, "figure.png").is_usable

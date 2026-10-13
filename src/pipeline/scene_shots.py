@@ -22,12 +22,14 @@ from typing import Any
 
 TEMPLATES = ("hero", "steps", "compare", "person", "key_idea", "flow", "hub", "timeline")
 MOST_SHOTS = 3
+MOST_CALLOUT_WORDS = 4
 
 GUIDE = """Shots (the preferred answer -- no code): a ```json block with "shots", a list of
 one to three of these, each {"template": ..., then its slots}; "picture" is an index into
 the brief's assets.pictures, "when" the exact narration words a part arrives on:
 - hero: "title", "picture", "when", "callouts": [{"label", "at": [x, y], "when"}] -- one
-  picture large and its parts named; at = the part's place as fractions of the picture
+  picture large and its parts named (a label is a part's name, 1-4 words, never a
+  statement); at = the part's place as fractions of the picture
   from its top left, from the picture's description. Optional "moves": [{"along": [[x, y],
   ...2 to 8 points on the picture], "when"}] -- a glowing pulse runs along that path on
   the words: a signal down a nerve, current through a wire, liquid carried across. Use it
@@ -93,7 +95,13 @@ def _shot_code(shot: dict, pictures: int, at: int) -> list[str]:
             if not (isinstance(point, list) and len(point) == 2):
                 raise ValueError(f"{where} callout {number + 1}: 'at' must be [x, y]")
             x, y = (min(1.0, max(0.0, float(v))) for v in point)
-            callouts.append(f"({_text(c.get('label'), f'{where} callout label')!r}, "
+            label = _text(c.get("label"), f"{where} callout label")
+            if len(label.split()) > MOST_CALLOUT_WORDS or label.rstrip().endswith((".", "!")):
+                # "It was electrical" pointed at an engraving names nothing in it.
+                raise ValueError(f"{where} callout {label!r} is a statement: a callout names "
+                                 f"a part of the picture in 1 to {MOST_CALLOUT_WORDS} words "
+                                 "('Frog's leg'); put a statement in a key_idea shot")
+            callouts.append(f"({label!r}, "
                             f"({x:.2f}, {y:.2f}), {_when(c.get('when'))})")
         moves = []
         for number, move in enumerate(_items(shot.get("moves", []), f"{where} moves", 0, 3)):

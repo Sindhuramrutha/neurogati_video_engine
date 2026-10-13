@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 _GIVEN_CAPTION = re.compile(r"— figure \d+ \(slide \d+\)$")
 
 MAXIMUM_FIGURES = 2_000
-GATHERING_VERSION = 2
+GATHERING_VERSION = 3
 MAXIMUM_NOTE_LENGTH = 300
 
 # A picture below this in either direction is decoration: a bullet, a rule, a
