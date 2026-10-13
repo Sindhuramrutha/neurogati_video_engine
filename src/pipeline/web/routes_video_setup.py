@@ -51,6 +51,22 @@ def music_sample(slug: FromPath[str], request: Request, music: str, intensity: s
         _guarded(video_setup.music_sample, root, music, intensity, voice, pace), request)
 
 
+@post("/api/projects/{slug:str}/video-setup/suggest-pronunciations")
+async def suggest_pronunciations(slug: FromPath[str]) -> dict[str, Any]:
+    """Names in the script a voice may say wrong, with respellings (AI, one call)."""
+    import anyio
+
+    return await anyio.to_thread.run_sync(
+        lambda: _guarded(video_setup.suggest_pronunciations, slug))
+
+
+@get("/api/projects/{slug:str}/say", sync_to_thread=True)
+def say(slug: FromPath[str], request: Request, text: str) -> Response:
+    """A few words in the project's voice, with its pronunciations."""
+    root = _guarded(require_project, slug).root
+    return media_response(_guarded(video_setup.say_sample, root, text), request)
+
+
 @post("/api/projects/{slug:str}/music")
 async def upload_music(
     slug: FromPath[str],
@@ -66,4 +82,4 @@ async def upload_music(
 
 
 VIDEO_SETUP_ROUTES = [read_video_setup, save_video_setup, voice_sample, music_sample,
-                      upload_music]
+                      upload_music, suggest_pronunciations, say]

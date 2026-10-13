@@ -135,6 +135,8 @@ class SectionScript(BaseModel):
     # Compared later to say "the plan or the source changed since this was
     # written" -- the gap Planning had with Extraction, one stage further on.
     written_from: dict[str, str] = Field(default_factory=dict)
+    # What the fact-check found the source does not support, when it was drafted.
+    unsupported: list[str] = Field(default_factory=list)
 
     @field_validator("body")
     @classmethod

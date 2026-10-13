@@ -40,7 +40,7 @@ def fakes(monkeypatch):
     """Counts what was actually made, and can halt after a given section clip."""
     made = {"spoken": [], "cut": [], "halt_after_cut": None, "slug": ""}
 
-    def speak(text, path, provider, voice):
+    def speak(scenes, path, provider, voice, sounds=None, pause_ms=0):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(b"mp3")
         made["spoken"].append(path.name)
@@ -59,7 +59,7 @@ def fakes(monkeypatch):
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_bytes(b"".join(clip.read_bytes() for clip in clips))
 
-    monkeypatch.setattr(render_run, "synthesise_narration", speak)
+    monkeypatch.setattr("pipeline.narration_audio.speak_scenes", speak)
     monkeypatch.setattr(render_run, "measure_audio_duration_ms", lambda path: 2_000)
     monkeypatch.setattr(render_run, "describe_voice_providers",
                         lambda: {"recommended": "silent"})

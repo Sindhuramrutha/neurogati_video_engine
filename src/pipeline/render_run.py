@@ -48,7 +48,6 @@ from pipeline.speech import (
     describe_voice_providers,
     load_word_timings,
     measure_audio_duration_ms,
-    synthesise_narration,
 )
 from pipeline.stage_options import video_preferences
 
@@ -202,6 +201,8 @@ def _render_video(slug: str, voice_provider: str, voice: str, resume: bool) -> d
         [section["id"] for section in plan["sections"]]
     )["undefined_variables"]
 
+    from pipeline.video_setup import pronunciations
+
     store = RenderJobStore(project.root)
     previous = store.load()
     if resume and not voice_provider:
@@ -233,7 +234,8 @@ def _render_video(slug: str, voice_provider: str, voice: str, resume: bool) -> d
     from pipeline.plan_pictures import assets_for_later_stages
     brand = assets_for_later_stages(project).brand
     narrations = [script_document.spoken_text(s["id"]).strip() for s in plan["sections"]]
-    made_from = fingerprint(plan["sections"], narrations, chosen_provider, voice,
+    sounds = pronunciations(project.root)
+    made_from = fingerprint(plan["sections"], narrations, chosen_provider, voice, sounds,
                             section_pictures, section_shots, style,
                             *([brand.model_dump()] if not brand.is_empty else []))
 
@@ -298,7 +300,7 @@ def _render_video(slug: str, voice_provider: str, voice: str, resume: bool) -> d
                 # audio under it. A resumed render reuses its own, unpaid for.
                 audio_path = audio_directory / f"section-{index:02d}-{render_id}.mp3"
                 _speak(section, audio_path, reuse=index < job.spoken,
-                       provider=chosen_provider, voice=voice)
+                       provider=chosen_provider, voice=voice, sounds=sounds)
             sections.append(section)
             cursor_ms += section.total_ms
             job.spoken = max(job.spoken, index + 1)
@@ -376,15 +378,20 @@ def _job_to_resume(project, previous: RenderJob, made_from: str) -> RenderJob:
 
 
 def _speak(section: RenderedSection, audio_path, *, reuse: bool, provider: str,
-           voice: str) -> None:
+           voice: str, sounds: dict[str, str] | None = None) -> None:
     """Give a section its narration: the one already made, or a new one."""
     if reuse and audio_path.exists():
         section.audio_path = audio_path
         section.audio_duration_ms = measure_audio_duration_ms(audio_path)
         section.words = load_word_timings(audio_path)
         return
+    from pipeline.narration_audio import speak_scenes
+    from pipeline.scripting import SCENE_SEPARATOR
+
     try:
-        spoken = synthesise_narration(section.narration, audio_path, provider, voice)
+        # Scene by scene, a breath between them, names said as the list says.
+        spoken = speak_scenes(section.narration.split(SCENE_SEPARATOR), audio_path,
+                              provider, voice, sounds)
     except SpeechFailed as speech_failure:
         raise OperationFailed(str(speech_failure)) from speech_failure
     section.audio_path = spoken.audio_path

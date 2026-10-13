@@ -281,7 +281,40 @@ def _write_section(
 
     written = SectionScript(section_id=section.id, scenes=scenes)
     written.written_from = narration_fingerprints(section, extraction)
+    written.unsupported = _fact_check(source, scenes, notes, section.title)
     return written, notes
+
+
+class FactCheck(BaseModel):
+    unsupported: list[str] = Field(
+        default_factory=list,
+        description="Each claim in the narration that the source does not support, as "
+                    "'scene N: the claim -- what the source says instead (or that it says "
+                    "nothing)'. Plain teaching words, definitions and everyday comparisons "
+                    "that add no fact are fine. Empty when everything is supported.")
+
+
+def _fact_check(source: str, scenes: list[ScriptScene], notes: list[str],
+                title: str) -> list[str]:
+    """One look at the narration against its source: what it claims that the
+    source does not say. A drafted scene once concluded more than its slide did
+    ("not a special animal electricity at all"); a person decides, told what."""
+    narration = "\n\n".join(f"Scene {number}: {scene.narration}"
+                            for number, scene in enumerate(scenes, start=1))
+    from pipeline import llm
+
+    try:
+        checked = llm.complete_structured(
+            FactCheck,
+            "You fact-check narration for a lesson against its source material. List "
+            "only claims -- facts, names, dates, numbers, causes, conclusions -- that the "
+            "source does not support. Be strict about facts and generous about wording.",
+            f"--- source ---\n{source}\n\n--- narration ---\n{narration}",
+            max_tokens=SECTION_TOKENS)
+    except ModelCallFailed as failure:
+        notes.append(f'"{title}": the fact-check could not run ({failure}).')
+        return []
+    return [claim.strip() for claim in checked.unsupported if claim.strip()][:10]
 
 
 def section_pictures(project, plan: Plan) -> dict[str, list[str]]:

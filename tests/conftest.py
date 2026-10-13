@@ -28,3 +28,17 @@ def no_online_voice(monkeypatch):
     """A scene's narration is measured by speaking it. In tests the built-in silent
     voice speaks it -- a measured length, no network -- never an online voice."""
     monkeypatch.setattr("pipeline.scene_program._voice", lambda project: ("silent", ""))
+
+
+@pytest.fixture(autouse=True)
+def no_fact_check(request, monkeypatch):
+    """Drafting a section ends with a fact-check: a second model call that the
+    tests standing a model in for the drafting do not expect. Off unless a test
+    is marked `real_fact_check`, where it stands that model in itself."""
+    if request.node.get_closest_marker("real_fact_check") is None:
+        monkeypatch.setattr("pipeline.script_drafting._fact_check",
+                            lambda source, scenes, notes, title: [])
+
+
+def pytest_configure(config):
+    config.addinivalue_line("markers", "real_fact_check: run the script's fact-check")

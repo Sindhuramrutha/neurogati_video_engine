@@ -87,17 +87,21 @@ def _voice(project) -> tuple[str, str]:
 def measure_narration(project, folder: Path, narration: str) -> dict[str, Any]:
     """Speak the scene's narration once and measure it. Kept, and spoken again
     only when the words or the voice change."""
-    from pipeline.speech import SpeechFailed, synthesise_narration
+    from pipeline.narration_audio import speak
+    from pipeline.speech import SpeechFailed
+    from pipeline.video_setup import pronunciations
 
     provider, voice = _voice(project)
-    key = hashlib.sha256(f"{provider}|{voice}|{narration}".encode()).hexdigest()[:16]
+    sounds = pronunciations(project.root)
+    said = json.dumps(sorted(sounds.items()), ensure_ascii=False)
+    key = hashlib.sha256(f"{provider}|{voice}|{said}|{narration}".encode()).hexdigest()[:16]
     facts_path = folder / NARRATION_FACTS
     if facts_path.exists():
         facts = json.loads(facts_path.read_text(encoding="utf-8"))
         if facts.get("key") == key and (folder / NARRATION).exists():
             return facts
     try:
-        spoken = synthesise_narration(narration, folder / NARRATION, provider, voice)
+        spoken = speak(narration, folder / NARRATION, provider, voice, sounds)
     except SpeechFailed as failure:
         raise OperationFailed(f"The narration could not be spoken to measure it: {failure}") \
             from failure

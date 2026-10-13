@@ -121,6 +121,14 @@ class VideoSetup(BaseModel):
     music: str = "none"             # none | built-in:<key> | upload:<file name>
     intensity: str = "soft"
     platforms: list[str] = Field(default_factory=lambda: ["website"])
+    # A name the voice says wrong, and how to spell it so it says it right.
+    sounds: dict[str, str] = Field(default_factory=dict)
+
+    @field_validator("sounds")
+    @classmethod
+    def _tidy_sounds(cls, value: dict[str, str]) -> dict[str, str]:
+        tidy = {str(k).strip()[:60]: str(v).strip()[:80] for k, v in value.items()}
+        return dict(list({k: v for k, v in tidy.items() if k and v}.items())[:200])
 
     @field_validator("learners")
     @classmethod
@@ -216,6 +224,61 @@ def edge_voice(project_root: Path, language: str) -> str:
         return ""
     rate = PACES[setup.pace]
     return voice.key if rate == "+0%" else f"{voice.key}@{rate}"
+
+
+def pronunciations(project_root: Path) -> dict[str, str]:
+    return load(project_root).sounds
+
+
+class Suggested(BaseModel):
+    words: list[dict[str, str]] = Field(
+        default_factory=list,
+        description="Each a name or term a text-to-speech voice is likely to say wrong: "
+                    "{\"word\": as written, \"say\": a plain respelling that makes the "
+                    "voice say it right, e.g. \"Loewi\" -> \"Lervee\"}.")
+
+
+def suggest_pronunciations(slug: str) -> dict[str, Any]:
+    """Read the script once and propose respellings for the names and terms a
+    voice is likely to say wrong (AI, one call). Kept beside the person's own;
+    a word they already set is never changed."""
+    from pipeline.llm import ModelCallFailed, ModelNotConfigured, complete_structured
+    from pipeline.script_handoff import script_for_later_stages
+    from pipeline.stage_options import video_preferences
+
+    project = require_project(slug)
+    script = script_for_later_stages(project)
+    spoken = "\n\n".join(script.spoken_text(entry.section_id)
+                         for entry in script.section_scripts)[:20000]
+    if not spoken.strip():
+        raise OperationFailed("There is no script yet to find names in.")
+    preferences = video_preferences(project.root)
+    try:
+        answer = _ask_for_sounds(complete_structured, preferences, spoken)
+    except (ModelCallFailed, ModelNotConfigured) as failure:
+        raise OperationFailed(f"The model could not suggest them: {failure}") from failure
+    setup = load(project.root)
+    for item in answer.words:
+        word, say = str(item.get("word", "")).strip(), str(item.get("say", "")).strip()
+        if word and say and word not in setup.sounds:
+            setup.sounds[word] = say
+    return save(slug, {"sounds": setup.sounds})
+
+
+def _ask_for_sounds(complete_structured, preferences, spoken: str) -> Suggested:
+    return complete_structured(
+        Suggested,
+        "You prepare narration for a text-to-speech voice. List only the names and "
+        "terms in the text that such a voice is likely to mispronounce -- foreign "
+        "names, unusual scientific terms -- each with a respelling the voice will read "
+        "correctly as ordinary words: lowercase except where a name starts, no "
+        "hyphenated syllables, no capitals for stress, no phonetic symbols "
+        "(\"Loewi\" -> \"Lervee\", \"Galvani\" -> \"Galvahnee\"). Give each name on its "
+        "own, not with the first name that comes before it. Leave out common words and "
+        "words a voice already says well.",
+        f"Voice language: {preferences.language_name}\n\n{spoken}",
+        # A reasoning model spends from the same budget: 8,000 ran out on one section.
+        max_tokens=65536)
 
 
 def platform_needs(project_root: Path) -> dict[str, Any]:
@@ -334,4 +397,27 @@ def music_sample(project_root: Path, music_key: str, intensity: str,
                         "-t", "20", "-af", "afade=t=in:d=1,afade=t=out:st=18:d=2",
                         "-c:a", "libmp3lame", "-b:a", "160k", str(target)],
                        check=True, capture_output=True, stdin=subprocess.DEVNULL, timeout=60)
+    return target
+
+
+def say_sample(project_root: Path, text: str) -> Path:
+    """`text` in the project's voice, with its pronunciations: to hear whether a
+    respelling works before a whole video is spoken with it. Kept once made."""
+    from pipeline.narration_audio import speak
+    from pipeline.speech import SpeechFailed
+    from pipeline.stage_options import video_preferences
+
+    text = " ".join(text.split())[:200]
+    if not text:
+        raise OperationFailed("There is nothing to say.")
+    voice = video_preferences(project_root).voice_for("edge")
+    sounds = pronunciations(project_root)
+    key = hashlib.sha256(f"{voice}|{sorted(sounds.items())}|{text}".encode()).hexdigest()[:16]
+    target = CACHE / "said" / f"{key}.mp3"
+    if not target.exists():
+        target.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            speak(text, target, "edge", voice, sounds)
+        except SpeechFailed as failure:
+            raise OperationFailed(f"It could not be spoken: {failure}") from failure
     return target

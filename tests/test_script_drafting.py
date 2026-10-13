@@ -594,3 +594,30 @@ def test_narration_that_talks_about_the_source_is_found():
     assert reporting_phrases("According to the author, vision is built.")
     assert reporting_phrases("Let me tell you about Padma. Plato wrote that love "
                              "makes us poets. You see with your brain.") == []
+
+
+@pytest.mark.real_fact_check
+def test_claims_the_source_does_not_support_are_named_for_a_person(monkeypatch):
+    """A drafted scene concluded more than its slide said. The fact-check names
+    it; nothing is changed without a person."""
+    from pipeline import script_drafting
+    from pipeline.scripting import ScriptScene
+
+    asked = []
+
+    def model(response_model, system_prompt, user_prompt, **kwargs):
+        asked.append(user_prompt)
+        return script_drafting.FactCheck(unsupported=[
+            "scene 2: 'not a special animal electricity at all' -- the source says only "
+            "that muscle electricity was the same as in non-living cells"])
+
+    monkeypatch.setattr("pipeline.llm.complete_structured", model)
+    notes = []
+    found = script_drafting._fact_check(
+        "Volta proved the electricity in muscles was the same as in non-living cells.",
+        [ScriptScene(narration="Volta built a battery."),
+         ScriptScene(narration="So it was not a special animal electricity at all.")],
+        notes, "The Spark")
+
+    assert len(found) == 1 and found[0].startswith("scene 2")
+    assert "Scene 2: So it was not" in asked[0] and not notes

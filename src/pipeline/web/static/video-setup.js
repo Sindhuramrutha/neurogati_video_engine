@@ -80,8 +80,37 @@ function renderVoice({ setup, catalog }) {
         <label class="${setup.pace === pace ? "on" : ""}">
           <input type="radio" name="vs-pace" value="${pace}" ${setup.pace === pace ? "checked" : ""}>
           ${PACE_LABELS[pace] ?? pace}</label>`).join("")}
-    </div>`);
+    </div>
+    ${renderSounds(setup)}`);
 }
+
+/** Names the voice says wrong, and how to spell them so it says them right. */
+function renderSounds(setup) {
+  const rows = [...Object.entries(setup.sounds ?? {}), ...(extraRows ? [["", ""]] : [])];
+  return `
+    <div class="vs-sounds">
+      <span class="vs-group-name">Pronunciations</span>
+      <p class="muted setup-hint">A name said wrong? Write how to say it; ▶ plays it in this
+        voice. Subtitles keep the real spelling.</p>
+      ${rows.map(([word, say]) => `
+        <div class="vs-sound-row">
+          <input data-vs-sound-word value="${escapeHtml(word)}" placeholder="Loewi"
+                 aria-label="Written as">
+          <span class="muted">say</span>
+          <input data-vs-sound-say value="${escapeHtml(say)}" placeholder="Lervee"
+                 aria-label="Said as">
+          ${word ? playButton(projectApiPath(`/say?text=${encodeURIComponent(word)}`),
+            `Hear ${word}`) : ""}
+        </div>`).join("")}
+      <div class="vs-actions">
+        <button type="button" class="btn" data-vs-add-sound>+ Add a name</button>
+        <button type="button" class="btn" data-vs-suggest>Suggest from the script
+          <span class="fact warn">AI · 1 call</span></button>
+      </div>
+    </div>`;
+}
+
+let extraRows = false;
 
 function musicSampleUrl(setup, music, underVoice) {
   const query = new URLSearchParams({ music, intensity: setup.intensity });
@@ -216,6 +245,34 @@ export async function mountVideoSetup(container, { parts = PARTS } = {}) {
         radio.onchange = () => save({ [key]: radio.value });
       });
     }
+    const saveSounds = () => {
+      const sounds = {};
+      container.querySelectorAll(".vs-sound-row").forEach(row => {
+        const word = row.querySelector("[data-vs-sound-word]").value.trim();
+        const say = row.querySelector("[data-vs-sound-say]").value.trim();
+        if (word && say) sounds[word] = say;
+      });
+      extraRows = false;
+      save({ sounds });
+    };
+    container.querySelectorAll("[data-vs-sound-word], [data-vs-sound-say]").forEach(input => {
+      input.onchange = saveSounds;
+    });
+    const add = container.querySelector("[data-vs-add-sound]");
+    if (add) add.onclick = () => { extraRows = true; draw(); };
+    const suggest = container.querySelector("[data-vs-suggest]");
+    if (suggest) suggest.onclick = async () => {
+      suggest.disabled = true;
+      suggest.textContent = "Reading the script…";
+      try {
+        data = await requestJsonFromApi(projectApiPath("/video-setup/suggest-pronunciations"),
+          { method: "POST" });
+        showStageNotice("ok", "Pronunciations suggested. Play each one to check it.");
+      } catch (failure) {
+        showStageNotice("bad", `Could not suggest pronunciations — ${failure.message}`);
+      }
+      draw();
+    };
     const upload = container.querySelector("[data-vs-upload]");
     if (upload) upload.onchange = async () => {
       const file = upload.files?.[0];
