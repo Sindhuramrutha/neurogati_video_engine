@@ -181,7 +181,11 @@ def _call(method: str, path: str, body: dict | None = None) -> dict:
 
 def render(slug: str) -> None:
     from pipeline import video_setup
+    from pipeline.scene_approval import approve_passed
 
+    # The render takes approved scenes only; here every scene that passed its
+    # checks is approved, as the person would on the Make tab.
+    say("approved:", approve_passed(slug))
     voice = video_setup.edge_voice(_root(slug), "en")
     _call("POST", "/api/render-queue", {"slug": slug, "voice_provider": "edge",
                                         "voice": voice})
