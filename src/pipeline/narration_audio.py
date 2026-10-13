@@ -115,6 +115,7 @@ def speak_scenes(scenes: list[str], path: Path, provider: str, voice: str,
     ffmpeg = shutil.which("ffmpeg")
     if not ffmpeg:
         raise SpeechFailed("ffmpeg is needed to join the narration of a section's scenes.")
+    path.parent.mkdir(parents=True, exist_ok=True)   # a first render: no audio folder yet
     with tempfile.TemporaryDirectory() as folder:
         pieces = [speak(scene, Path(folder) / f"scene{index:03d}{path.suffix}", provider,
                         voice, sounds) for index, scene in enumerate(scenes)]
