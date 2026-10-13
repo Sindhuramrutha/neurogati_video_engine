@@ -49,6 +49,18 @@ def pictures_teach(request, monkeypatch):
                             lambda path: {"teaches": True, "what": "a figure"})
 
 
+@pytest.fixture(autouse=True)
+def shared_state_in_tmp(tmp_path, monkeypatch):
+    """The request window and the circuit breakers are shared through files in
+    .cache; each test gets its own, and the gate's waits take no time."""
+    monkeypatch.setattr("pipeline.llm_pace._shared_file", lambda: tmp_path / "pace.json")
+    monkeypatch.setattr("pipeline.resilience._breakers", lambda: tmp_path / "breakers")
+    monkeypatch.setattr("pipeline.resilience._SLEEP", lambda seconds: None)
+    # With waits taking no time, an open circuit would be waited out in real time;
+    # it opens only in the tests about it (test_resilience.py).
+    monkeypatch.setattr("pipeline.resilience.OPEN_AFTER", 10**6)
+
+
 def pytest_configure(config):
     config.addinivalue_line("markers", "real_fact_check: run the script's fact-check")
     config.addinivalue_line("markers", "real_vetting: vet pictures with the stand-in model")

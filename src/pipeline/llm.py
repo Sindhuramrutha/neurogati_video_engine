@@ -71,6 +71,8 @@ class ModelCallFailed(Exception):
 class ModelOutputTruncated(ModelCallFailed):
     """The answer stopped at the token limit, so it is not the whole answer."""
 
+    transient = False          # asking the same way again stops at the same place
+
 
 def is_configured() -> bool:
     """Whether a real key is present.

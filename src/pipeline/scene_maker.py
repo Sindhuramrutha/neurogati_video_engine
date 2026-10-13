@@ -31,7 +31,6 @@ from __future__ import annotations
 
 import json
 import logging
-import time
 from pathlib import Path
 from typing import Any
 
@@ -73,8 +72,8 @@ MOST_ROUNDS = 6           # refining until the reviewer calls it good takes roun
 ASKS_PER_ROUND = 3        # an unusable answer is asked again, without a render
 # As long as the model will write: 65,536 tokens is what the provider accepts.
 ROUND_TOKENS = 65536
-CALL_RETRIES = 3          # a failed model call is tried again, waiting longer each time
-RETRY_WAIT_SECONDS = 20
+CALL_ATTEMPTS = 6         # a failed model call is tried again, waiting longer each time
+MODEL_GIVE_UP_SECONDS = 1800
 
 
 # --- the loop --------------------------------------------------------------------------------
@@ -85,28 +84,32 @@ class _GaveUp(Exception):
 
 
 def _ask(system: str, user: str, folder: Path, state: dict[str, Any]) -> str | None:
-    """One model call, waited out through a blip. None if the answer was cut off."""
+    """One model call, waited out through a blip (resilience.py: jittered backoff,
+    the provider's Retry-After, a circuit shared by every process; up to half an
+    hour before the scene stops). None if the answer was cut off."""
     from pipeline.llm import complete_scene
+    from pipeline.resilience import ServiceUnavailable, call
 
-    for attempt in range(1, CALL_RETRIES + 2):
-        try:
-            text, used = complete_scene(system, user, max_tokens=ROUND_TOKENS)
-        except ModelOutputTruncated:
-            return None
-        except ModelNotConfigured as failure:
-            raise _GaveUp(str(failure)) from failure
-        except ModelCallFailed as failure:
-            if attempt > CALL_RETRIES:
-                raise _GaveUp(str(failure)) from failure
-            add_event(state, "retry", f"The model could not answer ({failure}); trying again.")
-            save_state(folder, state)
-            time.sleep(RETRY_WAIT_SECONDS * attempt)
-            continue
-        state["calls"]["agent"] += 1
-        state["tokens"]["prompt"] += used["prompt"]
-        state["tokens"]["completion"] += used["completion"]
-        return text
-    return None
+    def attempt() -> tuple[str, dict[str, int]]:
+        return complete_scene(system, user, max_tokens=ROUND_TOKENS)
+
+    def said(failure: BaseException, pause: float) -> None:
+        add_event(state, "retry", f"The model could not answer ({failure}); trying again "
+                  f"in {pause:.0f} s.")
+        save_state(folder, state)
+
+    try:
+        text, used = call("model", attempt, attempts=CALL_ATTEMPTS, base_seconds=10,
+                          longest_wait=300, give_up_after=MODEL_GIVE_UP_SECONDS,
+                          on_retry=said)
+    except ModelOutputTruncated:
+        return None
+    except (ModelNotConfigured, ModelCallFailed, ServiceUnavailable) as failure:
+        raise _GaveUp(str(failure)) from failure
+    state["calls"]["agent"] += 1
+    state["tokens"]["prompt"] += used["prompt"]
+    state["tokens"]["completion"] += used["completion"]
+    return text
 
 
 def make_scene(slug: str, visual_id: str, *, instruction: str = "",

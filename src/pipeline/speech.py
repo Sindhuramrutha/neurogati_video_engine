@@ -46,7 +46,12 @@ WORDS_PER_MINUTE_OF_NARRATION = 150
 
 
 class SpeechFailed(Exception):
-    """Synthesis did not produce audio. Names the provider and the reason."""
+    """Synthesis did not produce audio. Names the provider and the reason.
+    `transient` False: trying again will not help (resilience.classify)."""
+
+    def __init__(self, message: str, transient: bool | None = None) -> None:
+        super().__init__(message)
+        self.transient = transient
 
 
 @dataclass(frozen=True)
@@ -363,7 +368,7 @@ def estimate_duration_ms(text: str) -> int:
 # eight providers produced a traceback.
 
 
-EDGE_WAITS = (3, 9, 27, 60, 90, 120, 180)   # seconds: the service throttles for minutes
+EDGE_GIVE_UP_SECONDS = 900      # then the job waits and resumes by itself
 _EDGE_TURN = threading.Lock()
 
 
@@ -407,22 +412,22 @@ def _speak_edge(text: str, output_path: Path, voice: str) -> list[WordTiming]:
                         duration_ms=int(chunk["duration"]) // 10_000,
                     ))
 
-    # The free service drops a request now and then ("NoAudioReceived"); the same
-    # words a moment later speak fine. A 43-scene video stopped on one dropped
-    # request, so it is asked again, waiting longer each time -- and one request
-    # at a time: four scene agents asking at once were throttled together.
-    import time
-    for attempt in range(len(EDGE_WAITS) + 1):
+    # The free service drops a request now and then ("NoAudioReceived") and
+    # throttles bursts; the same words a moment later speak fine. Through the
+    # gate (resilience.py): retried with jittered backoff for up to 15 minutes,
+    # one request at a time, and a circuit shared with every other process.
+    from pipeline.resilience import call
+
+    def attempt() -> list[WordTiming]:
         words.clear()
-        try:
-            with _EDGE_TURN:
-                asyncio.run(run())
-            return words
-        except Exception:
-            if attempt == len(EDGE_WAITS):
-                raise
-            time.sleep(EDGE_WAITS[attempt])
-    return words
+        with _EDGE_TURN:
+            asyncio.run(run())
+        if not output_path.exists() or output_path.stat().st_size == 0:
+            raise ConnectionError("no audio came back")
+        return list(words)
+
+    return call("edge-tts", attempt, attempts=10, base_seconds=3, longest_wait=180,
+                give_up_after=EDGE_GIVE_UP_SECONDS)
 
 
 def _speak_kokoro(text: str, output_path: Path, voice: str) -> None:
@@ -459,26 +464,33 @@ def _speak_huggingface_local(text: str, output_path: Path, voice: str) -> None:
     )
 
 
-def _speak_huggingface_api(text: str, output_path: Path, voice: str) -> None:
+def _post_audio(service: str, url: str, headers: dict, body: dict, output_path: Path) -> None:
+    """One request to a voice service, through the gate: a 429, a 5xx or a dropped
+    connection is tried again with backoff; a refused key is said at once."""
     import httpx
 
+    from pipeline.resilience import call
+
+    def attempt() -> bytes:
+        response = httpx.post(url, headers=headers, json=body, timeout=180)
+        response.raise_for_status()
+        return response.content
+
+    try:
+        output_path.write_bytes(call(service, attempt, attempts=5, give_up_after=600))
+    except httpx.HTTPStatusError as refused:
+        raise SpeechFailed(f"{service} returned {refused.response.status_code}: "
+                           f"{refused.response.text[:200]}") from refused
+
+
+def _speak_huggingface_api(text: str, output_path: Path, voice: str) -> None:
     model = voice or "facebook/mms-tts-eng"
     token = os.environ.get("HUGGINGFACE_API_KEY") or _key_from_settings("HUGGINGFACE_API_KEY")
-
-    response = httpx.post(
-        f"https://api-inference.huggingface.co/models/{model}",
-        headers={"Authorization": f"Bearer {token}"},
-        json={"inputs": text},
-        timeout=180,
-    )
-    if response.status_code != 200:
-        raise SpeechFailed(f"Hugging Face returned {response.status_code}: {response.text[:200]}")
-    output_path.write_bytes(response.content)
+    _post_audio("huggingface", f"https://api-inference.huggingface.co/models/{model}",
+                {"Authorization": f"Bearer {token}"}, {"inputs": text}, output_path)
 
 
 def _speak_openai_compatible(text: str, output_path: Path, voice: str) -> None:
-    import httpx
-
     base_url = (
         os.environ.get("TTS_BASE_URL")
         or _key_from_settings("TTS_BASE_URL")
@@ -486,33 +498,16 @@ def _speak_openai_compatible(text: str, output_path: Path, voice: str) -> None:
     ).rstrip("/")
     token = os.environ.get("TTS_API_KEY") or _key_from_settings("TTS_API_KEY")
     model = os.environ.get("TTS_MODEL") or _key_from_settings("TTS_MODEL") or "tts-1"
-
-    response = httpx.post(
-        f"{base_url}/audio/speech",
-        headers={"Authorization": f"Bearer {token}"},
-        json={"model": model, "voice": voice or "alloy", "input": text},
-        timeout=180,
-    )
-    if response.status_code != 200:
-        raise SpeechFailed(f"The provider returned {response.status_code}: {response.text[:200]}")
-    output_path.write_bytes(response.content)
+    _post_audio("tts-api", f"{base_url}/audio/speech", {"Authorization": f"Bearer {token}"},
+                {"model": model, "voice": voice or "alloy", "input": text}, output_path)
 
 
 def _speak_elevenlabs(text: str, output_path: Path, voice: str) -> None:
-    import httpx
-
     token = os.environ.get("ELEVENLABS_API_KEY") or _key_from_settings("ELEVENLABS_API_KEY")
-    voice_id = voice or "21m00Tcm4TlvDq8ikWAM"
-
-    response = httpx.post(
-        f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}",
-        headers={"xi-api-key": token, "Content-Type": "application/json"},
-        json={"text": text, "model_id": "eleven_multilingual_v2"},
-        timeout=180,
-    )
-    if response.status_code != 200:
-        raise SpeechFailed(f"ElevenLabs returned {response.status_code}: {response.text[:200]}")
-    output_path.write_bytes(response.content)
+    _post_audio("elevenlabs",
+                f"https://api.elevenlabs.io/v1/text-to-speech/{voice or '21m00Tcm4TlvDq8ikWAM'}",
+                {"xi-api-key": token, "Content-Type": "application/json"},
+                {"text": text, "model_id": "eleven_multilingual_v2"}, output_path)
 
 
 BACKENDS = {
@@ -538,10 +533,12 @@ def synthesise_narration(
     provider = resolve_provider(provider_key)
 
     if not provider.is_available():
-        raise SpeechFailed(f"{provider.label} is not usable: {provider.unavailable_reason()}")
+        raise SpeechFailed(f"{provider.label} is not usable: {provider.unavailable_reason()}",
+                           transient=False)
 
     if not text.strip():
-        raise SpeechFailed("There is nothing to speak - the narration is empty.")
+        raise SpeechFailed("There is nothing to speak - the narration is empty.",
+                           transient=False)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     backend = BACKENDS[provider.key]

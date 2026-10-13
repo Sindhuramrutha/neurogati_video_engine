@@ -151,15 +151,16 @@ def _paint_like(request: str, reference: bytes) -> bytes:
     import base64
 
     from pipeline.llm import ModelCallFailed, _picture_from_chat
+    from pipeline.resilience import call
 
     encoded = base64.b64encode(reference).decode("ascii")
-    picture = _picture_from_chat([
+    picture = call("images", lambda: _picture_from_chat([
         {"type": "text", "text": "Draw a NEW picture in exactly the style of this reference "
                                  "picture -- the same line weight, palette, shading, level of "
                                  "detail and plain background. Do not copy its subject. The "
                                  f"new picture: {request}"},
         {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encoded}"}},
-    ], "illustration in the project's style")
+    ], "illustration in the project's style"), attempts=4, give_up_after=600)
     if not picture:
         raise ModelCallFailed("The image model returned no picture in the project's style.")
     return picture

@@ -65,7 +65,6 @@ def wired(monkeypatch, model, *verdicts):
                         lambda folder, brief, question="": queue.pop(0))
     monkeypatch.setattr("pipeline.scene_review.look_at_picture",
                         lambda path, question: "a figure")
-    monkeypatch.setattr(scene_maker, "RETRY_WAIT_SECONDS", 0)
 
 
 # --- the loop ----------------------------------------------------------------------------
@@ -268,7 +267,8 @@ def test_a_model_call_that_fails_once_is_tried_again(project_root, monkeypatch):
 
 def test_a_model_that_keeps_failing_ends_the_scene_with_the_reason(project_root, monkeypatch):
     slug, project, visual = scripted_project("Down")
-    wired(monkeypatch, Model(*[ModelCallFailed("the provider is down")] * 5))
+    wired(monkeypatch, Model(*[ModelCallFailed("the provider is down")]
+                             * scene_maker.CALL_ATTEMPTS))
 
     make_scene(slug, visual.id)
 
