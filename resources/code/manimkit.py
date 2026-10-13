@@ -38,6 +38,11 @@ strip of the frame): `self.flow(steps)` (boxes joined by arrows),
 `self.hub(centre, around)` (one idea and what hangs off it), and
 `self.timeline(events)` (things in order). Each comes back placed; reveal its
 parts (.boxes/.arrows, .centre/.items/.lines, .spine/.dots/.labels) on the words.
+Every scene uses the same type and moves: `self.title(text)` for its title,
+`self.heading(text)` below it; bring things on with `self.play(self.reveal(x))`,
+draw with `self.draw(x)`, connect with `self.grow(arrow)`, point attention with
+`self.focus(target, *others)`, change one thing into another with
+`self.swap(a, b)`.
 A label on a picture is `self.callout(text, (x, y), side)`: beside the point it
 names, joined to it by a short line from its edge -- never an arrow drawn from
 the middle of a label, never a label far from its thing.
@@ -389,6 +394,44 @@ class ExplainerScene(Scene):
         # The colour asked for: Manim's get_color() reports the outline, not the fill.
         self._labels.append((mobject, text, on or self.look["background"], fill))
         return mobject
+
+    # --- one type scale, one set of moves: every scene of a video alike ------------------
+
+    TITLE_SIZE, HEADING_SIZE, LABEL_SIZE = 60, 46, 38
+
+    def title(self, text: str) -> Text:
+        """The scene's title, always the same size, weight and place (top centre)."""
+        return self.safe(self.label(text, size=self.TITLE_SIZE, bold=True, at=(0, 3.25)))
+
+    def heading(self, text: str, at: tuple[float, float] = (0, 2.2)) -> Text:
+        """A heading inside the scene: one step below the title."""
+        return self.safe(self.label(text, size=self.HEADING_SIZE, bold=True, at=at))
+
+    def reveal(self, thing, run_time: float = 0.5):
+        """Bring something on: a short rise into place as it fades in."""
+        from manim import UP
+        return manim.FadeIn(thing, shift=UP * 0.15, run_time=run_time)
+
+    def draw(self, thing, run_time: float = 0.8):
+        """Draw an outline or a diagram stroke by stroke."""
+        return manim.Create(thing, run_time=run_time)
+
+    def grow(self, arrow, run_time: float = 0.5):
+        """Grow an arrow or a connecting line from its start to its end."""
+        if isinstance(arrow, manim.Arrow):
+            return manim.GrowArrow(arrow, run_time=run_time)
+        return manim.Create(arrow, run_time=run_time)
+
+    def focus(self, target, *others, run_time: float = 0.6):
+        """Put attention on `target`: everything in `others` dims, the target pulses."""
+        from manim import AnimationGroup
+        dims = [other.animate(run_time=run_time).set_opacity(0.3) for other in others]
+        return AnimationGroup(*dims, manim.Indicate(target, scale_factor=1.06,
+                                                    color=self.colour(0), run_time=run_time))
+
+    def swap(self, before, after, run_time: float = 0.7):
+        """One thing becoming another, in place."""
+        return manim.ReplacementTransform(before, after, run_time=run_time)
 
     # --- layout that cannot leave the frame or overlap -----------------------------------
 

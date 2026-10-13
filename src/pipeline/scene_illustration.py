@@ -17,11 +17,16 @@ from __future__ import annotations
 
 import hashlib
 import re
+import shutil
+import threading
 from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel, Field
 
+STYLE_REFERENCE = "style-reference.png"     # beside the scenes: the project's own style
+_LOCKS: dict[str, threading.Lock] = {}
+_LOCKS_GUARD = threading.Lock()
 BACKGROUND_TOLERANCE = 14     # per channel: a painted "white" is #fafafa, not #ffffff
 ASKED = re.compile(r"^\s*ILLUSTRATE\s*:\s*(.+?)\s*$", re.IGNORECASE | re.MULTILINE)
 LONGEST_REQUEST = 600
@@ -110,11 +115,12 @@ def paint(folder: Path, on_screen: str, look: dict[str, Any],
           state: dict[str, Any], narration: str = "") -> Path | None:
     """Paint the illustration the brief asks for, once: checked, repainted once if
     it is wrong, its background made the frame's. None when it asks for none, or the
-    image model could not paint it (the scene is made without it)."""
-    import json
+    image model could not paint it (the scene is made without it).
 
-    from pipeline.llm import ModelCallFailed, ModelNotConfigured, draw_image
-    from pipeline.scene_state import add_event
+    The project's first painting is its style: every later one is painted from it,
+    so a video's pictures look drawn by one hand. Scenes are made several at once,
+    so the first is painted under a lock and the others wait for it."""
+    from pipeline.llm import draw_image
 
     asked = wanted(on_screen)
     if not asked:
@@ -122,11 +128,55 @@ def paint(folder: Path, on_screen: str, look: dict[str, Any],
     path = _path(folder, asked, look)
     if path.exists():
         return path
+    reference = folder.parent / STYLE_REFERENCE
+    with _lock_for(folder.parent):
+        if not reference.exists():
+            made = _paint_checked(path, asked, look, narration, state, draw_image)
+            if made is not None:
+                shutil.copyfile(made, reference)
+            return made
+    style = reference.read_bytes()
+    return _paint_checked(path, asked, look, narration, state,
+                          lambda request: _paint_like(request, style))
+
+
+def _lock_for(scenes: Path) -> threading.Lock:
+    with _LOCKS_GUARD:
+        return _LOCKS.setdefault(str(scenes.resolve()), threading.Lock())
+
+
+def _paint_like(request: str, reference: bytes) -> bytes:
+    """A new picture in the style of `reference`: its line, palette, shading and
+    level of detail, with a different subject."""
+    import base64
+
+    from pipeline.llm import ModelCallFailed, _picture_from_chat
+
+    encoded = base64.b64encode(reference).decode("ascii")
+    picture = _picture_from_chat([
+        {"type": "text", "text": "Draw a NEW picture in exactly the style of this reference "
+                                 "picture -- the same line weight, palette, shading, level of "
+                                 "detail and plain background. Do not copy its subject. The "
+                                 f"new picture: {request}"},
+        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encoded}"}},
+    ], "illustration in the project's style")
+    if not picture:
+        raise ModelCallFailed("The image model returned no picture in the project's style.")
+    return picture
+
+
+def _paint_checked(path: Path, asked: str, look: dict[str, Any], narration: str,
+                   state: dict[str, Any], painter) -> Path | None:
+    import json
+
+    from pipeline.llm import ModelCallFailed, ModelNotConfigured
+    from pipeline.scene_state import add_event
+
     request, verdict = prompt(asked, look), None
     for attempt in (1, 2):
         state["calls"]["image"] = state["calls"].get("image", 0) + 1
         try:
-            path.write_bytes(draw_image(request))
+            path.write_bytes(painter(request))
         except (ModelCallFailed, ModelNotConfigured, OSError) as failure:
             add_event(state, "note", f"The illustration could not be painted ({failure}); "
                       "the scene is made without it.")

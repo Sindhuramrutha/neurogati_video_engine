@@ -27,10 +27,12 @@ from manimkit import *
 class TheScene(ExplainerScene):
     def construct(self):
         end = self.brief.seconds
-        title = self.label("The body", size=56, at=(0, 3.2))
-        self.play(FadeIn(title), run_time=0.2)
+        title = self.title("The body")
+        self.play(self.reveal(title, run_time=0.2))
         steps = self.flow(["Touch", "Movement", "Picture"])
-        self.play(*[FadeIn(part) for part in steps], run_time=0.2)
+        self.play(*[self.reveal(box, run_time=0.2) for box in steps.boxes])
+        self.play(*[self.grow(arrow, run_time=0.2) for arrow in steps.arrows])
+        self.play(self.focus(steps.boxes[1], steps.boxes[0], steps.boxes[2], run_time=0.2))
         self.until(end * 0.2)
         self.play(FadeOut(steps), run_time=0.2)
         hub = self.hub("The body", ["Touch", "Movement", "Picture", "Brain"])
@@ -187,24 +189,36 @@ def test_a_scene_paints_its_illustration_once_and_only_when_asked(tmp_path, monk
     brief = ("PICTURE: none\nDRAW: a frog's leg\nILLUSTRATE: a frog's leg on a bench, two "
              "wires touching its nerve\nLABELS: Galvani")
     state = {"calls": {"agent": 0, "vision": 0}, "events": []}
+    scene = tmp_path / "scenes" / "001"
+    scene.mkdir(parents=True)
 
-    first = scene_illustration.paint(tmp_path, brief, look, state)
-    again = scene_illustration.paint(tmp_path, brief, look, state)
+    first = scene_illustration.paint(scene, brief, look, state)
+    again = scene_illustration.paint(scene, brief, look, state)
 
-    assert first == again == scene_illustration.kept(tmp_path, brief, look)
+    assert first == again == scene_illustration.kept(scene, brief, look)
+    reference = scene.parent / scene_illustration.STYLE_REFERENCE
+    assert reference.read_bytes() == first.read_bytes(), "the first painting is the style"
     assert len(painted) == 2 and state["calls"]["image"] == 2, "wrong once, painted again"
     assert "no text" in painted[0].lower() and "#ffffff" in painted[0]
     assert "small frog hearts" in painted[1], "the second asks for the correction"
     assert Image.open(first).getpixel((0, 0)) == (255, 255, 255), "no panel edge"
-    assert scene_illustration.paint(tmp_path, "PICTURE: none\nDRAW: a box", look, state) is None
+    assert scene_illustration.paint(scene, "PICTURE: none\nDRAW: a box", look, state) is None
     assert scene_illustration.wanted("ILLUSTRATE: none") == ""
 
-    def down(prompt):
+    styled = []
+    monkeypatch.setattr(scene_illustration, "_paint_like",
+                        lambda request, style: styled.append(style) or picture("#fafafa"))
+    verdicts.append(scene_illustration.Checked(matches=True))
+    other = brief.replace("frog's leg on a bench", "voltaic pile")
+    assert scene_illustration.paint(scene, other, look, state) is not None
+    assert styled == [reference.read_bytes()], "later pictures are painted from the style"
+
+    def down(request, style):
         raise ModelCallFailed("no image model")
 
-    monkeypatch.setattr("pipeline.llm.draw_image", down)
-    other = brief.replace("frog's leg on a bench", "voltaic pile")
-    assert scene_illustration.paint(tmp_path, other, look, state) is None, "made without it"
+    monkeypatch.setattr(scene_illustration, "_paint_like", down)
+    third = brief.replace("frog's leg on a bench", "two frog hearts in beakers")
+    assert scene_illustration.paint(scene, third, look, state) is None, "made without it"
 
 
 def test_a_scene_is_offered_its_own_slides_pictures_the_one_it_names_first(tmp_path,
