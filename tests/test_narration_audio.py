@@ -37,7 +37,7 @@ def test_a_section_is_spoken_scene_by_scene_with_a_breath_between(tmp_path):
     two = synthesise_narration("Second scene.", tmp_path / "b.mp3", "silent")
 
     joined = speak_scenes(["First scene words here.", "Second scene."],
-                          tmp_path / "section.mp3", "silent", "")
+                          tmp_path / "audio" / "section.mp3", "silent", "")  # no folder yet
 
     expected = one.duration_ms + SCENE_PAUSE_MS + two.duration_ms
     assert abs(measure_audio_duration_ms(joined.audio_path) - expected) < 120
