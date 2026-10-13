@@ -82,6 +82,22 @@ from manim import Scene, Text, VMobject, tempconfig
 from scenekit import load_brief
 
 
+def _composed(template):
+    """A shot template lays its scene out by construction: what it adds is not
+    moved out of the way afterwards. Nudged clear of the arrow arriving with it,
+    a step's panel dropped below the badge the arrow had been drawn to."""
+    import functools
+
+    @functools.wraps(template)
+    def compose(self, *args, **kwargs):
+        self._composing = True
+        try:
+            return template(self, *args, **kwargs)
+        finally:
+            self._composing = False
+    return compose
+
+
 def _trimmed(path: str) -> str:
     """The picture without its empty margin: a painted illustration came with
     a wide white border, and a hero picture fitted to its box showed a small
@@ -329,7 +345,8 @@ class ExplainerScene(Scene):
             family = mobject.get_family()
             if any(isinstance(m, TEXT_KINDS + (manim.ImageMobject,)) for m in family):
                 self.safe(mobject)
-                self._clear_of_words(mobject, {id(m) for m in family})
+                if not self._composing:
+                    self._clear_of_words(mobject, {id(m) for m in family})
         return super().add(*mobjects)
 
     @staticmethod
@@ -449,6 +466,7 @@ class ExplainerScene(Scene):
     # --- one type scale, one set of moves: every scene of a video alike ------------------
 
     TITLE_SIZE, HEADING_SIZE, LABEL_SIZE = 60, 46, 38
+    _composing = False
 
     def title(self, text: str) -> Text:
         """The scene's title, always the same size, weight and place (top centre)."""
@@ -713,6 +731,7 @@ class ExplainerScene(Scene):
         image.move_to([at[0], at[1], 0])
         return image
 
+    @_composed
     def hero(self, picture: str, callouts: list, title: str = "", cue: str | None = None,
              moves: list | None = None):
         """One picture, large, and its parts named on it: `callouts` are
@@ -758,16 +777,19 @@ class ExplainerScene(Scene):
             edge = (image.get_right() if side > 0 else image.get_left())[0]
             gutter, column = edge + side * 0.15, edge + side * 0.85
             room = self.SAFE_X - abs(column)
-            floor = top
-            for text, fx, fy, part_cue in sorted(items, key=lambda c: c[2]):
-                point = np.array([image.get_left()[0] + fx * image.width,
-                                  image.get_top()[1] - fy * image.height, 0.0])
-                label = self._wrapped(text, room, self.LABEL_SIZE)
-                y = max(min(point[1], floor - label.height / 2),
-                        -self.SAFE_Y + label.height / 2)
+            items = sorted(items, key=lambda c: c[2])
+            points = [np.array([image.get_left()[0] + fx * image.width,
+                                image.get_top()[1] - fy * image.height, 0.0])
+                      for _, fx, fy, _ in items]
+            labels = [self._wrapped(text, room, self.LABEL_SIZE) for text, *_ in items]
+            for label, y in zip(labels, self._stacked(labels, [p[1] for p in points], top),
+                                strict=True):
                 label.move_to([column + side * label.width / 2, y, 0])
-                floor = label.get_bottom()[1] - 0.25
+            for (_, _, _, part_cue), point, label in zip(items, points, labels, strict=True):
+                y = label.get_center()[1]
                 start = np.array([column - side * 0.08, y, 0.0])
+                # Level across the picture at the part's height, bent only in the
+                # gutter: labels keep the parts' order, so no two lines cross.
                 line = VMobject(stroke_width=4).set_points_as_corners(
                     [start, [gutter, point[1], 0.0], point])
                 placed.append((label, point, line, part_cue))
@@ -816,6 +838,25 @@ class ExplainerScene(Scene):
                   run_time=seconds, rate_func=manim.linear)
         self.play(manim.FadeOut(pulse, scale=1.8, run_time=0.3))
 
+    def _stacked(self, labels: list, wanted: list[float], top: float) -> list[float]:
+        """Heights for a column of labels, in order, each as near the part it
+        names as the others allow: spread evenly around the parts, not pushed
+        only downward -- a pile-up below the picture made long bent lines."""
+        gap = 0.25
+        ys: list[float] = []
+        for label, want in zip(labels, wanted, strict=True):
+            limit = (ys[-1] - labels[len(ys) - 1].height / 2 - gap - label.height / 2
+                     if ys else want)
+            ys.append(min(want, limit))
+        if ys:
+            ys = [y + sum(w - y for w, y in zip(wanted, ys, strict=True)) / len(ys)
+                  for y in ys]
+            high = ys[0] + labels[0].height / 2 - top
+            low = -self.SAFE_Y - (ys[-1] - labels[-1].height / 2)
+            ys = [y - max(0.0, high) + max(0.0, low) for y in ys]
+        return ys
+
+    @_composed
     def steps(self, steps: list, title: str = ""):
         """Two to four steps in order -- an experiment, a process: `steps` are
         (label, picture or None, cue). Each arrives numbered, in its own panel,
@@ -834,6 +875,8 @@ class ExplainerScene(Scene):
         if shared and not each:
             self.play(manim.FadeIn(self._fit(shared, 7.0, top + 0.6, (0, (top - 1.2) / 2 + 0.3)),
                                    run_time=0.6))
+        # With no picture the row stands mid-frame, not under an empty top half.
+        badge_y = -1.55 if shared else 0.6
         panels = []
         for index, (text, picture, cue) in enumerate(steps):
             x = -self.SAFE_X + width / 2 + index * (width + 0.5)
@@ -842,7 +885,7 @@ class ExplainerScene(Scene):
                 parts.append(self._fit(picture, width - 0.2, top + 0.6, (x, (top - 1.2) / 2 + 0.3)))
             colour = self.colour(index)
             badge = Circle(radius=0.34, color=colour, fill_color=self.tint(colour, 0.25),
-                           fill_opacity=1, stroke_width=4).move_to([x, -1.55, 0])
+                           fill_opacity=1, stroke_width=4).move_to([x, badge_y, 0])
             number = self.label(str(index + 1), size=self.LABEL_SIZE, on=self.tint(colour, 0.25),
                                 bold=True).move_to(badge)
             words = self._wrapped(text, width - 0.1, self.LABEL_SIZE)
@@ -856,6 +899,7 @@ class ExplainerScene(Scene):
                                                     color=self.look["text"])))
             self.play(*moves)
 
+    @_composed
     def compare(self, left: tuple, right: tuple, title: str = ""):
         """Two sides set against each other: each (heading, picture or None,
         [up to three short points], cue)."""
@@ -886,6 +930,7 @@ class ExplainerScene(Scene):
             self._at_cue(cue)
             self.play(*[self.reveal(part) for part in parts])
 
+    @_composed
     def person(self, picture: str, name: str, line: str, cue: str | None = None,
                line_cue: str | None = None):
         """A person: their portrait, their name, and one line on what they did."""
@@ -900,6 +945,7 @@ class ExplainerScene(Scene):
         self._at_cue(line_cue)
         self.play(self.reveal(said))
 
+    @_composed
     def key_idea(self, statement: str, picture: str | None = None, cue: str | None = None):
         """One idea to remember, large, with a line drawn under it -- and a picture
         beside it when there is one."""
