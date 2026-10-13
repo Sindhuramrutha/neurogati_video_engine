@@ -67,6 +67,7 @@ MOST_WORDS_ON_SCREEN = 25
 LEAST_GRAPHICS = 2              # non-text elements on screen at a beat
 LEAST_PICTURED_SHARE = 0.5      # of the beats
 LEAST_GROUNDED_SHARE = 0.6
+STEP_NUMBERS = {str(n) for n in range(1, 10)}
 LEAST_FILLED_HEIGHT = 0.4       # of the frame, at the scene's fullest moment
 LEAST_FILLED_WIDTH = 0.5
 LEAST_DISTINCT_MOMENTS = 3
@@ -180,7 +181,8 @@ def text_checks(layout: dict | None, brief: dict[str, Any]) -> list[dict[str, st
                 small.append(f"“{name}” ({piece['line_height']} px)")
             if len(piece["text"].split()) > MOST_WORDS_IN_A_PIECE:
                 paragraphs.append(f"“{name}…” is {len(piece['text'].split())} words")
-            if piece["text"] in seen:
+            # A step's own number ("1", "2" on a badge) counts the steps; it claims nothing.
+            if piece["text"] in seen or piece["text"].strip() in STEP_NUMBERS:
                 continue
             seen.add(piece["text"])
             words = _content_words(piece["text"])

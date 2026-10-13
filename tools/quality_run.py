@@ -113,7 +113,7 @@ def report(slug: str, minutes: float) -> Path:
     root = require_project(slug).root
     rows, totals = [], {"prompt": 0, "completion": 0, "agent": 0, "vision": 0, "image": 0}
     ships, scores_seen, rounds = 0, [], []
-    posters = []
+    posters, templates = [], []
     for folder in sorted((root / "generation" / "scenes").glob("[0-9]*")):
         state = json.loads((folder / "agent.json").read_text(encoding="utf-8"))
         last = state.get("last_render") or {}
@@ -126,8 +126,12 @@ def report(slug: str, minutes: float) -> Path:
         if scores:
             scores_seen.append(scores)
         ships += bool(last.get("good"))
+        entry = folder / "scene.py"
+        program = entry.read_text(encoding="utf-8") if entry.exists() else ""
+        template = next((name for name in TEMPLATES if f"self.{name}(" in program), "by hand")
+        templates.append(template)
         rows.append(
-            f"| {folder.name[:3]} | {state['renders']} | "
+            f"| {folder.name[:3]} | {template} | {state['renders']} | "
             f"{'yes' if last.get('passed') else 'no'} | {'yes' if last.get('good') else 'no'} | "
             + " | ".join(str(scores.get(k, "-")) for k in RUBRIC)
             + f" | {', '.join(last.get('failing') or []) or '-'} |")
@@ -145,19 +149,22 @@ def report(slug: str, minutes: float) -> Path:
         f"Calls: {totals['agent']} agent, {totals['vision']} vision, {totals['image']} image.",
         "", "Rubric averages (scenes the reviewer scored): "
         + (", ".join(f"{k} {v}" for k, v in averages.items()) or "none scored"), "",
-        "| Scene | Rounds | Checks pass | Ship bar | " + " | ".join(RUBRIC) + " | Failing |",
-        "|---|---|---|---|" + "---|" * len(RUBRIC) + "---|", *rows, "",
+        f"Templates: {sum(t != 'by hand' for t in templates)} of {count} scenes.", "",
+        "| Scene | Shot | Rounds | Checks pass | Ship bar | " + " | ".join(RUBRIC) + " | Failing |",
+        "|---|---|---|---|---|" + "---|" * len(RUBRIC) + "---|", *rows, "",
         f"![contact sheet]({sheet.name})" if sheet else "",
     ]
     path = root / "quality-report.md"
     path.write_text("\n".join(lines), encoding="utf-8")
     (root / "quality-report.json").write_text(json.dumps({
         "slug": slug, "minutes": minutes, "scenes": count, "ships": ships,
-        "rounds_per_scene": sum(rounds) / count, "averages": averages, "totals": totals},
+        "rounds_per_scene": sum(rounds) / count, "averages": averages, "totals": totals,
+        "templates": templates},
         indent=1), encoding="utf-8")
     return path
 
 
+TEMPLATES = ("hero", "steps", "compare", "person", "key_idea", "flow", "hub", "timeline")
 RUBRIC = ("teaches", "accuracy", "illustration", "composition", "labels", "motion", "finish")
 
 

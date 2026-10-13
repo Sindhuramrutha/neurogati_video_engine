@@ -248,3 +248,58 @@ def test_a_scene_is_offered_its_own_slides_pictures_the_one_it_names_first(tmp_p
     assert offered("s1", "Alessandro Volta invented the battery") == [volta, title]
     assert offered("s2") == [physics]
     assert offered("s3") == pictures, "a scene with no slides of its own gets the section's"
+
+
+TEMPLATED = '''# /// script
+# requires-python = ">=3.11"
+# dependencies = ["manim>=0.19", "pillow"]
+# ///
+from manimkit import *
+
+
+class TheScene(ExplainerScene):
+    def construct(self):
+        end = self.brief.seconds
+        self.hero("picture.png", title="The body", callouts=[
+            ("Touch", (0.3, 0.3), None), ("Movement", (0.7, 0.5), None)])
+        self.until(end * 0.2)
+        self.clear()
+        self.steps([("Touch", None, None), ("Movement", "picture.png", None),
+                    ("Picture", None, None)], title="The body")
+        self.until(end * 0.4)
+        self.clear()
+        self.compare(("Touch", None, ["The body"], None),
+                     ("Movement", "picture.png", ["The brain"], None), title="The body")
+        self.until(end * 0.6)
+        self.clear()
+        self.person("picture.png", "The brain", "A picture of the body from touch.")
+        self.until(end * 0.75)
+        self.clear()
+        self.key_idea("The brain builds a picture of the body.", "picture.png")
+        self.until(end * 0.9)
+        self.finish()
+
+
+run(TheScene)
+'''
+
+
+@pytest.mark.skipif(not (shutil.which("uv") and shutil.which("ffmpeg")),
+                    reason="needs uv and ffmpeg to render a Manim scene")
+@pytest.mark.usefixtures("project_root")
+def test_every_shot_template_passes_the_layout_checks_by_construction():
+    """The templates are what the scene model fills instead of placing boxes by
+    hand: each must come out clean with nothing but its slots filled."""
+    from PIL import Image
+
+    slug, project, visual = scripted_project("Templates")
+    with_program(slug, project, visual, TEMPLATED, renderer="manim")
+    folder = scene_folder(project, visual)
+    Image.new("RGB", (800, 600), (90, 140, 200)).save(folder / "picture.png")
+
+    result = run_scene(slug, visual.id)
+
+    checks = {c["key"]: c for c in result["checks"]}
+    for key in ("ran", "bounds", "overlap", "contrast", "legible", "crossing", "collide",
+                "fills", "paragraphs"):
+        assert checks[key]["status"] == "pass", (key, checks[key]["detail"])

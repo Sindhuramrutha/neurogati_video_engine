@@ -22,7 +22,10 @@ from pipeline.scene_program import ENTRY_FILES
 EARLIER_SCENES = 3
 PICTURES_DESCRIBED = 3
 PICTURE_QUESTION = ("Describe this picture part by part: what is drawn, every label, arrows "
-                    "and where they point, the layout, and what it teaches. Under 120 words.")
+                    "and where they point, the layout, and what it teaches. For each part a "
+                    "scene might point to, give where it is as (x, y) fractions of the "
+                    "picture's width and height from its top left, e.g. 'the frog's leg "
+                    "(0.55, 0.40)'. Under 160 words.")
 KITS = {
     "manim": "manim -- scene.py starting `from manimkit import *` (every Manim name and the "
              "kit: ExplainerScene, self.label, self.when, self.until, self.finish, "
@@ -40,6 +43,13 @@ KITS = {
 # Placing boxes by hand coordinates is what failed most: boxes laid over boxes,
 # circles drawn through their own labels, a diagram crammed into the top third.
 LAYOUT_RULES = (
+    "Shots: in Manim, start from a template -- self.hero (a picture and its parts named), "
+    "self.steps (an experiment or process, 2-4 steps), self.compare (two sides), "
+    "self.person (a portrait, a name, what they did), self.key_idea (one idea to remember), "
+    "or self.flow / self.hub / self.timeline. A template lays out, times and moves the "
+    "whole scene and passes the checks by construction: fill its slots from the brief and "
+    "give each part the narration words it arrives on. Write the layout by hand only when "
+    "no template fits, and say why in the json block's \"approach\". "
     "Labels: a label names something, so it sits beside that thing -- on a picture, "
     "self.callout(text, (x, y), side) -- never across the frame from it, and no arrow "
     "ever starts inside a label. "
@@ -197,7 +207,7 @@ def picture_notes(brief: dict[str, Any], cache_folder: Path, state: dict[str, An
     from pipeline.scene_review import look_at_picture
     from pipeline.storage.documents import read_json_object, write_text_atomically
 
-    known = read_json_object(cache_folder / "picture-notes.json", "picture notes") or {}
+    known = read_json_object(cache_folder / "picture-parts.json", "picture notes") or {}
     pictures = brief.get("assets", {}).get("pictures", [])[:PICTURES_DESCRIBED]
     lines = []
     for index, path in enumerate(pictures):
@@ -207,7 +217,7 @@ def picture_notes(brief: dict[str, Any], cache_folder: Path, state: dict[str, An
                 known[path] = look_at_picture(Path(path), PICTURE_QUESTION)
             except (ModelCallFailed, ModelNotConfigured, OSError):
                 continue
-            write_text_atomically(cache_folder / "picture-notes.json",
+            write_text_atomically(cache_folder / "picture-parts.json",
                                   json.dumps(known, ensure_ascii=False, indent=1))
         lines.append(f"- pictures[{index}] ({Path(path).name}): {known[path]}")
     return "\n".join(lines)

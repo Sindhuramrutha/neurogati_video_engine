@@ -32,6 +32,14 @@ for one frame: each of these would otherwise stop the whole scene.
 `self.boxed(text)` puts words in a box sized to them; `self.connect(a, b)` draws an
 arrow edge to edge, never through words; `self.picture(path)` shows a slide picture.
 
+Shot templates -- start here: each builds a whole scene from a few slots and the
+words each part arrives on, laid out, timed and moved so it passes every check:
+`self.hero(picture, [(label, (x, y), cue)], title)` -- a picture and its parts
+named ((x, y) are the part's place as fractions of the picture, from its
+description); `self.steps([(label, picture, cue)], title)` -- an experiment or
+process; `self.compare((heading, picture, [points], cue), (...), title)`;
+`self.person(picture, name, line, cue)`; `self.key_idea(statement, picture, cue)`.
+
 Diagrams laid out for you -- prefer them to placing boxes by hand, which is what
 fails most (boxes over boxes, circles through their own labels, a diagram in one
 strip of the frame): `self.flow(steps)` (boxes joined by arrows),
@@ -353,6 +361,8 @@ class ExplainerScene(Scene):
         """The second these words start being spoken. Falls back to `default`, or
         to a proportional guess, when the narration has no word timings."""
         wanted = _words(phrase)
+        if not wanted:
+            return self.now if default is None else default
         flat = self._flat
         for start in range(len(flat) - len(wanted) + 1):
             if [w for _, w in flat[start:start + len(wanted)]] == wanted:
@@ -627,6 +637,161 @@ class ExplainerScene(Scene):
         self.safe(whole)
         whole.spine, whole.dots, whole.labels = spine, dots, labels
         return whole
+
+    # --- shot templates: a whole scene from a few slots ---------------------------------
+    # Each lays out, times and moves a complete scene that passes every check by
+    # construction; the program only fills the slots and names the words each part
+    # arrives on (`cue`: words from the narration). End the scene with self.finish().
+
+    def _at_cue(self, cue: str | None) -> None:
+        if cue:
+            self.until(self.when(cue))
+
+    def _wrapped(self, text: str, width: float, size: int) -> Text:
+        """Words broken into lines that fit `width` (scene units) at `size`."""
+        import textwrap
+        per_line = max(8, int(width / (size * 0.0072)))
+        return self.label("\n".join(textwrap.wrap(text, per_line)) or text, size=size)
+
+    def _fit(self, path: str, width: float, height: float, at: tuple[float, float]):
+        image = self.picture(path, height=1.0)
+        image.scale(min(width / image.width, height / image.height))
+        image.move_to([at[0], at[1], 0])
+        return image
+
+    def hero(self, picture: str, callouts: list, title: str = "", cue: str | None = None):
+        """One picture, large, and its parts named on it: `callouts` are
+        (label, (x, y), cue) with (x, y) the part's place as fractions of the
+        picture from its top left -- the picture's description gives them. The
+        labels stand in a column beside the picture, each joined to its part."""
+        from manim import Dot, Line
+        top = 2.55 if title else 3.3
+        if title:
+            self.play(self.reveal(self.title(title)))
+        image = self._fit(picture, 7.6, top + 3.3, (-2.4, (top - 3.3) / 2))
+        self._at_cue(cue)
+        self.play(manim.FadeIn(image, run_time=0.6))
+        column = image.get_right()[0] + 0.9
+        room = self.SAFE_X - column
+        placed, floor = [], top
+        for text, (fx, fy), part_cue in sorted(callouts, key=lambda c: c[1][1]):
+            point = np.array([image.get_left()[0] + fx * image.width,
+                              image.get_top()[1] - fy * image.height, 0.0])
+            label = self._wrapped(text, room, self.LABEL_SIZE)
+            y = min(point[1], floor - label.height / 2)
+            label.move_to([column + label.width / 2, max(y, -self.SAFE_Y + label.height / 2), 0])
+            floor = label.get_bottom()[1] - 0.25
+            placed.append((label, point, part_cue))
+        for label, point, part_cue in sorted(placed, key=lambda p: self.when(p[2] or "")):
+            colour = self.colour(len(self._snapshots))
+            line = Line(_edge(label, point) + np.array([-0.08, 0, 0]), point, buff=0.05,
+                        color=colour, stroke_width=3)
+            self._at_cue(part_cue)
+            self.play(self.draw(line, run_time=0.4), manim.FadeIn(Dot(point, radius=0.08,
+                      color=colour)), self.reveal(label, run_time=0.4))
+
+    def steps(self, steps: list, title: str = ""):
+        """Two to four steps in order -- an experiment, a process: `steps` are
+        (label, picture or None, cue). Each arrives numbered, in its own panel,
+        joined to the one before by an arrow."""
+        from manim import Circle, Group
+        if title:
+            self.play(self.reveal(self.title(title)))
+        count = max(1, len(steps))
+        width = (2 * self.SAFE_X - (count - 1) * 0.5) / count
+        top = 2.45 if title else 3.2
+        # A picture for every step stands over its own step; fewer than that, the
+        # first stands once over them all -- one panel with a picture, the rest
+        # empty, looked lopsided.
+        each = all(picture for _, picture, _ in steps)
+        shared = next((picture for _, picture, _ in steps if picture), None)
+        if shared and not each:
+            self.play(manim.FadeIn(self._fit(shared, 7.0, top + 0.6, (0, (top - 1.2) / 2 + 0.3)),
+                                   run_time=0.6))
+        panels = []
+        for index, (text, picture, cue) in enumerate(steps):
+            x = -self.SAFE_X + width / 2 + index * (width + 0.5)
+            parts = []
+            if picture and each:
+                parts.append(self._fit(picture, width - 0.2, top + 0.6, (x, (top - 1.2) / 2 + 0.3)))
+            colour = self.colour(index)
+            badge = Circle(radius=0.34, color=colour, fill_color=self.tint(colour, 0.25),
+                           fill_opacity=1, stroke_width=4).move_to([x, -1.55, 0])
+            number = self.label(str(index + 1), size=self.LABEL_SIZE, on=self.tint(colour, 0.25),
+                                bold=True).move_to(badge)
+            words = self._wrapped(text, width - 0.1, self.LABEL_SIZE)
+            words.next_to(badge, manim.DOWN, buff=0.3)
+            panels.append((Group(*parts, badge, number, words), badge, cue))
+        for index, (panel, badge, cue) in enumerate(panels):
+            self._at_cue(cue)
+            moves = [self.reveal(panel)]
+            if index:
+                moves.append(self.grow(self.connect(panels[index - 1][1], badge,
+                                                    color=self.look["text"])))
+            self.play(*moves)
+
+    def compare(self, left: tuple, right: tuple, title: str = ""):
+        """Two sides set against each other: each (heading, picture or None,
+        [up to three short points], cue)."""
+        from manim import Line
+        if title:
+            self.play(self.reveal(self.title(title)))
+        top = 2.3 if title else 3.0
+        self.play(self.draw(Line([0, top + 0.2, 0], [0, -3.2, 0], color=self.look["dim"],
+                                 stroke_width=3), run_time=0.4))
+        for side, (heading, picture, points, cue) in ((-1, left), (1, right)):
+            x = side * 3.25
+            colour = self.colour(0 if side < 0 else 1)
+            # Words in an accent only where the accent reads; else in the ink.
+            readable = _contrast(colour, self.look["background"]) >= 4.5
+            ink = colour if readable else self.look["text"]
+            parts = [self.label(heading, size=self.HEADING_SIZE, bold=True, color=ink,
+                                at=(x, top))]
+            y = top - 0.6
+            if picture:
+                image = self._fit(picture, 5.6, 2.6, (x, y - 1.3))
+                parts.append(image)
+                y = image.get_bottom()[1] - 0.2
+            for point in points[:3]:
+                words = self._wrapped(point, 5.8, 36)
+                words.move_to([x, y - words.height / 2, 0])
+                y = words.get_bottom()[1] - 0.25
+                parts.append(words)
+            self._at_cue(cue)
+            self.play(*[self.reveal(part) for part in parts])
+
+    def person(self, picture: str, name: str, line: str, cue: str | None = None,
+               line_cue: str | None = None):
+        """A person: their portrait, their name, and one line on what they did."""
+        portrait = self._fit(picture, 5.2, 5.8, (-3.4, -0.2))
+        named = self.label(name, size=self.TITLE_SIZE - 6, bold=True)
+        named.move_to([0.3 + named.width / 2, 1.3, 0])
+        self.safe(named)
+        said = self._wrapped(line, 5.6, self.LABEL_SIZE)
+        said.move_to([0.3 + said.width / 2, named.get_bottom()[1] - 0.45 - said.height / 2, 0])
+        self._at_cue(cue)
+        self.play(manim.FadeIn(portrait, run_time=0.6), self.reveal(named))
+        self._at_cue(line_cue)
+        self.play(self.reveal(said))
+
+    def key_idea(self, statement: str, picture: str | None = None, cue: str | None = None):
+        """One idea to remember, large, with a line drawn under it -- and a picture
+        beside it when there is one."""
+        from manim import Line
+        if picture:
+            image = self._fit(picture, 5.6, 5.8, (3.4, -0.1))
+            words = self._wrapped(statement, 6.4, 50)
+            words.move_to([-3.2, 0.2, 0])
+        else:
+            image, words = None, self._wrapped(statement, 11.5, 56)
+            words.move_to([0, 0.3, 0])
+        self.safe(words)
+        rule = Line(words.get_corner(manim.DL) + np.array([0, -0.35, 0]),
+                    words.get_corner(manim.DR) + np.array([0, -0.35, 0]),
+                    color=self.colour(0), stroke_width=6)
+        self._at_cue(cue)
+        self.play(self.reveal(words), *([manim.FadeIn(image, run_time=0.6)] if image else []))
+        self.play(self.draw(rule, run_time=0.6))
 
     # --- what is on screen, for the checks ------------------------------------------------
 
