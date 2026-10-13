@@ -92,6 +92,7 @@ from pipeline.web.routes_render_job import RENDER_JOB_ROUTES
 from pipeline.web.routes_scene_lab import SCENE_LAB_ROUTES
 from pipeline.web.routes_script_handoff import SCRIPT_HANDOFF_ROUTES
 from pipeline.web.routes_source import SOURCE_ROUTES
+from pipeline.web.routes_video_setup import VIDEO_SETUP_ROUTES
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
@@ -153,6 +154,7 @@ def create_app() -> Litestar:
             *SCENE_LAB_ROUTES,
             *SCRIPT_HANDOFF_ROUTES,
             *GENERATION_HANDOFF_ROUTES,
+            *VIDEO_SETUP_ROUTES,
             list_stages,
             list_projects,
             create_project,

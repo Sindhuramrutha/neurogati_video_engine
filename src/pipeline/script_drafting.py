@@ -252,7 +252,7 @@ def _write_section(
         notes.append(f'"{section.title}": {source_note}')
 
     user_prompt = "\n\n".join(part for part in (
-        f"Audience: {plan.audience or 'not stated'}"
+        f"Audience: {preferences.audience(plan.audience)}"
         + (f"\nInstruction: {instruction.strip()}" if instruction.strip() else ""),
         f"--- the whole plan ---\n{compact_plan_text(plan, marked_section_id=section.id)}",
         "--- the section you are writing ---\n" + _section_brief(

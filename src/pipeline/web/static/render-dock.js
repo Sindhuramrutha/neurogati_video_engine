@@ -18,6 +18,7 @@
  * finds it again.
  */
 
+import { mountVideoSetup } from "/static/video-setup.js";
 import { requestJsonFromApi } from "/static/shared-client.js";
 import {
   applicationState, escapeHtml, select, showStageNotice, stageHeader,
@@ -217,7 +218,14 @@ export function renderRenderPage(stage) {
     <section class="render-dock" id="render-dock" aria-label="Render queue">
       <div class="rd-bar-slot">${renderBar()}</div>
       <div class="rd-body">${renderSettings() + renderQueue()}</div>
+    </section>
+    <section class="render-video-setup" aria-label="Voice and music">
+      <h4>Voice and music</h4>
+      <p class="muted">The same choices as the Scene Plan's setup: changing them here changes
+        them there, and the next render speaks and mixes with them.</p>
+      <div id="render-video-setup"></div>
     </section>`;
+  mountVideoSetup(select("#render-video-setup"), { parts: ["voice", "music"] });
   ensureVoices().then(paint);
   poll();
 }

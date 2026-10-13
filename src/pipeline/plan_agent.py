@@ -132,12 +132,12 @@ def _add(project, messages: list[dict[str, Any]], role: str, text: str, **extra)
 # --- what the agent is shown -----------------------------------------------------------
 
 
-def _setup_text(plan: Plan, language: str) -> str:
+def _setup_text(plan: Plan, preferences) -> str:
     return "\n".join([
         f"Length asked for: {plan.length_text or '(not given -- choose from the material)'}",
         f"Slide order: {SLIDE_ORDERS[plan.slide_order]}",
-        f"Audience: {plan.audience or '(not stated)'}",
-        f"Language: {language}",
+        f"Audience: {preferences.audience(plan.audience)}",
+        f"Language: {preferences.language_name}",
     ])
 
 
@@ -177,7 +177,7 @@ def _shape_prompts(project, plan: Plan, units, thread: list[dict[str, Any]],
     conversation = "\n".join(f"{m['role'].upper()}: {m['text']}"
                              for m in thread[-MOST_MESSAGES_SHOWN_TO_THE_AGENT:])
     user_prompt = "\n\n".join(part for part in [
-        f"--- setup ---\n{_setup_text(plan, video_preferences(project.root).language_name)}",
+        f"--- setup ---\n{_setup_text(plan, video_preferences(project.root))}",
         f"--- the source, in order ---\n{_units_text(units)}",
         f"--- the plan as it stands ---\n{_current_shape_text(plan, units)}",
         f"--- the conversation ---\n{conversation}",
@@ -366,7 +366,8 @@ def write_scenes(project, plan: Plan, wanted: dict[str, int], extraction, units,
             material, cut = section_source_text(extraction, section.sources)
         user_prompt = "\n\n".join([
             f"The person's direction:\n{direction or '(none)'}",
-            f"Audience: {plan.audience or '(not stated)'} · Language: {language}",
+            f"Audience: {video_preferences(project.root).audience(plan.audience)}\n"
+            f"Language: {language}",
             f"Section: {section.title} -- {section.summary}\n"
             f"How it is told: {section.how or '(not said)'}",
             f"It runs {section.estimated_seconds} seconds in exactly {count} scenes. "

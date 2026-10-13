@@ -55,7 +55,7 @@ def fakes(monkeypatch):
             render_job.request_halt(made["slug"])
         return clip
 
-    def join(ffmpeg, clips, working, output):
+    def join(ffmpeg, clips, working, output, music=(None, 0.0)):
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_bytes(b"".join(clip.read_bytes() for clip in clips))
 

@@ -19,6 +19,7 @@
 import { editStageDocument, loadStageDocument, newItemIdentifier }
   from "/static/document-editing.js";
 import { requestJsonFromApi } from "/static/shared-client.js";
+import { mountVideoSetup } from "/static/video-setup.js";
 import {
   ICON, applicationState, escapeHtml, footerNav, icon, moveToNextLayerButton,
   projectApiPath, refreshProjectSummary, select, showStageNotice, stageHeader, stageNeighbours,
@@ -134,6 +135,7 @@ export async function renderScenePlanStage(stage, navigateToStage, renderAgentSt
   lastHandoff = handoff;
   currentNavigate = navigateToStage;
   wireScenePlanStage(stage, navigateToStage, renderAgentStage, planning);
+  mountVideoSetup(select("#video-setup-mount"));
   const thread = select(".plan-thread");
   if (thread) thread.scrollTop = thread.scrollHeight;
 }
@@ -299,10 +301,10 @@ function renderSetup(plan, planning, settings) {
             </label>`).join("")}
         </div>`)}
 
-      ${setupBox("audience", "Audience", `
+      ${setupBox("audience", "Learners, in your words", `
         <input id="setup-audience" maxlength="300" value="${escapeHtml(plan.audience)}"
-               placeholder="Who is watching, if it matters">`,
-        { forId: "setup-audience", note: "optional" })}
+               placeholder="e.g. second-year nursing students in Hyderabad">`,
+        { forId: "setup-audience", note: "optional — added to the choices below" })}
 
       ${language ? setupBox("language", "Language", `
         <select id="setup-language">
@@ -311,6 +313,7 @@ function renderSetup(plan, planning, settings) {
             escapeHtml(choice.label)}</option>`).join("")}
         </select>`, { forId: "setup-language" }) : ""}
 
+      <div id="video-setup-mount"></div>
     </aside>`;
 }
 

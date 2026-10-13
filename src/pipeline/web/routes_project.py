@@ -788,8 +788,8 @@ MEDIA_TYPES_BY_SUFFIX = {
     ".mp4": "video/mp4",
     ".vtt": "text/vtt",
     ".srt": "text/plain",
-    ".mp3": "audio/mpeg",
-    ".wav": "audio/wav",
+    ".mp3": "audio/mpeg", ".wav": "audio/wav",
+    ".m4a": "audio/mp4", ".ogg": "audio/ogg", ".flac": "audio/flac",
     # Figures pulled out of the source documents.
     ".png": "image/png",
     ".jpg": "image/jpeg",

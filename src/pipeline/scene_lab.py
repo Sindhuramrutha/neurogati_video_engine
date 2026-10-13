@@ -164,6 +164,7 @@ def write_brief(project, visual) -> dict[str, Any]:
     from pipeline.plan_handoff import plan_for_later_stages
     from pipeline.plan_pictures import assets_for_later_stages, pictures_of
     from pipeline.stage_options import video_preferences
+    from pipeline.video_setup import platform_needs
 
     scene = _scene_of(project, visual)
     narration = scene.narration if scene else visual.narration_preview
@@ -180,6 +181,9 @@ def write_brief(project, visual) -> dict[str, Any]:
         "scene_id": visual.scene_id,
         "section_title": visual.section_title,
         "how": section.how if section else "",
+        # Who it is for, and the smallest text the platforms allow (Video setup).
+        "audience": video_preferences(project.root).audience(plan.audience),
+        "smallest_text_px": platform_needs(project.root)["smallest_text_px"],
         "scene_number": visual.scene_number,
         "headline": visual.headline or visual.section_title,
         "narration": narration,

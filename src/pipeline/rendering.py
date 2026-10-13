@@ -145,6 +145,10 @@ SECTION_TAIL_MS = 250
 
 # How long one shot dissolves into the next, and the shortest dissolve worth
 # having: below this it is a flicker, so short shots are cut instead.
+# Every shot is encoded again into its section, and the section again by the brand
+# pass: at the default quality each pass softened the picture, so the working
+# encodes keep near everything and only the last one decides the size.
+WORKING_VIDEO = ["-c:v", "libx264", "-preset", "fast", "-crf", "16"]
 CROSS_FADE_MS = 400
 SHORTEST_CROSS_FADE_MS = 90
 
@@ -818,7 +822,7 @@ def _encode_shot(
         "-filter_complex", _shot_filter(chain, length_ms, opens_the_video, closes_the_video),
         "-map", "[out]",
         "-t", f"{length_ms / 1000:.3f}",
-        "-r", str(FRAME_RATE), "-c:v", "libx264", "-preset", "veryfast",
+        "-r", str(FRAME_RATE), *WORKING_VIDEO,
         "-pix_fmt", "yuv420p", str(shot_path),
     ]
     _run_ffmpeg(arguments, f"drawing {step}")
@@ -890,7 +894,7 @@ def _cut_section(
     clip_path = working_directory / f"s{index:02d}.mp4"
     arguments += [
         "-map", f"{audio_index}:a", "-af", audio_filter,
-        "-r", str(FRAME_RATE), "-c:v", "libx264", "-preset", "veryfast",
+        "-r", str(FRAME_RATE), *WORKING_VIDEO,
         # One sample rate and layout for every clip, whatever the voice provider
         # produced, so the final copy-concat has matching streams.
         "-c:a", "aac", "-b:a", "160k", "-ar", "24000", "-ac", "1",
@@ -923,39 +927,3 @@ def _dissolve_filters(
         current = f"x{at}"
     steps.append(f"[{current}]scale={FRAME_WIDTH}:{FRAME_HEIGHT},format=yuv420p[vout]")
     return steps
-
-
-def _join_and_level(
-    ffmpeg: str, clip_paths: list[Path], working_directory: Path, output_video_path: Path
-) -> None:
-    """Concatenate the sections, then level the whole soundtrack once.
-
-    One loudness pass over the finished audio, not one per section: levelling
-    each section on its own makes every section internally consistent and each
-    one a different loudness, which is the thing a viewer actually notices. The
-    video is copied, so this costs a pass over the file and no quality.
-
-    `+faststart` moves the moov atom to the front. Without it the index sits at
-    the end of the file, so a browser must download all of it before the first
-    frame plays -- which looks exactly like a video that does not work.
-    """
-    joined_list = working_directory / "clips.txt"
-    joined_list.write_text(
-        "\n".join(f"file '{path.as_posix()}'" for path in clip_paths), encoding="utf-8"
-    )
-
-    joined_path = working_directory / "joined.mp4"
-    _run_ffmpeg(
-        [ffmpeg, "-y", "-f", "concat", "-safe", "0", "-i", str(joined_list),
-         "-c", "copy", str(joined_path)],
-        "joining the sections",
-    )
-
-    output_video_path.parent.mkdir(parents=True, exist_ok=True)
-    _run_ffmpeg(
-        [ffmpeg, "-y", "-i", str(joined_path), "-c:v", "copy",
-         "-af", "loudnorm=I=-16:TP=-1.5:LRA=11",
-         "-c:a", "aac", "-b:a", "160k", "-ar", "24000", "-ac", "1",
-         "-movflags", "+faststart", str(output_video_path)],
-        "levelling the audio",
-    )

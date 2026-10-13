@@ -156,6 +156,7 @@ def review_frames(folder: Path, brief: dict[str, Any], question: str = "") -> Ve
         + str(brief.get("narration", ""))[:LONGEST_NARRATION],
         f"What the scene should show: {brief.get('on_screen', '')}",
         f"How the section is told: {brief.get('how', '')}",
+        f"Who it is for: {brief.get('audience', 'not stated')}",
         "Pictures offered for this scene: " + (", ".join(
             Path(path).name for path in (brief.get("assets") or {}).get("pictures") or [])
             or "none"),

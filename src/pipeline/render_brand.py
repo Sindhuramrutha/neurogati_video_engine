@@ -23,9 +23,10 @@ from pathlib import Path
 
 from pipeline.brand_kit import BrandKit
 from pipeline.brand_overlay import overlay_box, prepare_overlay
+from pipeline.render_finish import FINAL_VIDEO
 from pipeline.rendering import FRAME_HEIGHT, FRAME_RATE, FRAME_WIDTH, _run_ffmpeg
 
-_AUDIO = "aresample=24000,aformat=sample_fmts=fltp:channel_layouts=mono"
+_AUDIO = "aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo"
 # Fitted, never stretched: letterboxed to the frame, at the frame rate.
 _FIT = (f"scale={FRAME_WIDTH}:{FRAME_HEIGHT}:force_original_aspect_ratio=decrease,"
         f"pad={FRAME_WIDTH}:{FRAME_HEIGHT}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1,"
@@ -107,8 +108,8 @@ def brand_arguments(kit: BrandKit, root: Path, lesson: Path, output: Path,
 
     return [ffmpeg, "-y", *inputs, "-filter_complex", ";".join(graph),
             "-map", "[v]", "-map", "[a]",
-            "-r", str(FRAME_RATE), "-c:v", "libx264", "-preset", "veryfast",
-            "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "160k", "-ar", "24000", "-ac", "1",
+            "-r", str(FRAME_RATE), *FINAL_VIDEO,
+            "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2",
             "-movflags", "+faststart", str(output)]
 
 

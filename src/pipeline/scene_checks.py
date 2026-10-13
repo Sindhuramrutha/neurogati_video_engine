@@ -155,6 +155,8 @@ def text_checks(layout: dict | None, brief: dict[str, Any]) -> list[dict[str, st
                              brief.get("source_text", ""), brief.get("section_title", ""),
                              brief.get("headline", ""))
     outside, overlaps, faint, small, paragraphs, ungrounded = [], [], [], [], [], []
+    # Larger for a classroom projector (Video setup's platforms).
+    smallest = int(brief.get("smallest_text_px") or SMALLEST_LINE_PX)
     seen: set[str] = set()
     for snapshot in layout["snapshots"]:
         texts = snapshot["texts"]
@@ -174,7 +176,7 @@ def text_checks(layout: dict | None, brief: dict[str, Any]) -> list[dict[str, st
             ratio = _contrast(piece["color"], piece["behind"])
             if ratio < LEAST_CONTRAST:
                 faint.append(f"“{name}” ({ratio}:1)")
-            if piece["line_height"] < SMALLEST_LINE_PX:
+            if piece["line_height"] < smallest:
                 small.append(f"“{name}” ({piece['line_height']} px)")
             if len(piece["text"].split()) > MOST_WORDS_IN_A_PIECE:
                 paragraphs.append(f"“{name}…” is {len(piece['text'].split())} words")
@@ -207,7 +209,7 @@ def text_checks(layout: dict | None, brief: dict[str, Any]) -> list[dict[str, st
                "No two pieces on screen at once overlap, and none lies on a picture", overlaps),
         result("contrast", "Text is high contrast",
                f"At least {LEAST_CONTRAST}:1 against what is behind it", faint),
-        _legible(small),
+        _legible(small, smallest),
         result("paragraphs", "No paragraph on screen",
                f"At most {MOST_WORDS_IN_A_PIECE} words in one piece and "
                f"{MOST_WORDS_ON_SCREEN} on screen at once", paragraphs),
@@ -265,12 +267,13 @@ def shape_checks(snapshots: list[dict], width: int, height: int) -> list[dict[st
            "space between them, or the slide's picture beside it."))]
 
 
-def _legible(small: list[str]) -> dict[str, str]:
-    rule = f"Lines at least {SMALLEST_LINE_PX} px tall at 1080p"
+def _legible(small: list[str], smallest: int = SMALLEST_LINE_PX) -> dict[str, str]:
+    rule = f"Lines at least {smallest} px tall at 1080p"
     if not small:
         return _check("legible", "Text is large enough", rule, PASS, "None found.")
     return _check("legible", "Text is large enough", rule, FAIL,
-                  "; ".join(dict.fromkeys(small))[:400] + ". A label of size 36 or more "
+                  "; ".join(dict.fromkeys(small))[:400] + f". A label of size {smallest} "
+                  "or more "
                   "is large enough as made: these were shrunk afterwards, by .scale() on "
                   "them or a group holding them, or by row/column/safe fitting too much "
                   "into the frame. Keep the size: take older things off screen, or give "

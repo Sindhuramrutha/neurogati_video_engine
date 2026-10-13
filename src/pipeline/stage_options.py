@@ -225,6 +225,13 @@ class VideoPreferences:
     """
 
     language: str
+    learners: str = ""          # the learners chosen in Video setup, with what each needs
+    chosen_voice: str = ""      # the Edge voice chosen there, with its pace ("voice@rate")
+
+    def audience(self, written: str = "") -> str:
+        """Who the video is for: the person's own words and the learners chosen."""
+        parts = [part for part in (written.strip(), self.learners) if part]
+        return "\n".join(parts) or "not stated"
 
     @property
     def tone_sentence(self) -> str:
@@ -235,7 +242,11 @@ class VideoPreferences:
         return LANGUAGES.get(self.language, LANGUAGES["en"])["name"]
 
     def voice_for(self, provider_key: str) -> str:
-        """The provider's voice for this language, or empty if it has none."""
+        """The provider's voice for this language -- the one chosen in Video setup,
+        when one is -- or empty if it has none. Scenes are measured and the render
+        speaks with this same voice, so the two cannot differ."""
+        if provider_key == "edge" and self.chosen_voice:
+            return self.chosen_voice
         return LANGUAGES.get(self.language, {}).get(provider_key, "")
 
     def to_dict(self) -> dict[str, Any]:
@@ -251,7 +262,12 @@ def video_preferences(project_root: Path) -> VideoPreferences:
     Read from the same settings file the page writes, so there is no second
     place a preference can be stored and no chance of the two disagreeing.
     """
+    from pipeline import video_setup
+
     saved = StageSettingsStore(project_root).load(Stage.SCENE_PLAN).values
+    language = str(saved.get("language", "en"))
     return VideoPreferences(
-        language=str(saved.get("language", "en")),
+        language=language,
+        learners=video_setup.audience_text(project_root),
+        chosen_voice=video_setup.edge_voice(project_root, language),
     )

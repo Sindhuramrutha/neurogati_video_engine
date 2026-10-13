@@ -380,6 +380,8 @@ class ExplainerScene(Scene):
         """On-screen words, recorded for the checks. `size` is in points at 1080p;
         `on` is the colour behind the text when it sits on a panel."""
         fill = color or self.look["text"]
+        # Never under the smallest the platforms allow: larger for a classroom.
+        size = max(size, int(BRIEF.__dict__.get("smallest_text_px") or 36))
         mobject = Text(text, font_size=size, color=fill,
                        weight="BOLD" if bold else "NORMAL", **kwargs)
         if at is not None:

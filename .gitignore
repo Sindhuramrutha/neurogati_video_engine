@@ -35,3 +35,6 @@ acedemic-explainer-video-pipeline/
 renderers/.self-test.json
 renderers/revideo/output/
 renderers/revideo/*.log
+
+# Voice samples, music beds and previews, made on demand
+.cache/

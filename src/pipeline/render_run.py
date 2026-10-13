@@ -307,7 +307,7 @@ def _render_video(slug: str, voice_provider: str, voice: str, resume: bool) -> d
                              before=before_picture, after=after_picture)
         check_halt(slug)
         save(project, job, "Joining the sections into one video")
-        join_clips(clips, working, video_path)
+        join_clips(clips, working, video_path, project.root)
         if not brand.is_empty:
             from pipeline.render_brand import apply_brand
             save(project, job, "Putting on the brand assets")

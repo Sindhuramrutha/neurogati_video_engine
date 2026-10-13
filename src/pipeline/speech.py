@@ -379,16 +379,16 @@ def _speak_edge(text: str, output_path: Path, voice: str) -> list[WordTiming]:
     import edge_tts
 
     words: list[WordTiming] = []
+    voice, rate = ((voice or "en-US-AriaNeural") + "@+0%").split("@")[:2]  # pace: "v@-10%"
 
     async def run() -> None:
         # Asked for explicitly: the default is sentence boundaries, which are
         # too coarse to put a label on the word it names. An edge-tts
         # without the argument still speaks; it just reports nothing.
         try:
-            communicate = edge_tts.Communicate(
-                text, voice or "en-US-AriaNeural", boundary="WordBoundary")
+            communicate = edge_tts.Communicate(text, voice, rate=rate, boundary="WordBoundary")
         except TypeError:
-            communicate = edge_tts.Communicate(text, voice or "en-US-AriaNeural")
+            communicate = edge_tts.Communicate(text, voice, rate=rate)
         with open(output_path, "wb") as handle:
             async for chunk in communicate.stream():
                 if chunk["type"] == "audio":

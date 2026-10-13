@@ -35,6 +35,7 @@ from pydantic import BaseModel
 
 from pipeline import progress
 from pipeline.core import OperationFailed, require_project
+from pipeline.render_finish import _join_and_level
 from pipeline.rendering import (
     DEFAULT_STYLE,
     RenderedSection,
@@ -42,7 +43,6 @@ from pipeline.rendering import (
     _cross_fade_ms,
     _cut_section,
     _encode_shot,
-    _join_and_level,
     require_ffmpeg,
     shot_windows,
 )
@@ -257,8 +257,13 @@ def cut_sections(
     return clip_paths
 
 
-def join_clips(clip_paths: list[Path], working: Path, video_path: Path) -> None:
-    _join_and_level(require_ffmpeg(), clip_paths, working, video_path)
+def join_clips(clip_paths: list[Path], working: Path, video_path: Path,
+               project_root: Path | None = None) -> None:
+    """Join the sections into the video, with the music Video setup chose under it."""
+    from pipeline.video_setup import music_for
+
+    music = music_for(project_root) if project_root is not None else (None, 0.0)
+    _join_and_level(require_ffmpeg(), clip_paths, working, video_path, music)
 
 
 def join_what_is_done(project, job: RenderJob) -> str:
@@ -269,5 +274,5 @@ def join_what_is_done(project, job: RenderJob) -> str:
     if not clips:
         return ""
     preview = output_directory(project) / f"{project.slug}-{job.render_id}-so-far.mp4"
-    join_clips(clips, working, preview)
+    join_clips(clips, working, preview, project.root)
     return str(preview.relative_to(project.root)).replace("\\", "/")

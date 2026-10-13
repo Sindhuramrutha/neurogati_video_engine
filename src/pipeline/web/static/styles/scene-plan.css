@@ -213,3 +213,54 @@
 /* The agent's own words on how a section is told. */
 .plan-shape-how { display: block; margin-top: 3px; font-style: italic; color: var(--text-dim); }
 .plan-section-how { margin: 4px 0 0; font-size: 12.5px; color: var(--text-dim); }
+
+/* --- Video setup: learners, voice, music, platforms (video-setup.js) ------------- */
+#video-setup-mount, #render-video-setup { display: grid; gap: 10px; }
+.vs-learners .setup-icon { background: var(--c-purple-soft); }
+.vs-voice .setup-icon { background: var(--c-orange-soft); }
+.vs-music .setup-icon { background: var(--c-teal-soft); }
+.vs-platforms .setup-icon { background: var(--c-lime-soft); }
+.vs-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.vs-chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px;
+  border: 2px solid var(--x-ink); border-radius: 999px; background: #fff;
+  font-size: 12.5px; cursor: pointer; line-height: 1.3;
+}
+.vs-chip.on { background: var(--c-purple-soft); font-weight: 700; }
+.vs-chip input { width: auto; margin: 0; }
+.vs-voices, .vs-list { display: grid; gap: 6px; }
+.vs-group { display: grid; gap: 6px; }
+.vs-group-name {
+  font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--text-dim); margin-top: 4px;
+}
+.vs-option {
+  display: flex; align-items: center; gap: 8px; padding: 6px 9px; border: 2px solid var(--x-ink);
+  border-radius: 8px; background: #fff; font-size: 12.5px; line-height: 1.4; cursor: pointer;
+}
+.vs-option.on { background: var(--c-blue-soft); }
+.vs-option input { width: auto; margin: 0; flex: none; }
+.vs-option span { flex: 1; text-align: left; }
+.vs-play {
+  width: 28px; height: 28px; flex: none; display: grid; place-items: center; padding: 0;
+  border: 2px solid var(--x-ink); border-radius: 50%; background: var(--c-yellow); cursor: pointer;
+}
+.vs-play:hover { background: var(--c-yellow-soft); }
+.vs-play.busy { animation: vs-pulse .8s ease-in-out infinite alternate; }
+@keyframes vs-pulse { from { opacity: 1; } to { opacity: .35; } }
+.vs-segment {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0; border: 2px solid var(--x-ink);
+  border-radius: 8px; overflow: hidden; background: #fff; font-size: 12.5px;
+}
+.vs-segment-name { padding: 6px 10px; font-weight: 800; border-right: 2px solid var(--x-ink); }
+.vs-segment label { flex: 1; text-align: center; padding: 6px 8px; cursor: pointer; }
+.vs-segment label.on { background: var(--c-blue-soft); font-weight: 700; }
+.vs-segment input { display: none; }
+.vs-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.vs-actions .btn { display: inline-flex; align-items: center; gap: 6px; }
+.render-video-setup {
+  margin-top: 18px; padding: 14px 16px; border: var(--edge) solid var(--line);
+  border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-sm);
+}
+.render-video-setup h4 { margin: 0 0 4px; }
+.render-video-setup > p { margin: 0 0 10px; font-size: 13px; }
