@@ -174,6 +174,15 @@ def confirm_assets(slug: str) -> dict[str, Any]:
     if not extraction.documents and brand.is_empty and not had_brand:
         raise OperationFailed("Nothing is extracted yet, so there is nothing to transfer. "
                               "Transfer the extraction first, or add a brand asset.")
+    # Transferred with nothing gathered, the plan carried no pictures and every
+    # scene was drawn from boxes and labels while the deck's own figures sat unused.
+    extracted = sum(1 for document in extraction.documents for block in document.blocks
+                    if block.kind == "figure" and block.asset_path)
+    if extracted and not library.figures:
+        raise OperationFailed(
+            f"The extraction has {extracted} picture(s) and none are gathered, so no scene "
+            "could show them. Gather them on the Extracted assets tab -- skip any you do "
+            "not want -- then transfer.")
     if library.figures and library.gathered_from != _transfer_stamp(extraction):
         raise OperationFailed(
             "The extraction was transferred again after these pictures were gathered. "
@@ -244,6 +253,12 @@ def _look_preview(project, look) -> dict[str, Any]:
         "background": colour(*style.background_colour), "panel": colour(*style.panel_colour),
         "accent": colour(*style.accent_colour), "text": colour(*style.text_colour),
         "dim": colour(*style.dim_text_colour),
+        # The deck's other accents, the chosen one first: a diagram's parts in one
+        # colour each, instead of every box the same outline on a blank frame.
+        "accents": list(dict.fromkeys(
+            [colour(*style.accent_colour)] + ([look.colours[key].lower() for key in (
+                "accent1", "accent2", "accent3", "accent4", "accent5", "accent6")
+                if look.colours.get(key)] if look.use_source_styling else []))),
         "heading_font": style.heading_font, "body_font": style.body_font,
         "art": effective["background_asset_path"] if style.background_image else "",
         "readability": readability(style),

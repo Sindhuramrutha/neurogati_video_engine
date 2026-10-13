@@ -19,6 +19,7 @@ from typing import Any
 # past this length it is a paragraph that happens to be set big.
 SMALLEST_HEADING_POINTS = 18.0
 MAXIMUM_HEADING_LENGTH = 120
+MAXIMUM_CARD_TITLE_LENGTH = 60      # a card's bold title: a name or a topic, not a sentence
 
 # Two text sizes this close are one hierarchy level -- a kicker over a title --
 # and the longer of them is the title.
@@ -149,6 +150,34 @@ def _caption_near(picture, slide) -> tuple[str, Any]:
             nearest = (gap, line, shape._element)
 
     return nearest[1:] if nearest else ("", None)
+
+
+def _is_card_title(element) -> bool:
+    """Whether a text box is a card's title: one short line, all of it bold.
+
+    Decks lay a topic out as cards -- an icon, a bold title, a line under it --
+    and the title sits against the icon, so it was taken as the icon's caption
+    and dropped from the text: "Broca's Area" survived only as a figure's name,
+    and the extraction agent had to put six slides' titles back by hand. A title
+    is kept as a heading (and still captions its icon); a caption in ordinary
+    type is still only a caption.
+    """
+    if element is None:
+        return False
+    lines = []
+    for paragraph in element.iter(f"{{{DRAWING_NAMESPACE}}}p"):
+        runs = [run for run in paragraph.iter(f"{{{DRAWING_NAMESPACE}}}r")
+                if "".join(run.itertext()).strip()]
+        if runs:
+            lines.append(runs)
+    if len(lines) != 1:
+        return False
+    text = "".join("".join(run.itertext()) for run in lines[0]).strip()
+    bold = all((properties := run.find(f"{{{DRAWING_NAMESPACE}}}rPr")) is not None
+               and properties.get("b") in ("1", "true") for run in lines[0])
+    # A step's bold number ("1", "2") badges a card; it does not title one.
+    return (bold and len(text) <= MAXIMUM_CARD_TITLE_LENGTH and not text.endswith((".", ":"))
+            and any(character.isalpha() for character in text))
 
 
 def _short_first_line(shape) -> str:

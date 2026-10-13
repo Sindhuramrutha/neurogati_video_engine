@@ -39,16 +39,31 @@ def test_a_deleted_project_is_erased_for_good_with_no_trash(project_root):
 
 def test_a_project_with_a_render_queued_is_still_deleted_and_its_job_dropped(project_root):
     slug = operations.create_project("Rendering")["slug"]
+    another = operations.create_project("Another")["slug"]
     render_queue.hold_queue(True)
     RenderQueueStore().save(RenderQueue(paused=True, jobs=[
-        QueueJob(slug=slug, status="queued"), QueueJob(slug="another", status="queued")]))
+        QueueJob(slug=slug, status="queued"), QueueJob(slug=another, status="queued")]))
 
     with TestClient(app=create_app()) as client:
         answer = client.delete(f"/api/projects/{slug}")
 
     assert answer.status_code == 200 and not (project_root / slug).exists()
-    assert [job.slug for job in RenderQueueStore().load().jobs] == ["another"], \
+    assert [job.slug for job in RenderQueueStore().load().jobs] == [another], \
         "its job went; another project's stayed"
+
+
+def test_a_job_whose_project_is_gone_leaves_the_queue_when_it_starts(project_root,
+                                                                     monkeypatch):
+    """A project deleted before deleting dropped its jobs -- or by hand -- left a
+    finished render listed for good, for a project nobody could open."""
+    kept = operations.create_project("Kept")["slug"]
+    RenderQueueStore().save(RenderQueue(paused=True, jobs=[
+        QueueJob(slug="module-2", status="done"), QueueJob(slug=kept, status="done")]))
+    monkeypatch.setattr(render_queue, "_worker", None)
+
+    render_queue.ensure_worker()
+
+    assert [job.slug for job in RenderQueueStore().load().jobs] == [kept]
 
 
 def test_deleting_kills_what_is_running_for_the_project(project_root):

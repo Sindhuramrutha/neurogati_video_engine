@@ -172,3 +172,19 @@ def test_a_crop_flag_names_the_edge_and_can_be_answered(project_root):
     set_picture(slug, picture["id"], {"crop_checked": True})
     answered = assets_page(slug)["figures"][0]
     assert answered["needs_crop_check"] is False and answered["crop_checked"] is True
+
+
+def test_pictures_extracted_but_never_gathered_cannot_be_transferred(project_root):
+    """Transferred with nothing gathered, the plan carried no pictures and every
+    scene was drawn from boxes and labels while the deck's figures sat unused.
+    Gathering and leaving every picture out is still a choice that transfers."""
+    slug, project = project_with_pictures("Ungathered", [("Figure 1", (400, 300), "source")])
+
+    with pytest.raises(OperationFailed, match="none are gathered"):
+        confirm_assets(slug)
+
+    operations.refresh_asset_library(slug)
+    from pipeline.assets import set_picture
+    set_picture(slug, assets_page(slug)["figures"][0]["id"], {"left_out": True})
+    confirm_assets(slug)
+    assert assets_page(slug)["handoff"]["has_confirmed"]

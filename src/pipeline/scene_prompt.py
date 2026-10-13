@@ -133,7 +133,7 @@ def system_prompt(project, renderers: list[str]) -> str:
         + "\n".join(f"- {KITS[name]}" for name in renderers if name in KITS)
         + f"\nLaTeX is {'installed' if has_latex() else 'NOT installed: no MathTex or Tex'}."
         + f"\n\n## The kits' API (these are the only helpers that exist)\n{kit_api(renderers)}"
-        + f"\n\n{_library_for_agent()}"
+        + f"\n\n{_library_for_agent(renderers)}"
     )
 
 
@@ -162,7 +162,7 @@ def compact(brief: dict[str, Any]) -> dict[str, Any]:
     shown["word_starts"] = " ".join(f"{w['text']}@{w['start_ms'] / 1000:.2f}"
                                     for w in brief.get("words", []))
     shown["look"] = {k: v for k, v in brief.get("look", {}).items()
-                     if k in ("background", "panel", "accent", "text", "dim")}
+                     if k in ("background", "panel", "accent", "accents", "text", "dim")}
     return shown
 
 

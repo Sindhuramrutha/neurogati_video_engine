@@ -142,6 +142,44 @@ def test_a_slide_picture_is_extracted_as_a_figure(tmp_path):
     assert (tmp_path / "assets" / figure.asset_path.split("/")[-1]).exists()
 
 
+def test_a_card_title_beside_its_icon_is_kept_as_a_heading(tmp_path):
+    """A card -- an icon, a bold title, a line under it -- lost its title: the
+    title sat against the icon, so it was taken as the icon's caption and dropped
+    from the text. "Broca's Area" survived only as a figure's name, and the
+    extraction agent put six slides' titles back by hand. A caption in ordinary
+    type is still only a caption, and a step's bold number titles nothing."""
+    picture = tmp_path / "icon.png"
+    picture.write_bytes(png_bytes("blue"))
+
+    def text_box(slide, text, left, top, bold):
+        box = slide.shapes.add_textbox(Inches(left), Inches(top), Inches(3), Inches(0.5))
+        run = box.text_frame.paragraphs[0].add_run()
+        run.text, run.font.bold = text, bold
+
+    deck = Presentation()
+    slide = deck.slides.add_slide(deck.slide_layouts[5])
+    slide.shapes.title.text = "The Birth of Connectionism"
+    slide.shapes.add_picture(str(picture), Inches(1), Inches(2), width=Inches(1))
+    text_box(slide, "Broca's Area", 1, 3.1, bold=True)
+    text_box(slide, "Speech production", 1, 3.7, bold=False)
+    slide.shapes.add_picture(str(picture), Inches(5), Inches(2), width=Inches(1))
+    text_box(slide, "Figure 2. A lesion in the left hemisphere", 5, 3.1, bold=False)
+    text_box(slide, "1", 8, 2, bold=True)
+    deck.save(tmp_path / "deck.pptx")
+
+    blocks = read_pptx(tmp_path / "deck.pptx")
+    said = [(block.kind, block.level, block.text) for block in blocks
+            if block.kind != BlockKind.FIGURE]
+    captions = [block.text for block in blocks if block.kind == BlockKind.FIGURE]
+
+    assert (BlockKind.HEADING, 3, "Broca's Area") in said
+    assert said.index((BlockKind.HEADING, 3, "Broca's Area")) < said.index(
+        (BlockKind.PARAGRAPH, 0, "Speech production")), "the title heads its own line"
+    assert "Broca's Area (slide 1)" in captions, "and it still names its icon"
+    assert not any("Figure 2." in text for _, _, text in said), "a caption is not text"
+    assert (BlockKind.PARAGRAPH, 0, "1") in said, "a bold number is not a title"
+
+
 def test_the_same_image_repeated_is_stored_once(tmp_path):
     """A logo on forty slides must not become forty files."""
     sink = AssetSink(tmp_path / "assets")

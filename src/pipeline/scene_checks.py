@@ -233,7 +233,8 @@ def text_checks(layout: dict | None, brief: dict[str, Any]) -> list[dict[str, st
 def shape_checks(snapshots: list[dict], width: int, height: int) -> list[dict[str, str]]:
     """What the text checks cannot see: boxes laid over boxes, and a diagram that
     keeps to one strip of the frame. A scene passed every other check with both."""
-    rule = "No box, circle or other outline runs through another one"
+    rule = ("No box, circle or other outline runs through another one, and no line or "
+            "arrow runs through a box -- it stops at the edge")
     if not any("collisions" in s for s in snapshots):
         collide = _check("collide", "No shapes collide", rule, NOT_APPLICABLE,
                          "This renderer does not record its shapes.")

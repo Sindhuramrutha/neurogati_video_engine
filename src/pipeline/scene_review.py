@@ -32,7 +32,9 @@ class Verdict(BaseModel):
                                               "only appearing and disappearing?")
     looks_finished: bool = Field(description="Would a viewer accept it as finished: "
                                              "readable, nothing cut off or overlapping, the "
-                                             "frame used? Polish alone is not a no.")
+                                             "frame used, in colour, with the thing named "
+                                             "pictured -- not only words in boxes? Polish "
+                                             "alone is not a no.")
     problems: list[str] = Field(default_factory=list,
                                 description="At most 5 things that MUST be fixed, one short "
                                             "sentence each, most important first.")
@@ -90,12 +92,24 @@ def review_frames(folder: Path, brief: dict[str, Any], question: str = "") -> Ve
         "order. Be a demanding art director and teacher. A scene that only shows words and "
         "fades them in and out does NOT explain by motion. Problems are what MUST change "
         "(it misleads, is unreadable, cut off, overlapping, or does not teach the words); "
-        "anything that would merely make it nicer is polish. Be concrete and brief.")
+        "anything that would merely make it nicer is polish. Be concrete and brief.\n\n"
+        "These are problems, not polish -- they are what made earlier videos look mid:\n"
+        "- Only words in boxes joined by lines, when the narration names a thing that can "
+        "be shown (a neuron, a frog's leg, a battery, a brain region, an experiment): it "
+        "does not teach by picture. Say what to draw or which offered picture to show.\n"
+        "- A picture was offered for the scene and is not shown, or is shown so small or "
+        "so far from what explains it that it does nothing.\n"
+        "- Lines, arrows or boxes running over each other or over words.\n"
+        "- Colourless outline boxes on an empty background, or most of the frame empty: "
+        "it looks unfinished.")
     user = "\n\n".join(part for part in [
         "Narration (spoken over the scene):\n"
         + str(brief.get("narration", ""))[:LONGEST_NARRATION],
         f"What the scene should show: {brief.get('on_screen', '')}",
         f"How the section is told: {brief.get('how', '')}",
+        "Pictures offered for this scene: " + (", ".join(
+            Path(path).name for path in (brief.get("assets") or {}).get("pictures") or [])
+            or "none"),
         f"The agent asks you specifically: {question}" if question.strip() else "",
         "Look at the frames below, in order.",
     ] if part)

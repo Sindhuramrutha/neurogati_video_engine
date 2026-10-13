@@ -25,6 +25,7 @@ import json
 import re
 import shutil
 import subprocess
+import threading
 from pathlib import Path
 from typing import Any
 
@@ -36,6 +37,7 @@ NARRATION = "narration.mp3"
 NARRATION_FACTS = "narration.json"
 LONGEST_SOURCE_TEXT = 4000
 SCENES = "generation/scenes"
+_INDEX_LOCK = threading.Lock()
 
 
 # --- its folder ---------------------------------------------------------------------------
@@ -52,18 +54,24 @@ def _index(project) -> dict[str, str]:
 
 def scene_folder(project, visual, create: bool = False) -> Path | None:
     """The scene's folder. Named once, from its place and title, and then kept:
-    a scene that moves in the script does not lose its script."""
-    index = _index(project)
-    name = index.get(visual.scene_id)
-    if name is None:
-        if not create:
-            return None
-        words = re.sub(r"[^a-z0-9]+", "-", visual.section_title.lower()).strip("-")[:40]
-        name = f"{len(index) + 1:03d}-{words or 'scene'}-{visual.scene_number}"
-        index[visual.scene_id] = name
-        path = _index_path(project)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(index, indent=1), encoding="utf-8")
+    a scene that moves in the script does not lose its script.
+
+    Four scenes are made at once, and each names its folder here. Written in
+    place and unlocked, one read the index while another was writing it -- an
+    empty file, and eight scenes failed before they began -- and two starting
+    together could both take the same number. Locked, and written whole."""
+    from pipeline.storage.documents import write_text_atomically
+
+    with _INDEX_LOCK:
+        index = _index(project)
+        name = index.get(visual.scene_id)
+        if name is None:
+            if not create:
+                return None
+            words = re.sub(r"[^a-z0-9]+", "-", visual.section_title.lower()).strip("-")[:40]
+            name = f"{len(index) + 1:03d}-{words or 'scene'}-{visual.scene_number}"
+            index[visual.scene_id] = name
+            write_text_atomically(_index_path(project), json.dumps(index, indent=1))
     folder = project.root / SCENES / name
     if create:
         (folder / "assets").mkdir(parents=True, exist_ok=True)

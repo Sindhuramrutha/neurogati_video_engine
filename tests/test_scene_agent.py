@@ -197,9 +197,33 @@ def test_a_change_that_breaks_a_passing_scene_is_undone_and_it_ends_made(project
     assert (folder / "render.mp4").exists() and (folder / "preview.mp4").exists()
     recorded = next(v for v in VisualPlanStore(project.root).load().visuals if v.id == visual.id)
     assert recorded.clip_path, "the clip is the scene's again"
-    assert len(model.requests) == 2, "one round answers the reviewer, then it ends"
+    assert len(model.requests) == 3, "it keeps refining while the reviewer has a must-fix"
     assert "MUST FIX: Labels only fade in and out." in model.requests[1]
+    told = model.requests[2]
+    assert "did not make it better" in told and "The program ran" in told
+    assert "MUST FIX: Labels only fade in and out." in told, "still asked for it"
+    assert "```\nraise RuntimeError" not in told, "shown the kept file"
     assert any("back to the best version" in e["text"] for e in view["events"])
+
+
+def test_a_refinement_the_reviewer_likes_less_does_not_replace_the_kept_one(project_root,
+                                                                           monkeypatch):
+    """Two passing versions used to tie, and the newer always won: round 4 of a
+    real scene replaced one the reviewer had fewer complaints about."""
+    slug, project, visual = scripted_project("Liked less")
+    monkeypatch.setattr(scene_maker, "MOST_ROUNDS", 3)
+    worse = Verdict(teaches=False, motion_explains=False, looks_finished=True,
+                    problems=["Only words in boxes.", "Nothing moves."])
+    model = Model(whole(GOOD), whole(GOOD.replace("Touch", "Touching")), whole(GOOD))
+    wired(monkeypatch, model, BAD_VERDICT, worse, GOOD_VERDICT)
+
+    make_scene(slug, visual.id)
+
+    view = agent_view(slug, visual.id)
+    assert any("Round 2 was no better" in e["text"] for e in view["events"])
+    assert "did not make it better" in model.requests[2]
+    assert "Touching" not in model.requests[2], "it is shown the version the reviewer preferred"
+    assert view["status"] == "done" and view["last_render"]["good"]
 
 
 def test_an_edit_that_matches_nothing_is_sent_back_not_guessed(project_root, monkeypatch):

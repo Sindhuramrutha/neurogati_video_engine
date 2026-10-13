@@ -233,6 +233,7 @@
       // line wide enough for a whole line of words to fall between.
       const crossings = [];
       const closed = [];
+      const open = [];
       const W = innerWidth, H = innerHeight;
       const geometry = document.body.querySelectorAll("path, line, polyline, polygon, circle, ellipse, rect");
       for (const shape of geometry) {
@@ -257,6 +258,7 @@
         const r = shape.getBoundingClientRect();
         const isClosed = ["circle", "ellipse", "rect", "polygon"].includes(shape.tagName)
           || (shape.tagName === "path" && /z\s*$/i.test(shape.getAttribute("d") || ""));
+        if (!isClosed) open.push({ points, name: shape.tagName });
         if (isClosed && r.width >= 40 && r.height >= 40 && !(r.width >= 0.9 * W && r.height >= 0.9 * H)) {
           const words = texts.find(({ box: [a, b, c, d] }) => r.left < (a + c) / 2 && (a + c) / 2 < r.right
             && r.top < (b + d) / 2 && (b + d) / 2 < r.bottom);
@@ -289,6 +291,13 @@
           if (runsThrough(closed[i].points, closed[j].points) || runsThrough(closed[j].points, closed[i].points)) {
             collisions.push({ a: closed[i].name, b: closed[j].name });
           }
+        }
+      }
+      // A line or arrow that goes into a box and out again -- or ends inside it --
+      // runs over what the box holds; one that stops at the edge is clear of it.
+      for (const line of open) {
+        for (const box of closed) {
+          if (runsThrough(line.points, box.points)) collisions.push({ a: line.name, b: box.name });
         }
       }
       // How much of the frame is used: everything drawn, but a full-frame background.

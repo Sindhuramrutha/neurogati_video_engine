@@ -32,6 +32,7 @@ from pipeline.deck_shapes import (
     _headline_of,
     _inherited_list_styles,
     _is_bulleted,
+    _is_card_title,
     _shape_box,
     _shape_kind,
     _title_element,
@@ -659,11 +660,9 @@ def read_pptx(path: Path, assets: AssetSink | None = None) -> list[ContentBlock]
         ))
 
         # Lines already used as the heading or a figure caption, by the text box
-        # they sit in. A heading in a plain text box, or a caption beside its
-        # picture, is still an ordinary shape that the walk below would emit again
-        # as a paragraph -- the same duplicate `_title_element` stops on the
-        # placeholder path. Only the line is dropped, since the box may carry
-        # body text under it.
+        # they sit in, so the walk below does not emit them again as paragraphs.
+        # Only the line is dropped: the box may carry body text under it. A card's
+        # bold title is kept, as a heading, though it also captions its icon.
         consumed: set[tuple[object, str]] = {(headline_element, heading)}
         captions: dict[object, str] = {}
         for shape in slide.shapes:
@@ -672,7 +671,8 @@ def read_pptx(path: Path, assets: AssetSink | None = None) -> list[ContentBlock]
             caption, element = _caption_near(shape, slide)
             if element is not None:
                 captions[shape._element] = caption
-                consumed.add((element, caption))
+                if not _is_card_title(element):
+                    consumed.add((element, caption))
 
         for shape in slide.shapes:
             if shape._element is title_element:
@@ -684,10 +684,12 @@ def read_pptx(path: Path, assets: AssetSink | None = None) -> list[ContentBlock]
                     if not line or (shape._element, line) in consumed:
                         continue
                     # Bulleted lines stay list items so the structure survives.
-                    kind = (BlockKind.LIST_ITEM if _is_bulleted(paragraph, list_styles)
+                    kind = (BlockKind.HEADING if _is_card_title(shape._element)
+                            else BlockKind.LIST_ITEM if _is_bulleted(paragraph, list_styles)
                             else BlockKind.PARAGRAPH)
                     blocks.append(ContentBlock(
-                        kind=kind, text=line, heading_path=list(heading_path),
+                        kind=kind, level=3 if kind == BlockKind.HEADING else 0,
+                        text=line, heading_path=list(heading_path),
                         slide_number=number,
                     ))
             elif getattr(shape, "has_table", False):

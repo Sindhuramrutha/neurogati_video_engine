@@ -105,6 +105,26 @@ def _trace(m) -> np.ndarray:
     return np.vstack(parts)
 
 
+def _rgb(colour: str) -> tuple[int, int, int]:
+    value = colour.lstrip("#")[:6]
+    return tuple(int(value[i:i + 2], 16) for i in (0, 2, 4))
+
+
+def _mix(base: str, colour: str, share: float) -> str:
+    """`share` of `colour` over `base`, as a colour."""
+    mixed = [round(b + (c - b) * share) for b, c in zip(_rgb(base), _rgb(colour), strict=False)]
+    return "#{:02x}{:02x}{:02x}".format(*mixed)
+
+
+def _contrast(first: str, second: str) -> float:
+    def luminance(colour: str) -> float:
+        channels = [c / 255 for c in _rgb(colour)]
+        linear = [c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4 for c in channels]
+        return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+    light, dark = sorted((luminance(first), luminance(second)), reverse=True)
+    return (light + 0.05) / (dark + 0.05)
+
+
 def _stroked(m) -> bool:
     """Whether a shape has an outline you can see. A filled shape with no stroke has
     none: Manim keeps the stroke's opacity at 1 when its width is 0."""
@@ -375,17 +395,36 @@ class ExplainerScene(Scene):
 
     # --- shapes that cannot get in the way of words ------------------------------------
 
+    # --- colour ---------------------------------------------------------------------------
+
+    def colour(self, index: int = 0) -> str:
+        """The deck's accent colours in turn -- colour(0) is the main accent -- so a
+        diagram's parts each have their own. Ones too faint to see on the
+        background are skipped."""
+        palette = list(dict.fromkeys(
+            c.lower() for c in [self.look["accent"], *(self.look.get("accents") or [])]
+            if _contrast(c, self.look["background"]) >= 2.0)) or [self.look["accent"]]
+        return palette[index % len(palette)]
+
+    def tint(self, colour: str, share: float = 0.16) -> str:
+        """`colour` mixed into the background: a box's fill that its words still read on."""
+        return _mix(self.look["background"], colour, share)
+
+    # --- shapes that cannot get in the way of words ------------------------------------
+
     def boxed(self, text: str, size: int = 40, color: str | None = None, pad: float = 0.25,
               at: tuple[float, float] | None = None, stroke: str | None = None,
               fill: str | None = None):
-        """Words in a box sized to them, so they can never spill out of it."""
+        """Words in a box sized to them, so they can never spill out of it. Filled
+        with a tint of its outline's colour, so the box reads as a thing, and a line
+        behind it is covered instead of running through."""
         from manim import RoundedRectangle, VGroup
-        label = self.label(text, size=size, color=color, on=fill or self.look["background"])
+        stroke = stroke or self.colour(0)
+        fill = fill or self.tint(stroke)
+        label = self.label(text, size=size, color=color, on=fill)
         box = RoundedRectangle(corner_radius=0.12, width=label.width + 2 * pad,
-                               height=label.height + 2 * pad,
-                               stroke_color=stroke or self.look["accent"],
-                               fill_color=fill or self.look["background"],
-                               fill_opacity=1 if fill else 0).move_to(label)
+                               height=label.height + 2 * pad, stroke_color=stroke,
+                               stroke_width=5, fill_color=fill, fill_opacity=1).move_to(label)
         group = VGroup(box, label)
         if at is not None:
             group.move_to([at[0], at[1], 0])
@@ -438,12 +477,14 @@ class ExplainerScene(Scene):
         """Steps in boxes joined by arrows, left to right -- top to bottom when they
         do not fit across. Has .boxes and .arrows (arrows[i] joins boxes[i] to [i+1])."""
         from manim import DOWN, RIGHT, VGroup
-        boxes = [self.boxed(text, size=size) for text in steps]
+        boxes = [self.boxed(text, size=size, stroke=self.colour(i))
+                 for i, text in enumerate(steps)]
         group = VGroup(*boxes).arrange(RIGHT, buff=gap).move_to([0, y, 0])
         if group.width > 2 * self.SAFE_X:
             group.arrange(DOWN, buff=gap * 0.6).move_to([0, y, 0])
         self.safe(group)
-        arrows = [self.connect(a, b) for a, b in zip(boxes, boxes[1:], strict=False)]
+        arrows = [self.connect(a, b, color=self.look["text"])
+                  for a, b in zip(boxes, boxes[1:], strict=False)]
         whole = VGroup(*boxes, *arrows)
         whole.boxes, whole.arrows = boxes, arrows
         return whole
@@ -454,8 +495,10 @@ class ExplainerScene(Scene):
         joined to the middle by a line from edge to edge. Has .centre, .items, .lines
         (lines[i] joins the centre to items[i])."""
         from manim import DOWN, LEFT, RIGHT, Line, VGroup
-        middle = self.boxed(centre, size=size + 4)
-        items = [self.boxed(text, size=size) for text in around]
+        middle = self.boxed(centre, size=size + 4, stroke=self.colour(0),
+                            fill=self.tint(self.colour(0), 0.3))
+        items = [self.boxed(text, size=size, stroke=self.colour(i + 1))
+                 for i, text in enumerate(around)]
         left = VGroup(*items[0::2]).arrange(DOWN, buff=0.5, aligned_edge=RIGHT)
         right = VGroup(*items[1::2]).arrange(DOWN, buff=0.5, aligned_edge=LEFT) \
             if len(items) > 1 else VGroup()
@@ -469,7 +512,8 @@ class ExplainerScene(Scene):
         for index, item in enumerate(items):
             start, end = ((middle.get_left(), item.get_right()) if index % 2 == 0
                           else (middle.get_right(), item.get_left()))
-            lines.append(Line(start, end, buff=0.1, color=self.look["accent"], stroke_width=4))
+            lines.append(Line(start, end, buff=0.1, color=self.colour(index + 1),
+                              stroke_width=4))
         whole = VGroup(middle, *items, *lines)
         whole.centre, whole.items, whole.lines = middle, items, lines
         return whole
@@ -478,8 +522,7 @@ class ExplainerScene(Scene):
         """Things in order on a line, a dot and a label each. Across the frame with
         labels above and below in turn; down its left side when they do not fit across.
         Has .spine, .dots, .labels."""
-        from manim import DOWN, LEFT, RIGHT, UP, Dot, Line, VGroup
-        accent = self.look["accent"]
+        from manim import DOWN, RIGHT, UP, Dot, Line, VGroup
         labels = [self.label(text, size=size) for text in events]
         span = 2 * self.SAFE_X - 0.6
         step = span / max(1, len(events))
@@ -491,7 +534,8 @@ class ExplainerScene(Scene):
             spine = Line([-span / 2, y, 0], [span / 2, y, 0], color=self.look["text"],
                          stroke_width=4)
             for index, label in enumerate(labels):
-                dot = Dot([-span / 2 + (index + 0.5) * step, y, 0], radius=0.11, color=accent)
+                dot = Dot([-span / 2 + (index + 0.5) * step, y, 0], radius=0.14,
+                          color=self.colour(index))
                 label.next_to(dot, UP if index % 2 == 0 else DOWN, buff=0.35)
                 dots.append(dot)
         else:
@@ -500,7 +544,8 @@ class ExplainerScene(Scene):
             spine = Line([x, top, 0], [x, bottom, 0], color=self.look["text"], stroke_width=4)
             step = (top - bottom) / max(1, len(events))
             for index, label in enumerate(labels):
-                dot = Dot([x, top - (index + 0.5) * step, 0], radius=0.11, color=accent)
+                dot = Dot([x, top - (index + 0.5) * step, 0], radius=0.14,
+                          color=self.colour(index))
                 label.next_to(dot, RIGHT, buff=0.4)
                 dots.append(dot)
         whole = VGroup(spine, *dots, *labels)
@@ -590,11 +635,14 @@ class ExplainerScene(Scene):
     @staticmethod
     def _collisions(drawn, texts) -> list[dict[str, str]]:
         """Closed outlines (boxes, circles) that run through each other -- a box laid
-        half over another box. Named by the words in them, when there are any."""
-        closed = [(m, p) for m, p in drawn
-                  if _stroked(m) and "Tip" not in type(m).__name__
-                  and np.allclose(m.points[0], m.points[-1], atol=1e-3)
+        half over another box -- and lines or arrows that run through a box rather
+        than stopping at its edge. Named by the words in them, when there are any."""
+        outlined = [(m, p) for m, p in drawn if _stroked(m) and "Tip" not in type(m).__name__]
+        closed = [(m, p) for m, p in outlined
+                  if np.allclose(m.points[0], m.points[-1], atol=1e-3)
                   and np.ptp(p[:, 0]) >= SMALLEST_SHAPE_PX and np.ptp(p[:, 1]) >= SMALLEST_SHAPE_PX]
+        lines = [(m, p) for m, p in outlined
+                 if not np.allclose(m.points[0], m.points[-1], atol=1e-3)]
 
         def name(m, p) -> str:
             x0, y0, x1, y1 = p[:, 0].min(), p[:, 1].min(), p[:, 0].max(), p[:, 1].max()
@@ -608,6 +656,12 @@ class ExplainerScene(Scene):
             for other, q in closed[index + 1:]:
                 if _cross(p, q) or _cross(q, p):
                     found.append({"a": name(m, p), "b": name(other, q)})
+        # A line that starts or ends at a box's edge is clear of it; one that goes in
+        # and comes out again -- or ends inside -- runs over what the box holds.
+        for m, p in lines:
+            for other, q in closed:
+                if _cross(p, q):
+                    found.append({"a": type(m).__name__, "b": name(other, q)})
         return found
 
 
@@ -622,4 +676,5 @@ def run(scene_class) -> None:
         shutil.copy(scene.renderer.file_writer.movie_file_path, BRIEF.out)
     Path("layout.json").write_text(json.dumps({
         "renderer": "manim", "width": BRIEF.width, "height": BRIEF.height,
-        "snapshots": scene._snapshots, "plays": scene._plays}, indent=1, ensure_ascii=False), encoding="utf-8")
+        "snapshots": scene._snapshots, "plays": scene._plays}, indent=1, ensure_ascii=False),
+        encoding="utf-8")

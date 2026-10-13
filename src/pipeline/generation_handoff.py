@@ -107,7 +107,8 @@ def generation_checks(project, plan: VisualPlan) -> list[dict[str, str]]:
         "Each scene's program passed every check and was approved after its preview",
         FAIL if blockers else PASS if plan.visuals else NOT_APPLICABLE,
         f"{len(blockers)} not yet: " + "; ".join(blockers[:4]) if blockers
-        else "Every scene's program passed and is approved."), _check(
+        else "Every scene's program passed and is approved." if plan.visuals
+        else "No scenes are set up yet."), _check(
         "match", "Scenes match the script", "One scene per scene of the transferred script",
         NOT_APPLICABLE if not scenes else FAIL if missing or extra else PASS,
         "; ".join(part for part in [

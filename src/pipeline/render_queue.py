@@ -253,6 +253,9 @@ def ensure_worker() -> None:
 
 
 def _recover(queue: RenderQueue) -> None:
+    # A project that is gone takes its jobs with it. Deleting one in the app does
+    # that already; one deleted before it did, or by hand, stayed listed for good.
+    queue.jobs = [job for job in queue.jobs if (projects_root() / job.slug).is_dir()]
     for job in queue.jobs:
         if job.status == "rendering" and not progress.read(job.slug, render_job.JOB)["active"]:
             job.status, job.continues = "paused", True

@@ -66,10 +66,11 @@ class DraftedScene(BaseModel):
                     "sentences, no bullet points, headings, stage directions or markdown."
     )
     brief: str = Field(
-        description="Exactly what is on screen while this narration plays: the real "
-                    "values, labels and terms from the source. Never 'such as' or "
-                    "'something like'. If there is no real data, say which generic "
-                    "marks to show."
+        description="What is on screen while this narration plays, in the shape your "
+                    "instructions give: PICTURE (an offered picture's exact name, or "
+                    "none), DRAW (the real things, named), LAYOUT, BEATS (\"exact words\" "
+                    "-> what appears or changes), LABELS (at most five, from the "
+                    "narration). Never 'such as' or 'something like'."
     )
 
 
@@ -207,8 +208,9 @@ def _write_section(
     planned = section.scenes
     shape = (
         f"Write exactly {len(planned)} scenes, in this order -- the plan decided them; "
-        f"do not add, drop, merge or split any. Each scene's narration fills its seconds "
-        f"at about {round(WORDS_PER_SECOND_OF_SPEECH * 60)} words a minute."
+        f"do not add, drop, merge or split any. Each scene's seconds are a target at "
+        f"about {round(WORDS_PER_SECOND_OF_SPEECH * 60)} words a minute, not a quota: say "
+        f"what the material supports, shorter is fine, and never pad or repeat."
         if planned else
         "Write it as a sequence of scenes of about 15 to 45 seconds (roughly 40 to 110 "
         "words) each."
@@ -218,10 +220,13 @@ def _write_section(
         f"---\nWrite ONE plan section. Each scene has `narration`, spoken aloud and "
         f"written for the ear, and `brief`, exactly what is on screen while that "
         f"narration plays, following your instructions on briefs. {shape} "
-        f"About {target_words} words of narration in total, to fill about "
-        f"{section.estimated_seconds} seconds. Every fact must come from the "
-        f"source material provided; do not add examples, numbers or analogies "
-        f"that are not in it. Open where the previous section left off.\n\n"
+        f"Up to about {target_words} words of narration in total, for about "
+        f"{section.estimated_seconds} seconds. Every fact must come from the source "
+        f"material provided: add no fact, number, name, date or example that is not "
+        f"in it. A plain everyday comparison that adds no claim is allowed where it "
+        f"makes an idea easier. Teach it to a learner meeting it for the first time, "
+        f"following your instructions on narration. Open where the previous section "
+        f"left off.\n\n"
         f"{VOICE_RULE}\n"
         f"Tone: {preferences.tone_sentence}\n"
         f"Write the narration, and every brief, in {preferences.language_name}. "

@@ -287,7 +287,11 @@ stdin.
 | `LLM_MODEL` | `deepseek/deepseek-v4-flash` | Model id as the provider spells it. |
 | `IR_LLM_API_KEY`, `IR_LLM_BASE_URL`, `IR_LLM_MODEL` | text model's values | A separate provider for structured output (drafted plans and scripts). |
 | `IMAGE_MODEL`, `IMAGE_BASE_URL`, `IMAGE_API_KEY` | `google/gemini-2.5-flash-image`, text model's values | The model that draws a replacement for a figure that did not extract. |
+| `VISION_MODEL`, `VISION_BASE_URL`, `VISION_API_KEY` | `google/gemini-3.5-flash`, text model's values | The model that looks at pictures: the Extraction agent reading slides, the slide pictures described for Generation, every review of a scene's frames, and handwriting OCR. The text model cannot see. |
 | `LLM_TIMEOUT_SECONDS` | `600` | Per-request timeout. |
+| `LLM_REQUESTS_PER_MINUTE` | `28` | How many model calls are sent in a minute, across the whole app (TokenRouter allows 30). |
+| `SCENE_AGENTS_AT_ONCE` | `4` | Scenes made side by side on Generation. |
+| `SCENE_RENDERS_AT_ONCE` | `2` | Scenes rendering at the same moment; rendering is what uses the memory. |
 | `LLM_MAX_RETRIES` | `3` | Retries on transient failures. |
 | `PROJECTS_DIR` | `./projects` | Where project data is stored. |
 | `TTS_API_KEY`, `TTS_BASE_URL`, `TTS_MODEL` | model `tts-1` | For the OpenAI-compatible voice. |

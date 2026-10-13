@@ -73,3 +73,13 @@ def test_leftover_narration_needs_no_scene(project_root):
     ScriptStore(project.root).save(script)
 
     assert statuses(project)["match"] == "pass"
+
+
+def test_with_no_scenes_it_does_not_claim_every_scene_is_approved(project_root):
+    """An empty Generation page read "Every scene's program passed and is
+    approved." -- true of no scenes, and wrong to tell anyone."""
+    slug, project = scripted_project("Nothing yet", figures=0, scenes=1)
+    checks = {c["key"]: c for c in
+              generation_checks(project, VisualPlanStore(project.root).load())}
+    assert checks["programs"]["status"] == "n/a"
+    assert checks["programs"]["detail"] == "No scenes are set up yet."

@@ -24,9 +24,13 @@ KEPT_FILES = ("spec.json", "render.mp4", "preview.mp4", "poster.png", "layout.js
               "checks.json", "log.txt")
 
 
-def rank(passed: bool, failing: list[str]) -> tuple[int, int]:
-    """Higher is better: passing first, then fewer failing checks."""
-    return (1 if passed else 0, -len(failing))
+def rank(passed: bool, failing: list[str], good: bool = False,
+         problems: int = 0) -> tuple[int, int, int, int]:
+    """Higher is better: passing first, then what the reviewer said -- good, then
+    fewer things it must fix -- then fewer failing checks. Two passing versions
+    used to tie, and the newer one always won: a refinement the reviewer liked
+    less replaced one it liked more."""
+    return (1 if passed else 0, 1 if good else 0, -problems, -len(failing))
 
 
 def has_clip(folder: Path) -> bool:

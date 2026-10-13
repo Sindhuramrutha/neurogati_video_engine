@@ -76,10 +76,18 @@ def remove_resource(kind: str, file_name: str) -> dict[str, Any]:
     return resource_index()
 
 
-def _library_for_agent() -> str:
+def _library_for_agent(renderers: list[str] | None = None) -> str:
+    """The method notes and what the library holds. Given `renderers`, a note for
+    another renderer (named for it: manim.md, web-scenes.md) is left out: once a
+    scene's renderer is chosen, the others' manuals are only paid for."""
+    from pipeline.scene_checks import RENDERERS
+
     index = resource_index()
     parts = ["## The resource library\n"]
     for note in sorted((resources_root() / "methods").glob("*")):
+        named_for = next((name for name in RENDERERS if note.name.startswith(name)), None)
+        if renderers is not None and named_for is not None and named_for not in renderers:
+            continue
         if note.is_file():
             text = note.read_text(encoding="utf-8", errors="replace")
             parts.append(f"### methods/{note.name}\n{text[:LONGEST_METHOD_CHARACTERS]}")

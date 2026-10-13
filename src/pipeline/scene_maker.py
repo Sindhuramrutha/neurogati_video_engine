@@ -8,9 +8,10 @@ Each round is one model call, asked afresh: the model is given the scene's brief
 the file as it is now and what the last render found -- not a conversation to
 remember. It answers with a few-line edit, or the whole file, as long as it needs.
 
-At most `MOST_ROUNDS` renders. The scene is done as soon as every check passes
-and the reviewer has nothing it must fix; after the first pass, one more round
-answers the reviewer, and what it still says is shown, not chased.
+At most `MOST_ROUNDS` renders. The scene is done when every check passes and the
+reviewer calls it good, or has nothing it must fix (polish alone does not earn a
+round). Until then it is refined, and a refinement is kept only when it is
+better: after a pass, by the reviewer's judgement, not merely by being newer.
 
 A scene always ends with a clip. The best version so far is kept (`scene_kept`):
 a round that comes out worse is undone back to it, and the model is told what its
@@ -64,7 +65,7 @@ from pipeline.scene_state import STOP, add_event, doing, load_state, save_state
 
 logger = logging.getLogger(__name__)
 
-MOST_ROUNDS = 3
+MOST_ROUNDS = 6           # refining until the reviewer calls it good takes rounds
 ASKS_PER_ROUND = 3        # an unusable answer is asked again, without a render
 # As long as the model will write: 65,536 tokens is what the provider accepts.
 ROUND_TOKENS = 65536
@@ -139,7 +140,6 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
                 "renderer": renderer, "feedback": "",
                 "last_render": {"passed": not failing, "good": False, "reviewed": False,
                                 "failing": failing, "problems": [], "polish": []}}
-    first_pass = 0
     try:
         doing(folder, state, "Looking at the slide's pictures")
         notes = picture_notes(brief, folder.parent, state)
@@ -179,14 +179,18 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
             add_event(state, "render", f"Round {number}: " + (
                 "good" if result["good"] else "passed its checks" if result["passed"]
                 else f"{len(result['failing'])} check(s) fail: " + "; ".join(result["failing"])))
-            # Passing is the end unless the reviewer named something that MUST change:
-            # chasing polish spent rounds and broke scenes that already worked.
+            # Done when the reviewer calls it good. A pass with nothing it MUST change
+            # ends it too: polish alone does not earn another round.
             if result["good"] or (result["passed"] and not result["problems"]):
                 best = None                   # this one is the scene: nothing to go back to
                 break
 
-            this = rank(result["passed"], result["failing"]) if has_clip(folder) else None
-            if this is not None and (best is None or this >= best["rank"]):
+            # Otherwise it is refined, and a refinement is kept only when it is better:
+            # after a pass, the reviewer is the judge of better.
+            this = (rank(result["passed"], result["failing"], result["good"],
+                         len(result["problems"])) if has_clip(folder) else None)
+            if this is not None and (best is None or this > best["rank"]
+                                     or (this == best["rank"] and not result["passed"])):
                 keep_best(folder)
                 if not result["passed"]:
                     adopt(slug, visual_id)
@@ -198,17 +202,14 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
                 entry, renderer = best["entry"], best["renderer"]
                 state["last_render"] = best["last_render"]
                 feedback = (
-                    f"Your last change made it worse:\n{feedback}\n\nIt was undone: the "
-                    "file below is the best version so far. "
+                    f"Your last change did not make it better:\n{feedback}\n\nIt was undone: "
+                    "the file below is the best version so far. "
                     + (f"What it still needs:\n{best['feedback']}\n" if best["feedback"]
                        else "")
                     + "Make that change another way, without breaking what works.")
-                add_event(state, "note", f"Round {number} came out worse "
-                          f"({', '.join(result['failing'])}); back to the best version.")
-            if result["passed"] and not first_pass:
-                first_pass = number
-            elif first_pass:
-                break                         # the one round for the reviewer is spent
+                add_event(state, "note", f"Round {number} was no better ("
+                          + (", ".join(result["failing"]) or "the reviewer's view")
+                          + "); back to the best version.")
     except _GaveUp as failure:
         add_event(state, "note", f"The model could not be reached: {failure}")
         state["error"] = str(failure)
