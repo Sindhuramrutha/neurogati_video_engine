@@ -112,7 +112,7 @@ def blend(path: Path, background: str) -> None:
 
 
 def paint(folder: Path, on_screen: str, look: dict[str, Any],
-          state: dict[str, Any], narration: str = "") -> Path | None:
+          state: dict[str, Any], narration: str = "", note: str = "") -> Path | None:
     """Paint the illustration the brief asks for, once: checked, repainted once if
     it is wrong, its background made the frame's. None when it asks for none, or the
     image model could not paint it (the scene is made without it).
@@ -131,13 +131,13 @@ def paint(folder: Path, on_screen: str, look: dict[str, Any],
     reference = folder.parent / STYLE_REFERENCE
     with _lock_for(folder.parent):
         if not reference.exists():
-            made = _paint_checked(path, asked, look, narration, state, draw_image)
+            made = _paint_checked(path, asked, look, narration, state, draw_image, note)
             if made is not None:
                 shutil.copyfile(made, reference)
             return made
     style = reference.read_bytes()
     return _paint_checked(path, asked, look, narration, state,
-                          lambda request: _paint_like(request, style))
+                          lambda request: _paint_like(request, style), note)
 
 
 def _lock_for(scenes: Path) -> threading.Lock:
@@ -166,13 +166,15 @@ def _paint_like(request: str, reference: bytes) -> bytes:
 
 
 def _paint_checked(path: Path, asked: str, look: dict[str, Any], narration: str,
-                   state: dict[str, Any], painter) -> Path | None:
+                   state: dict[str, Any], painter, note: str = "") -> Path | None:
     import json
 
     from pipeline.llm import ModelCallFailed, ModelNotConfigured
     from pipeline.scene_state import add_event
 
-    request, verdict = prompt(asked, look), None
+    # A person's note from the storyboard ("show the leg larger") goes with it.
+    request = prompt(asked, look) + (f" Also: {note.strip()}" if note.strip() else "")
+    verdict = None
     for attempt in (1, 2):
         state["calls"]["image"] = state["calls"].get("image", 0) + 1
         try:

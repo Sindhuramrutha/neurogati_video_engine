@@ -115,8 +115,12 @@ def make_scene(slug: str, visual_id: str, *, instruction: str = "",
 
 
 def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> None:
+    from pipeline.storyboard import note_for
+
     project = require_project(slug)
     visual = _visual(VisualPlanStore(project.root).load(), visual_id)
+    # A note left on the scene's storyboard card is what the person asked for.
+    instruction = instruction or note_for(project, visual_id)
     folder = scene_folder(project, visual, create=True)
     (folder / STOP).unlink(missing_ok=True)
     state = load_state(folder)

@@ -14,6 +14,7 @@
  * a sentence nobody could check; a poster frame is a claim you can see.
  */
 
+import { mountStoryboard, mountStoryboardGate } from "/static/storyboard.js";
 import {
   agentOf, keepWatching, loadAgents, loadOpenScene, renderResourceLibrary,
   renderScenePanel, renderSceneSections, renderSceneStatus, renderScriptedBar, sceneLabState,
@@ -27,7 +28,8 @@ import {
 } from "/static/ui-kit.js";
 
 const GENERATION_TABS = [
-  ["setup", "Setup"], ["make", "Make"], ["final", "Final & transfer"],
+  ["setup", "Setup"], ["storyboard", "Storyboard"], ["make", "Make"],
+  ["final", "Final & transfer"],
 ];
 
 const currentGenerationTab = () =>
@@ -74,7 +76,9 @@ export async function renderGenerationStage(stage, navigateToStage, renderAgentS
   const tab = currentGenerationTab();
   const content = {
     setup: () => renderSetup(handoff) + renderResourceLibrary(resources),
-    make: () => renderMake(visuals, handoff, openScene),
+    storyboard: () => `<div id="storyboard-mount"><div class="card muted">Loading the
+      storyboard…</div></div>`,
+    make: () => `<div id="storyboard-gate"></div>` + renderMake(visuals, handoff, openScene),
     final: () => renderGenerationFinal(visuals, handoff, stage),
   }[tab]();
 
@@ -102,6 +106,11 @@ export async function renderGenerationStage(stage, navigateToStage, renderAgentS
   const again = () => renderGenerationStage(stage, navigateToStage, renderAgentStage);
   wireSceneLab(again, visuals);
   keepWatching(again);
+  mountStoryboard(select("#storyboard-mount"));
+  mountStoryboardGate(select("#storyboard-gate"), () => {
+    applicationState.generationTab = "storyboard";
+    again();
+  });
 }
 
 /* ---- 1. Setup ---------------------------------------------------------------- */

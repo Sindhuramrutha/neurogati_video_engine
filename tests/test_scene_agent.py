@@ -476,3 +476,18 @@ def test_the_reviewer_scores_a_rubric_and_good_means_the_ship_bar():
     assert ships.good and not weak.good
     assert weak.scores.weakest()[0] == ("illustration", 2)
     assert scored(teaches=9).teaches == 5, "out of range is clamped, not refused"
+
+
+def test_a_storyboard_note_reaches_the_scene_as_what_the_person_asked_for(project_root,
+                                                                         monkeypatch):
+    from pipeline import storyboard
+
+    slug, project, visual = scripted_project("Storyboard note")
+    storyboard.set_note(slug, visual.id, "Show the frog's leg larger")
+    model = Model(whole(GOOD))
+    wired(monkeypatch, model, GOOD_VERDICT)
+
+    make_scene(slug, visual.id)
+
+    assert "What the person asked for" in model.requests[0]
+    assert "Show the frog's leg larger" in model.requests[0]

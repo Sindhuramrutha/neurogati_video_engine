@@ -430,8 +430,9 @@ def read_scene(slug: str, visual_id: str) -> dict[str, Any]:
 
 
 def scene_file(slug: str, visual_id: str, name: str) -> Path | None:
-    """render.mp4 or poster.png of a scene, for the page."""
-    if name not in ("render.mp4", "poster.png", "preview.mp4"):
+    """render.mp4, poster.png or its painted illustration, for the page."""
+    if name not in ("render.mp4", "poster.png", "preview.mp4") \
+            and not re.fullmatch(r"illustration-[0-9a-f]{12}\.png", name):
         return None
     project = require_project(slug)
     visual = _visual(VisualPlanStore(project.root).load(), visual_id)
