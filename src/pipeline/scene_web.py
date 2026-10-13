@@ -104,7 +104,8 @@ def render_web(folder: Path, brief: dict[str, Any], seconds_limit: int) -> dict[
 
     encoder = subprocess.Popen(
         [ffmpeg, "-y", "-v", "error", "-f", "image2pipe", "-framerate", str(fps), "-i", "-",
-         "-c:v", "libx264", "-pix_fmt", "yuv420p", "-r", str(fps), str(folder / "render.mp4")],
+         "-c:v", "libx264", "-threads", "4", "-pix_fmt", "yuv420p", "-r", str(fps),
+         str(folder / "render.mp4")],
         stdin=subprocess.PIPE, stderr=subprocess.PIPE)
     project_work.register(encoder)
     snapshots, plays, code, timed_out = [], None, 0, False

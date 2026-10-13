@@ -76,6 +76,7 @@ SCENE_ENVIRONMENT = {
     "LANG", "LC_ALL", "FONTCONFIG_PATH", "XDG_CACHE_HOME", "UV_CACHE_DIR",
     "UV_PYTHON_INSTALL_DIR", "UV_INDEX_URL", "UV_DEFAULT_INDEX",
 }
+BLAS_THREADS = ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS")
 
 
 def resources_root() -> Path:
@@ -236,6 +237,10 @@ def run_script(folder: Path, seconds: int = RUN_TIMEOUT_SECONDS) -> dict[str, An
         "PYTHONPATH": os.pathsep.join(filter(None, [code_folder, os.environ.get("PYTHONPATH")])),
         "SCENE_RESOURCES": str(resources_root() / "assets"),
         "PYTHONIOENCODING": "utf-8",
+        # NumPy's BLAS keeps a buffer per CPU thread; a render needs none of that
+        # speed, and on a machine short of memory it stopped renders with
+        # "OpenBLAS error: Memory allocation still failed".
+        **{name: "1" for name in BLAS_THREADS},
     }
     flags = subprocess.CREATE_NEW_PROCESS_GROUP if sys.platform == "win32" else 0
     started = subprocess.Popen(

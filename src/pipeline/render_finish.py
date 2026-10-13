@@ -18,7 +18,7 @@ VOICE_CLEANUP = ("highpass=f=70,deesser=i=0.25,"
                  "acompressor=threshold=-20dB:ratio=2.5:attack=10:release=200:makeup=2")
 LEVEL_AUDIO = "loudnorm=I=-16:TP=-1.5:LRA=11"
 FINAL_AUDIO = ["-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2"]
-FINAL_VIDEO = ["-c:v", "libx264", "-preset", "medium", "-crf", "18"]
+FINAL_VIDEO = ["-c:v", "libx264", "-preset", "medium", "-crf", "18", "-threads", "4"]
 
 
 def _join_and_level(

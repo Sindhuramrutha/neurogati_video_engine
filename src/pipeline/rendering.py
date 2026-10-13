@@ -148,7 +148,10 @@ SECTION_TAIL_MS = 250
 # Every shot is encoded again into its section, and the section again by the brand
 # pass: at the default quality each pass softened the picture, so the working
 # encodes keep near everything and only the last one decides the size.
-WORKING_VIDEO = ["-c:v", "libx264", "-preset", "fast", "-crf", "16"]
+# x264 starts about 1.5 threads per core, each with its own frame buffers; on a
+# machine short of memory that was "Could not open encoder". Four is as fast here.
+ENCODER_THREADS = ["-threads", "4"]
+WORKING_VIDEO = ["-c:v", "libx264", "-preset", "fast", "-crf", "16", *ENCODER_THREADS]
 CROSS_FADE_MS = 400
 SHORTEST_CROSS_FADE_MS = 90
 
