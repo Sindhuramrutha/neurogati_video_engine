@@ -28,6 +28,7 @@ import logging
 import os
 import shutil
 import subprocess
+import threading
 import wave
 from dataclasses import dataclass
 from importlib.util import find_spec
@@ -362,7 +363,8 @@ def estimate_duration_ms(text: str) -> int:
 # eight providers produced a traceback.
 
 
-EDGE_WAITS = (3, 9, 27, 60, 90)   # seconds: a burst of 43 scenes is throttled for a while
+EDGE_WAITS = (3, 9, 27, 60, 90, 120, 180)   # seconds: the service throttles for minutes
+_EDGE_TURN = threading.Lock()
 
 
 def _speak_silent(text: str, output_path: Path, voice: str) -> None:
@@ -407,12 +409,14 @@ def _speak_edge(text: str, output_path: Path, voice: str) -> list[WordTiming]:
 
     # The free service drops a request now and then ("NoAudioReceived"); the same
     # words a moment later speak fine. A 43-scene video stopped on one dropped
-    # request, so it is asked again, waiting longer each time.
+    # request, so it is asked again, waiting longer each time -- and one request
+    # at a time: four scene agents asking at once were throttled together.
     import time
     for attempt in range(len(EDGE_WAITS) + 1):
         words.clear()
         try:
-            asyncio.run(run())
+            with _EDGE_TURN:
+                asyncio.run(run())
             return words
         except Exception:
             if attempt == len(EDGE_WAITS):

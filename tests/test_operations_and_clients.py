@@ -931,7 +931,7 @@ MODULE_BUDGETS = {
     "extraction.py": 947,
     "slide_frame.py": 677,
     "extraction_review.py": 515,
-    "speech.py": 568,
+    "speech.py": 572,
     "orchestrator.py": 465,
     "cli.py": 460,
 }
