@@ -362,6 +362,9 @@ def estimate_duration_ms(text: str) -> int:
 # eight providers produced a traceback.
 
 
+EDGE_ATTEMPTS = 5
+
+
 def _speak_silent(text: str, output_path: Path, voice: str) -> None:
     _write_silence(output_path, estimate_duration_ms(text))
 
@@ -402,7 +405,19 @@ def _speak_edge(text: str, output_path: Path, voice: str) -> list[WordTiming]:
                         duration_ms=int(chunk["duration"]) // 10_000,
                     ))
 
-    asyncio.run(run())
+    # The free service drops a request now and then ("NoAudioReceived"); the same
+    # words a moment later speak fine. A 43-scene video stopped on one dropped
+    # request, so it is asked again, waiting longer each time.
+    import time
+    for attempt in range(EDGE_ATTEMPTS):
+        words.clear()
+        try:
+            asyncio.run(run())
+            return words
+        except Exception:
+            if attempt == EDGE_ATTEMPTS - 1:
+                raise
+            time.sleep(2 ** (attempt + 1))
     return words
 
 
