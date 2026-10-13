@@ -250,6 +250,7 @@ def build_export(slug: str) -> dict[str, Any]:
                     bytes=subtitle.stat().st_size,
                     note="Subtitles, timed to the narration.",
                 ))
+            files += _youtube_files(project, video, version.duration_ms)
         else:
             blockers.append(f"The rendered video is missing from disk: {video.name}")
 
@@ -274,3 +275,25 @@ def read_export(slug: str) -> dict[str, Any]:
         "warnings_now": warnings,
         "is_ready_now": not blockers,
     }
+
+
+def _youtube_files(project: Project, video: Path, duration_ms: int) -> list[ExportedFile]:
+    """When the video is going to YouTube (Video setup): a thumbnail with its title,
+    and the subtitles in the format YouTube asks for (SRT)."""
+    from pipeline.thumbnail import make_thumbnail
+    from pipeline.video_setup import platform_needs
+
+    if not platform_needs(project.root)["youtube"]:
+        return []
+    files = []
+    target = project.root / "export" / "thumbnail.png"
+    if make_thumbnail(video, project.name, target, duration_ms / 1000):
+        files.append(ExportedFile(name=target.name, kind="thumbnail", path="export/thumbnail.png",
+                                  bytes=target.stat().st_size,
+                                  note="For YouTube: a moment of the video with its title."))
+    for subtitle in sorted(video.parent.glob(video.stem + "*.srt")):
+        files.append(ExportedFile(
+            name=subtitle.name, kind="subtitles",
+            path=str(subtitle.relative_to(project.root)).replace("\\", "/"),
+            bytes=subtitle.stat().st_size, note="Subtitles for YouTube (SRT)."))
+    return files

@@ -695,21 +695,18 @@ def shot_windows(section: RenderedSection) -> list[ShotWindow]:
 
 
 def write_subtitles(sections: list[RenderedSection], path: Path) -> None:
-    """One cue per sentence or two, from the same segments the picture is cut to."""
-    entries: list[str] = []
-    index = 1
+    """Short cues timed word by word (`captions`); a section whose voice reported
+    no word timings keeps one cue per sentence or two, cut from the text."""
+    from pipeline.captions import section_cues
 
+    entries: list[str] = []
     for section in sections:
-        for segment in section_segments(section):
-            if segment.kind != "slide":
-                continue
-            entries.append(
-                f"{index}\n"
-                f"{_format_timestamp(segment.start_ms)} --> "
-                f"{_format_timestamp(segment.end_ms)}\n"
-                f"{segment.text}\n"
-            )
-            index += 1
+        cues = section_cues(section) or [
+            (segment.start_ms, segment.end_ms, segment.text)
+            for segment in section_segments(section) if segment.kind == "slide"]
+        for start_ms, end_ms, text in cues:
+            entries.append(f"{len(entries) + 1}\n{_format_timestamp(start_ms)} --> "
+                           f"{_format_timestamp(end_ms)}\n{text}\n")
 
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(entries), encoding="utf-8")

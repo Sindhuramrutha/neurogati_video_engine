@@ -84,3 +84,21 @@ def test_a_render_lays_the_bed_under_the_voice_in_stereo(project_root):
          "stream=sample_rate,channels", "-of", "json", str(video)],
         capture_output=True, text=True, check=True).stdout)["streams"][0]
     assert probe["sample_rate"] == "48000" and probe["channels"] == 2
+
+
+@pytest.mark.skipif(not shutil.which("ffmpeg"), reason="needs ffmpeg")
+def test_for_youtube_the_export_has_a_thumbnail_and_srt_subtitles(project_root):
+    from pipeline.exporting import build_export
+
+    slug = operations.create_project("For YouTube")["slug"]
+    operations.add_plan_section(slug, title="Only section", estimated_seconds=30)
+    section = operations.read_artifact(slug, "plan")["sections"][0]
+    operations.write_section_script(slug, section["id"], "One sentence. Two sentences.")
+    operations.render_video(slug, voice_provider="silent")
+    assert not any(f["kind"] == "thumbnail" for f in build_export(slug)["files"])
+
+    video_setup.save(slug, {"platforms": ["website", "youtube"]})
+    files = build_export(slug)["files"]
+
+    assert any(f["kind"] == "thumbnail" for f in files)
+    assert any(f["name"].endswith(".srt") for f in files)
