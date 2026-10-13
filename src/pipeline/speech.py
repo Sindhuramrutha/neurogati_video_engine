@@ -362,7 +362,7 @@ def estimate_duration_ms(text: str) -> int:
 # eight providers produced a traceback.
 
 
-EDGE_ATTEMPTS = 5
+EDGE_WAITS = (3, 9, 27, 60, 90)   # seconds: a burst of 43 scenes is throttled for a while
 
 
 def _speak_silent(text: str, output_path: Path, voice: str) -> None:
@@ -409,15 +409,15 @@ def _speak_edge(text: str, output_path: Path, voice: str) -> list[WordTiming]:
     # words a moment later speak fine. A 43-scene video stopped on one dropped
     # request, so it is asked again, waiting longer each time.
     import time
-    for attempt in range(EDGE_ATTEMPTS):
+    for attempt in range(len(EDGE_WAITS) + 1):
         words.clear()
         try:
             asyncio.run(run())
             return words
         except Exception:
-            if attempt == EDGE_ATTEMPTS - 1:
+            if attempt == len(EDGE_WAITS):
                 raise
-            time.sleep(2 ** (attempt + 1))
+            time.sleep(EDGE_WAITS[attempt])
     return words
 
 

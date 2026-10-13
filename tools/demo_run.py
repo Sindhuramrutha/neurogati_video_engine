@@ -133,16 +133,37 @@ def _root(slug: str) -> Path:
 
 def generate(slug: str) -> None:
     from pipeline import scene_agent
+    from pipeline.core import require_project
     from pipeline.generation import VisualPlanStore
+    from pipeline.scene_lab import scene_folder, write_brief
 
-    visuals = VisualPlanStore(_root(slug)).load().visuals
-    say("making", len(visuals), "scenes")
-    scene_agent.start(slug, [v.id for v in visuals])
+    project = require_project(slug)
+    visuals = VisualPlanStore(project.root).load().visuals
+    # A finished scene is kept, unless a picture it was offered has since been
+    # found not to teach (scene_vetting): that one is made again from the start.
+    todo, again = [], []
+    for visual in visuals:
+        folder = scene_folder(project, visual, create=True)
+        state_path, brief_path = folder / "agent.json", folder / "brief.json"
+        done = state_path.exists() and json.loads(
+            state_path.read_text(encoding="utf-8")).get("status") == "done"
+        before = set(json.loads(brief_path.read_text(encoding="utf-8"))["pictures"]) \
+            if brief_path.exists() else set()
+        after = set(write_brief(project, visual)["pictures"])
+        if done and before - after:
+            again.append(visual.id)
+        elif not done:
+            todo.append(visual.id)
+    say("making", len(todo), "scenes;", len(again), "made again without pictures that "
+        "do not teach;", len(visuals) - len(todo) - len(again), "kept")
+    if again:
+        scene_agent.start(slug, again, fresh=True)
+    scene_agent.start(slug, todo)
     last = None
     while True:
         time.sleep(30)
         view = scene_agent.queue_view(slug)
-        now = (len(view["working"]), len(view["queued"]))
+        now = (view["working"], view["queued"])     # counts
         if now != last:
             say("scenes working", now[0], "queued", now[1])
             last = now
