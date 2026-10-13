@@ -156,21 +156,25 @@ def system_prompt(project, renderers: list[str]) -> str:
 
 
 def answer_format(renderers: list[str]) -> str:
+    from pipeline.scene_shots import GUIDE
+
     return (
         "## How to answer\n"
-        "Plain text with fenced blocks, nothing else:\n"
-        "1. ```json -- {\"renderer\": \"" + "|".join(renderers) + "\", \"approach\": \"one "
-        "sentence\", \"beats\": [{\"when_said\": \"exact narration words\", \"shows\": "
-        "\"what appears or changes\"}], \"assumed\": [\"anything you had to decide\"]}. "
-        "Required the first time; later only to change it.\n"
-        "2. EITHER the complete file in a fenced block (the first version, or a big "
-        "change), OR an ```edit block for a few lines -- each edit is:\n"
+        "Plain text with fenced blocks, nothing else. Answer with SHOTS whenever the idea "
+        "fits them -- most scenes do; the program is then written for you and passes the "
+        "layout checks by construction:\n"
+        "```json\n{\"approach\": \"one sentence\", \"assumed\": [], \"shots\": [{\"template\": "
+        "\"hero\", \"title\": \"Galvani's frog\", \"picture\": 0, \"when\": \"a dead frog\", "
+        "\"callouts\": [{\"label\": \"Frog's leg\", \"at\": [0.55, 0.40], \"when\": \"leg "
+        "kicked\"}]}]}\n```\n" + GUIDE + "\n\n"
+        "Only when no shot can show the idea: a ```json block {\"renderer\": \""
+        + "|".join(renderers) + "\", \"approach\": \"one sentence, and why no shot fits\", "
+        "\"beats\": [{\"when_said\": \"exact narration words\", \"shows\": \"what appears\"}], "
+        "\"assumed\": []}, then EITHER the complete file in a fenced block, OR an ```edit "
+        "block for a few lines -- each edit is:\n"
         "<<<<<<< SEARCH\nthe lines exactly as they are now\n=======\nthe new lines\n"
         ">>>>>>> REPLACE\n"
-        "A SEARCH must match one place in the file exactly (indentation included), so "
-        "include a line or two around the change. Edit when you can; send the whole "
-        "file when you must. The json block alone is never an answer: the code block "
-        "is required every round.")
+        "A SEARCH must match one place in the file exactly (indentation included).")
 
 
 def compact(brief: dict[str, Any]) -> dict[str, Any]:
@@ -224,7 +228,8 @@ def picture_notes(brief: dict[str, Any], cache_folder: Path, state: dict[str, An
 
 
 def request(brief: dict[str, Any], notes: str, earlier: str, entry: str, code: str,
-            feedback: str, instruction: str, renderers: list[str]) -> str:
+            feedback: str, instruction: str, renderers: list[str],
+            shots: list | None = None) -> str:
     parts = ["## The scene's brief (word_starts are word@seconds)\n"
              + json.dumps(compact(brief), indent=1, ensure_ascii=False)]
     if notes:
@@ -233,7 +238,12 @@ def request(brief: dict[str, Any], notes: str, earlier: str, entry: str, code: s
         parts.append("## What the scenes just before this one did (stay consistent)\n" + earlier)
     if instruction.strip():
         parts.append("## What the person asked for\n" + instruction.strip())
-    if code.strip():
+    if shots:
+        # Written from its shots: they are what to change, not the program.
+        parts.append("## The scene's shots as they are now (the program is written from "
+                     "them: answer with corrected shots)\n```json\n"
+                     + json.dumps({"shots": shots}, indent=1, ensure_ascii=False) + "\n```")
+    elif code.strip():
         parts.append(f"## {entry} as it is now\n```\n{code}\n```")
     if feedback:
         parts.append("## What the last round found\n" + feedback)

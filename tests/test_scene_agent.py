@@ -337,7 +337,7 @@ def test_an_edit_must_find_its_lines_exactly_once():
 
 
 def test_an_answer_with_nothing_usable_is_refused_with_a_reason():
-    with pytest.raises(ValueError, match="neither a complete file nor an"):
+    with pytest.raises(ValueError, match="no shots, no complete file and no"):
         parse_answer("Sure, here you go.")
     with pytest.raises(ValueError, match="not valid JSON"):
         parse_answer("```json\n{oops\n```\n```python\nx = 1\n```")
@@ -491,3 +491,32 @@ def test_a_storyboard_note_reaches_the_scene_as_what_the_person_asked_for(projec
 
     assert "What the person asked for" in model.requests[0]
     assert "Show the frog's leg larger" in model.requests[0]
+
+
+def test_a_scene_answered_with_shots_has_its_program_written_for_it(project_root,
+                                                                    monkeypatch):
+    """Told to use the templates, the model still wrote every layout by hand. Now
+    it may answer with the shots alone, and the program is written from them."""
+    from pipeline import scene_maker as maker
+    from pipeline.scene_lab import write_brief
+
+    slug, project, visual = scripted_project("Shots")
+    brief = write_brief(project, visual)
+    shots = ('```json\n{"approach": "steps", "shots": [{"template": "flow", "title": '
+             '"Touch", "steps": [{"label": "Touch", "when": "touch"}, {"label": '
+             '"Movement", "when": "movement"}]}]}\n```')
+    monkeypatch.setattr(maker, "_ask", lambda *args: shots)
+    state = {"calls": {"agent": 0, "vision": 0}, "events": []}
+
+    written = maker._written("system", brief, "", "", "scene.py", "", "", "", ["manim"],
+                             {}, scene_folder(project, visual, create=True), state)
+
+    code, spec, renderer, entry, rewrote = written
+    assert renderer == "manim" and entry == "scene.py" and rewrote
+    assert "self.flow(['Touch', 'Movement'])" in code and spec["shots"][0]["template"] == "flow"
+
+    wrong = shots.replace('"flow"', '"montage"')
+    monkeypatch.setattr(maker, "_ask", lambda *args: wrong)
+    assert maker._written("system", brief, "", "", "scene.py", "", "", "", ["manim"], {},
+                          scene_folder(project, visual), state) is None
+    assert any("template must be one of" in e["text"] for e in state["events"])

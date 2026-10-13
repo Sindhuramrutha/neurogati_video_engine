@@ -63,6 +63,7 @@ from pipeline.scene_prompt import (  # noqa: F401 -- kit_api, compact: read thro
     system_prompt,
 )
 from pipeline.scene_round import render_round
+from pipeline.scene_shots import is_shots, program_for
 from pipeline.scene_state import STOP, add_event, doing, load_state, save_state
 
 logger = logging.getLogger(__name__)
@@ -247,7 +248,7 @@ def _written(system, brief, notes, earlier, entry, code, feedback, instruction, 
     for _ in range(ASKS_PER_ROUND):
         feedback = "\n\n".join(part for part in (note, found) if part)
         text = _ask(system, request(brief, notes, earlier, entry, code, feedback,
-                                    instruction, renderers), folder, state)
+                                    instruction, renderers, spec.get("shots")), folder, state)
         if text is None:
             note = ("Your last answer was cut off at the length limit. Send the "
                     "complete file, written more compactly.")
@@ -256,14 +257,21 @@ def _written(system, brief, notes, earlier, entry, code, feedback, instruction, 
         try:
             answer = parse_answer(text)
             merged = {**spec, **answer.spec}
+            if not answer.code and not answer.edits and is_shots(answer.spec):
+                # The shots, as data: the program is written from them (scene_shots).
+                renderer = "manim"
+                merged = {**merged, "renderer": renderer}
+                pictures = len((brief.get("assets") or {}).get("pictures") or [])
+                return (program_for(answer.spec, pictures), merged, renderer,
+                        ENTRY_FILES[renderer], True)
             renderer = str(merged.get("renderer", "")).strip().lower()
             if renderer not in renderers:
                 raise ValueError(f"the renderer must be one of {', '.join(renderers)}"
                                  + (f", not {renderer!r}" if renderer else ""))
             written = answer.code if answer.code else apply_edits(code, answer.edits)
         except ValueError as unusable:
-            note = (f"Your last answer could not be used: {unusable}. Send the "
-                    "complete file this time, in the fenced blocks described below.")
+            note = (f"Your last answer could not be used: {unusable}. Correct it and send "
+                    "it again, in the fenced blocks described below.")
             add_event(state, "note", f"Its answer could not be used ({unusable}); asking "
                       "again for the whole file.")
             continue

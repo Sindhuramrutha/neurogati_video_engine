@@ -61,8 +61,8 @@ def parse_answer(text: str) -> Answer:
     if answer.code.strip():
         answer.code = answer.code.strip("\n") + "\n"
         answer.edits = []
-    elif not answer.edits:
-        raise ValueError("the answer has neither a complete file nor an ```edit block")
+    elif not answer.edits and not isinstance(answer.spec.get("shots"), list):
+        raise ValueError("the answer has no shots, no complete file and no ```edit block")
     return answer
 
 
