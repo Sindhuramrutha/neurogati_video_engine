@@ -90,20 +90,23 @@ def write_section_script(slug: str, section_id: str, body: str) -> dict[str, Any
             f"The plan has no section {section_id!r}. Sections: {listed}."
         )
 
+    from pipeline.scripting import SCRIPT_WRITE
+
     store = ScriptStore(project.root)
-    script = store.load()
-
-    # One scene holding the whole body. Assigning `body` alone would be undone
-    # on the next load: the scenes are the narration, and they would still hold
-    # the old text.
-    replacement = SectionScript(section_id=section_id, scenes=[ScriptScene(narration=body)])
-    script.section_scripts = [
-        s for s in script.section_scripts if s.section_id != section_id
-    ] + [replacement]
-
-    ordered = _script_in_plan_order(project, script)
-    _stamp_rewritten_narration(project, ordered)
-    return present_artifact(project, "script", store.save(ordered))
+    with SCRIPT_WRITE:
+        script = store.load()
+        # One scene holding the whole body. Assigning `body` alone would be undone
+        # on the next load: the scenes are the narration, and they would still hold
+        # the old text.
+        replacement = SectionScript(section_id=section_id,
+                                    scenes=[ScriptScene(narration=body)])
+        script.section_scripts = [
+            s for s in script.section_scripts if s.section_id != section_id
+        ] + [replacement]
+        ordered = _script_in_plan_order(project, script)
+        _stamp_rewritten_narration(project, ordered)
+        saved = store.save(ordered)
+    return present_artifact(project, "script", saved)
 
 def confirm_section_narration(slug: str, section_id: str) -> dict[str, Any]:
     """Record that this section's narration was checked against the current plan

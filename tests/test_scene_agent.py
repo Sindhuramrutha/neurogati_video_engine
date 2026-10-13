@@ -561,3 +561,25 @@ def test_the_request_window_is_shared_by_every_process(tmp_path, monkeypatch):
                         if slept else real())
     llm_pace._shared_place(slept.append)
     assert slept and slept[0] > 50
+
+
+def test_a_scene_that_stops_on_an_error_is_failed_with_its_reason(project_root, monkeypatch):
+    """A scene whose narration could not be spoken stayed 'working' on disk, and
+    the page could only guess it had been interrupted."""
+    from pipeline import scene_agent
+    from pipeline.core import OperationFailed
+    from pipeline.scene_state import load_state
+
+    slug, project, visual = scripted_project("Stops")
+
+    def stops(*args, **kwargs):
+        raise OperationFailed("The narration could not be spoken")
+
+    monkeypatch.setattr(scene_agent, "make_scene", stops)
+    scene_agent._running.add((slug, visual.id))
+    scene_agent._run_safely(slug, visual.id, "", False)
+
+    state = load_state(scene_folder(project, visual, create=True))
+    assert state["status"] == "failed"
+    assert "could not be spoken" in state["error"]
+    assert scene_agent.queue_view(slug)["failed"] == 1

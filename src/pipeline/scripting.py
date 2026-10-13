@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import logging
 import re
+import threading
 from pathlib import Path
 
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -331,6 +332,12 @@ def over_budget_warning(section: dict) -> str:
         f"\"{name}\" runs about {section['estimated_seconds']}s against "
         f"{section['planned_seconds']}s planned ({over}% over)"
     )
+
+
+# Held around every read-change-save of the script: drafting saves each section
+# as it lands, and a person's edit landing between a draft's read and its save
+# was lost. Re-entrant, so a writer may call another.
+SCRIPT_WRITE = threading.RLock()
 
 
 class ScriptStore(JsonDocumentStore[Script]):

@@ -45,7 +45,13 @@ from pipeline.operations import (
 )
 from pipeline.plan_units import MAXIMUM_SECTION_SOURCE_CHARACTERS, section_source_text
 from pipeline.planning import Plan, PlanSection
-from pipeline.scripting import Script, ScriptScene, ScriptStore, SectionScript
+from pipeline.scripting import (
+    SCRIPT_WRITE,
+    Script,
+    ScriptScene,
+    ScriptStore,
+    SectionScript,
+)
 from pipeline.stage_options import video_preferences
 from pipeline.stages import Stage
 
@@ -150,38 +156,38 @@ def draft_unwritten_sections(slug: str, instruction: str = "") -> dict[str, Any]
     preferences = video_preferences(project.root)
     pictures = section_pictures(project, plan)
 
-    def draft(section: PlanSection):
+    store = ScriptStore(project.root)
+    drafted_ids: list[str] = []
+
+    def draft(section: PlanSection) -> list[str]:
+        """One section, saved the moment it is written: a run stopped later keeps
+        every section already drafted (it once saved nothing until all finished).
+        Any error stays with its section; the others go on."""
         try:
-            return section, *_write_section(
+            written, section_notes = _write_section(
                 agent, plan, script, extraction, section, instruction, preferences, pictures)
-        except (ModelCallFailed, ModelNotConfigured) as failure:
-            logger.warning("drafting %s failed: %s", section.title, failure)
-            return section, None, [f'"{section.title}" could not be drafted: {failure}']
+        except Exception as failure:          # one section's error, never the run's
+            logger.warning("drafting %s failed: %s", section.title, failure, exc_info=True)
+            return [f'"{section.title}" could not be drafted: {failure}']
+        with SCRIPT_WRITE:
+            latest = store.load()
+            if latest.body_for(section.id).strip():
+                return [*section_notes,
+                        f'"{section.title}" was written while drafting; it was kept as it is.']
+            latest.section_scripts = [
+                s for s in latest.section_scripts if s.section_id != section.id] + [written]
+            store.save(_script_in_plan_order(project, latest))
+            drafted_ids.append(section.id)
+        return section_notes
 
     workers = min(MAXIMUM_PARALLEL_SECTION_DRAFTS, len(unwritten))
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        results = list(pool.map(draft, unwritten))
+        notes = [note for found in pool.map(draft, unwritten) for note in found]
 
-    store = ScriptStore(project.root)
-    latest = store.load()
-    notes: list[str] = []
-    drafted_ids: list[str] = []
-    for section, written, section_notes in results:
-        notes.extend(section_notes)
-        if written is None:
-            continue
-        if latest.body_for(section.id).strip():
-            notes.append(f'"{section.title}" was written while drafting; it was kept as it is.')
-            continue
-        latest.section_scripts = [
-            s for s in latest.section_scripts if s.section_id != section.id
-        ] + [written]
-        drafted_ids.append(section.id)
-
-    if not drafted_ids and all(written is None for _, written, _ in results):
+    if not drafted_ids:
         raise OperationFailed("No section could be drafted. " + " ".join(notes))
 
-    saved = store.save(_script_in_plan_order(project, latest))
+    saved = store.load()
     return present_artifact(project, "script", saved) | {
         "drafted_section_ids": drafted_ids,
         "notes": notes,

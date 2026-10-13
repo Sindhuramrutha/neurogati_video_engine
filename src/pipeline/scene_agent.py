@@ -45,11 +45,27 @@ def _run_safely(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
     _waiting_for_a_place.pop((slug, visual_id), None)
     try:
         make_scene(slug, visual_id, instruction=instruction, fresh=fresh)
-    except Exception:
+    except Exception as failure:
         logger.exception("scene %s failed", visual_id)
+        _record_failure(slug, visual_id, failure)
     finally:
         _working.discard((slug, visual_id))
         _running.discard((slug, visual_id))
+
+
+def _record_failure(slug: str, visual_id: str, failure: Exception) -> None:
+    """What the disk says is what happened: a scene that stopped on an error is
+    `failed`, with the reason, not left `working` for the page to guess at."""
+    try:
+        project = require_project(slug)
+        folder = scene_folder(project, _visual(VisualPlanStore(project.root).load(), visual_id),
+                              create=True)
+        state = load_state(folder)
+        state.update(status="failed", doing="", error=str(failure)[:500] or type(failure).__name__)
+        add_event(state, "note", f"Stopped on an error: {state['error']}")
+        save_state(folder, state)
+    except Exception:                       # the project may be gone; nothing to record
+        logger.exception("could not record the failure of scene %s", visual_id)
 
 
 def is_working(slug: str) -> bool:

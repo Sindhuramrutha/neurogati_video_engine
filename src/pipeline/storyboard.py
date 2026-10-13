@@ -131,13 +131,22 @@ def prepare(slug: str, section_id: str) -> dict[str, Any]:
     if visuals is None:
         raise OperationFailed("No such section among the scenes.")
     state = {"calls": {"agent": 0, "vision": 0}, "events": []}
+    missed = []
     for visual in visuals:
-        brief = write_brief(project, visual)
-        folder = scene_folder(project, visual, create=True)
-        if paint(folder, brief["on_screen"], brief["look"], state, brief["narration"],
-                 note_for(project, visual.id)):
-            write_brief(project, visual)
-    return read(slug)
+        # One card that cannot be prepared (its narration not spoken, its picture
+        # not painted) is named; the others are still prepared.
+        try:
+            brief = write_brief(project, visual)
+            folder = scene_folder(project, visual, create=True)
+            if paint(folder, brief["on_screen"], brief["look"], state, brief["narration"],
+                     note_for(project, visual.id)):
+                write_brief(project, visual)
+        except OperationFailed as failure:
+            missed.append(f"Scene {visual.scene_number}: {failure}")
+    board = read(slug)
+    if missed:
+        board["missed"] = missed
+    return board
 
 
 def set_note(slug: str, visual_id: str, note: str) -> dict[str, Any]:

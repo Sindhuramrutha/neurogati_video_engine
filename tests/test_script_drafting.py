@@ -322,13 +322,13 @@ def test_text_written_while_drafting_is_kept(project_root, monkeypatch):
 
     def someone_types(title):
         if title == "Electrodes":
-            operations.write_section_script(slug, "s3", "Typed while the drafts ran.")
+            operations.write_section_script(slug, "s2", "Typed while the drafts ran.")
 
     monkeypatch.setattr(script_drafting, "complete_structured",
                         FakeScriptModel(during_call=someone_types))
     result = script_drafting.draft_unwritten_sections(slug)
 
-    assert ScriptStore(project.root).load().body_for("s3") == "Typed while the drafts ran."
+    assert ScriptStore(project.root).load().body_for("s2") == "Typed while the drafts ran."
     assert any("kept as it is" in note for note in result["notes"])
 
 
@@ -621,3 +621,23 @@ def test_claims_the_source_does_not_support_are_named_for_a_person(monkeypatch):
 
     assert len(found) == 1 and found[0].startswith("scene 2")
     assert "Scene 2: So it was not" in asked[0] and not notes
+
+
+def test_each_section_is_saved_as_it_is_drafted_and_any_error_stays_with_it(
+        project_root, monkeypatch):
+    """Drafting once saved nothing until every section finished, and an error
+    other than a model failure lost them all."""
+    slug, project = planned_project("Saved As Drafted")
+
+    def unexpected(title):
+        if title == "Electrodes":
+            raise RuntimeError("something unexpected")
+
+    monkeypatch.setattr(script_drafting, "complete_structured",
+                        FakeScriptModel(during_call=unexpected))
+    result = script_drafting.draft_unwritten_sections(slug)
+
+    saved = ScriptStore(project.root).load()
+    assert sorted(result["drafted_section_ids"]) == ["s1", "s3"]
+    assert saved.body_for("s1").strip() and saved.body_for("s3").strip()
+    assert any("something unexpected" in note for note in result["notes"])
