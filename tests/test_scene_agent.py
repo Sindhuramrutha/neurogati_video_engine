@@ -543,3 +543,21 @@ def test_shots_that_leave_the_narration_s_end_unshown_are_told_which_words():
                                             "statement": "Nothing electrical touched it",
                                             "when": "its own nerves"}]}
     assert uncovered(spread, words, 17.0) == ""
+
+
+def test_the_request_window_is_shared_by_every_process(tmp_path, monkeypatch):
+    """The web app and a script each kept 28 a minute and sent 56 between them:
+    the window lives in a file every process reads."""
+    from pipeline import llm_pace
+
+    monkeypatch.setattr(llm_pace, "_shared_file", lambda: tmp_path / "pace.json")
+    monkeypatch.setattr(llm_pace, "per_minute", lambda: 2)
+    slept = []
+    assert llm_pace._shared_place(slept.append) == 0
+    assert llm_pace._shared_place(slept.append) == 0
+    # A third, as if from another process, waits for the window -- the file says
+    # two are already in it.
+    monkeypatch.setattr(llm_pace.time, "time", lambda real=llm_pace.time.time: real() + 61
+                        if slept else real())
+    llm_pace._shared_place(slept.append)
+    assert slept and slept[0] > 50
