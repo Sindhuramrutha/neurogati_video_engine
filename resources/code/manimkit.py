@@ -38,6 +38,9 @@ strip of the frame): `self.flow(steps)` (boxes joined by arrows),
 `self.hub(centre, around)` (one idea and what hangs off it), and
 `self.timeline(events)` (things in order). Each comes back placed; reveal its
 parts (.boxes/.arrows, .centre/.items/.lines, .spine/.dots/.labels) on the words.
+A label on a picture is `self.callout(text, (x, y), side)`: beside the point it
+names, joined to it by a short line from its edge -- never an arrow drawn from
+the middle of a label, never a label far from its thing.
 
 It does four things the checks rely on:
 
@@ -73,6 +76,7 @@ FRAME_HEIGHT_UNITS = 8.0
 SAMPLE_PX = 6.0
 SMALLEST_SHAPE_PX = 40          # a dot or a marker is not a shape that collides
 BACKGROUND_SHARE = 0.9          # a shape this much of the frame is a background
+MOTION_SNAPSHOT_GAP = 0.25      # seconds: what each animation leaves, at most this often
 
 
 def _px(point) -> tuple[float, float]:
@@ -103,6 +107,27 @@ def _trace(m) -> np.ndarray:
         parts.append((1 - t) ** 3 * curve[0] + 3 * (1 - t) ** 2 * t * curve[1]
                      + 3 * (1 - t) * t ** 2 * curve[2] + t ** 3 * curve[3])
     return np.vstack(parts)
+
+
+def _point(where) -> np.ndarray:
+    """(x, y), (x, y, z) or a thing's centre, as Manim's three numbers."""
+    if isinstance(where, (tuple, list)) and len(where) == 2:
+        return np.array([float(where[0]), float(where[1]), 0.0])
+    return where.get_center() if isinstance(where, manim.Mobject) else np.asarray(where, float)
+
+
+def _edge(where, toward: np.ndarray) -> np.ndarray:
+    """Where the line from a thing's centre toward `toward` leaves its box. Manim's
+    own choice is its furthest point that way -- on a rounded box, any corner -- and
+    arrows between two level boxes came out slanted; a leader line started inside
+    its own label."""
+    if not isinstance(where, manim.Mobject):
+        return _point(where)
+    centre = where.get_center()
+    dx, dy = (toward - centre)[:2]
+    reach = min(where.width / 2 / abs(dx) if dx else np.inf,
+                where.height / 2 / abs(dy) if dy else np.inf)
+    return centre if reach == np.inf else centre + (toward - centre) * reach
 
 
 def _rgb(colour: str) -> tuple[int, int, int]:
@@ -235,6 +260,10 @@ class ExplainerScene(Scene):
             super().play(*animations, **kwargs)
         finally:
             self._leaving = set()
+        # What each animation leaves on screen is checked too, not only the beats:
+        # an arrow drawn and gone between two beats was never seen by a check.
+        if not self._snapshots or self.now - self._snapshots[-1]["at"] >= MOTION_SNAPSHOT_GAP:
+            self.snapshot(beat=False)
 
     def wait(self, duration: float = 1.0, *args, **kwargs):
         """A pause never runs past the end of the narration."""
@@ -433,29 +462,30 @@ class ExplainerScene(Scene):
     def connect(self, start, end, color: str | None = None, buff: float = 0.18):
         """An arrow from the edge of `start` to the edge of `end`: it never runs
         through the words or shapes it joins."""
-        from manim import Arrow, Mobject
+        from manim import Arrow
 
-        def point(where):
-            # (x, y) is a point too: Manim's own Arrow wants three numbers.
-            if isinstance(where, (tuple, list)) and len(where) == 2:
-                return np.array([float(where[0]), float(where[1]), 0.0])
-            return where.get_center() if isinstance(where, Mobject) else np.asarray(where)
-
-        def edge(where, toward):
-            # Where the line between the two centres leaves this thing's box. Manim's
-            # own choice is its furthest point that way -- on a rounded box, any
-            # corner -- and the arrows between two level boxes came out slanted.
-            if not isinstance(where, Mobject):
-                return point(where)
-            centre = where.get_center()
-            dx, dy = (toward - centre)[:2]
-            reach = min(where.width / 2 / abs(dx) if dx else np.inf,
-                        where.height / 2 / abs(dy) if dy else np.inf)
-            return centre if reach == np.inf else centre + (toward - centre) * reach
-
-        a, b = point(start), point(end)
-        return Arrow(edge(start, b), edge(end, a), buff=buff, color=color or self.look["accent"],
+        a, b = _point(start), _point(end)
+        return Arrow(_edge(start, b), _edge(end, a), buff=buff, color=color or self.look["accent"],
                      stroke_width=5, max_tip_length_to_length_ratio=0.18)
+
+    def callout(self, text: str, target, side: str = "right", size: int = 34,
+                gap: float = 1.1, color: str | None = None):
+        """A label beside the point it names on a picture -- `target` is (x, y) or a
+        thing -- joined to it by a short leader line from the label's edge to a dot
+        on the point. `side` is where the label sits: right, left, up or down. Has
+        .label, .line, .dot; bring them on together when the thing is named."""
+        from manim import DOWN, LEFT, RIGHT, UP, Dot, Line, VGroup
+        point = _point(target)
+        colour = color or self.colour(0)
+        label = self.label(text, size=size)
+        direction = {"right": RIGHT, "left": LEFT, "up": UP, "down": DOWN}.get(side, RIGHT)
+        label.move_to(point + direction * (gap + max(label.width, label.height) / 2))
+        self.safe(label)
+        dot = Dot(point, radius=0.07, color=colour)
+        line = Line(_edge(label, point), point, buff=0.06, color=colour, stroke_width=3)
+        whole = VGroup(line, dot, label)
+        whole.label, whole.line, whole.dot = label, line, dot
+        return whole
 
     def picture(self, path: str, height: float = 3.0, at: tuple[float, float] | None = None):
         """A picture from the slides (a path from brief.assets.pictures)."""
@@ -555,7 +585,7 @@ class ExplainerScene(Scene):
 
     # --- what is on screen, for the checks ------------------------------------------------
 
-    def snapshot(self) -> None:
+    def snapshot(self, beat: bool = True) -> None:
         """Everything on screen now: every piece of text however it was made, the
         outline of every shape, and every picture -- with pixel boxes, and where a
         shape's outline crosses words."""
@@ -627,7 +657,7 @@ class ExplainerScene(Scene):
                         isinstance(m, VMobject) and len(m.points)
                         and (m.get_stroke_opacity() > 0.3 or m.get_fill_opacity() > 0.3)))
                             for m in top.get_family())]
-        self._snapshots.append({"at": round(self.now, 2), "texts": texts,
+        self._snapshots.append({"at": round(self.now, 2), "beat": beat, "texts": texts,
                                 "graphics": len(graphics), "pictures": pictures,
                                 "crossings": crossings, "on_pictures": on_pictures,
                                 "collisions": collisions, "extent": extent})

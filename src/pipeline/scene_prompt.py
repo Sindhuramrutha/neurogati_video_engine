@@ -40,6 +40,9 @@ KITS = {
 # Placing boxes by hand coordinates is what failed most: boxes laid over boxes,
 # circles drawn through their own labels, a diagram crammed into the top third.
 LAYOUT_RULES = (
+    "Labels: a label names something, so it sits beside that thing -- on a picture, "
+    "self.callout(text, (x, y), side) -- never across the frame from it, and no arrow "
+    "ever starts inside a label. "
     "Layout: in Manim, build the diagram with self.flow (steps joined by arrows), "
     "self.hub (one idea and what hangs off it) or self.timeline (things in order) "
     "when one of them fits -- they are laid out so nothing overlaps, crosses words or "
@@ -80,8 +83,9 @@ def kit_api(renderers: list[str]) -> str:
         "revideo: <Img src={pictures[0]} />. The brief lists them under assets.pictures.\n"
         "A picture named illustration-*.png was painted for this scene from its brief: "
         "it has no text in it. Make it the scene's centre -- large, on screen most of the "
-        "scene -- and teach on top of it: labels placed beside what they name, arrows to "
-        "its parts, a highlight or zoom on what is being said. Never cover it with boxes.")
+        "scene -- and teach on top of it: every label a callout beside the part it names "
+        "(manim: self.callout(text, (x, y), side)), a highlight or zoom on what is being "
+        "said. Never cover it with boxes; never draw an arrow out of a label.")
     return "\n\n".join(parts)
 
 

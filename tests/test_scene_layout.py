@@ -39,8 +39,19 @@ class TheScene(ExplainerScene):
         self.play(FadeOut(hub), run_time=0.2)
         line = self.timeline(["Touch", "Movement", "Picture", "Brain", "Body"])
         self.play(*[FadeIn(part) for part in line], run_time=0.2)
-        self.until(end * 0.6)
+        self.until(end * 0.5)
         self.play(FadeOut(line), run_time=0.2)
+        # A label beside the point it names, and -- between two beats -- an arrow
+        # drawn through a label and taken away again before the next beat.
+        note = self.callout("Nerve", (-2.0, -1.0), side="left")
+        self.play(*[FadeIn(part) for part in note], run_time=0.2)
+        passing = self.label("Signal", size=40, at=(3.0, -2.5))
+        self.play(FadeIn(passing), run_time=0.2)
+        stray = Arrow([1.5, -2.5, 0], [4.5, -2.5, 0], buff=0)
+        self.play(GrowArrow(stray), run_time=0.2)
+        self.play(FadeOut(stray), FadeOut(passing), run_time=0.2)
+        self.until(end * 0.6)
+        self.play(FadeOut(note), run_time=0.2)
         # A filled shape with no outline behind words is a panel, not a crossing.
         panel = Ellipse(width=4, height=1.6, fill_color=self.look["accent"], fill_opacity=0.3,
                         stroke_width=0).move_to([-3.5, 0, 0])
@@ -71,10 +82,13 @@ def test_manimkit_lays_out_diagrams_cleanly_and_records_what_collides():
 
     folder = scene_folder(project, visual)
     assert (folder / "layout.json").exists(), (folder / "log.txt").read_text(encoding="utf-8")
-    beats = json.loads((folder / "layout.json").read_text(encoding="utf-8"))["snapshots"]
-    flow, hub, timeline, broken = beats[0], beats[1], beats[2], beats[-1]
-    for laid_out in (flow, hub, timeline):
+    snapshots = json.loads((folder / "layout.json").read_text(encoding="utf-8"))["snapshots"]
+    beats = [s for s in snapshots if s["beat"]]
+    flow, hub, timeline, callout, broken = beats[0], beats[1], beats[2], beats[3], beats[-1]
+    for laid_out in (flow, hub, timeline, callout):
         assert not laid_out["crossings"] and not laid_out["collisions"], laid_out
+    assert any(c["text"] == "Signal" for s in snapshots if not s["beat"]
+               for c in s["crossings"]), "the arrow between beats was seen"
     height = result["brief"]["height"]
     assert (hub["extent"][3] - hub["extent"][1]) / height >= 0.4, "it fills the frame"
     assert [c["shape"] for c in broken["crossings"]] == ["Circle"], \
@@ -149,12 +163,24 @@ def test_a_scene_paints_its_illustration_once_and_only_when_asked(tmp_path, monk
     """Drawn from code, a frog's leg was two ellipses. The script asks for a picture
     when no slide shows the thing; it is painted once, and every later round and a
     scene made again use the same one."""
+    import io
+
+    from PIL import Image
+
     from pipeline import scene_illustration
     from pipeline.llm import ModelCallFailed
 
-    painted = []
+    def picture(colour):
+        buffer = io.BytesIO()
+        Image.new("RGB", (64, 64), colour).save(buffer, format="PNG")
+        return buffer.getvalue()
+
+    painted, verdicts = [], [scene_illustration.Checked(
+        matches=False, wrong="human hearts; they must be small frog hearts"),
+        scene_illustration.Checked(matches=True)]
     monkeypatch.setattr("pipeline.llm.draw_image",
-                        lambda prompt: painted.append(prompt) or b"\x89PNG picture")
+                        lambda prompt: painted.append(prompt) or picture("#fbfbfa"))
+    monkeypatch.setattr(scene_illustration, "check", lambda path, asked, said: verdicts.pop(0))
     look = {"background": "#ffffff", "accents": ["#4472c4", "#ed7d31"]}
     brief = ("PICTURE: none\nDRAW: a frog's leg\nILLUSTRATE: a frog's leg on a bench, two "
              "wires touching its nerve\nLABELS: Galvani")
@@ -164,8 +190,10 @@ def test_a_scene_paints_its_illustration_once_and_only_when_asked(tmp_path, monk
     again = scene_illustration.paint(tmp_path, brief, look, state)
 
     assert first == again == scene_illustration.kept(tmp_path, brief, look)
-    assert len(painted) == 1 and state["calls"]["image"] == 1
+    assert len(painted) == 2 and state["calls"]["image"] == 2, "wrong once, painted again"
     assert "no text" in painted[0].lower() and "#ffffff" in painted[0]
+    assert "small frog hearts" in painted[1], "the second asks for the correction"
+    assert Image.open(first).getpixel((0, 0)) == (255, 255, 255), "no panel edge"
     assert scene_illustration.paint(tmp_path, "PICTURE: none\nDRAW: a box", look, state) is None
     assert scene_illustration.wanted("ILLUSTRATE: none") == ""
 

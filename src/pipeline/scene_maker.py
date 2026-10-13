@@ -131,7 +131,8 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
     # no slide has; the brief then offers it first.
     if wanted_illustration(brief["on_screen"]):
         doing(folder, state, "Painting the scene's illustration")
-        if paint_illustration(folder, brief["on_screen"], brief["look"], state):
+        if paint_illustration(folder, brief["on_screen"], brief["look"], state,
+                              brief["narration"]):
             brief = write_brief(project, visual)
     renderer, entry = entry_of(folder)
     code = "" if fresh or not (folder / entry).exists() else \

@@ -189,9 +189,12 @@ def text_checks(layout: dict | None, brief: dict[str, Any]) -> list[dict[str, st
                                                  if numbers else ""))
 
     snapshots = layout["snapshots"]
-    pictured = sum(1 for s in snapshots if s.get("graphics", 0) >= LEAST_GRAPHICS)
-    share = pictured / len(snapshots)
-    words_only = [f"{s['at']} s" for s in snapshots if s.get("graphics", 0) < LEAST_GRAPHICS]
+    # The beats are the moments the scene rests on; what animations leave between
+    # them is checked for collisions and crossings, not counted as beats.
+    beats = [s for s in snapshots if s.get("beat", True)] or snapshots
+    pictured = sum(1 for s in beats if s.get("graphics", 0) >= LEAST_GRAPHICS)
+    share = pictured / len(beats)
+    words_only = [f"{s['at']} s" for s in beats if s.get("graphics", 0) < LEAST_GRAPHICS]
 
     def result(key, name, rule, found):
         return _check(key, name, rule, FAIL if found else PASS,
@@ -222,7 +225,7 @@ def text_checks(layout: dict | None, brief: dict[str, Any]) -> list[dict[str, st
                f"At {LEAST_PICTURED_SHARE:.0%} of the beats or more, at least "
                f"{LEAST_GRAPHICS} things on screen are not words",
                PASS if share >= LEAST_PICTURED_SHARE else FAIL,
-               f"{pictured} of {len(snapshots)} beats show a picture of the idea."
+               f"{pictured} of {len(beats)} beats show a picture of the idea."
                + ("" if share >= LEAST_PICTURED_SHARE else
                   " Only words on screen at " + ", ".join(words_only[:8]) + ": put the "
                   "idea's shape there too (a box, an arrow, a node, a timeline, the "
