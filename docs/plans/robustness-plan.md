@@ -57,3 +57,12 @@ failing item instead of failing the run ([edge-tts #74](https://github.com/rany2
 | R4 | `pipeline doctor`: ffmpeg/ffprobe, uv, a 1-second Manim render, disk space, write access, model key and a one-token call, vision, voice; run before a render and before scene making; on the API for the app | new doctor.py, cli, routes |
 | R5 | Quality ladder: after 6 rounds below the bar, up to 2 escalations of 4 rounds each (fresh program with a different shot; repaint the picture from the reviewer's notes); best-of only after that, and named | scene_maker |
 | R6 | Smoke test + fault injection + a pre-commit hook running lint and the fast suite with the smoke test | tests, tools/hooks |
+
+## Status
+
+All six are done. R4's gate runs before every render (a queued render waits for
+the machine and starts by itself) and before scene making; `GET /api/doctor` and
+the `check_readiness` MCP tool give the same answer as `pipeline doctor`. R5 is
+`scene_maker.ESCALATIONS`. R6: `tests/test_smoke.py`, `tests/test_faults.py`
+(which maps each failure above to its test) and `tools/hooks/pre-commit`
+(`git config core.hooksPath tools/hooks`).

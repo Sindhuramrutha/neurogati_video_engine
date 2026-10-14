@@ -1,0 +1,16 @@
+#!/bin/sh
+# Before every commit: the lint, the fast suite and the smoke test (a 2-slide deck
+# from upload to export). A commit that breaks the path from a deck to a video, or
+# one of Demo 001's failures coming back (tests/test_faults.py), does not go in.
+#
+# Installed once per clone:   git config core.hooksPath tools/hooks
+# The whole suite (slow tests too) is still `uv run pytest`; skip this hook only
+# for a commit that touches no code: git commit --no-verify
+set -e
+cd "$(git rev-parse --show-toplevel)"
+
+echo "pre-commit: ruff"
+uv run --quiet ruff check src tests
+
+echo "pre-commit: fast suite and smoke test"
+uv run --quiet pytest -q -x -p no:cacheprovider -m "not slow"

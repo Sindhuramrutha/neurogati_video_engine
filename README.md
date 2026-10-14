@@ -197,10 +197,14 @@ view is the file that moves on to the next stages.
   finished. The slide's pictures are described once, and the last three scenes
   are summarised, so scenes stay consistent.
 - **It never stops to ask.** Where the brief is silent it decides and says what
-  it assumed. After 3 rounds a scene is made from its best version, with any
-  failing checks and the reviewer's remaining remarks shown; if no round drew
-  anything, a plain stand-in is drawn, and only when not even that makes a clip
-  is it marked *could not be made*. You change a scene by saying what to change.
+  it assumed. A scene still below the bar after 6 rounds is not given more of
+  the same: it starts over with a different shot (4 rounds), then has its
+  picture repainted from the reviewer's notes and starts over again (4 more).
+  Only then is it made from its best version, with any failing checks and the
+  reviewer's remaining remarks shown, and named on Export as *below the quality
+  bar*. If no round drew anything, a plain stand-in is drawn, and only when not
+  even that makes a clip is it marked *could not be made*. You change a scene by
+  saying what to change.
 - **It chooses the renderer.** A web page (GSAP, D3, three.js, anime.js) for rich
   motion, charts and 3D; Revideo for physical, spring motion and typeset maths;
   Manim for diagrams and flows; matplotlib for a chart.
@@ -266,6 +270,14 @@ they describe sections it no longer has, so a project cannot look finished while
 its video was built from an abandoned script. Studio offers to
 empty the timeline so the next render rebuilds it.
 
+**A job asks first.** A render, and making scenes, start only when the machine is
+ready: ffmpeg, ffprobe and uv on PATH, free disk and memory, folders that can be
+written. When it is not, the job says what is short and how to fix it, and a queued
+render waits and starts by itself once it is. `pipeline doctor` (or
+`GET /api/doctor`) runs the same checks on demand; `--deep` (`?deep=true`) also
+encodes a second of video, runs Manim, and calls the model, the vision model and
+the voice once each.
+
 **Renders are versions.** Each render gets its own file name, so choosing a
 past version plays that cut. Chapters and the Studio timeline are rebuilt from
 each render unless you have edited them by hand, in which case your edits are
@@ -294,6 +306,7 @@ stdin.
 | `SCENE_RENDERS_AT_ONCE` | `2` | Scenes rendering at the same moment; rendering is what uses the memory. |
 | `LLM_MAX_RETRIES` | `3` | Retries on transient failures. |
 | `PROJECTS_DIR` | `./projects` | Where project data is stored. |
+| `PIPELINE_TEMP` | `./.cache/tmp` | Where working files go. Kept off the system drive: when that filled up, Windows also ran short of memory. |
 | `TTS_API_KEY`, `TTS_BASE_URL`, `TTS_MODEL` | model `tts-1` | For the OpenAI-compatible voice. |
 | `HUGGINGFACE_API_KEY` | — | For the Hugging Face Inference API voice. |
 | `ELEVENLABS_API_KEY` | — | For the ElevenLabs voice. |
@@ -355,6 +368,7 @@ uv run pipeline agent draft-unwritten neural-signals    # every section with no 
 
 uv run pipeline voices
 uv run pipeline render neural-signals --voice-provider edge
+uv run pipeline doctor [--deep]                          # is this machine ready for a job?
 uv run pipeline model
 uv run pipeline credentials show
 ```
@@ -383,7 +397,7 @@ Tools: `describe_stages`, `list_projects`, `describe_project`, `create_project`,
 `read_artifact`, `write_artifact`, `add_plan_section`, `write_section_script`,
 `add_clip`, `add_review_comment`, `seed_review_chapters`, `ask_stage_agent`,
 `draft_plan`, `accept_plan_draft`, `discard_plan_draft`, `draft_section_script`,
-`draft_unwritten_sections`, `list_voices`, `render_video`, `model_status`.
+`draft_unwritten_sections`, `list_voices`, `render_video`, `check_readiness`, `model_status`.
 
 No tool can read an API key or delete a project. A drafted plan is kept as a
 pending draft, so one drafted from MCP or the command line can be reviewed on the
@@ -556,6 +570,8 @@ so the app works offline.
 uv sync                                   # includes the dev group
 
 uv run pytest                             # Python tests
+uv run pytest -m "not slow"               # the fast suite, with the smoke test
+git config core.hooksPath tools/hooks     # once: lint + fast suite before each commit
 uv run ruff check src tests               # lint (line length 100)
 node tests/test_frontend_contracts.js     # invariants across the browser modules
 node tests/test_answer_rendering.mjs      # how model answers are rendered, including escaping
