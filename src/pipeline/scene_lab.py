@@ -378,6 +378,7 @@ def _record_run(project, visual, folder: Path, failing: list[dict[str, str]],
     if scene is not None:
         visual.brief_fingerprint = brief_fingerprint(scene.brief, scene.narration)
     visual.approved_at = ""          # a new run is watched and approved again
+    visual.below_bar = ""            # ...and judged again
     if failing and keep_clip and (folder / "render.mp4").exists():
         visual.clip_path = _relative(project, folder / "render.mp4")
         visual.asset_path = _relative(project, folder / "poster.png")

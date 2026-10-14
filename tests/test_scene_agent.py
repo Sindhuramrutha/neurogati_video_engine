@@ -114,6 +114,7 @@ def test_out_of_rounds_with_passing_checks_it_is_made_with_the_remarks(project_r
                                                                        monkeypatch):
     slug, project, visual = scripted_project("Remarks")
     monkeypatch.setattr(scene_maker, "MOST_ROUNDS", 2)
+    monkeypatch.setattr(scene_maker, "ESCALATIONS", ())   # these test the end of rounds
     wired(monkeypatch, Model(whole(GOOD), whole(GOOD)), BAD_VERDICT, BAD_VERDICT)
 
     make_scene(slug, visual.id)
@@ -127,6 +128,7 @@ def test_out_of_rounds_with_nothing_drawn_a_plain_stand_in_is_made_and_nothing_a
         project_root, monkeypatch):
     slug, project, visual = scripted_project("Fails")
     monkeypatch.setattr(scene_maker, "MOST_ROUNDS", 2)
+    monkeypatch.setattr(scene_maker, "ESCALATIONS", ())   # these test the end of rounds
     wired(monkeypatch, Model(whole(CRASHES), whole(CRASHES)))
 
     make_scene(slug, visual.id)
@@ -142,6 +144,7 @@ def test_with_no_clip_at_all_the_scene_is_failed_not_done(project_root, monkeypa
     """The stand-in can fail too. A scene with nothing to show is not "done"."""
     slug, project, visual = scripted_project("No clip")
     monkeypatch.setattr(scene_maker, "MOST_ROUNDS", 2)
+    monkeypatch.setattr(scene_maker, "ESCALATIONS", ())   # these test the end of rounds
     monkeypatch.setattr(scene_maker, "_stand_in", lambda *args: None)
     wired(monkeypatch, Model(whole(CRASHES), whole(CRASHES)))
 
@@ -190,6 +193,7 @@ def test_a_change_that_breaks_a_passing_scene_is_undone_and_it_ends_made(project
     clip was gone. Once a version passes, nothing worse replaces it."""
     slug, project, visual = scripted_project("Kept")
     monkeypatch.setattr(scene_maker, "MOST_ROUNDS", 3)
+    monkeypatch.setattr(scene_maker, "ESCALATIONS", ())   # these test the end of rounds
     model = Model(whole(GOOD), whole(CRASHES), whole(CRASHES))
     wired(monkeypatch, model, BAD_VERDICT)
 
@@ -217,6 +221,7 @@ def test_a_refinement_the_reviewer_likes_less_does_not_replace_the_kept_one(proj
     real scene replaced one the reviewer had fewer complaints about."""
     slug, project, visual = scripted_project("Liked less")
     monkeypatch.setattr(scene_maker, "MOST_ROUNDS", 3)
+    monkeypatch.setattr(scene_maker, "ESCALATIONS", ())   # these test the end of rounds
     worse = Verdict(scores=scored(low=3, illustration=1, motion=1), teaches=False,
                     motion_explains=False, looks_finished=True,
                     problems=["Only words in boxes.", "Nothing moves."])
@@ -230,6 +235,62 @@ def test_a_refinement_the_reviewer_likes_less_does_not_replace_the_kept_one(proj
     assert "did not make it better" in model.requests[2]
     assert "Touching" not in model.requests[2], "it is shown the version the reviewer preferred"
     assert view["status"] == "done" and view["last_render"]["good"]
+
+
+# --- the quality ladder ------------------------------------------------------------------
+
+
+def test_below_the_bar_after_its_rounds_a_scene_starts_over_with_a_different_shot(
+        project_root, monkeypatch):
+    slug, project, visual = scripted_project("Ladder")
+    monkeypatch.setattr(scene_maker, "MOST_ROUNDS", 1)
+    model = Model(whole(GOOD), whole(GOOD.replace("Touch", "Touching")))
+    wired(monkeypatch, model, BAD_VERDICT, GOOD_VERDICT)
+
+    make_scene(slug, visual.id)
+
+    fresh = model.requests[1]
+    assert "fresh start, not a fix" in fresh and "different shot" in fresh
+    assert "Labels only fade in and out." in fresh, "told what the best still needed"
+    view = agent_view(slug, visual.id)
+    assert any(e["kind"] == "escalate" for e in view["events"])
+    assert view["status"] == "done" and view["last_render"]["good"]
+    recorded = next(v for v in VisualPlanStore(project.root).load().visuals if v.id == visual.id)
+    assert not recorded.below_bar, "it reached the bar on the way up"
+
+
+def test_with_the_ladder_spent_the_best_version_is_used_and_named(project_root, monkeypatch):
+    from pipeline.exporting import export_readiness
+
+    slug, project, visual = scripted_project("Spent")
+    monkeypatch.setattr(scene_maker, "MOST_ROUNDS", 1)
+    monkeypatch.setattr(scene_maker, "ESCALATION_ROUNDS", 1)
+    model = Model(whole(GOOD), whole(CRASHES), whole(CRASHES))
+    wired(monkeypatch, model, BAD_VERDICT)
+
+    make_scene(slug, visual.id)
+
+    assert len(model.requests) == 3, "its round, one per step up, then it stops"
+    folder = scene_folder(project, visual)
+    assert "RuntimeError" not in (folder / "scene.py").read_text(encoding="utf-8"), \
+        "the fresh attempts were worse, so the best version is back"
+    view = agent_view(slug, visual.id)
+    assert any("it is back" in e["text"] for e in view["events"])
+    recorded = next(v for v in VisualPlanStore(project.root).load().visuals if v.id == visual.id)
+    assert recorded.clip_path and "Labels only fade in and out." in recorded.below_bar
+    _, warnings = export_readiness(project)
+    assert any("below the quality bar" in w for w in warnings), "named on Export"
+
+
+def test_a_new_run_clears_below_the_bar(project_root, monkeypatch):
+    slug, project, visual = scripted_project("Cleared")
+    scene_maker.mark_below_bar(slug, visual.id, "the reviewer did not call it good.")
+    wired(monkeypatch, Model(whole(GOOD)), GOOD_VERDICT)
+
+    make_scene(slug, visual.id)
+
+    recorded = next(v for v in VisualPlanStore(project.root).load().visuals if v.id == visual.id)
+    assert not recorded.below_bar
 
 
 def test_an_edit_that_matches_nothing_is_sent_back_not_guessed(project_root, monkeypatch):

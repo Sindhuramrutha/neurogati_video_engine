@@ -61,6 +61,9 @@ class SceneVisual(BaseModel):
     # When a person approved this scene's program after watching its preview;
     # empty until then. The render uses only approved scenes (`scene_lab.py`).
     approved_at: str = ""
+    # Why this clip is used below the quality bar -- every round and escalation was
+    # spent and its best version is what there is -- or empty. Named on Export.
+    below_bar: str = ""
 
     # Which slide of the source deck this scene refers to, 1-based, or 0. The
     # slide is material the program may use, never the shot.

@@ -47,6 +47,7 @@ from pipeline.scene_kept import (
     failing_checks,
     has_clip,
     keep_best,
+    mark_below_bar,
     passes_as_written,
     rank,
     restore_best,
@@ -69,6 +70,16 @@ from pipeline.scene_state import STOP, add_event, doing, load_state, save_state
 logger = logging.getLogger(__name__)
 
 MOST_ROUNDS = 6           # refining until the reviewer calls it good takes rounds
+# Still below the bar after them: a step up the ladder, not more of the same. First a
+# fresh program with a different shot; then the picture repainted from the reviewer's
+# notes, and fresh again. Only when every step is spent is the best version used.
+ESCALATIONS = ("fresh", "repaint")
+ESCALATION_ROUNDS = 4
+ESCALATION_NOTE = (
+    "The rounds so far did not reach the bar, so this is a fresh start, not a fix: "
+    "write a new program that shows the idea with a different shot -- a different "
+    "composition, a different way of moving, another picture of the mechanism. Do not "
+    "rebuild the last version.")
 ASKS_PER_ROUND = 3        # an unusable answer is asked again, without a render
 # As long as the model will write: 65,536 tokens is what the provider accepts.
 ROUND_TOKENS = 65536
@@ -158,6 +169,7 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
                 "renderer": renderer, "feedback": "",
                 "last_render": {"passed": not failing, "good": False, "reviewed": False,
                                 "failing": failing, "problems": [], "polish": []}}
+    met, climbed, best_on_disk = False, 0, True
     try:
         doing(folder, state, "Looking at the slide's pictures")
         notes = picture_notes(brief, folder.parent, state)
@@ -165,15 +177,34 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
         earlier = earlier_scenes(project, visual)
         feedback = ""
 
-        for number in range(1, MOST_ROUNDS + 1):
+        number, rounds = 0, MOST_ROUNDS
+        while True:
+            number += 1
             if project_work.stopped():
                 return           # the project is being deleted: touch nothing more
             if (folder / STOP).exists():
                 state["status"] = "stopped"
                 add_event(state, "stopped", "Stopped by the person.")
                 break
+            if number > rounds:
+                if climbed == len(ESCALATIONS):
+                    break                     # the ladder is spent: the best is used
+                # Below the bar after its rounds: not more of the same, a step up.
+                step, climbed, rounds = ESCALATIONS[climbed], climbed + 1, rounds + \
+                    ESCALATION_ROUNDS
+                still = (best or {}).get("feedback") or feedback
+                if step == "repaint" and _repaint(folder, brief, still, state):
+                    brief = write_brief(project, visual)
+                    notes = picture_notes(brief, folder.parent, state)
+                code, spec = "", {}
+                feedback = ESCALATION_NOTE + (f"\nWhat the best version still needed:\n"
+                                              f"{still}" if still else "")
+                add_event(state, "escalate", f"Still below the bar after {number - 1} rounds: "
+                          + ("repainting the picture and starting over"
+                             if step == "repaint" else "starting over with a different shot")
+                          + f" ({ESCALATION_ROUNDS} more rounds).")
             doing(folder, state, f"{'Fixing' if code else 'Writing'} the scene "
-                  f"(round {number} of up to {MOST_ROUNDS})")
+                  f"(round {number} of up to {rounds})")
             written = _written(system, brief, notes, earlier, entry, code, feedback,
                                instruction if number == 1 else "", renderers, spec,
                                folder, state)
@@ -201,7 +232,7 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
             # Done when the reviewer calls it good. A pass with nothing it MUST change
             # ends it too: polish alone does not earn another round.
             if result["good"] or (result["passed"] and not result["problems"]):
-                best = None                   # this one is the scene: nothing to go back to
+                best, met = None, True        # this one is the scene: nothing to go back to
                 break
 
             # Otherwise it is refined, and a refinement is kept only when it is better:
@@ -217,6 +248,11 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
                 best = {"rank": this, "spec": dict(spec), "entry": entry,
                         "renderer": renderer, "feedback": feedback,
                         "last_render": state["last_render"]}
+                best_on_disk = True
+            elif best is not None and climbed:
+                # A fresh approach is refined on its own terms, not undone back to the
+                # old one; the best stays kept and comes back if nothing beats it.
+                best_on_disk = False
             elif best is not None:
                 code, spec = restore_best(slug, visual_id), dict(best["spec"])
                 entry, renderer = best["entry"], best["renderer"]
@@ -233,13 +269,52 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
     except _GaveUp as failure:
         add_event(state, "note", f"The model could not be reached: {failure}")
         state["error"] = str(failure)
+    if best is not None and not best_on_disk:
+        code, spec = restore_best(slug, visual_id), dict(best["spec"])
+        state["last_render"] = best["last_render"]
+        add_event(state, "note", "Nothing after it beat the best version; it is back.")
+    stood_in = False
     if state["status"] != "stopped" and not (state.get("last_render") or {}).get("passed") \
             and best is None and not has_clip(folder):
         _stand_in(slug, visual_id, folder, brief, state)
+        stood_in = True
     elif best is not None and best["rank"][0] == 0:
         adopt(slug, visual_id)                # the best one made, with its problems named
     _conclude(state, spec, has_clip(folder))
+    if not met and climbed == len(ESCALATIONS) and state["status"] == "done":
+        why = _below_bar(state, stood_in)
+        mark_below_bar(slug, visual_id, why)
+        state["below_bar"] = why
+        add_event(state, "note", f"Used below the quality bar: {why}")
     save_state(folder, state)
+
+
+def _below_bar(state: dict[str, Any], stood_in: bool) -> str:
+    """What the scene still lacks, in a line, for the person deciding on it."""
+    if stood_in:
+        return "no round drew a clip, so it is a plain stand-in."
+    last = state.get("last_render") or {}
+    failing, problems = last.get("failing") or [], last.get("problems") or []
+    if failing:
+        return f"{len(failing)} check(s) still fail: {', '.join(failing)}."
+    if problems:
+        return "the reviewer still wants: " + "; ".join(str(p) for p in problems[:3]) + "."
+    return "the reviewer did not call it good."
+
+
+def _repaint(folder: Path, brief: dict[str, Any], notes: str, state: dict[str, Any]) -> bool:
+    """Paint the scene's illustration again, told what the reviewer found. False when
+    the scene has no painted picture to repaint (it draws on the slide's own)."""
+    from pipeline.scene_illustration import kept as kept_illustration
+
+    if not wanted_illustration(brief["on_screen"]):
+        return False
+    old = kept_illustration(folder, brief["on_screen"], brief["look"])
+    if old is not None:
+        old.unlink(missing_ok=True)
+    doing(folder, state, "Repainting the scene's illustration")
+    return paint_illustration(folder, brief["on_screen"], brief["look"], state,
+                              brief["narration"], note=notes[:600]) is not None
 
 
 def _written(system, brief, notes, earlier, entry, code, feedback, instruction, renderers,

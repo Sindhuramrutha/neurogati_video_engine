@@ -96,11 +96,15 @@ video.
 
 ## What making costs
 
-A scene takes up to **3 rounds**; a round is one model call (a few-line edit
+A scene takes up to **6 rounds**; a round is one model call (a few-line edit
 costs little) plus one vision call: a review of the frames when the checks
 pass, or a look at them when a layout check fails. A scene that passes stops
 there unless the reviewer names something that must change; then one more round
-answers it. Every model call
+answers it. A scene still below the bar after its 6 rounds climbs a ladder
+(`scene_maker.ESCALATIONS`): a fresh program with a different shot, then the
+picture repainted from the reviewer's notes and fresh again, **4 rounds each** --
+so at most 14 rounds. Only then is its best version used, and it is named on
+Export as below the quality bar. Every model call
 waits for a place in the provider's per-minute limit (TokenRouter allows 30 a
 minute, so the pace is set to 28: `LLM_REQUESTS_PER_MINUTE`), so a whole video
 takes tens of minutes, not seconds. Scenes are made **four at a time**

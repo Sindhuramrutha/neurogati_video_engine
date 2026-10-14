@@ -205,6 +205,12 @@ def export_readiness(project: Project) -> tuple[list[str], list[str]]:
     ]
     if open_comments:
         warnings.append(f"{len(open_comments)} review comment(s) are still open.")
+    from pipeline.generation import VisualPlanStore
+
+    for visual in VisualPlanStore(project.root).load().visuals:
+        if visual.below_bar and visual.clip_path:
+            warnings.append(f"Scene {visual.scene_number or ''} of \"{visual.section_title}\" "
+                            f"is used below the quality bar: {visual.below_bar}")
     stranded = script.audit([s.id for s in plan.sections])["orphaned_section_ids"]
     if stranded:
         warnings.append(

@@ -86,6 +86,17 @@ def adopt(slug: str, visual_id: str) -> None:
         store.save(plan)
 
 
+def mark_below_bar(slug: str, visual_id: str, why: str) -> None:
+    """Name the scene as used below the bar, so Export and the page can say so."""
+    store = VisualPlanStore(require_project(slug).root)
+    with PLAN_LOCK:
+        plan = store.load()
+        visual = _visual(plan, visual_id)
+        visual.below_bar = why
+        visual.note = f"Below the quality bar: {why} Watch it before approving."
+        store.save(plan)
+
+
 def restore_best(slug: str, visual_id: str) -> str:
     """Put the kept version back -- its program, clip and checks -- as the scene's
     clip, and return its program."""
