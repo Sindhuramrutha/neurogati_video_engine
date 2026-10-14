@@ -6,9 +6,12 @@ configuration change.
 
 from __future__ import annotations
 
+import os
+import tempfile
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -50,6 +53,9 @@ class Settings(BaseSettings):
 
     # --- storage: files are the source of truth ---
     projects_dir: Path = REPO_ROOT / "projects"
+    # Working files on the project's drive, not the system temp folder: the system
+    # drive filled up and took memory with it (Windows grows its page file there).
+    work_dir: Path = Field(REPO_ROOT / ".cache" / "tmp", validation_alias="PIPELINE_TEMP")
 
     @property
     def ir_llm(self) -> tuple[str, str, str]:
@@ -82,3 +88,13 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
+
+def use_work_dir() -> None:
+    """Point this process and everything it starts at the working-files folder.
+    Called by every entry point: the CLI, the web app and the MCP server."""
+    folder = get_settings().work_dir
+    folder.mkdir(parents=True, exist_ok=True)
+    for name in ("TMP", "TEMP", "TMPDIR"):
+        os.environ[name] = str(folder)
+    tempfile.tempdir = str(folder)

@@ -65,6 +65,7 @@ from pipeline.core import (
     require_artifact,
     require_project,
 )
+from pipeline.doctor import check_readiness
 from pipeline.exporting import build_export, export_readiness, read_export
 from pipeline.extraction_run import (
     confirm_extraction,
@@ -110,6 +111,7 @@ __all__ = [
     "build_export",
     "chapters_for",
     "chapters_from_sections",
+    "check_readiness",
     "clear_timeline",
     "confirm_extraction",
     "confirm_section_narration",

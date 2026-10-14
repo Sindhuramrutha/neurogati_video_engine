@@ -37,6 +37,7 @@ from typing import Any
 from mcp.server.mcpserver import MCPServer
 
 from pipeline import operations
+from pipeline.config import use_work_dir
 from pipeline.operations import OperationFailed
 
 logger = logging.getLogger(__name__)
@@ -411,6 +412,7 @@ def run_stdio_server() -> None:
     stdout belongs to the protocol -- anything printed there corrupts the stream,
     which is why every diagnostic in this module goes through `logging`.
     """
+    use_work_dir()
     server.run(transport="stdio")
 
 

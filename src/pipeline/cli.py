@@ -25,12 +25,14 @@ import json
 import sys
 from typing import Any
 
+from pipeline.config import use_work_dir
 from pipeline.operations import (
     ARTIFACTS,
     OperationFailed,
     add_clip,
     add_plan_section,
     add_review_comment,
+    check_readiness,
     create_project,
     describe_project,
     describe_stages,
@@ -223,28 +225,10 @@ def command_model_status(args: argparse.Namespace) -> int:
     return emit(describe_model(), args)
 
 
-def command_credentials_show(args: argparse.Namespace) -> int:
-    from pipeline.credentials import describe_credentials
-
-    return emit(describe_credentials(), args)
-
-
-def command_credentials_set(args: argparse.Namespace) -> int:
-    """Set a credential without it appearing in shell history.
-
-    The value is read from stdin rather than taken as an argument, because an
-    argument lands in `.bash_history` and in the process list where any other
-    user on the machine can read it.
-    """
-    from pipeline.credentials import save_credentials
-
-    value = sys.stdin.read().strip() if not sys.stdin.isatty() else ""
-    if not value and not args.clear:
-        raise OperationFailed(
-            f"Pipe the value in: echo -n '<value>' | pipeline credentials set {args.name}\n"
-            f"Or pass --clear to remove it."
-        )
-    return emit(save_credentials({args.name: "" if args.clear else value}), args)
+def command_doctor(args: argparse.Namespace) -> int:
+    found = check_readiness(args.deep)
+    emit(found, args)
+    return int(found["status"] == "fail")
 
 
 # --- parser -----------------------------------------------------------------
@@ -424,26 +408,22 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--voice", default="", help="provider-specific voice id")
     p.set_defaults(fn=command_render)
 
+    p = add_parser(sub, "doctor", help="check tools, disk, memory and services before a job")
+    p.add_argument("--deep", action="store_true", help="also call each service once")
+    p.set_defaults(fn=command_doctor)
+
     p = add_parser(sub, "model", help="which model would be used, and whether a key is set")
     p.set_defaults(fn=command_model_status)
 
-    # --- credentials ---
-    credentials = sub.add_parser("credentials", help="provider API keys")
-    credentials_sub = credentials.add_subparsers(dest="credentials_command", required=True)
+    from pipeline.cli_credentials import add_credentials_commands
 
-    p = add_parser(credentials_sub, "show", help="status of every key, masked")
-    p.set_defaults(fn=command_credentials_show)
-
-    p = add_parser(credentials_sub, "set", help="set one key, reading the value from stdin")
-    p.add_argument("name", help="e.g. LLM_API_KEY")
-    p.add_argument("--clear", action="store_true", help="remove it instead")
-    p.set_defaults(fn=command_credentials_set)
-
+    add_credentials_commands(sub, add_parser)
     return parser
 
 
 def main() -> int:
     args = build_parser().parse_args()
+    use_work_dir()
     try:
         return args.fn(args)
     except OperationFailed as failure:

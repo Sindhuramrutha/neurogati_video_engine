@@ -22,6 +22,7 @@ from litestar.response import Response
 from litestar.static_files import create_static_files_router
 from litestar.status_codes import HTTP_413_REQUEST_ENTITY_TOO_LARGE
 
+from pipeline.config import use_work_dir
 from pipeline.sources import (
     MAXIMUM_SOURCE_FILE_SIZE_IN_BYTES,
     MAXIMUM_UPLOAD_REQUEST_SIZE_IN_BYTES,
@@ -143,6 +144,7 @@ def _too_large(request: Request, exception: Exception) -> Response:
 
 
 def create_app() -> Litestar:
+    use_work_dir()
     return Litestar(
         route_handlers=[
             index,
