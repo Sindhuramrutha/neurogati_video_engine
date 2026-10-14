@@ -86,7 +86,10 @@ def _shown_status(slug: str, visual_id: str, status: str) -> str:
 def start(slug: str, visual_ids: list[str], *, instruction: str = "",
           fresh: bool = False) -> dict[str, Any]:
     """Queue these scenes. Ones already queued or working are left."""
+    from pipeline import doctor
+
     project = require_project(slug)
+    doctor.require_ready("Making scenes")
     plan = VisualPlanStore(project.root).load()
     # Start to end, in the video's own order -- the queue takes them in this order.
     place = {visual.id: index for index, visual in enumerate(plan.visuals)}

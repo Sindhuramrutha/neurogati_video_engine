@@ -66,3 +66,11 @@ select = ["E", "F", "I", "UP", "B"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+# Tests share fixtures by importing `tests.<module>`, so the repository root is on the path.
+pythonpath = ["."]
+markers = [
+    "real_fact_check: drafting runs its fact-check (a stand-in model answers it)",
+    "real_preflight: renders and scene making ask the doctor first, as they do outside tests",
+    "smoke: one video from a deck to its export, end to end (in the pre-commit hook)",
+    "slow: over about five seconds; left out of the pre-commit hook's fast suite",
+]

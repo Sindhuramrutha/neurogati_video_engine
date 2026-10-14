@@ -147,6 +147,9 @@ def render_video(
 ) -> dict[str, Any]:
     """Render the video as a job (`render_job`): one at a time, stopped at a
     section boundary when asked, and continued from where it stopped."""
+    from pipeline import doctor
+
+    doctor.require_ready("The render")       # NotReady is transient: the queue waits
     if not progress.claim(slug, JOB, "Starting the render"):
         raise OperationFailed(
             "A render of this project is already running. Halt it, or wait for it "

@@ -31,6 +31,15 @@ def no_online_voice(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def no_preflight(request, monkeypatch):
+    """Renders and scene making ask the doctor first (free memory, disk). A test
+    does not depend on how much memory the machine running it has free: off
+    unless a test is marked `real_preflight`."""
+    if request.node.get_closest_marker("real_preflight") is None:
+        monkeypatch.setattr("pipeline.doctor.require_ready", lambda job: [])
+
+
+@pytest.fixture(autouse=True)
 def no_fact_check(request, monkeypatch):
     """Drafting a section ends with a fact-check: a second model call that the
     tests standing a model in for the drafting do not expect. Off unless a test

@@ -28,6 +28,7 @@ from pipeline.sources import (
     MAXIMUM_UPLOAD_REQUEST_SIZE_IN_BYTES,
 )
 from pipeline.web.routes_assets_handoff import ASSETS_HANDOFF_ROUTES
+from pipeline.web.routes_doctor import DOCTOR_ROUTES
 from pipeline.web.routes_extraction_agent import EXTRACTION_AGENT_ROUTES
 from pipeline.web.routes_generation_handoff import GENERATION_HANDOFF_ROUTES
 from pipeline.web.routes_lesson_plan import LESSON_PLAN_ROUTES
@@ -151,6 +152,7 @@ def create_app() -> Litestar:
             *EXTRACTION_AGENT_ROUTES,
             *RENDER_JOB_ROUTES,
             *PROJECT_ADMIN_ROUTES,
+            *DOCTOR_ROUTES,
             *ASSETS_HANDOFF_ROUTES,
             *PLAN_HANDOFF_ROUTES,
             *LESSON_PLAN_ROUTES,

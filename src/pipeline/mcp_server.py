@@ -393,6 +393,20 @@ def render_video(project: str, voice_provider: str = "", voice: str = "") -> str
 
 
 @server.tool()
+def check_readiness(deep: bool = False) -> str:
+    """Whether this machine is ready for a job: tools, disk, memory and, with
+    `deep`, one call to each service. Each check that fails says how to fix it.
+
+    Call this before `render_video` when a render will not start.
+
+    Args:
+        deep: also encode a second of video, run Manim, and call the model, the
+            vision model and the voice once each (slow; the model calls are paid).
+    """
+    return guarded(operations.check_readiness, deep)
+
+
+@server.tool()
 def model_status() -> str:
     """Whether an API key is configured and which model would be used.
 

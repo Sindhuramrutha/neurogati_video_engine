@@ -310,8 +310,8 @@ def _run(job: QueueJob) -> None:
         try:
             outcome = render_video(job.slug, job.voice_provider, job.voice, resume=job.continues)
         except OperationFailed as refused:
-            if not job.continues:
-                raise
+            if not job.continues or getattr(refused, "transient", False):
+                raise    # a machine not ready yet (doctor.NotReady) is waited out, not restarted
             # Its work cannot be continued -- the plan or script changed, or it
             # is gone -- so it renders from the beginning instead.
             logger.info("render %s starts over: %s", job.id, refused)
