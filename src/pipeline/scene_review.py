@@ -153,6 +153,9 @@ def review_frames(folder: Path, brief: dict[str, Any], question: str = "") -> Ve
         "it looks unfinished.\n"
         "- A painted illustration that is wrong for what is said (the wrong thing drawn, "
         "impossible anatomy or apparatus), or that has text in it.")
+    elsewhere = [f"{entry['file']} ({entry.get('what', '')[:50]}): {entry['shown_in_video']}"
+                 for entry in brief.get("picture_catalogue") or []
+                 if not entry.get("shown_in_video", "not yet").startswith("not yet")]
     user = "\n\n".join(part for part in [
         "Narration (spoken over the scene):\n"
         + str(brief.get("narration", ""))[:LONGEST_NARRATION],
@@ -160,6 +163,10 @@ def review_frames(folder: Path, brief: dict[str, Any], question: str = "") -> Ve
         f"How the section is told: {brief.get('how', '')}",
         f"Who it is for: {brief.get('audience', 'not stated')}",
         "The scene's own pictures: " + (", ".join(own_pictures(brief)) or "none"),
+        ("Pictures other scenes already show (another scene's picture as this scene's "
+         "main picture again is a problem -- the video looks like one scene repeated; a "
+         "brief return or a close-up of a different part is fine): " + "; ".join(elsewhere))
+        if elsewhere else "",
         f"The agent asks you specifically: {question}" if question.strip() else "",
         "Look at the frames below, in order.",
     ] if part)

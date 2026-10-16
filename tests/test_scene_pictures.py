@@ -342,3 +342,18 @@ def test_a_picture_another_scene_plans_to_show_is_not_offered_as_unused(tmp_path
     assert shown == {str(tmp_path / "extraction/assets/galen.png"): ["scene 1, planned"]}
     assert scene_pictures.shown_pictures(project, planned=False) == {}, \
         "the video's count is of what was made, not what was planned"
+
+
+def test_a_section_short_of_real_pictures_is_told_to_give_each_scene_its_own(monkeypatch):
+    """Demo 003's phrenology section: one chart and three blank speech-bubble
+    shapes for four scenes, and three scenes made the chart their subject."""
+    from pipeline.scene_vetting import ROLES
+    from pipeline.script_drafting import _pictures_to_go_round
+
+    chart = f"Slide 6 | what it is: a phrenology chart | {ROLES['explains']}"
+    bubble = f"Slide 6 | what it is: a blank speech bubble | {ROLES['furniture']}"
+    said = _pictures_to_go_round([chart, bubble, bubble, bubble], 4)
+    assert "1 deck picture(s) that show something, for 4 scenes" in said
+    assert "PHOTO" in said and "never another version" in said
+    assert _pictures_to_go_round([chart, chart], 2) == "", "enough to go round"
+    assert _pictures_to_go_round([chart], 1) == ""

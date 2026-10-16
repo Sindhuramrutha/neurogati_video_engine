@@ -344,7 +344,26 @@ def _section_brief(plan: Plan, section: PlanSection, target_words: int,
                      "topic's opening when it is the deck's art (name them on PICTURE; "
                      "describe no deck picture that is not listed):\n"
                      + "\n".join(f"- {name}" for name in pictures))
-    return "\n".join(lines)
+    lines.append(_pictures_to_go_round(pictures or [], len(section.scenes)))
+    return "\n".join(line for line in lines if line)
+
+
+def _pictures_to_go_round(pictures: list[str], scenes: int) -> str:
+    """Said when the section's real pictures are fewer than its scenes. Demo 003's
+    phrenology section had one real picture -- the rest blank speech-bubble shapes --
+    for four scenes, and three of them made it their subject."""
+    from pipeline.scene_vetting import ROLES
+
+    real = sum(1 for line in pictures
+               if ROLES["explains"] in line or ROLES["sets_scene"] in line)
+    if scenes < 2 or real >= scenes:
+        return ""
+    return (f"This section has {real} deck picture(s) that show something, for {scenes} "
+            "scenes. Show each once as a scene's subject (a second time only as a "
+            "close-up of a different part). Give every other scene its own subject, each "
+            "a different thing: a PHOTO to find of the person, instrument, specimen or "
+            "place it names, an ILLUSTRATE, or a diagram to DRAW -- never another version "
+            "of a picture a scene near it already shows.")
 
 
 def _neighbours(plan: Plan, script: Script, section: PlanSection) -> str:
