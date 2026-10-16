@@ -48,7 +48,8 @@ def no_fact_check(request, monkeypatch):
     if request.node.get_closest_marker("real_fact_check") is None:
         monkeypatch.setattr("pipeline.script_drafting._keep_to_slides",
                             lambda system, source, scenes, notes, title, **kwargs:
-                            (scenes, [], []))
+                            __import__("pipeline.script_review").script_review.Kept(
+                                scenes=scenes))
 
 
 @pytest.fixture(autouse=True)

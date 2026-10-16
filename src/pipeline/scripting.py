@@ -142,6 +142,10 @@ class SectionScript(BaseModel):
     # before it is saved; what is here is what the agent kept, for a person to see.
     unsupported: list[str] = Field(default_factory=list)
     uncovered: list[str] = Field(default_factory=list)
+    # Where a slide itself is wrong (a person decides: the slide or the fact), and
+    # what the agent left as it was on purpose, with why.
+    slide_wrong: list[str] = Field(default_factory=list)
+    kept: list[str] = Field(default_factory=list)
 
     @field_validator("body")
     @classmethod

@@ -39,8 +39,11 @@ the export.
    and examples given -- and does not lead away to topics, stories or people the
    slides do not point toward. Each draft is checked against its slides (every
    point, and whether it is taught; every sentence that leads away or is
-   wrong), and the agent revises it once from what was found, deciding what to
-   change and what is right as it is. What it kept is listed on the Check tab.
+   wrong), and the agent revises it from what was found, round after round until
+   nothing is left (at most three), deciding what to change and what is right as
+   it is -- and saying why, which the next check reads. A slide that is itself
+   wrong is listed apart ("Slides that may be wrong") for a person to decide;
+   what is left after the rounds is listed on the Check tab.
 7. **Pictures: the deck's first.** The agent is told each of the section's
    deck pictures -- what it is and what it is good for -- and names on
    `PICTURE:` the ones each scene shows. For what the deck does not show it
@@ -84,6 +87,7 @@ the export.
 | Up to date | Written against the plan section and source as they are now | Warning |
 | On-screen briefs | Every scene says what is shown | Warning |
 | Follows the slides | Every slide point covered; nothing kept that leads away from the slides or gets them wrong | Warning |
+| Slides that may be wrong | No slide states something the check found factually wrong | Warning |
 | Review comments | No open review comment sent back to Scripting | Warning |
 | Unattached narration | No narration from sections the plan dropped | Warning |
 | Scene Plan transferred | Written against a transferred plan with no changes waiting | Warning |

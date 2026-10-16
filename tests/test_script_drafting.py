@@ -632,30 +632,90 @@ def test_a_section_that_leaves_a_slide_point_out_or_leads_away_is_revised_by_the
     review = script_review.SlideReview(
         points=[script_review.SlidePoint(slide="slide 7", point="cells seen", covered=True),
                 script_review.SlidePoint(slide="slide 7", point="the syncytium theory",
-                                           covered=False)],
+                                         covered=False)],
         leads_away=["scene 2: synapses grow stronger every year -- slide 7 is about cells"])
     revised = script_review.RevisedSection(scenes=[
         script_review.RevisedScene(narration="Hooke looked down his microscope and saw cells.",
-                                     brief="PICTURE: Slide 7"),
+                                   brief="PICTURE: Slide 7"),
         script_review.RevisedScene(narration="Some thought nerve cells were fused into one "
-                                               "net: a syncytium.",
-                                     brief="DRAW: cells fused into one net")])
+                                             "net: a syncytium.",
+                                   brief="DRAW: cells fused into one net")])
     clean = script_review.SlideReview(points=[
         script_review.SlidePoint(slide="slide 7", point="the syncytium theory", covered=True)])
     model = SlideModel(review, revised, clean)
     monkeypatch.setattr("pipeline.llm.complete_structured", model)
     notes = []
 
-    scenes, claims, missing = script_review.keep_to_slides(
+    kept = script_review.keep_to_slides(
         "You are the teacher.", SLIDES, two_scenes(), notes, "First Glimpse")
 
     assert [name for name, *_ in model.asked] == ["SlideReview", "RevisedSection", "SlideReview"]
     assert "the syncytium theory" in model.asked[1][2] and "every year" in model.asked[1][2]
     assert model.asked[1][1].startswith("You are the teacher."), "revised in the same voice"
-    assert "syncytium" in scenes[1].narration and scenes[1].id == "b", "the plan's scene ids"
-    assert isinstance(scenes[1], ScriptScene)
-    assert claims == [] and missing == []
-    assert "revised" in notes[0]
+    assert "syncytium" in kept.scenes[1].narration and kept.scenes[1].id == "b", \
+        "the plan's scene ids"
+    assert isinstance(kept.scenes[1], ScriptScene)
+    assert kept.claims == [] and kept.missing == []
+    assert "revised in 1 round(s)" in notes[0]
+
+
+@pytest.mark.real_fact_check
+def test_the_agent_keeps_revising_until_nothing_is_left(monkeypatch):
+    """Revised once, what one pass missed stayed on the page as a warning. The agent
+    goes round again: check, revise, check, until clean."""
+    missing = script_review.SlideReview(points=[
+        script_review.SlidePoint(slide="slide 7", point="the syncytium theory", covered=False)])
+    same = script_review.RevisedSection(scenes=[
+        script_review.RevisedScene(narration=s.narration, brief=s.brief) for s in two_scenes()])
+    clean = script_review.SlideReview()
+    model = SlideModel(missing, same, missing, same, clean)
+    monkeypatch.setattr("pipeline.llm.complete_structured", model)
+    notes = []
+
+    kept = script_review.keep_to_slides("", SLIDES, two_scenes(), notes, "x")
+
+    assert [name for name, *_ in model.asked].count("RevisedSection") == 2
+    assert kept.missing == [] and "revised in 2 round(s)" in notes[0]
+
+
+@pytest.mark.real_fact_check
+def test_after_three_rounds_what_is_left_goes_to_a_person(monkeypatch):
+    left = script_review.SlideReview(wrong=["scene 1: a claim -- what is right"])
+    same = script_review.RevisedSection(scenes=[
+        script_review.RevisedScene(narration=s.narration, brief=s.brief) for s in two_scenes()])
+    model = SlideModel(left, same, left, same, left, same, left)
+    monkeypatch.setattr("pipeline.llm.complete_structured", model)
+    notes = []
+
+    kept = script_review.keep_to_slides("", SLIDES, two_scenes(), notes, "x")
+
+    assert [name for name, *_ in model.asked].count("RevisedSection") == 3
+    assert kept.claims == ["scene 1: a claim -- what is right"]
+    assert "after 3 rounds" in notes[0]
+
+
+@pytest.mark.real_fact_check
+def test_what_the_agent_kept_on_purpose_is_told_to_the_next_check(monkeypatch):
+    """A sentence kept with no reason was flagged again, and again."""
+    flagged = script_review.SlideReview(
+        wrong=["scene 2: negative reinforcement removes something unpleasant -- slide 20 "
+               "calls it punishment"])
+    keeps = script_review.RevisedSection(
+        scenes=[script_review.RevisedScene(narration=s.narration, brief=s.brief)
+                for s in two_scenes()],
+        kept=["scene 2: negative reinforcement -- the textbook definition; the slide errs"])
+    accepted = script_review.SlideReview(
+        slide_wrong=["slide 20: negative reinforcement (punishment) -- they differ"])
+    model = SlideModel(flagged, keeps, accepted)
+    monkeypatch.setattr("pipeline.llm.complete_structured", model)
+
+    kept = script_review.keep_to_slides("", SLIDES, two_scenes(), [], "Pavlov")
+
+    assert "the textbook definition; the slide errs" in model.asked[2][2], \
+        "the second check reads the reason"
+    assert kept.claims == [] and kept.kept and kept.slide_wrong == [
+        "slide 20: negative reinforcement (punishment) -- they differ"], \
+        "a slide that is wrong goes to a person, apart"
 
 
 @pytest.mark.real_fact_check
@@ -664,9 +724,9 @@ def test_explaining_a_slide_is_not_flagged_and_nothing_is_revised(monkeypatch):
         script_review.SlidePoint(slide="slide 7", point="cells seen", covered=True)]))
     monkeypatch.setattr("pipeline.llm.complete_structured", model)
 
-    scenes, claims, missing = script_review.keep_to_slides("", SLIDES, two_scenes(), [], "x")
+    kept = script_review.keep_to_slides("", SLIDES, two_scenes(), [], "x")
 
-    assert len(model.asked) == 1 and claims == [] and missing == []
+    assert len(model.asked) == 1 and kept.claims == [] and kept.missing == []
     assert "explain, define, give context" in model.asked[0][1], \
         "the slides are the direction, not a word limit"
 
@@ -681,11 +741,11 @@ def test_a_close_with_no_slides_of_its_own_is_not_made_to_cover_every_point(monk
     model = SlideModel(review)
     monkeypatch.setattr("pipeline.llm.complete_structured", model)
 
-    scenes, claims, missing = script_review.keep_to_slides(
+    kept = script_review.keep_to_slides(
         "", "the whole plan", two_scenes(), [], "Close", own_slides=False)
 
     assert len(model.asked) == 1, "nothing to revise"
-    assert scenes == two_scenes() and claims == [] and missing == []
+    assert kept.scenes == two_scenes() and kept.claims == [] and kept.missing == []
 
 
 @pytest.mark.real_fact_check
@@ -697,11 +757,10 @@ def test_a_revision_that_loses_a_scene_keeps_the_draft_and_names_what_was_found(
     monkeypatch.setattr("pipeline.llm.complete_structured", SlideModel(review, short))
     notes = []
 
-    scenes, claims, missing = script_review.keep_to_slides(
-        "", SLIDES, two_scenes(), notes, "x")
+    kept = script_review.keep_to_slides("", SLIDES, two_scenes(), notes, "x")
 
-    assert scenes == two_scenes(), "the plan decided the scenes: none may be lost"
-    assert missing == ["slide 7: the syncytium theory"]
+    assert kept.scenes == two_scenes(), "the plan decided the scenes: none may be lost"
+    assert kept.missing == ["slide 7: the syncytium theory"]
     assert "draft is kept" in notes[0]
 
 
@@ -713,13 +772,16 @@ def test_the_script_page_names_uncovered_points_and_sentences_that_lead_away(pro
     script = ScriptStore(project.root).load()
     script.section_scripts = [SectionScript(
         section_id=plan.sections[0].id, scenes=[ScriptScene(narration="Words.")],
-        uncovered=["slide 7: the syncytium theory"], unsupported=["scene 2: synapses"])]
+        uncovered=["slide 7: the syncytium theory"], unsupported=["scene 2: synapses"],
+        slide_wrong=["slide 20: negative reinforcement (punishment) -- they differ"])]
     ScriptStore(project.root).save(script)
 
     checks = {c["key"]: c for c in script_checks(project, ScriptStore(project.root).load())}
     assert checks["facts"]["name"] == "Follows the slides"
     assert checks["facts"]["status"] == "warn"
     assert "syncytium" in checks["facts"]["detail"] and "synapses" in checks["facts"]["detail"]
+    assert checks["slides-wrong"]["status"] == "warn"
+    assert "slide 20" in checks["slides-wrong"]["detail"]
 
 
 def test_each_section_is_saved_as_it_is_drafted_and_any_error_stays_with_it(

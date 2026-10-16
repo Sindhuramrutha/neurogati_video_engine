@@ -248,10 +248,12 @@ view is the file that moves on to the next stages.
 - **The slides are the direction.** Narration covers every point on its slides,
   in its own words, and may explain them -- terms, context, examples,
   comparisons -- but not lead away to topics, stories or people they do not
-  point toward. Each drafted section is checked against its slides, and the
-  agent revises it once from what the check found (points missed, sentences
-  that lead away or are wrong), deciding what to keep. Whatever it kept is
-  listed on the page.
+  point toward. Each drafted section is checked against its slides and the
+  agent revises it from what the check found (points missed, sentences that lead
+  away or are wrong), round after round until nothing is left -- up to three
+  rounds. What it keeps on purpose it says why, and the next check reads the
+  reason. A slide that is itself wrong is listed apart, for you to decide; only
+  what is left after the rounds is listed as a warning.
 - **Draft this section** writes one section from its own source text;
   **Draft all unwritten** writes every empty section at once and never touches
   narration that is already written -- including anything typed while it runs.

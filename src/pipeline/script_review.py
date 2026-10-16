@@ -47,8 +47,15 @@ class SlideReview(BaseModel):
                     "comparisons that serve a slide's point are NOT this.")
     wrong: list[str] = Field(
         default_factory=list,
-        description="Each claim that is factually wrong or contradicts the slides, as "
-                    "'scene N: the claim -- what is right'.")
+        description="Each claim in the narration that is factually wrong, or that "
+                    "contradicts a slide that is itself right, as 'scene N: the claim -- "
+                    "what is right'.")
+    slide_wrong: list[str] = Field(
+        default_factory=list,
+        description="Where a SLIDE itself states something factually wrong (not the "
+                    "narration), as 'slide N: what it says -- what is right'. Not a fault "
+                    "of the narration: a person decides whether the video follows the "
+                    "slide or the fact.")
 
 
 class RevisedScene(BaseModel):
@@ -59,6 +66,10 @@ class RevisedScene(BaseModel):
 
 class RevisedSection(BaseModel):
     scenes: list[RevisedScene]
+    kept: list[str] = Field(
+        default_factory=list,
+        description="Each flagged item you deliberately left as it was, as 'the item -- "
+                    "why it is right as it is'. Empty when you changed everything flagged.")
 
 
 def _numbered(scenes: list[ScriptScene]) -> str:
@@ -66,17 +77,22 @@ def _numbered(scenes: list[ScriptScene]) -> str:
                        for number, scene in enumerate(scenes, start=1))
 
 
-def _review(source: str, scenes: list[ScriptScene]) -> SlideReview:
+def _review(source: str, scenes: list[ScriptScene], kept: list[str] | None = None
+            ) -> SlideReview:
     from pipeline import llm
 
+    reasons = ("\n\n--- left as they are on purpose by the writer, with why ---\n"
+               + "\n".join(f"- {k}" for k in kept)
+               + "\nFlag one of these again only if its reason does not hold.") if kept else ""
     return llm.complete_structured(
         SlideReview,
         "You check a lesson's narration against the slides it teaches. The slides are its "
         "direction: the narration should cover every point they make, in substance, and may "
         "explain, define, give context and examples. Judge like a teacher who knows the "
         "subject: list each slide's points and whether they are taught; flag only what "
-        "leads away from the slides, and what is wrong.",
-        f"--- the slides ---\n{source}\n\n--- the narration ---\n{_numbered(scenes)}",
+        "leads away from the slides, and what is wrong. Where a slide itself is wrong, say "
+        "so apart (slide_wrong): correct narration is not a fault.",
+        f"--- the slides ---\n{source}\n\n--- the narration ---\n{_numbered(scenes)}{reasons}",
         max_tokens=REVIEW_TOKENS)
 
 
@@ -88,65 +104,92 @@ def _findings(review: SlideReview, coverage: bool = True) -> tuple[list[str], li
     return claims[:MOST_FINDINGS], missing[:MOST_FINDINGS]
 
 
+MOST_REVISIONS = 3
+
+
+class Kept(BaseModel):
+    """What keeping a section to its slides ends with, for the script and the page."""
+    scenes: list[ScriptScene]
+    claims: list[str] = Field(default_factory=list)       # still leading away, or wrong
+    missing: list[str] = Field(default_factory=list)      # slide points still not covered
+    slide_wrong: list[str] = Field(default_factory=list)  # the slide is wrong: a person decides
+    kept: list[str] = Field(default_factory=list)         # left on purpose, with why
+
+
 def keep_to_slides(system_prompt: str, source: str, scenes: list[ScriptScene],
-                    notes: list[str], title: str, own_slides: bool = True
-                    ) -> tuple[list[ScriptScene], list[str], list[str]]:
-    """The drafted scenes, checked against the slides and -- when they leave a point
-    out, lead away from the slides, or get something wrong -- revised once by the
-    agent, which decides what to change and what to keep. Returns (the scenes, the
-    claims still standing, the points still not covered): the agent's last word,
-    for a person to see.
+                    notes: list[str], title: str, own_slides: bool = True) -> Kept:
+    """The drafted scenes, checked against the slides and revised by the agent until
+    nothing is left -- every point covered, nothing leading away or wrong -- for up
+    to three rounds. Each round the agent decides what to change and what is right
+    as it is, and says why it kept what it kept; the next check reads those reasons
+    and raises an item again only if its reason does not hold. Where a slide itself
+    is wrong, no revision can mend it: that goes to a person. What is still left after
+    the rounds is the agent's last word, listed for a person to see.
+
+    Revised once, Demo 003-style warnings stayed on the page: a point the one pass
+    missed, a sentence kept with no reason given, a slide that is itself wrong.
 
     A section with no slides of its own -- an opening, a recap, a close -- is
     written from the whole plan, and is checked for what leads away or is wrong,
     not for covering every point: held to that, Demo 003's one-minute close was
     revised to cover twelve points and ran to 238 words."""
-    try:
-        review = _review(source, scenes)
-    except ModelCallFailed as failure:
-        notes.append(f'"{title}": it could not be checked against its slides ({failure}).')
-        return scenes, [], []
-    claims, missing = _findings(review, own_slides)
-    if not claims and not missing:
-        return scenes, [], []
-
     from pipeline import llm
 
-    asked = "\n".join(
-        (["Slide points the narration does not cover yet:"] + [f"- {m}" for m in missing]
-         if missing else [])
-        + (["Sentences that lead away from the slides, or are wrong:"]
-           + [f"- {c}" for c in claims] if claims else []))
-    try:
-        revised = llm.complete_structured(
-            RevisedSection,
-            f"{system_prompt}\n\n---\nYou are revising a section you drafted, after a "
-            "check against its slides. Cover every point it names in the scene where it "
-            "belongs; bring each sentence that leads away back to what the slides are "
-            "about, or cut it; correct what is wrong. If, on reflection, a flagged sentence "
-            "does serve a slide's point and is accurate, keep it. Keep the same number of "
-            "scenes in the same order, change only what needs changing, and keep each "
-            "brief in step with its narration (its BEATS quote the narration's words).",
-            f"--- the slides ---\n{source}\n\n--- your scenes ---\n{_numbered(scenes)}"
-            f"\n\n--- what the check found ---\n{asked}",
-            max_tokens=REVIEW_TOKENS)
-    except ModelCallFailed as failure:
-        notes.append(f'"{title}": it could not be revised ({failure}); what the check found '
-                     "is listed for a person.")
-        return scenes, claims, missing
-    rewritten = [scene for scene in revised.scenes if scene.narration.strip()]
-    if len(rewritten) != len(scenes):
-        notes.append(f'"{title}": the revision came back with {len(rewritten)} scenes for '
-                     f"{len(scenes)}; the draft is kept and what the check found is listed.")
-        return scenes, claims, missing
-    scenes = [scene.model_copy(update={"narration": new.narration.strip(),
-                                       "brief": new.brief.strip() or scene.brief})
-              for scene, new in zip(scenes, rewritten, strict=True)]
-    notes.append(f'"{title}": checked against its slides and revised '
-                 f"({len(missing)} point(s) to cover, {len(claims)} sentence(s) to bring "
-                 "back or correct).")
-    try:
-        still_claims, still_missing = _findings(_review(source, scenes), own_slides)
-    except ModelCallFailed:
-        return scenes, [], []
-    return scenes, still_claims, still_missing
+    kept: list[str] = []
+    slide_wrong: list[str] = []
+    for round_number in range(1, MOST_REVISIONS + 2):
+        try:
+            review = _review(source, scenes, kept)
+        except ModelCallFailed as failure:
+            notes.append(f'"{title}": it could not be checked against its slides ({failure}).')
+            return Kept(scenes=scenes, slide_wrong=slide_wrong, kept=kept)
+        slide_wrong = list(dict.fromkeys([*slide_wrong, *(w.strip() for w in review.slide_wrong
+                                                          if w.strip())]))[:MOST_FINDINGS]
+        claims, missing = _findings(review, own_slides)
+        if not claims and not missing:
+            if round_number > 1:
+                notes.append(f'"{title}": checked against its slides and revised in '
+                             f"{round_number - 1} round(s); nothing is left.")
+            return Kept(scenes=scenes, slide_wrong=slide_wrong, kept=kept)
+        if round_number > MOST_REVISIONS:
+            notes.append(f'"{title}": after {MOST_REVISIONS} rounds of revision, '
+                         f"{len(missing)} point(s) and {len(claims)} sentence(s) are left "
+                         "for a person.")
+            return Kept(scenes=scenes, claims=claims, missing=missing,
+                        slide_wrong=slide_wrong, kept=kept)
+        asked = "\n".join(
+            (["Slide points the narration does not cover yet:"] + [f"- {m}" for m in missing]
+             if missing else [])
+            + (["Sentences that lead away from the slides, or are wrong:"]
+               + [f"- {c}" for c in claims] if claims else []))
+        try:
+            revised = llm.complete_structured(
+                RevisedSection,
+                f"{system_prompt}\n\n---\nYou are revising a section you drafted, after a "
+                "check against its slides. Cover every point it names in the scene where it "
+                "belongs; bring each sentence that leads away back to what the slides are "
+                "about, or cut it; correct what is wrong. If, on reflection, a flagged item "
+                "is right as it is, keep it -- and say why under `kept`. Keep the same number "
+                "of scenes in the same order, change only what needs changing, and keep each "
+                "brief in step with its narration (its BEATS quote the narration's words).",
+                f"--- the slides ---\n{source}\n\n--- your scenes ---\n{_numbered(scenes)}"
+                f"\n\n--- what the check found ---\n{asked}",
+                max_tokens=REVIEW_TOKENS)
+        except ModelCallFailed as failure:
+            notes.append(f'"{title}": it could not be revised ({failure}); what the check '
+                         "found is listed for a person.")
+            return Kept(scenes=scenes, claims=claims, missing=missing,
+                        slide_wrong=slide_wrong, kept=kept)
+        rewritten = [scene for scene in revised.scenes if scene.narration.strip()]
+        if len(rewritten) != len(scenes):
+            notes.append(f'"{title}": a revision came back with {len(rewritten)} scenes for '
+                         f"{len(scenes)}; the draft is kept and what the check found is "
+                         "listed.")
+            return Kept(scenes=scenes, claims=claims, missing=missing,
+                        slide_wrong=slide_wrong, kept=kept)
+        scenes = [scene.model_copy(update={"narration": new.narration.strip(),
+                                           "brief": new.brief.strip() or scene.brief})
+                  for scene, new in zip(scenes, rewritten, strict=True)]
+        kept = list(dict.fromkeys([*kept, *(k.strip() for k in revised.kept
+                                            if k.strip())]))[:MOST_FINDINGS]
+    return Kept(scenes=scenes, slide_wrong=slide_wrong, kept=kept)
