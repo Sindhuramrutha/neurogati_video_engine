@@ -53,6 +53,8 @@ about it, and which scenes already show it. Use them as much as they fit:
   never to explain on, and never with labels over its words.
 - A picture painted for the scene, found on the open web or an icon fills what
   the deck does not show; it never pushes out a deck picture that fits.
+- An icon is a small symbol beside words or in a diagram, never a scene's main
+  picture and never shown large: a lone icon filling half the frame looks cheap.
 
 **What you made is looked at.** After each render, the checks run and a
 reviewer looks at your frames. What failed, and what the reviewer says *must*

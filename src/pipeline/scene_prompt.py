@@ -86,6 +86,10 @@ PICTURE_RULES = (
     "serve: you judge from what was measured.\n"
     "- Pictures painted or found for this scene fill what the deck does not show; "
     "they never push out a deck picture that fits.\n"
+    "- An icon (role icon) is a small symbol beside words or a part of a diagram -- "
+    "a step's mark in steps, an item in a hub -- never a scene's main picture and "
+    "never shown large: a lone icon filling half the frame looks cheap. A scene with "
+    "only icons draws the idea itself as its main picture.\n"
     "A scene with pictures offered shows at least one.")
 
 
