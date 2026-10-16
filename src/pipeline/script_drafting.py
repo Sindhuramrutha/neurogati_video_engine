@@ -287,7 +287,7 @@ def _write_section(
                   for scene in written_scenes]
 
     scenes, unsupported, uncovered = _keep_to_slides(
-        system_prompt, source, scenes, notes, section.title)
+        system_prompt, source, scenes, notes, section.title, own_slides=bool(section.sources))
     written = SectionScript(section_id=section.id, scenes=scenes)
     written.written_from = narration_fingerprints(section, extraction)
     written.unsupported, written.uncovered = unsupported, uncovered

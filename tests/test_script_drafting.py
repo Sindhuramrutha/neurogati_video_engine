@@ -672,6 +672,23 @@ def test_explaining_a_slide_is_not_flagged_and_nothing_is_revised(monkeypatch):
 
 
 @pytest.mark.real_fact_check
+def test_a_close_with_no_slides_of_its_own_is_not_made_to_cover_every_point(monkeypatch):
+    """Held to every point of the whole plan, a one-minute close was revised to cover
+    twelve of them and ran to 238 words."""
+    review = script_review.SlideReview(points=[
+        script_review.SlidePoint(slide="slide 2", point="the heart", covered=False),
+        script_review.SlidePoint(slide="slide 7", point="the syncytium", covered=False)])
+    model = SlideModel(review)
+    monkeypatch.setattr("pipeline.llm.complete_structured", model)
+
+    scenes, claims, missing = script_review.keep_to_slides(
+        "", "the whole plan", two_scenes(), [], "Close", own_slides=False)
+
+    assert len(model.asked) == 1, "nothing to revise"
+    assert scenes == two_scenes() and claims == [] and missing == []
+
+
+@pytest.mark.real_fact_check
 def test_a_revision_that_loses_a_scene_keeps_the_draft_and_names_what_was_found(monkeypatch):
     review = script_review.SlideReview(points=[
         script_review.SlidePoint(slide="slide 7", point="the syncytium theory", covered=False)])

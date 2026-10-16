@@ -80,27 +80,33 @@ def _review(source: str, scenes: list[ScriptScene]) -> SlideReview:
         max_tokens=REVIEW_TOKENS)
 
 
-def _findings(review: SlideReview) -> tuple[list[str], list[str]]:
+def _findings(review: SlideReview, coverage: bool = True) -> tuple[list[str], list[str]]:
     """(what leads away or is wrong, slide points not covered), trimmed."""
     claims = [c.strip() for c in [*review.wrong, *review.leads_away] if c.strip()]
-    missing = [f"{p.slide}: {p.point}".strip() for p in review.points if not p.covered]
+    missing = [f"{p.slide}: {p.point}".strip() for p in review.points
+               if not p.covered] if coverage else []
     return claims[:MOST_FINDINGS], missing[:MOST_FINDINGS]
 
 
 def keep_to_slides(system_prompt: str, source: str, scenes: list[ScriptScene],
-                    notes: list[str], title: str
+                    notes: list[str], title: str, own_slides: bool = True
                     ) -> tuple[list[ScriptScene], list[str], list[str]]:
     """The drafted scenes, checked against the slides and -- when they leave a point
     out, lead away from the slides, or get something wrong -- revised once by the
     agent, which decides what to change and what to keep. Returns (the scenes, the
     claims still standing, the points still not covered): the agent's last word,
-    for a person to see."""
+    for a person to see.
+
+    A section with no slides of its own -- an opening, a recap, a close -- is
+    written from the whole plan, and is checked for what leads away or is wrong,
+    not for covering every point: held to that, Demo 003's one-minute close was
+    revised to cover twelve points and ran to 238 words."""
     try:
         review = _review(source, scenes)
     except ModelCallFailed as failure:
         notes.append(f'"{title}": it could not be checked against its slides ({failure}).')
         return scenes, [], []
-    claims, missing = _findings(review)
+    claims, missing = _findings(review, own_slides)
     if not claims and not missing:
         return scenes, [], []
 
@@ -140,7 +146,7 @@ def keep_to_slides(system_prompt: str, source: str, scenes: list[ScriptScene],
                  f"({len(missing)} point(s) to cover, {len(claims)} sentence(s) to bring "
                  "back or correct).")
     try:
-        still_claims, still_missing = _findings(_review(source, scenes))
+        still_claims, still_missing = _findings(_review(source, scenes), own_slides)
     except ModelCallFailed:
         return scenes, [], []
     return scenes, still_claims, still_missing
