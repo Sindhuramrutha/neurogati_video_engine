@@ -124,3 +124,34 @@ def test_a_scene_that_cannot_start_is_failed_with_why(project_root, monkeypatch)
 
     state = load_state(scene_folder(project, visual, create=True))
     assert state["status"] == "failed" and "could not be measured" in state["error"]
+
+
+def test_a_clip_held_open_by_a_player_does_not_end_the_scene(tmp_path, monkeypatch):
+    """Demo 003: scene 15's last clip was open in the page playing it; replacing it
+    raised PermissionError and the scene ended. Now it is waited out, and if it stays
+    open the round fails with the reason and the next round tries again."""
+    from pathlib import Path as _Path
+
+    from pipeline import scene_lab, scene_program
+
+    clip = tmp_path / "render.mp4"
+    clip.write_bytes(b"clip")
+    tries = []
+
+    def held(self, missing_ok=False):
+        tries.append(1)
+        if len(tries) < 3:
+            raise PermissionError("in use")
+        original(self, missing_ok=missing_ok)
+
+    original = _Path.unlink
+    monkeypatch.setattr(_Path, "unlink", held)
+    assert scene_program._clear_last_clip(clip, sleep=lambda s: None)
+    assert len(tries) == 3 and not clip.exists()
+
+    monkeypatch.setattr(_Path, "unlink", lambda self, missing_ok=False: (_ for _ in ()).throw(
+        PermissionError("in use")))
+    assert not scene_program._clear_last_clip(clip, sleep=lambda s: None)
+    monkeypatch.setattr(scene_lab, "_clear_last_clip", lambda clip: False)
+    ran = scene_lab.run_script(tmp_path)
+    assert ran["code"] == 1 and "open in another program" in ran["log"]

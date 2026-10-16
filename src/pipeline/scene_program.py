@@ -224,3 +224,24 @@ def _probe(video: Path) -> dict[str, Any]:
     return {"width": picture.get("width", 0), "height": picture.get("height", 0),
             "seconds": float(facts.get("format", {}).get("duration") or 0),
             "has_sound": any(s.get("codec_type") == "audio" for s in streams)}
+
+
+CLIP_LOCK_WAITS = (0.5, 1, 2, 4, 8)      # seconds; a page playing the clip lets go soon
+
+
+def _clear_last_clip(clip: Path, waits=CLIP_LOCK_WAITS, sleep=None) -> bool:
+    """Remove the last round's clip. On Windows a clip being played -- the page
+    showing its preview -- cannot be removed; Demo 003 lost a scene to that, the
+    error ending it outright. Waited out a little; False if it stays open."""
+    import time
+
+    sleep = sleep or time.sleep
+    for pause in (*waits, None):
+        try:
+            clip.unlink(missing_ok=True)
+            return True
+        except PermissionError:
+            if pause is None:
+                return False
+            sleep(pause)
+    return False

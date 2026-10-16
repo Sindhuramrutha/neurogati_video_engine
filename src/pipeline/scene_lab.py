@@ -44,6 +44,7 @@ from pipeline.generation import WORDS_PER_SECOND, VisualPlanStore, _now, brief_f
 from pipeline.plan_handoff import _check
 from pipeline.rendering import FRAME_HEIGHT, FRAME_RATE, FRAME_WIDTH
 from pipeline.scene_program import (
+    _clear_last_clip,
     _probe,
     entry_of,
     extend_brief,
@@ -218,7 +219,11 @@ def run_script(folder: Path, seconds: int = RUN_TIMEOUT_SECONDS) -> dict[str, An
     """Run `scene.py` in its folder and come back, whatever it does."""
     from pipeline import project_work
 
-    (folder / "render.mp4").unlink(missing_ok=True)
+    if not _clear_last_clip(folder / "render.mp4"):
+        log = ("render.mp4 is open in another program (the page playing it, a player), "
+               "so this round could not replace it. Close it; the next round tries again.")
+        (folder / "log.txt").write_text(log, encoding="utf-8")
+        return {"code": 1, "timed_out": False, "log": log}
     code_folder = str(resources_root() / "code")
     environment = {name: value for name, value in os.environ.items()
                    if name.upper() in SCENE_ENVIRONMENT} | {

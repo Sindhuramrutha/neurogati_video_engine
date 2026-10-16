@@ -46,7 +46,7 @@ def _checks(view: dict) -> list[dict]:
     return [c for c in view["checks"] if c["status"] == "fail"]
 
 
-def build(name: str, deck: Path, minutes: int) -> str:
+def build(name: str, deck: Path, minutes: int, voice: str = "") -> str:
     from pipeline import operations, plan_agent, video_setup
     from pipeline.assets_handoff import confirm_assets
     from pipeline.core import require_project
@@ -62,7 +62,7 @@ def build(name: str, deck: Path, minutes: int) -> str:
     library = operations.refresh_asset_library(slug)
     say("pictures:", library["audit"]["usable_count"], "usable of", len(library["figures"]))
     confirm_assets(slug)
-    video_setup.save(slug, SETUP)
+    video_setup.save(slug, SETUP | ({"voice": voice} if voice else {}))
 
     plan_agent.set_setup(slug, {"length_text": f"About {minutes} minutes",
                                 "audience": "Curious learners new to neuroscience"})
@@ -212,6 +212,8 @@ def main() -> None:
         ROOT.parents[1] / "contents" / "01-DEMYSTIFYING THE BRAIN"
         / "Demystifying-the-Brain  Chapter 1.pptx"))
     parser.add_argument("--minutes", type=int, default=32)
+    parser.add_argument("--voice", default="",
+                        help="an Edge voice the app offers, e.g. en-IN-NeerjaNeural")
     parser.add_argument("--slug", default="", help="carry on this project")
     parser.add_argument("--from", dest="start", default="script",
                         choices=("script", "prepare", "generate", "render", "export"))
@@ -220,7 +222,7 @@ def main() -> None:
     if chosen.slug:
         slug, todo = chosen.slug, steps[steps.index(chosen.start):]
     else:
-        slug, todo = build(chosen.name, Path(chosen.deck), chosen.minutes), steps
+        slug, todo = build(chosen.name, Path(chosen.deck), chosen.minutes, chosen.voice), steps
     for step in todo:
         say("--", step)
         globals()[step](slug)
