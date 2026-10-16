@@ -321,3 +321,24 @@ def test_export_credits_every_outside_picture_once(tmp_path, monkeypatch):
     monkeypatch.setattr("pipeline.scene_program.scene_folder", lambda project, visual: visual)
 
     assert outside_pictures.credits(Thing(root=tmp_path)) == [entry]
+
+
+def test_a_picture_another_scene_plans_to_show_is_not_offered_as_unused(tmp_path, monkeypatch):
+    """Scenes are made four at a time. Three scenes of one section each saw the
+    robot-hand picture as "not yet shown" and all made it their subject."""
+    project, section, plan, library = a_deck(tmp_path, monkeypatch)
+    visuals = [Thing(id="v1", brief="PICTURE: galen figure\nDRAW: Galen"),
+               Thing(id="v2", brief="PICTURE: none"),
+               Thing(id="v3", brief="PICTURE: volta figure")]
+    monkeypatch.setattr("pipeline.generation.VisualPlanStore.load",
+                        lambda self: Thing(visuals=visuals))
+    monkeypatch.setattr("pipeline.scene_program.scene_folder",
+                        lambda project, visual, create=False: None)
+    monkeypatch.setattr("pipeline.plan_pictures.assets_for_later_stages",
+                        lambda project: Thing(library=library))
+
+    shown = scene_pictures.shown_pictures(project, skip_visual_id="v3")
+
+    assert shown == {str(tmp_path / "extraction/assets/galen.png"): ["scene 1, planned"]}
+    assert scene_pictures.shown_pictures(project, planned=False) == {}, \
+        "the video's count is of what was made, not what was planned"

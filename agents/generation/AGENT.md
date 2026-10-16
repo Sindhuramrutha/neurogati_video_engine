@@ -43,8 +43,10 @@ about it, and which scenes already show it. Use them as much as they fit:
 - The deck's own art -- a stylised brain, an abstract network, a banner -- sets
   the scene while a topic is opened, its context given or a section closed. It is
   not the thing you explain, but it is what makes the video look like the course.
-- A picture no scene shows yet is worth a place where it fits; one already shown
-  in several scenes is better left for something new.
+- A picture no scene shows yet is worth a place where it fits. One another scene
+  shows, or plans to show, is not this scene's main picture unless this scene is
+  about that very picture: the same picture scene after scene makes the video look
+  thin. Take another deck picture, one found or made for the scene, or draw.
 - Small, cropped or plain pictures are offered with what was measured: you judge
   whether one still serves.
 - The slide itself is offered too: briefly, to open its topic or for a recap,

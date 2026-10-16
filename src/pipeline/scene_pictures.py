@@ -202,26 +202,39 @@ def _shown_indexes(folder: Path) -> set[int]:
     return found
 
 
-def shown_pictures(project, skip_visual_id: str = "") -> dict[str, list[str]]:
+def shown_pictures(project, skip_visual_id: str = "",
+                   planned: bool = True) -> dict[str, list[str]]:
     """Every picture some scene's program shows, by path: the scenes that show it
     ("scene 7"). Read from each scene's own folder -- its brief's pictures and the
-    indexes its program uses -- so it is what was made, not what was planned."""
+    indexes its program uses.
+
+    With `planned`, also the deck pictures each other scene's script names on its
+    PICTURE line ("scene 2, planned"): scenes are made four at a time, and three
+    scenes of one section, each seeing a picture "not yet shown" by the others,
+    all made the same picture their subject."""
     from pipeline.generation import VisualPlanStore
+    from pipeline.plan_pictures import assets_for_later_stages
     from pipeline.scene_program import scene_folder
 
+    figures = assets_for_later_stages(project).library.handed_on() if planned else []
     shown: dict[str, list[str]] = {}
     for number, visual in enumerate(VisualPlanStore(project.root).load().visuals, start=1):
         if visual.id == skip_visual_id:
             continue
+        here: set[str] = set()
         folder = scene_folder(project, visual)
-        if folder is None or not (folder / "brief.json").exists():
-            continue
-        brief = read_json_object(folder / "brief.json", "brief") or {}
-        pictures = (brief.get("assets") or {}).get("pictures") or brief.get("pictures") or []
-        for index in _shown_indexes(folder):
-            if 0 <= index < len(pictures):
-                shown.setdefault(_same_file(project, pictures[index]), []).append(
-                    f"scene {number}")
+        if folder is not None and (folder / "brief.json").exists():
+            brief = read_json_object(folder / "brief.json", "brief") or {}
+            pictures = (brief.get("assets") or {}).get("pictures") or brief.get("pictures") or []
+            here |= {_same_file(project, pictures[index]) for index in _shown_indexes(folder)
+                     if 0 <= index < len(pictures)}
+        for path in here:
+            shown.setdefault(path, []).append(f"scene {number}")
+        named = _named(visual.brief)
+        for figure in figures:
+            path = str(project.root / figure.shown_path)
+            if path not in here and _is_named(figure, named):
+                shown.setdefault(path, []).append(f"scene {number}, planned")
     return shown
 
 
@@ -241,7 +254,7 @@ def deck_usage(project) -> dict[str, Any]:
     from pipeline.plan_pictures import assets_for_later_stages
 
     library = assets_for_later_stages(project).library
-    shown = shown_pictures(project)
+    shown = shown_pictures(project, planned=False)
     pictures = []
     for figure in library.handed_on():
         path = str(project.root / figure.shown_path)
