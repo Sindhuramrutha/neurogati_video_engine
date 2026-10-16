@@ -323,7 +323,8 @@ function renderShot(visual) {
         <summary>What the script asked for</summary>
         <p>${escapeHtml(visual.brief || "Nothing was written for this scene.")}</p>
       </details>
-      ${visual.note ? `<span class="shot-note">${escapeHtml(visual.note)}</span>` : ""}
+      <!-- The scene's note (a failing check's whole detail) is read in the scene
+           itself, behind "Open the scene": on the card it ran to a dozen lines. -->
 
       <button class="btn btn-accent shot-open"
           data-open-scene="${escapeHtml(visual.id)}">Open the scene</button>
