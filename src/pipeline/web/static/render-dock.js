@@ -224,12 +224,12 @@ export function renderRenderPage(stage) {
       <div class="rd-bar-slot">${renderBar()}</div>
       <div class="rd-body">${renderSettings() + renderQueue()}</div>
     </section>
-    <section class="render-video-setup" aria-label="Voice and music">
-      <h4>Voice and music</h4>
+    <details class="render-video-setup" aria-label="Voice and music">
+      <summary><h4>Voice and music</h4></summary>
       <p class="muted">The same choices as the Scene Plan's setup: changing them here changes
         them there, and the next render speaks and mixes with them.</p>
       <div id="render-video-setup"></div>
-    </section>`;
+    </details>`;
   mountVideoSetup(select("#render-video-setup"), { parts: ["voice", "music"] });
   ensureVoices().then(paint);
   poll();

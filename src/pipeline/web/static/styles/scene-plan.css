@@ -262,7 +262,9 @@
   margin-top: 18px; padding: 14px 16px; border: var(--edge) solid var(--line);
   border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-sm);
 }
-.render-video-setup h4 { margin: 0 0 4px; }
+.render-video-setup h4 { display: inline; margin: 0; }
+.render-video-setup > summary { cursor: pointer; }
+.render-video-setup[open] > summary { margin-bottom: 6px; }
 .render-video-setup > p { margin: 0 0 10px; font-size: 13px; }
 .vs-sounds { display: grid; gap: 6px; margin-top: 4px; }
 .vs-sound-row { display: grid; grid-template-columns: 1fr auto 1fr auto; gap: 6px; align-items: center; }
