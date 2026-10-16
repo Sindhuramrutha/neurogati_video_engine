@@ -19,7 +19,7 @@ from tests.test_slide_first import project_root  # noqa: F401
 
 LAID_OUT = '''# /// script
 # requires-python = ">=3.11"
-# dependencies = ["manim>=0.19", "pillow"]
+# dependencies = ["manim>=0.19", "pillow<13"]
 # ///
 from manimkit import *
 
@@ -223,7 +223,7 @@ def test_a_scene_paints_its_illustration_once_and_only_when_asked(tmp_path, monk
 
 TEMPLATED = '''# /// script
 # requires-python = ">=3.11"
-# dependencies = ["manim>=0.19", "pillow"]
+# dependencies = ["manim>=0.19", "pillow<13"]
 # ///
 from manimkit import *
 

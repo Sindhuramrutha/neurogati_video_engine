@@ -245,3 +245,22 @@ def _clear_last_clip(clip: Path, waits=CLIP_LOCK_WAITS, sleep=None) -> bool:
                 return False
             sleep(pause)
     return False
+
+
+# Releases known to break a scene's own environment, held back in what a program
+# declares. Pillow 13.0.0 (17 Oct 2026) refuses the image mode Manim 0.22 passes
+# to Image.fromarray: every picture in every Manim scene failed to draw.
+HELD_BACK = {"pillow": "pillow<13"}
+_SCRIPT_BLOCK = re.compile(r"^# /// script\s*$.*?^# ///\s*$", re.MULTILINE | re.DOTALL)
+
+
+def hold_back(code: str) -> str:
+    """A scene program with the releases that break it held back in its declared
+    dependencies -- the model writes its own, and writes "pillow" bare."""
+    block = _SCRIPT_BLOCK.search(code)
+    if not block:
+        return code
+    declared = block.group(0)
+    for name, held in HELD_BACK.items():
+        declared = re.sub(rf'"{name}"', f'"{held}"', declared, flags=re.IGNORECASE)
+    return code[:block.start()] + declared + code[block.end():]

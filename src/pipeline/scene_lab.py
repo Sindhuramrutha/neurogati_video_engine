@@ -48,6 +48,7 @@ from pipeline.scene_program import (
     _probe,
     entry_of,
     extend_brief,
+    hold_back,
     make_preview,
     scene_folder,
 )
@@ -208,6 +209,8 @@ def write_brief(project, visual) -> dict[str, Any]:
 def _command(folder: Path) -> list[str]:
     arguments = ["scene.py", "--brief", "brief.json", "--out", "render.mp4"]
     code = (folder / "scene.py").read_text(encoding="utf-8")
+    if (held := hold_back(code)) != code:          # a release known to break it
+        (folder / "scene.py").write_text(code := held, encoding="utf-8")
     uv = shutil.which("uv")
     if uv and INLINE_METADATA.search(code):
         # Its own environment, holding exactly what the script declares.

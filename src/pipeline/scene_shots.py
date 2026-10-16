@@ -271,7 +271,7 @@ def program_for(spec: dict, pictures: int) -> str:
     body.append("self.finish()")
     indented = "\n".join("        " + line for line in body)
     return ("# /// script\n# requires-python = \">=3.11\"\n"
-            "# dependencies = [\"manim>=0.19\", \"pillow\"]\n# ///\n"
+            "# dependencies = [\"manim>=0.19\", \"pillow<13\"]\n# ///\n"
             "# Written from the scene's shots (scene_shots.py): edit the shots, not this.\n"
             "from manimkit import *\n\n\n"
             "class TheScene(ExplainerScene):\n    def construct(self):\n"

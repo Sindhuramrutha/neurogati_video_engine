@@ -155,3 +155,17 @@ def test_a_clip_held_open_by_a_player_does_not_end_the_scene(tmp_path, monkeypat
     monkeypatch.setattr(scene_lab, "_clear_last_clip", lambda clip: False)
     ran = scene_lab.run_script(tmp_path)
     assert ran["code"] == 1 and "open in another program" in ran["log"]
+
+
+def test_a_release_that_breaks_scenes_is_held_back_in_what_a_program_declares():
+    """Pillow 13.0.0 (17 Oct 2026) broke every Manim picture: Image.fromarray refused
+    the mode Manim 0.22 passes. The model declares "pillow" bare in its programs."""
+    from pipeline.scene_program import hold_back
+
+    code = ('# /// script\n# requires-python = ">=3.11"\n'
+            '# dependencies = ["manim>=0.19", "Pillow"]\n# ///\nprint("pillow")\n')
+    held = hold_back(code)
+    assert '"manim>=0.19", "pillow<13"]' in held
+    assert held.endswith('print("pillow")\n'), "only the declared dependencies change"
+    assert hold_back(held) == held
+    assert hold_back('print("pillow")') == 'print("pillow")', "no block, nothing to hold"

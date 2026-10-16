@@ -64,7 +64,7 @@ Motion explains the current spoken idea; it never decorates.
 
        # /// script
        # requires-python = ">=3.11"
-       # dependencies = ["manim>=0.19", "pillow"]
+       # dependencies = ["manim>=0.19", "pillow<13"]
        # ///
 
 11. **Record every outside resource** with `scenekit.fetch(url, name, licence,
