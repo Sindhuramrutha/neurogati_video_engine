@@ -83,22 +83,41 @@ def notes(scenes: Path, pictures: list[str]) -> dict[str, dict[str, str]]:
     from pipeline.llm import ModelCallFailed, ModelNotConfigured
 
     path = scenes / VERDICTS
-    with _LOCK:
-        known = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+
+    def read() -> dict[str, Any]:
+        with _LOCK:
+            return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+
+    known = read()
     for picture in pictures:
         if picture in known or _is_made_for_the_scene(picture):
             continue
-        try:
-            answer = _ask(Path(picture))
-        except (ModelCallFailed, ModelNotConfigured, OSError) as failure:
-            logger.warning("picture not described (%s): %s", picture, failure)
-            continue
-        with _LOCK:
-            known = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
-            known[picture] = answer
-            scenes.mkdir(parents=True, exist_ok=True)
-            path.write_text(json.dumps(known, indent=1, ensure_ascii=False), encoding="utf-8")
+        # Four scenes start at once and are offered the same deck: one asks about
+        # a picture while the others wait for its answer, instead of four asking.
+        with _asking(picture):
+            known = read()
+            if picture in known:
+                continue
+            try:
+                answer = _ask(Path(picture))
+            except (ModelCallFailed, ModelNotConfigured, OSError) as failure:
+                logger.warning("picture not described (%s): %s", picture, failure)
+                continue
+            with _LOCK:
+                known = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+                known[picture] = answer
+                scenes.mkdir(parents=True, exist_ok=True)
+                path.write_text(json.dumps(known, indent=1, ensure_ascii=False),
+                                encoding="utf-8")
     return {p: _as_note(known[p]) for p in pictures if p in known}
+
+
+_ASKING: dict[str, threading.Lock] = {}
+
+
+def _asking(picture: str) -> threading.Lock:
+    with _LOCK:
+        return _ASKING.setdefault(picture, threading.Lock())
 
 
 def _is_made_for_the_scene(picture: str) -> bool:
