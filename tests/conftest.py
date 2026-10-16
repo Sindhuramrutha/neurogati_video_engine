@@ -41,21 +41,23 @@ def no_preflight(request, monkeypatch):
 
 @pytest.fixture(autouse=True)
 def no_fact_check(request, monkeypatch):
-    """Drafting a section ends with a fact-check: a second model call that the
-    tests standing a model in for the drafting do not expect. Off unless a test
-    is marked `real_fact_check`, where it stands that model in itself."""
+    """Drafting a section ends with a check against its slides, and a revision when
+    it finds something: model calls the tests standing a model in for the drafting
+    do not expect. Off unless a test is marked `real_fact_check`, where it stands
+    that model in itself."""
     if request.node.get_closest_marker("real_fact_check") is None:
-        monkeypatch.setattr("pipeline.script_drafting._fact_check",
-                            lambda source, scenes, notes, title: [])
+        monkeypatch.setattr("pipeline.script_drafting._keep_to_slides",
+                            lambda system, source, scenes, notes, title: (scenes, [], []))
 
 
 @pytest.fixture(autouse=True)
 def pictures_teach(request, monkeypatch):
-    """Every picture is vetted by the vision model before a scene is offered it;
-    in tests each one teaches, unless a test is marked `real_vetting`."""
+    """Every deck picture is described once by the vision model before a scene is
+    offered it; in tests each one is a figure that explains, unless a test is
+    marked `real_vetting`."""
     if request.node.get_closest_marker("real_vetting") is None:
         monkeypatch.setattr("pipeline.scene_vetting._ask",
-                            lambda path: {"teaches": True, "what": "a figure"})
+                            lambda path: {"what": "a figure", "role": "explains"})
 
 
 @pytest.fixture(autouse=True)
@@ -71,8 +73,9 @@ def shared_state_in_tmp(tmp_path, monkeypatch):
 
 
 def pytest_configure(config):
-    config.addinivalue_line("markers", "real_fact_check: run the script's fact-check")
-    config.addinivalue_line("markers", "real_vetting: vet pictures with the stand-in model")
+    config.addinivalue_line("markers",
+                            "real_fact_check: run the script's check against its slides")
+    config.addinivalue_line("markers", "real_vetting: describe pictures with the stand-in model")
 
 
 # Two seconds or more each (measured on the machine Demo 001 was made on): renders,

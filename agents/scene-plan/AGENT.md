@@ -44,12 +44,16 @@ recap, a close, a question to the viewer, or none of these. A section that is
 about no slide has no units; name it yourself. For every section, say in your own
 words how it should be told -- its approach, its voice and its purpose here.
 
-## Fidelity
+## The slides are the direction
 
-Every fact, number, example and claim must come from the extracted content. Do not
-invent statistics, anecdotes or analogies, however plausible. If the material for a
-part is thin, plan it short rather than padding it. `web_search` is for checking
-your own understanding, never a source of facts for narration.
+Every section and scene is about what the slides say, and every point on every
+slide is taught somewhere. A section may be told with more than the slides' words
+-- their terms explained, the context a point needs, an example, a plain
+comparison, the slide's pictures walked through -- but never with material they do
+not point toward: no story, person, statistic or conclusion of your own, however
+plausible. When the length asked is more than the slides can fill that way, say so
+plainly rather than reaching for other topics. `web_search` is for checking your own
+understanding, never a source of material for the video.
 
 ## How a section is shown
 

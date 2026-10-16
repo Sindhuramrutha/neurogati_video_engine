@@ -139,8 +139,8 @@ def generate(slug: str) -> None:
 
     project = require_project(slug)
     visuals = VisualPlanStore(project.root).load().visuals
-    # A finished scene is kept, unless a picture it was offered has since been
-    # found not to teach (scene_vetting): that one is made again from the start.
+    # A finished scene is kept, unless a picture it was offered is no longer
+    # offered (left out on Assets & Design since): that one is made again.
     todo, again = [], []
     for visual in visuals:
         folder = scene_folder(project, visual, create=True)
@@ -154,8 +154,8 @@ def generate(slug: str) -> None:
             again.append(visual.id)
         elif not done:
             todo.append(visual.id)
-    say("making", len(todo), "scenes;", len(again), "made again without pictures that "
-        "do not teach;", len(visuals) - len(todo) - len(again), "kept")
+    say("making", len(todo), "scenes;", len(again), "made again without pictures no "
+        "longer offered;", len(visuals) - len(todo) - len(again), "kept")
     if again:
         scene_agent.start(slug, again, fresh=True)
     scene_agent.start(slug, todo)

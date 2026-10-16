@@ -38,7 +38,9 @@ words each part arrives on, laid out, timed and moved so it passes every check:
 named ((x, y) are the part's place as fractions of the picture, from its
 description); `self.steps([(label, picture, cue)], title)` -- an experiment or
 process; `self.compare((heading, picture, [points], cue), (...), title)`;
-`self.person(picture, name, line, cue)`; `self.key_idea(statement, picture, cue)`.
+`self.person(picture, name, line, cue)`; `self.key_idea(statement, picture, cue)`;
+`self.opener(picture, title, [(line, cue)], cue)` -- a topic opened on a picture that
+sets the scene (the deck's own art), not one explained part by part.
 
 Diagrams laid out for you -- prefer them to placing boxes by hand, which is what
 fails most (boxes over boxes, circles through their own labels, a diagram in one
@@ -964,6 +966,61 @@ class ExplainerScene(Scene):
         self._at_cue(cue)
         self.play(self.reveal(words), *([manim.FadeIn(image, run_time=0.6)] if image else []))
         self.play(self.draw(rule, run_time=0.6))
+
+    @_composed
+    def opener(self, picture: str, title: str, lines: list | None = None,
+               cue: str | None = None):
+        """A topic opened on a picture that sets the scene -- the deck's own art, a
+        cover, a portrait of the era -- rather than one explained part by part: the
+        picture large on one side (across the top when it is a banner), slowly
+        drawing nearer, the topic's title beside it and up to three short `lines`,
+        each (text, cue), arriving on their words."""
+        from manim import Dot, Line
+        from PIL import Image as _Image
+        with _Image.open(_trimmed(picture)) as opened:
+            aspect = opened.width / max(1, opened.height)
+        banner = aspect >= 1.9
+        if banner:
+            image = self._fit(picture, 2 * self.SAFE_X - 0.6, 2.9, (0.0, 1.75))
+            left, width, top = -self.SAFE_X + 0.2, 2 * self.SAFE_X - 0.4, \
+                image.get_bottom()[1] - 0.35
+        else:
+            image = self._fit(picture, 5.4, 6.2, (3.25, -0.05))
+            left, width, top = -self.SAFE_X + 0.1, 5.9, 2.3
+        heading = self._wrapped(title, width, self.TITLE_SIZE - 8)
+        heading.move_to([left + heading.width / 2, top - heading.height / 2, 0])
+        rule = Line([left, heading.get_bottom()[1] - 0.25, 0],
+                    [left + min(width, max(2.5, heading.width)), heading.get_bottom()[1] - 0.25, 0],
+                    color=self.colour(0), stroke_width=6)
+        placed, y = [], rule.get_center()[1] - 0.45
+        for index, (text, line_cue) in enumerate((lines or [])[:3]):
+            words = self._wrapped(text, width - 0.6, self.LABEL_SIZE)
+            words.move_to([left + 0.55 + words.width / 2, y - words.height / 2, 0])
+            dot = Dot([left + 0.2, words.get_top()[1] - 0.22, 0], radius=0.09,
+                      color=self.colour(index + 1))
+            placed.append((manim.VGroup(dot, words), line_cue))
+            y = words.get_bottom()[1] - 0.35
+        self._at_cue(cue)
+        self.play(manim.FadeIn(image, scale=0.94, run_time=0.8), self.reveal(heading))
+        self.play(self.draw(rule, run_time=0.5))
+        grown = 1.0
+        for group, line_cue in placed:
+            grown = self._drift(image, self.when(line_cue) if line_cue else self.now, grown)
+            self.play(self.reveal(group))
+        self._drift(image, min(BRIEF.seconds - 0.1, self.now + 4.0), grown)
+
+    def _drift(self, image, until: float, grown: float) -> float:
+        """The picture drawing slowly nearer until `until` -- the waiting is
+        movement -- never more than six percent in all. Returns how far it has grown."""
+        seconds = until - self.now
+        if seconds < 0.3 or grown >= 1.06:
+            if seconds > 0.02:
+                self.until(until)
+            return grown
+        step = min(1.06 / grown, 1 + 0.01 * seconds)
+        self.play(image.animate.scale(step), run_time=seconds, rate_func=manim.linear)
+        self.snapshot()
+        return grown * step
 
     # --- what is on screen, for the checks ------------------------------------------------
 

@@ -190,19 +190,22 @@ def handoff_state(project) -> dict[str, Any]:
 
 
 def _pictures_handed_on(project) -> dict[str, Any]:
-    """The pictures Assets & Design handed on, and which of them cannot be a
-    scene's picture. Judged here, where a picture is chosen for a scene: that
-    layer lists what exists and judges nothing."""
+    """The deck's pictures the plan carried, how many of them the video shows, and
+    what was measured about the rest. Every one is offered to every scene, nearest
+    first; what was measured is said to the agent, not used to refuse it."""
     from pipeline.plan_pictures import assets_for_later_stages
+    from pipeline.scene_pictures import write_usage
 
     library = assets_for_later_stages(project).library
     handed_on = library.handed_on()
+    usage = write_usage(project)
     return {
         "handed_on": len(handed_on),
-        "usable": len(library.usable()),
-        "cannot_fill_a_frame": [
-            {"name": f.name, "why": f.why_not_a_frame}
-            for f in handed_on if f not in library.usable()],
+        "shown": usage["shown"],
+        "not_shown": [{"name": p["name"], "slide_number": p["slide_number"]}
+                      for p in usage["not_shown"]],
+        "measured": [{"name": f.name, "why": f.why_not_a_frame}
+                     for f in handed_on if f.why_not_a_frame],
     }
 
 

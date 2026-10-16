@@ -32,10 +32,25 @@ labelled, a quantity that grows, two things that move apart to be compared:
 these carry the idea. A label that merely fades in and out carries nothing.
 Read `motion.md` for the moves that fit what the narration says.
 
-**Use the author's picture.** When the brief offers pictures from the section's
-slides, show at least one and explain it on screen: label its parts as they are
-named, trace its arrows, zoom into the part that matters. The whole slide image
-is reference only, never the shot.
+**Make it look made from the deck.** The video comes from a course's slide deck,
+and it should look like it. The brief's picture catalogue offers every picture in
+the deck, nearest first, with what each is, what it is good for, what was measured
+about it, and which scenes already show it. Use them as much as they fit:
+
+- A figure, photograph, portrait or diagram that shows what is being said is the
+  scene's subject: label its parts as they are named, trace its arrows, zoom into
+  the part that matters.
+- The deck's own art -- a stylised brain, an abstract network, a banner -- sets
+  the scene while a topic is opened, its context given or a section closed. It is
+  not the thing you explain, but it is what makes the video look like the course.
+- A picture no scene shows yet is worth a place where it fits; one already shown
+  in several scenes is better left for something new.
+- Small, cropped or plain pictures are offered with what was measured: you judge
+  whether one still serves.
+- The slide itself is offered too: briefly, to open its topic or for a recap,
+  never to explain on, and never with labels over its words.
+- A picture painted for the scene, found on the open web or an icon fills what
+  the deck does not show; it never pushes out a deck picture that fits.
 
 **What you made is looked at.** After each render, the checks run and a
 reviewer looks at your frames. What failed, and what the reviewer says *must*
@@ -66,9 +81,11 @@ than a blank frame, because it looks like evidence.
 paragraph. Text is large (at least 36 px lines at 1080p), inside the frame, never
 overlapping other text, and never crossed by a line or an arrow.
 
-**Decoration is not a visual.** A stock picture of a laboratory next to a
-sentence about sampling rates teaches nothing. Every shape that stands for
-something carries its few words; an empty box is a mistake.
+**Decoration sets the scene; it does not explain.** The deck's own art behind a
+topic's opening is welcome. A stock picture of a laboratory standing in for the
+explanation of sampling rates teaches nothing: when the words explain a
+mechanism, show the mechanism. Every shape that stands for something carries its
+few words; an empty box is a mistake.
 
 **Never ask.** If the brief is silent, or it and the checks pull in different
 directions, or the source has no figure for something the narration needs,
@@ -79,6 +96,6 @@ assumed and changes it afterwards.
 
 ## What you are given
 
-The plan, the script scene by scene, what the extraction holds, the section's
+The plan, the script scene by scene, what the extraction holds, the deck's
 pictures and the video's look, and the resource library: kits, method notes and
-worked examples. A picture that Assets & Design skipped stays skipped.
+worked examples. A picture a person left out on Assets & Design is never offered.

@@ -283,19 +283,21 @@ def _legible(small: list[str], smallest: int = SMALLEST_LINE_PX) -> dict[str, st
 
 
 def _pictures_check(snapshots: list[dict], brief: dict[str, Any]) -> dict[str, str]:
-    """A section whose slides have pictures shows them: the slide's own figure,
-    explained on screen, not left out for shapes drawn from nothing."""
-    offered = (brief.get("assets") or {}).get("pictures") or []
+    """A scene with pictures of its own -- named in its brief, made for it, from its
+    own slide -- shows one: the slide's own figure, explained on screen, not left
+    out for shapes drawn from nothing. The rest of the deck is offered too, but a
+    scene with nothing near it is not made to show something far away."""
+    from pipeline.scene_review import own_pictures
+
+    near = own_pictures(brief)
     shown = any(s.get("pictures") for s in snapshots)
-    if not offered:
-        return _check("pictures", "Uses the slide's pictures",
-                      "Shows a picture from its section's slides, when there is one",
-                      NOT_APPLICABLE, "Its section has no pictures.")
-    return _check("pictures", "Uses the slide's pictures",
-                  "Shows a picture from its section's slides, when there is one",
-                  PASS if shown else FAIL,
-                  "It shows one of them." if shown else
-                  f"Its section has {len(offered)} picture(s), and it shows none.")
+    rule = "Shows one of its own pictures (its brief's, its own slide's), when it has any"
+    if not near:
+        return _check("pictures", "Uses the slide's pictures", rule, NOT_APPLICABLE,
+                      "It has no pictures of its own; the deck's others were offered.")
+    return _check("pictures", "Uses the slide's pictures", rule, PASS if shown else FAIL,
+                  "It shows a picture." if shown else
+                  f"It has {len(near)} picture(s) of its own, and it shows none.")
 
 
 # --- the frames ---------------------------------------------------------------------------

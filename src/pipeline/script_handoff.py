@@ -168,13 +168,21 @@ def script_checks(project, script: Script) -> list[dict[str, str]]:
     claims = [f"“{titles.get(entry.section_id, 'Untitled')}” {claim}"
               for entry in script.section_scripts if entry.section_id in titles
               for claim in entry.unsupported]
+    missing = [f"“{titles.get(entry.section_id, 'Untitled')}” {point}"
+               for entry in script.section_scripts if entry.section_id in titles
+               for point in entry.uncovered]
     checks.append(_check(
-        "facts", "Supported by the source",
-        "The fact-check found no claim the source does not support, when it was drafted",
-        WARN if claims else PASS,
-        f"{len(claims)} claim(s) to look at: " + "; ".join(claims[:4])
-        + (" -- correct them, or keep them if they are right." if claims else "")
-        if claims else "Every claim checked is in the source."))
+        "facts", "Follows the slides",
+        "Every slide point covered; nothing that leads away from the slides or gets them "
+        "wrong (checked, and revised by the agent, when it was drafted)",
+        WARN if claims or missing else PASS,
+        " ".join(part for part in (
+            f"{len(missing)} slide point(s) not covered: " + "; ".join(missing[:3]) + "."
+            if missing else "",
+            f"{len(claims)} sentence(s) to look at: " + "; ".join(claims[:3]) + "."
+            if claims else "") if part)
+        + " -- Redraft the section, or edit it; keep what is right."
+        if claims or missing else "Every slide point is covered, and nothing leads away."))
 
     comments = _open_comments_by_section(project, plan, Stage.SCRIPT_STAGING)
     open_count = sum(len(found) for found in comments.values())

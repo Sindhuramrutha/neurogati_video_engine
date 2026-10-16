@@ -42,7 +42,7 @@ timing is measured from the narration audio rather than estimated.
 | **Assets & Design** | Every extracted picture, with what it measures and where it came from — the source, a person or a model — and a decision about each: use it or skip it. Decisions are keyed by the picture itself, so re-extracting never loses them. Also holds **the look**: the source deck's colours, fonts and proportions, and whether the video should follow them. | `assets/library.json` |
 | **Scene Plan** | The video's shape, agreed in a conversation with the planning agent: its length, its sections (each a run of slides) and the scenes each is made of. You set the length in your own words and how strictly the slides' order is kept; the agent proposes, you agree or say what to change, and only then are the scenes written. The order is held by code. The plan carries each section's pictures, the brand kit and the look on. | `scene-plan/plan.json`, `scene-plan/conversation.json` |
 | **Script & Staging** | Each plan section written as **scenes**: what is said, and a brief of what is on screen while it is said. The Scripting agent drafts one section or every unwritten one at once, from that section's own source text. Beside the editor sit the section's plan details, its source text and any review comments. Flags narration written against a plan section or source that has changed since, and narration whose section the plan no longer has. `{{VARIABLES}}` are filled everywhere they are spoken or shown. | `script-staging/script.json` |
-| **Generation** | Every scene made by a short loop: one screen, drawn by a program the model writes, renders, has reviewed and fixes until it is good, in time with the narration. Things come onto the screen as the words name them; some stay, some go, and new things keep arriving. The model chooses its renderer — a web page (GSAP, D3, three.js, anime.js), Revideo, Manim or matplotlib — is told what the slide's pictures show, and has its frames reviewed by a vision model. Fixed checks decide whether a clip may be used, then you approve it. | `generation/visuals.json`, `generation/scenes/` |
+| **Generation** | Every scene made by a short loop: one screen, drawn by a program the model writes, renders, has reviewed and fixes until it is good, in time with the narration. Things come onto the screen as the words name them; some stay, some go, and new things keep arriving. The model chooses its renderer — a web page (GSAP, D3, three.js, anime.js), Revideo, Manim or matplotlib — is offered every picture in the deck (its own slide's first) with what each is, fills what the deck does not show with a photo found under an open licence, an icon or a painting, and has its frames reviewed by a vision model. Fixed checks decide whether a clip may be used, then you approve it. | `generation/visuals.json`, `generation/scenes/` |
 | **Studio** | A multi-track timeline with playback, seeking and clip properties. Rendering synthesises the narration, measures each section's real audio length, and cuts the picture to fit. Each section is drawn with its own extracted pictures, and — when the project asks for it — the source deck's background, colours and fonts. | `studio/composition.json` |
 | **Reviewing** | Plays the rendered video with chapters and subtitles, keeps every render as a separate version, and collects comments routed back to the stage that should fix them. | `reviewing/review.json`, `reviewing/output/` |
 | **Export** | The video and everything that travels with it: a transcript, chapter marks a video host can read, a description built from the plan, and the subtitles. Every file is derived, never hand-written. Says plainly what would make the hand-over wrong — a cut built from an abandoned script, a section nobody narrated, a missing video file. | `export/manifest.json`, `export/` |
@@ -205,6 +205,20 @@ view is the file that moves on to the next stages.
   bar*. If no round drew anything, a plain stand-in is drawn, and only when not
   even that makes a clip is it marked *could not be made*. You change a scene by
   saying what to change.
+- **It looks made from the deck.** Every scene is offered every picture the
+  deck holds -- the ones its brief names, then its own slide's, the slide
+  itself, its section's, then the rest -- each with what it is, what it is good
+  for and which scenes already show it. Nothing is withheld for being small,
+  cropped or decorative: that is said, and the agent decides. A figure is a
+  scene's subject; the deck's own art opens a topic behind its title (the
+  `opener` shot). Generation and Export say how many of the deck's pictures the
+  video shows, and which it does not.
+- **What the deck does not show is found, drawn or painted.** The script says,
+  scene by scene: `PHOTO:` searches Wikimedia Commons and Openverse, keeping
+  only public domain, CC0, CC BY and CC BY-SA pictures, and a vision model picks
+  the one that is right (or it is painted instead); `ICON:` takes an icon from
+  Iconify's openly licensed sets, or the bundled Lucide set offline;
+  `ILLUSTRATE:` paints one. Each is credited in `export/credits.md`.
 - **It chooses the renderer.** A web page (GSAP, D3, three.js, anime.js) for rich
   motion, charts and 3D; Revideo for physical, spring motion and typeset maths;
   Manim for diagrams and flows; matplotlib for a chart.
@@ -231,6 +245,13 @@ view is the file that moves on to the next stages.
 - **Scenes, not a wall of text.** Each scene is what is said plus a brief of
   what is on screen while it is said. The video speaks the scenes in order, and
   a slide never runs across two of them.
+- **The slides are the direction.** Narration covers every point on its slides,
+  in its own words, and may explain them -- terms, context, examples,
+  comparisons -- but not lead away to topics, stories or people they do not
+  point toward. Each drafted section is checked against its slides, and the
+  agent revises it once from what the check found (points missed, sentences
+  that lead away or are wrong), deciding what to keep. Whatever it kept is
+  listed on the page.
 - **Draft this section** writes one section from its own source text;
   **Draft all unwritten** writes every empty section at once and never touches
   narration that is already written -- including anything typed while it runs.
@@ -253,9 +274,11 @@ warning, not only open comments, before calling a project ready.
 **Export.**
 
 - **Build export** writes `transcript.md` (every spoken word under its section),
-  `chapters.txt` (`0:00 Title` per line, ready to paste into a video host) and
-  `description.md` (audience and chapters from the plan), then lists
-  them beside the rendered video and its subtitles.
+  `chapters.txt` (`0:00 Title` per line, ready to paste into a video host),
+  `description.md` (audience and chapters from the plan) and, when the video
+  uses pictures from outside the deck, `credits.md` (each with its author,
+  source and licence), then lists them beside the rendered video and its
+  subtitles.
 - **It says what would make the hand-over wrong** before it says anything else:
   a timeline built from an abandoned script, a section with no narration, a
   video file that is no longer on disk. Open comments are reported as warnings,

@@ -20,7 +20,8 @@ from __future__ import annotations
 
 from typing import Any
 
-TEMPLATES = ("hero", "steps", "compare", "person", "key_idea", "flow", "hub", "timeline")
+TEMPLATES = ("hero", "steps", "compare", "person", "key_idea", "opener", "flow", "hub",
+             "timeline")
 MOST_SHOTS = 3
 MOST_CALLOUT_WORDS = 4
 # A label with one of these says something ("thought is segmented"); it names nothing.
@@ -41,12 +42,17 @@ the brief's assets.pictures, "when" the exact narration words a part arrives on:
   3 short], "when"}
 - person: "picture", "name", "line", "when", "line_when"
 - key_idea: "statement", "picture" (or null), "when"
+- opener: "picture", "title", "when", "lines": [{"text", "when"}] (0 to 3 short) -- a topic
+  opened, its context given or a section closed on a picture that SETS THE SCENE (the
+  deck's own art, a cover, a portrait of the era): the picture large, slowly drawing
+  nearer, the title and lines beside it. For a picture with role sets_scene.
 - flow: "title", "steps": [{"label", "when"}] -- boxes joined by arrows
 - hub: "title", "centre", "items": [{"label", "when"}] -- one idea and its parts
 - timeline: "title", "events": [{"label", "when"}] -- things in order
 Choosing: a thing that can be seen -- an experiment, an organ, an apparatus, a person -- is
 shown in its picture (hero, steps with pictures, person, compare with pictures), never as
-words in boxes; flow, hub and timeline are for ideas no picture shows. Narration that goes
+words in boxes; flow, hub and timeline are for ideas no picture shows; a scene that opens a
+topic or gives its context can open on the deck's own art (opener). Narration that goes
 in steps ("step two... then...") is steps, or one shot per step, not one still hero. Spread
 the "when"s over the WHOLE narration: the frame must change on the later sentences too --
 end on a key_idea when the narration ends on its point.
@@ -147,6 +153,13 @@ def _shot_code(shot: dict, pictures: int, at: int) -> list[str]:
     if template == "key_idea":
         return [f"self.key_idea({_text(shot.get('statement'), f'{where} statement')!r}, "
                 f"{_picture(shot.get('picture'), pictures, where)}, "
+                f"cue={opening})"]
+    if template == "opener":
+        lines = [f"({_text(item.get('text') or item.get('label'), f'{where} line')!r}, "
+                 f"{_when(item.get('when'))})"
+                 for item in _items(shot.get("lines", []), f"{where} lines", 0, 3)]
+        return [f"self.opener({_picture(shot.get('picture'), pictures, where, True)}, "
+                f"{_text(shot.get('title'), f'{where} title')!r}, [{', '.join(lines)}], "
                 f"cue={opening})"]
     if template in ("flow", "hub", "timeline"):
         return _diagram_code(template, shot, where, title)

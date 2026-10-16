@@ -66,7 +66,7 @@ def test_a_person_attaches_and_detaches_pictures_and_can_hand_back_to_the_rule(p
     s1 = next(s for s in plan.sections if s.id == "s1")
     assert s1.picture_paths == [loose] and s1.pictures_chosen
 
-    with pytest.raises(OperationFailed, match="Only a picture that can fill a frame"):
+    with pytest.raises(OperationFailed, match="Only a picture Assets & Design handed on"):
         choose_section_pictures(slug, "s1", ["extraction/assets/never.png"])
 
     plan = choose_section_pictures(slug, "s1", None)
@@ -119,8 +119,9 @@ def test_the_script_agent_is_told_each_section_s_pictures(project_root):
     pictures = section_pictures(project, plan)
 
     brief = _section_brief(plan, plan.sections[0], 100, pictures["s1"])
-    assert "Pictures from the source this section shows" in brief
-    assert "Figure 1" in brief
+    assert "Pictures from the deck for this section" in brief
+    assert "Figure 1 | what it is: a figure | explains something" in brief, \
+        "each with what it is and what it is good for"
     assert "Figure 2" not in brief
 
 

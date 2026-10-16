@@ -2,7 +2,8 @@
 
 What this layer decides, in what order, and what it guarantees. The code is
 `src/pipeline/scripting.py` (the script), `script_drafting.py` (the agent's
-drafts) and `script_handoff.py` (the checks and the transfer). The page is
+drafts), `script_review.py` (each draft kept to its slides) and
+`script_handoff.py` (the checks and the transfer). The page is
 `web/static/stage-script-staging.js`.
 
 ## What the layer is for
@@ -33,6 +34,18 @@ the export.
    before. The Final tab says which.
 5. **Written narration is never dropped silently.** Narration whose section
    left the plan is kept and listed until you attach it or delete it.
+6. **The slides are the direction.** A drafted section covers every point on
+   its slides, explained in the teacher's own words -- terms defined, context
+   and examples given -- and does not lead away to topics, stories or people the
+   slides do not point toward. Each draft is checked against its slides (every
+   point, and whether it is taught; every sentence that leads away or is
+   wrong), and the agent revises it once from what was found, deciding what to
+   change and what is right as it is. What it kept is listed on the Check tab.
+7. **Pictures: the deck's first.** The agent is told each of the section's
+   deck pictures -- what it is and what it is good for -- and names on
+   `PICTURE:` the ones each scene shows. For what the deck does not show it
+   writes `PHOTO:` (found among open-licence pictures), `ILLUSTRATE:`
+   (painted) or `ICON:`, as fits the scene.
 
 ## The four tabs, in order
 
@@ -70,6 +83,7 @@ the export.
 | Total length | Within the length the Scene Plan agreed | Warning |
 | Up to date | Written against the plan section and source as they are now | Warning |
 | On-screen briefs | Every scene says what is shown | Warning |
+| Follows the slides | Every slide point covered; nothing kept that leads away from the slides or gets them wrong | Warning |
 | Review comments | No open review comment sent back to Scripting | Warning |
 | Unattached narration | No narration from sections the plan dropped | Warning |
 | Scene Plan transferred | Written against a transferred plan with no changes waiting | Warning |

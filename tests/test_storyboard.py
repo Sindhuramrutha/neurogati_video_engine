@@ -37,15 +37,22 @@ def test_a_note_on_a_card_is_kept_for_its_scene_and_can_be_cleared(project_root)
     assert storyboard.note_for(project, visual.id) == ""
 
 
-def test_preparing_a_section_paints_each_card_s_picture(project_root, monkeypatch):
+def test_preparing_a_section_makes_each_card_s_pictures(project_root, monkeypatch):
+    """Each card's brief is written and what it asks for that the deck does not
+    have -- a painting, a photo, icons -- is made, with the card's note."""
     slug, project, visual = scripted_project("Painted")
-    painted = []
-    monkeypatch.setattr("pipeline.scene_illustration.paint",
-                        lambda folder, on_screen, look, state, narration="", note="":
-                        painted.append(folder.name) or None)
+    section = first_section(project)
+    card = next(v for v in VisualPlanStore(project.root).load().visuals
+                if v.section_id == section)
+    storyboard.set_note(slug, card.id, "show the leg larger")
+    prepared = []
+    monkeypatch.setattr("pipeline.scene_pictures.prepare",
+                        lambda project, visual, brief, state, note="":
+                        prepared.append((visual.id, note)) or brief)
 
-    board = storyboard.prepare(slug, first_section(project))
+    board = storyboard.prepare(slug, section)
 
     first = board["sections"][0]
-    assert len(painted) == len(first["cards"]), "one painting per scene of the section"
+    assert len(prepared) == len(first["cards"]), "every scene of the section"
+    assert (card.id, "show the leg larger") in prepared, "a card's note goes with it"
     assert all(card["says"] for card in first["cards"])

@@ -70,8 +70,10 @@ class ShapeSection(BaseModel):
         description="The numbers of the slides (or parts) it covers, in the order taught. "
                     "Empty for a section that is about no slide (an opening, a recap, or "
                     "anything else the video needs).")
-    how: str = Field(description="In your own words, how this section should be told: its "
-                                 "approach, voice and purpose in this video.")
+    how: str = Field(description="In your own words, how this section should be told from "
+                                 "its slides: its approach, voice and purpose in this video. "
+                                 "Built on what the slides say -- no story, person or fact "
+                                 "they do not point toward.")
     minutes: float = Field(description="How long the section runs.")
     scenes: int = Field(description="How many scenes it is made of.")
     summary: str = Field(description="One sentence: what the viewer gets from it.")
@@ -171,8 +173,11 @@ def _shape_prompts(project, plan: Plan, units, thread: list[dict[str, Any]],
         "under left_out with why. You may add sections that are about no slide -- an "
         "opening, a recap, a close, or anything else this video needs -- with no units; "
         "decide them and name them yourself. For every section, say in your own words how "
-        "it should be told. Never plan material that is not in the list. Reply to the "
-        "person briefly and plainly."
+        "it should be told. The slides are the direction: never plan material they do not "
+        "point toward. When the length asked is more than the slides' own words would "
+        "fill, give each slide more time to be explained -- its terms, its context, its "
+        "examples, its pictures -- never other topics; and when even that cannot fill it "
+        "well, say so in your reply. Reply to the person briefly and plainly."
     )
     conversation = "\n".join(f"{m['role'].upper()}: {m['text']}"
                              for m in thread[-MOST_MESSAGES_SHOWN_TO_THE_AGENT:])
@@ -354,7 +359,10 @@ def write_scenes(project, plan: Plan, wanted: dict[str, int], extraction, units,
         "Break ONE section of the agreed plan into exactly the number of scenes asked "
         "for. A scene is one beat on screen. For each, say in one sentence what it says "
         "and shows, which of the section's slides it is about, and its seconds; together "
-        "they fill the section's time. Keep the slides' order. Use only the material given."
+        "they fill the section's time. Keep the slides' order. Every point on the "
+        "section's slides is taught in some scene; a scene may explain a point -- its "
+        "terms, context, an example, a picture of it -- but never turns to material the "
+        "slides do not point toward."
     )
 
     def detail(section: PlanSection) -> str | None:

@@ -134,25 +134,29 @@ function renderSetup(handoff) {
     </div>`;
 }
 
-/** The pictures the transferred plan carried, and which of them can be a
- *  scene's picture. A scene shows only pictures attached to its own section. */
+/** The deck's pictures the plan carried, and how many of them the video shows.
+ *  Every scene is offered every one, nearest first; the agent decides. */
 function renderPicturesHandedOn(pictures) {
   if (!pictures || !pictures.handed_on) return "";
-  const cannot = pictures.cannot_fill_a_frame;
+  const missing = pictures.not_shown || [];
+  const measured = pictures.measured || [];
   return `
     <div class="assets-source-row">
-      <span class="x-pick-name">Pictures the plan carried</span>
-      <span class="file-status">${pictures.usable} of ${pictures.handed_on} can be a scene's picture</span>
+      <span class="x-pick-name">The deck's pictures in the video</span>
+      <span class="file-status">${pictures.shown} of ${pictures.handed_on} shown in some scene</span>
     </div>
-    <p class="panel-sub">A scene shows only the pictures attached to its section on the Scene
-      Plan; change them there.</p>
-    ${cannot.length ? `
-      <p class="panel-sub">A scene's picture has to be large and clear enough to fill a frame.
-        ${cannot.length === 1 ? "This one is not" : `These ${cannot.length} are not`}, so no rule
-        picks ${cannot.length === 1 ? "it" : "them"}:</p>
-      <ul class="generation-unfit">${cannot.map(picture => `
+    <p class="panel-sub">Every scene is offered every picture the plan carried, its own
+      slide's first, with what each is; the scene agent decides what to show. Leave a
+      picture out on Assets &amp; Design to keep it out of the video.</p>
+    ${missing.length ? `
+      <p class="panel-sub">Not in any scene yet:</p>
+      <ul class="generation-unfit">${missing.map(picture => `
+        <li><b>${escapeHtml(picture.name)}</b></li>`).join("")}</ul>` : ""}
+    ${measured.length ? `
+      <p class="panel-sub">Measured, and told to the agent (not refused):</p>
+      <ul class="generation-unfit">${measured.map(picture => `
         <li><b>${escapeHtml(picture.name)}</b>: ${escapeHtml(picture.why)}</li>`).join("")}</ul>`
-      : `<p class="panel-sub">Every one is large and clear enough to fill a frame.</p>`}`;
+      : ""}`;
 }
 
 /* ---- 2. Make ---------------------------------------------------------------------- */

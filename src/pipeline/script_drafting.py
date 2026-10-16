@@ -45,6 +45,8 @@ from pipeline.operations import (
 )
 from pipeline.plan_units import MAXIMUM_SECTION_SOURCE_CHARACTERS, section_source_text
 from pipeline.planning import Plan, PlanSection
+from pipeline.script_review import SLIDES_ARE_THE_DIRECTION
+from pipeline.script_review import keep_to_slides as _keep_to_slides
 from pipeline.scripting import (
     SCRIPT_WRITE,
     Script,
@@ -78,11 +80,13 @@ class DraftedScene(BaseModel):
     )
     brief: str = Field(
         description="What is on screen while this narration plays, in the shape your "
-                    "instructions give: PICTURE (an offered picture's exact name, or "
-                    "none), DRAW (the real things, named), LAYOUT, BEATS (\"exact words\" "
-                    "-> what appears or changes), LABELS (at most five, from the "
-                    "narration), and ILLUSTRATE (what to paint) in every scene no offered "
-                    "picture already shows. Never 'such as' or 'something like'."
+                    "instructions give: PICTURE (the exact names of the deck's pictures "
+                    "to show, the main one first, or none), DRAW (the real things, "
+                    "named), LAYOUT, BEATS (\"exact words\" -> what appears or changes), "
+                    "LABELS (at most five, from the narration), and -- only for what no "
+                    "deck picture shows -- PHOTO (a real photograph, engraving or diagram "
+                    "to find on the open web), ILLUSTRATE (what to paint) or ICON (up to "
+                    "three simple icons). Never 'such as' or 'something like'."
     )
 
 
@@ -233,12 +237,9 @@ def _write_section(
         f"written for the ear, and `brief`, exactly what is on screen while that "
         f"narration plays, following your instructions on briefs. {shape} "
         f"Up to about {target_words} words of narration in total, for about "
-        f"{section.estimated_seconds} seconds. Every fact must come from the source "
-        f"material provided: add no fact, number, name, date or example that is not "
-        f"in it. A plain everyday comparison that adds no claim is allowed where it "
-        f"makes an idea easier. Teach it to a learner meeting it for the first time, "
-        f"following your instructions on narration. Open where the previous section "
-        f"left off.\n\n"
+        f"{section.estimated_seconds} seconds. {SLIDES_ARE_THE_DIRECTION} Teach it to "
+        f"a learner meeting it for the first time, following your instructions on "
+        f"narration. Open where the previous section left off.\n\n"
         f"{VOICE_RULE}\n"
         f"Tone: {preferences.tone_sentence}\n"
         f"Write the narration, and every brief, in {preferences.language_name}. "
@@ -285,54 +286,42 @@ def _write_section(
         scenes = [ScriptScene(narration=scene.narration.strip(), brief=scene.brief.strip())
                   for scene in written_scenes]
 
+    scenes, unsupported, uncovered = _keep_to_slides(
+        system_prompt, source, scenes, notes, section.title)
     written = SectionScript(section_id=section.id, scenes=scenes)
     written.written_from = narration_fingerprints(section, extraction)
-    written.unsupported = _fact_check(source, scenes, notes, section.title)
+    written.unsupported, written.uncovered = unsupported, uncovered
     return written, notes
 
 
-class FactCheck(BaseModel):
-    unsupported: list[str] = Field(
-        default_factory=list,
-        description="Each claim in the narration that the source does not support, as "
-                    "'scene N: the claim -- what the source says instead (or that it says "
-                    "nothing)'. Plain teaching words, definitions and everyday comparisons "
-                    "that add no fact are fine. Empty when everything is supported.")
-
-
-def _fact_check(source: str, scenes: list[ScriptScene], notes: list[str],
-                title: str) -> list[str]:
-    """One look at the narration against its source: what it claims that the
-    source does not say. A drafted scene once concluded more than its slide did
-    ("not a special animal electricity at all"); a person decides, told what."""
-    narration = "\n\n".join(f"Scene {number}: {scene.narration}"
-                            for number, scene in enumerate(scenes, start=1))
-    from pipeline import llm
-
-    try:
-        checked = llm.complete_structured(
-            FactCheck,
-            "You fact-check narration for a lesson against its source material. List "
-            "only claims -- facts, names, dates, numbers, causes, conclusions -- that the "
-            "source does not support. Be strict about facts and generous about wording.",
-            f"--- source ---\n{source}\n\n--- narration ---\n{narration}",
-            max_tokens=SECTION_TOKENS)
-    except ModelCallFailed as failure:
-        notes.append(f'"{title}": the fact-check could not run ({failure}).')
-        return []
-    return [claim.strip() for claim in checked.unsupported if claim.strip()][:10]
-
-
 def section_pictures(project, plan: Plan) -> dict[str, list[str]]:
-    """Each section's pictures, as the plan attached them, named for the agent:
-    the script is written knowing what the section will show."""
+    """Each section's pictures, as the plan attached them, named for the agent with
+    what each is and what it is good for (described once, `scene_vetting`): the
+    script is written knowing what the section will show."""
     from pipeline.plan_pictures import assets_for_later_stages, pictures_of
+    from pipeline.scene_program import SCENES
+    from pipeline.scene_vetting import ROLES, notes
 
     library = assets_for_later_stages(project).library
-    return {section.id: [figure.name + (f" -- {figure.caption}" if figure.caption
-                                        and figure.caption not in figure.name else "")
-                         for figure in pictures_of(section, plan, library)]
-            for section in plan.sections}
+    attached = {section.id: pictures_of(section, plan, library) for section in plan.sections}
+    described = notes(project.root / SCENES, sorted({
+        str(project.root / figure.shown_path) for figures in attached.values()
+        for figure in figures if (project.root / figure.shown_path).exists()}))
+
+    def line(figure) -> str:
+        note = described.get(str(project.root / figure.shown_path), {})
+        parts = [figure.name + (f" -- {figure.caption}" if figure.caption
+                                and figure.caption not in figure.name else "")]
+        if note.get("what"):
+            parts.append(f"what it is: {note['what']}")
+        if note.get("role") in ROLES:
+            parts.append(ROLES[note["role"]])
+        if figure.why_not_a_frame:
+            parts.append(f"measured: {figure.why_not_a_frame}")
+        return " | ".join(parts)
+
+    return {section_id: [line(figure) for figure in figures]
+            for section_id, figures in attached.items()}
 
 
 def _section_brief(plan: Plan, section: PlanSection, target_words: int,
@@ -350,8 +339,10 @@ def _section_brief(plan: Plan, section: PlanSection, target_words: int,
     if section.how:
         lines.append(f"How it is told: {section.how}")
     if pictures:
-        lines.append("Pictures from the source this section shows (a scene may be built "
-                     "around one; describe no picture that is not listed):\n"
+        lines.append("Pictures from the deck for this section -- give each one that fits a "
+                     "place: the subject of a scene when it shows what is said, or behind a "
+                     "topic's opening when it is the deck's art (name them on PICTURE; "
+                     "describe no deck picture that is not listed):\n"
                      + "\n".join(f"- {name}" for name in pictures))
     return "\n".join(lines)
 

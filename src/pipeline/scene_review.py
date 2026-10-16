@@ -144,8 +144,10 @@ def review_frames(folder: Path, brief: dict[str, Any], question: str = "") -> Ve
         "- Only words in boxes joined by lines, when the narration names a thing that can "
         "be shown (a neuron, a frog's leg, a battery, a brain region, an experiment): it "
         "does not teach by picture. Say what to draw or which offered picture to show.\n"
-        "- A picture was offered for the scene and is not shown, or is shown so small or "
-        "so far from what explains it that it does nothing.\n"
+        "- The scene's own pictures (named in its brief, made for it, or from its own "
+        "slide) are offered and none is shown, or one is shown so small or so far from "
+        "what explains it that it does nothing. The deck's own art used as a backdrop "
+        "while a topic is opened is fine: it keeps the video looking like the course.\n"
         "- Lines, arrows or boxes running over each other or over words.\n"
         "- Colourless outline boxes on an empty background, or most of the frame empty: "
         "it looks unfinished.\n"
@@ -157,14 +159,24 @@ def review_frames(folder: Path, brief: dict[str, Any], question: str = "") -> Ve
         f"What the scene should show: {brief.get('on_screen', '')}",
         f"How the section is told: {brief.get('how', '')}",
         f"Who it is for: {brief.get('audience', 'not stated')}",
-        "Pictures offered for this scene: " + (", ".join(
-            Path(path).name for path in (brief.get("assets") or {}).get("pictures") or [])
-            or "none"),
+        "The scene's own pictures: " + (", ".join(own_pictures(brief)) or "none"),
         f"The agent asks you specifically: {question}" if question.strip() else "",
         "Look at the frames below, in order.",
     ] if part)
     return complete_structured_with_images(Verdict, system, user, pictures,
                                            max_tokens=VISION_TOKENS)
+
+
+def own_pictures(brief: dict[str, Any]) -> list[str]:
+    """The pictures nearest the scene -- named in its brief, made for it, from its own
+    slide -- as the reviewer reads them: the rest of the deck is offered too, but a
+    scene is not expected to show it."""
+    near = ("named", "own slide", "painted", "found", "icon")
+    catalogue = brief.get("picture_catalogue")
+    if catalogue is None:       # a brief from before the catalogue: all were near
+        return [Path(path).name for path in (brief.get("assets") or {}).get("pictures") or []]
+    return [f"{entry['file']} ({entry.get('what', '')})"[:90] for entry in catalogue
+            if any(word in entry.get("from", "") for word in near)]
 
 
 def look_at_picture(path: Path, question: str) -> str:

@@ -2,8 +2,9 @@
 answer format, and each round's request (`scene_maker` runs the rounds).
 
 The brief is compacted for it, the scenes just before are summarised in a line
-each so it stays consistent with them, and the slide's pictures are described
-once by the vision model and kept.
+each so it stays consistent with them, and the scene's nearest pictures are
+described part by part once by the vision model and kept; every other picture
+it is offered is listed in the brief's picture catalogue.
 """
 
 from __future__ import annotations
@@ -62,6 +63,29 @@ LAYOUT_RULES = (
     "spare), and the diagram uses most of the frame, not one strip of it.")
 
 
+# The deck's own pictures make the video look like the course it comes from. A
+# vision gate and painting by default once left 32 of 43 scenes on a painting.
+PICTURE_RULES = (
+    "Pictures: the brief's picture_catalogue lists every picture you may show, by index -- "
+    "where it comes from, what it is, its role, what was measured about it, and which "
+    "scenes already show it. Show the deck's own pictures wherever they fit: the video "
+    "should look made from the course's deck. Decide for each scene:\n"
+    "- role explains: a figure, photo, portrait or diagram -- build the scene around it "
+    "(hero, person, steps, compare) and explain it on screen.\n"
+    "- role sets_scene: the deck's own art -- use it as a backdrop while a topic is "
+    "opened, its context given or a section closed (the opener template), not as the "
+    "mechanism you explain.\n"
+    "- role furniture (a cover, a badge, a crop of text) and the slide itself: rarely, "
+    "briefly, only where it truly helps (the course's opening, a recap).\n"
+    "- A picture 'not yet' shown anywhere in the video is worth a place, when it fits "
+    "what is said; one already shown in several scenes is better left for something "
+    "new. Small, cropped or plain pictures may still serve: you judge from what was "
+    "measured.\n"
+    "- Pictures painted or found for this scene fill what the deck does not show; "
+    "they never push out a deck picture that fits.\n"
+    "A scene with pictures offered shows at least one.")
+
+
 def available_renderers() -> list[str]:
     """The renderers a scene may use: every one wired here whose software this
     machine has (the web libraries; Node and Revideo)."""
@@ -87,15 +111,16 @@ def kit_api(renderers: list[str]) -> str:
         header = (code / "webkit.js").read_text(encoding="utf-8")
         parts.append("### webkit.js (web)\n" + header[:header.index("(function")].strip())
     parts.append(
-        "### Using a slide picture\n"
+        "### Using a picture\n"
         "manim: self.picture(self.brief.assets.pictures[0], height=3.0, at=(x, y)) -- "
         "never a made-up file path. web: kit.picture(kit.pictures[0], {x, y, height}). "
-        "revideo: <Img src={pictures[0]} />. The brief lists them under assets.pictures.\n"
-        "A picture named illustration-*.png was painted for this scene from its brief: "
-        "it has no text in it. Make it the scene's centre -- large, on screen most of the "
-        "scene -- and teach on top of it: every label a callout beside the part it names "
-        "(manim: self.callout(text, (x, y), side)), a highlight or zoom on what is being "
-        "said. Never cover it with boxes; never draw an arrow out of a label.")
+        "revideo: <Img src={pictures[0]} />. The index (0 here) is the picture_catalogue's.\n"
+        "A picture named illustration-*.png was painted for this scene, one named "
+        "found-*.png found on the open web, icon-*.png is an icon: none of them has words "
+        "in it. Whatever the main picture is, teach on top of it: every label a callout "
+        "beside the part it names (manim: self.callout(text, (x, y), side)), a highlight "
+        "or zoom on what is being said. Never cover it with boxes; never draw an arrow "
+        "out of a label.")
     return "\n\n".join(parts)
 
 
@@ -142,8 +167,7 @@ def system_prompt(project, renderers: list[str]) -> str:
         "them (word timings are in the brief). It is NOT a slide: a few words per label, "
         "never the narration or a paragraph on screen. Everything on screen comes from "
         "the narration, the on-screen brief or the source text -- add no fact, number or "
-        "label. When pictures are offered, SHOW at least one and explain it on screen; "
-        "the whole slide image is reference only. Text is large (36 px lines at 1080p or "
+        "label.\n\n" + PICTURE_RULES + "\n\nText is large (36 px lines at 1080p or "
         "more), inside the frame, never overlapping, never crossed by a shape. The clip "
         "lasts exactly brief.seconds. Keep the file short and direct.\n\n"
         + LAYOUT_RULES + "\n\n"
@@ -180,8 +204,11 @@ def answer_format(renderers: list[str]) -> str:
 def compact(brief: dict[str, Any]) -> dict[str, Any]:
     """The brief as the model reads it: word timings as one short line, not a list of
     objects, so the request stays small. The program reads brief.json in full."""
-    # `pictures` is `assets.pictures` again: sent once.
-    shown = {k: v for k, v in brief.items() if k not in ("words", "pictures")}
+    # `pictures` and `assets.pictures` are paths the program loads; the model
+    # reads them as the catalogue, by index.
+    shown = {k: v for k, v in brief.items() if k not in ("words", "pictures", "assets")}
+    shown["assets"] = {"pictures": f"{len(brief.get('pictures') or [])} pictures, by index: "
+                                   "see picture_catalogue"}
     shown["word_starts"] = " ".join(f"{w['text']}@{w['start_ms'] / 1000:.2f}"
                                     for w in brief.get("words", []))
     shown["look"] = {k: v for k, v in brief.get("look", {}).items()
@@ -206,15 +233,21 @@ def earlier_scenes(project, visual) -> str:
 
 
 def picture_notes(brief: dict[str, Any], cache_folder: Path, state: dict[str, Any]) -> str:
-    """The section's pictures, described once by the vision model and kept, so the
-    program can be built around what the author drew."""
+    """The scene's nearest pictures -- the ones its brief names, the ones made for
+    it, its own slide's -- described part by part once by the vision model and
+    kept, so the program can be built around what the author drew. The slide
+    itself is not described: it is shown whole, if at all."""
     from pipeline.scene_review import look_at_picture
     from pipeline.storage.documents import read_json_object, write_text_atomically
 
     known = read_json_object(cache_folder / "picture-parts.json", "picture notes") or {}
-    pictures = brief.get("assets", {}).get("pictures", [])[:PICTURES_DESCRIBED]
+    every = brief.get("assets", {}).get("pictures", [])
+    roles = {entry.get("index"): entry.get("role")
+             for entry in brief.get("picture_catalogue") or []}
+    chosen = [(index, path) for index, path in enumerate(every)
+              if roles.get(index) != "slide"][:PICTURES_DESCRIBED]
     lines = []
-    for index, path in enumerate(pictures):
+    for index, path in chosen:
         if path not in known:
             state["calls"]["vision"] += 1
             try:
@@ -233,7 +266,14 @@ def request(brief: dict[str, Any], notes: str, earlier: str, entry: str, code: s
     parts = ["## The scene's brief (word_starts are word@seconds)\n"
              + json.dumps(compact(brief), indent=1, ensure_ascii=False)]
     if notes:
-        parts.append("## The pictures offered, described\n" + notes)
+        parts.append("## The nearest pictures, described part by part\n" + notes)
+    unshown = [entry for entry in brief.get("picture_catalogue") or []
+               if entry.get("shown_in_video", "").startswith("not yet")
+               and entry.get("role") not in ("slide", "furniture")]
+    if unshown:
+        parts.append("## Deck pictures no scene shows yet\n" + "\n".join(
+            f"- pictures[{e['index']}] ({e['from']}): {e['what']}" for e in unshown[:8])
+            + "\nGive one a place in this scene if it fits what is said.")
     if earlier:
         parts.append("## What the scenes just before this one did (stay consistent)\n" + earlier)
     if instruction.strip():

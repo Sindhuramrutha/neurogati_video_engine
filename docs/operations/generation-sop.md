@@ -23,8 +23,12 @@ them.
 
 1. **Every scene is a program, made by a short loop.** There is no shot to choose
    (a slide, a picture, a chart, words): every scene is drawn by its own
-   program. The deck's slide and the section's pictures are material the
-   program may use, never the shot.
+   program. Every picture in the deck is material the program may use -- the
+   ones its brief names first, then its own slide's, the slide itself, its
+   section's, and the rest of the deck's -- each described in the brief's
+   picture catalogue with what it is, what it is good for, and which scenes
+   already show it. The agent shows the deck's pictures wherever they fit: as a
+   scene's subject, or behind a topic's opening (the `opener` shot).
 2. **Nothing is used until it is approved.** A scene's clip must pass every
    fixed check, and then a person approves it. The render refuses a scene that
    is not an approved program, and never falls back to a still.
@@ -43,9 +47,9 @@ them.
 
 - **What came in:** whether the script and Assets & Design are transferred.
   Transfer them first, so the scenes are made from fixed inputs.
-- **Pictures handed on:** how many of the plan's pictures can be a scene's
-  picture (large and clear enough to fill a frame). A scene shows only the
-  pictures attached to its own section on Scene Plan.
+- **The deck's pictures in the video:** how many of the pictures the plan
+  carried some scene shows, which ones none does yet, and what was measured
+  about each (told to the agent, never used to refuse a picture).
 - **What this machine can draw:** which renderers are installed and working.
 - **The resource library:** the code, method notes and assets every agent is
   shown.

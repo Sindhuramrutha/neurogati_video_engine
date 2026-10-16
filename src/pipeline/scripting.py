@@ -136,8 +136,12 @@ class SectionScript(BaseModel):
     # Compared later to say "the plan or the source changed since this was
     # written" -- the gap Planning had with Extraction, one stage further on.
     written_from: dict[str, str] = Field(default_factory=dict)
-    # What the fact-check found the source does not support, when it was drafted.
+    # What the review against the slides left standing when it was drafted: claims
+    # that lead away from the slides or get them wrong, and slide points the
+    # narration does not cover. Each drafted section is revised once from these
+    # before it is saved; what is here is what the agent kept, for a person to see.
     unsupported: list[str] = Field(default_factory=list)
+    uncovered: list[str] = Field(default_factory=list)
 
     @field_validator("body")
     @classmethod

@@ -88,9 +88,14 @@ def _picture_of(project, visual) -> tuple[str, str]:
     pictures = (brief or {}).get("pictures") or []
     if not pictures:
         return "", "none"
+    # The first is the scene's main picture: the one its brief names, else one
+    # made for it, else its own slide's.
     first = Path(pictures[0])
-    if first.name.startswith("illustration-"):
-        return f"scenes/{visual.id}/files/{first.name}", "painted"
+    for prefix, kind in (("illustration-", "painted"), ("found-", "found"), ("icon-", "icon")):
+        if first.name.startswith(prefix):
+            return f"scenes/{visual.id}/files/{first.name}", kind
+    if first.name == "slide.png":
+        return "", "slide"
     if "prepared" in first.parts:
         return f"assets/prepared/{first.name}", "slide"
     return f"extraction/assets/{first.name}", "slide"
@@ -121,10 +126,11 @@ def read(slug: str) -> dict[str, Any]:
 
 
 def prepare(slug: str, section_id: str) -> dict[str, Any]:
-    """Each scene of the section briefed and its picture painted (AI, one image per
-    scene that asks for one; kept, so making the scene later paints nothing)."""
-    from pipeline.scene_illustration import paint
-    from pipeline.scene_lab import scene_folder, write_brief
+    """Each scene of the section briefed and the pictures its brief asks for made
+    (AI: an image per painting, a look per photo found; kept, so making the scene
+    later makes nothing again)."""
+    from pipeline.scene_lab import write_brief
+    from pipeline.scene_pictures import prepare as prepare_pictures
 
     project = require_project(slug)
     visuals = next((v for s, _, v in _sections(project) if s == section_id), None)
@@ -137,10 +143,7 @@ def prepare(slug: str, section_id: str) -> dict[str, Any]:
         # not painted) is named; the others are still prepared.
         try:
             brief = write_brief(project, visual)
-            folder = scene_folder(project, visual, create=True)
-            if paint(folder, brief["on_screen"], brief["look"], state, brief["narration"],
-                     note_for(project, visual.id)):
-                write_brief(project, visual)
+            prepare_pictures(project, visual, brief, state, note_for(project, visual.id))
         except OperationFailed as failure:
             missed.append(f"Scene {visual.scene_number}: {failure}")
     board = read(slug)

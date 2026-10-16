@@ -10,7 +10,11 @@ carried. Re-transfer Assets & Design and the plan is flagged, and through it
 everything after.
 
 By rule, a section has every picture from its own slides (or under its own
-headings) that is large and clear enough to fill a frame. A person may attach or
+headings) that was handed on -- small, cropped or decorative ones too. Whether a
+picture is fit to show, and how (the subject of a scene, or a backdrop while a
+topic is opened), is the scene agent's judgement, made with what is measured
+about it; a rule here once kept the deck's own art from every scene. Only a
+picture a person left out on Assets & Design is never offered. A person may attach or
 detach pictures; the section then keeps that choice (`pictures_chosen`) until
 they hand it back to the rule. A picture that is no longer handed on drops out
 either way. All of it is deterministic: the same transfers give the same
@@ -70,16 +74,16 @@ def _belongs(figure: LibraryFigure, reference: SourceReference) -> bool:
 
 def by_rule(section: PlanSection, library: AssetLibrary) -> list[str]:
     """The pictures the rule gives a section, in the source's order."""
-    return [figure.asset_path for figure in library.usable()
+    return [figure.asset_path for figure in library.handed_on()
             if any(_belongs(figure, reference) for reference in section.sources)]
 
 
 def pictures_of(section: PlanSection, plan: Plan, library: AssetLibrary) -> list[LibraryFigure]:
     """The pictures a section shows. A plan that has not had pictures attached
     (from before plans carried them) gets the rule's."""
-    usable = {figure.asset_path: figure for figure in library.usable()}
+    offered = {figure.asset_path: figure for figure in library.handed_on()}
     paths = section.picture_paths if plan.pictures_from else by_rule(section, library)
-    return [usable[path] for path in paths if path in usable]
+    return [offered[path] for path in paths if path in offered]
 
 
 def attach_pictures(project, plan: Plan) -> Plan:
@@ -89,11 +93,11 @@ def attach_pictures(project, plan: Plan) -> Plan:
     if not confirmed.confirmed_at:
         return plan            # nothing handed on yet; a person's choices are kept
     library = confirmed.library
-    usable = [figure.asset_path for figure in library.usable()]
+    offered = [figure.asset_path for figure in library.handed_on()]
     for section in plan.sections:
         if section.pictures_chosen:
             # Kept as chosen, in the source's order, without what is gone.
-            section.picture_paths = [p for p in usable if p in section.picture_paths]
+            section.picture_paths = [p for p in offered if p in section.picture_paths]
         else:
             section.picture_paths = by_rule(section, library)
     plan.pictures_from = confirmed.confirmed_at
@@ -125,14 +129,12 @@ def choose_section_pictures(slug: str, section_id: str, paths: list[str] | None)
         if not confirmed.confirmed_at:
             raise OperationFailed("Assets & Design has not been transferred, so there are "
                                   "no pictures to attach yet.")
-        library = confirmed.library
-        usable = {figure.asset_path for figure in library.usable()}
-        named = {figure.asset_path: figure.name for figure in library.handed_on()}
-        refused = [named.get(path, path) for path in paths if path not in usable]
+        offered = {figure.asset_path for figure in confirmed.library.handed_on()}
+        refused = [path for path in paths if path not in offered]
         if refused:
             raise OperationFailed(
-                "Only a picture that can fill a frame can be attached; these cannot: "
-                + ", ".join(refused) + ".")
+                "Only a picture Assets & Design handed on can be attached; these are not "
+                "among them: " + ", ".join(refused) + ".")
         section.pictures_chosen = True
         section.picture_paths = list(dict.fromkeys(paths))
     return save_plan(project, plan)
@@ -145,7 +147,6 @@ def pictures_view(project, plan: Plan) -> dict[str, Any]:
     """The pictures that can be attached, and each section's rule, for the page."""
     confirmed = ConfirmedAssetStore(project.root).load()
     library = confirmed.library
-    usable = {figure.asset_path for figure in library.usable()}
     return {
         "has_assets": bool(confirmed.confirmed_at),
         "transferred_at": confirmed.confirmed_at,
@@ -153,8 +154,10 @@ def pictures_view(project, plan: Plan) -> dict[str, Any]:
             "path": figure.asset_path, "shown_path": figure.shown_path,
             "name": figure.name, "caption": figure.caption,
             "slide_number": figure.slide_number,
-            "can_attach": figure.asset_path in usable,
-            "why_not": "" if figure.asset_path in usable else figure.why_not_a_frame,
+            "can_attach": True,
+            # Not a refusal: what is measured about it, for the person (and the
+            # agent) to weigh.
+            "why_not": figure.why_not_a_frame,
         } for figure in library.handed_on()],
         "by_rule": {section.id: by_rule(section, library) for section in plan.sections},
     }

@@ -38,6 +38,7 @@ from pipeline import project_work
 from pipeline.core import require_project
 from pipeline.generation import VisualPlanStore
 from pipeline.llm import ModelCallFailed, ModelNotConfigured, ModelOutputTruncated
+from pipeline.outside_pictures import wanted as outside_wanted
 from pipeline.scene_edit import apply_edits, parse_answer
 from pipeline.scene_illustration import paint as paint_illustration
 from pipeline.scene_illustration import wanted as wanted_illustration
@@ -53,6 +54,7 @@ from pipeline.scene_kept import (
     restore_best,
 )
 from pipeline.scene_lab import _visual, run_scene, scene_folder, write_brief
+from pipeline.scene_pictures import prepare as prepare_pictures
 from pipeline.scene_program import ENTRY_FILES, entry_of
 from pipeline.scene_prompt import (  # noqa: F401 -- kit_api, compact: read through here
     available_renderers,
@@ -147,13 +149,11 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
 
     renderers = available_renderers()
     brief = write_brief(project, visual)
-    # Painted once, before the first round, when the script asked for a picture
-    # no slide has; the brief then offers it first.
-    if wanted_illustration(brief["on_screen"]):
-        doing(folder, state, "Painting the scene's illustration")
-        if paint_illustration(folder, brief["on_screen"], brief["look"], state,
-                              brief["narration"]):
-            brief = write_brief(project, visual)
+    # Made once, before the first round, when the script asked for a picture the
+    # deck does not have: painted, found on the open web, or an icon.
+    if wanted_illustration(brief["on_screen"]) or any(outside_wanted(brief["on_screen"])):
+        doing(folder, state, "Making the pictures the deck does not have")
+        brief = prepare_pictures(project, visual, brief, state)
     renderer, entry = entry_of(folder)
     code = "" if fresh or not (folder / entry).exists() else \
         (folder / entry).read_text(encoding="utf-8")

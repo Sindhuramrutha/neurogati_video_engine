@@ -17,10 +17,11 @@ guarantees.
 lets you set aside what you don't want, holds your brand assets, and sets how
 the video's own frames look.
 
-It does not judge pictures. Whether a picture is large and clear enough to be a
-scene's picture is said where pictures are attached to sections, on the **Scene
-Plan**: one that cannot fill a frame is listed there with why, and cannot be
-attached.
+It does not judge pictures, and nothing later refuses one. What is measured
+about a picture -- small, cropped, a plain graphic -- travels with it, and every
+scene is offered every picture handed on, nearest first, with what each is; the
+scene agent decides whether and how to show it (`scene_pictures.py`). Only a
+picture you leave out here is never offered.
 
 What this layer **transfers** goes to the Scene Plan, and only there. The plan
 attaches the pictures to its sections and carries them, the brand kit and the

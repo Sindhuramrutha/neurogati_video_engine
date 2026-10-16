@@ -221,35 +221,6 @@ def test_a_scene_paints_its_illustration_once_and_only_when_asked(tmp_path, monk
     assert scene_illustration.paint(scene, third, look, state) is None, "made without it"
 
 
-def test_a_scene_is_offered_its_own_slides_pictures_the_one_it_names_first(tmp_path,
-                                                                            monkeypatch):
-    """Every scene was offered the whole section's pictures and took the first:
-    Galvani's engraving stood in for the physics of the next slide."""
-    from types import SimpleNamespace as Thing
-
-    from pipeline import scene_lab
-
-    blocks = [Thing(id="b9", slide_number=9), Thing(id="b9v", slide_number=9),
-              Thing(id="b10", slide_number=10)]
-    monkeypatch.setattr("pipeline.extraction.ExtractionStore.load",
-                        lambda self: Thing(documents=[Thing(blocks=blocks)]))
-    title = Thing(block_id="b9", caption="The Spark of Life (slide 9)")
-    volta = Thing(block_id="b9v", caption="Alessandro Volta (slide 9)")
-    physics = Thing(block_id="b10", caption="Physics Meets Biology (slide 10)")
-    section = Thing(scenes=[Thing(id="s1", slides=[9]), Thing(id="s2", slides=[10]),
-                            Thing(id="s3", slides=[])])
-    project = Thing(root=tmp_path)
-    pictures = [title, volta, physics]
-
-    def offered(scene_id, narration=""):
-        return scene_lab._scene_pictures(project, Thing(scene_id=scene_id), section,
-                                         pictures, narration)
-
-    assert offered("s1", "Alessandro Volta invented the battery") == [volta, title]
-    assert offered("s2") == [physics]
-    assert offered("s3") == pictures, "a scene with no slides of its own gets the section's"
-
-
 TEMPLATED = '''# /// script
 # requires-python = ">=3.11"
 # dependencies = ["manim>=0.19", "pillow"]
@@ -278,7 +249,9 @@ class TheScene(ExplainerScene):
         self.until(end * 0.75)
         self.clear()
         self.key_idea("The brain builds a picture of the body.", "picture.png")
-        self.until(end * 0.9)
+        self.until(end * 0.85)
+        self.clear()
+        self.opener("picture.png", "The body", [("Touch", None), ("Movement", None)])
         self.finish()
 
 
@@ -309,29 +282,3 @@ def test_every_shot_template_passes_the_layout_checks_by_construction():
     for key in ("ran", "bounds", "overlap", "contrast", "legible", "crossing", "collide",
                 "fills", "paragraphs"):
         assert checks[key]["status"] == "pass", (key, checks[key]["detail"])
-
-
-@pytest.mark.real_vetting
-@pytest.mark.usefixtures("project_root")
-def test_a_picture_that_does_not_teach_is_not_offered_and_one_is_painted(monkeypatch):
-    """A publisher's "Check for updates" badge was a scene's only picture. One
-    that does not teach is not offered; left with none, the scene asks for one
-    to be painted from what its brief says to draw."""
-    from pipeline import scene_vetting
-    from pipeline.scene_lab import write_brief
-
-    asked = []
-    monkeypatch.setattr(scene_vetting, "_ask", lambda path: asked.append(path) or {
-        "teaches": False, "what": "a Check for updates badge"})
-    slug, project, visual = scripted_project("Vetted")
-    monkeypatch.setattr("pipeline.scene_lab._scene_of", lambda *args: type("S", (), {
-        "narration": "The leg kicked.", "brief": "DRAW: a frog's leg on a brass hook"})())
-    monkeypatch.setattr("pipeline.scene_lab._scene_pictures",
-                        lambda *args: [type("F", (), {"shown_path": "badge.png"})()])
-
-    brief = write_brief(project, visual)
-
-    assert asked and brief["pictures"] == []
-    assert "ILLUSTRATE: a frog's leg on a brass hook" in brief["on_screen"]
-    write_brief(project, visual)
-    assert len(asked) == 1, "asked once per picture, then kept"

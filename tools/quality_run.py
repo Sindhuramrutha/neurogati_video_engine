@@ -109,8 +109,11 @@ def generate(slug: str) -> float:
 def report(slug: str, minutes: float) -> Path:
     """The report: every scene's rubric, rounds and cost, the totals, the sheet."""
     from pipeline.core import require_project
+    from pipeline.scene_pictures import deck_usage
 
-    root = require_project(slug).root
+    project = require_project(slug)
+    root = project.root
+    usage = deck_usage(project)
     rows, totals = [], {"prompt": 0, "completion": 0, "agent": 0, "vision": 0, "image": 0}
     ships, scores_seen, rounds = 0, [], []
     posters, templates = [], []
@@ -150,6 +153,10 @@ def report(slug: str, minutes: float) -> Path:
         "", "Rubric averages (scenes the reviewer scored): "
         + (", ".join(f"{k} {v}" for k, v in averages.items()) or "none scored"), "",
         f"Templates: {sum(t != 'by hand' for t in templates)} of {count} scenes.", "",
+        f"Deck pictures shown: {usage['shown']} of {usage['deck_pictures']}"
+        + (" (not shown: " + ", ".join(p["name"] for p in usage["not_shown"][:8])
+           + ("..." if len(usage["not_shown"]) > 8 else "") + ")"
+           if usage["not_shown"] else ""), "",
         "| Scene | Shot | Rounds | Checks pass | Ship bar | " + " | ".join(RUBRIC) + " | Failing |",
         "|---|---|---|---|---|" + "---|" * len(RUBRIC) + "---|", *rows, "",
         f"![contact sheet]({sheet.name})" if sheet else "",
@@ -159,12 +166,14 @@ def report(slug: str, minutes: float) -> Path:
     (root / "quality-report.json").write_text(json.dumps({
         "slug": slug, "minutes": minutes, "scenes": count, "ships": ships,
         "rounds_per_scene": sum(rounds) / count, "averages": averages, "totals": totals,
-        "templates": templates},
+        "templates": templates,
+        "deck_pictures": {"deck": usage["deck_pictures"], "shown": usage["shown"]}},
         indent=1), encoding="utf-8")
     return path
 
 
-TEMPLATES = ("hero", "steps", "compare", "person", "key_idea", "flow", "hub", "timeline")
+TEMPLATES = ("hero", "steps", "compare", "person", "key_idea", "opener", "flow", "hub",
+             "timeline")
 RUBRIC = ("teaches", "accuracy", "illustration", "composition", "labels", "motion", "finish")
 
 

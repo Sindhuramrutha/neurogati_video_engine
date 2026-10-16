@@ -52,7 +52,7 @@ def _clock(milliseconds: int) -> str:
 
 class ExportedFile(BaseModel):
     name: str = ""
-    kind: str = ""          # video | subtitles | transcript | chapters | description | audio
+    kind: str = ""  # video | subtitles | transcript | chapters | description | credits | audio
     path: str = ""          # relative to the project root
     bytes: int = 0
     note: str = ""
@@ -66,6 +66,10 @@ class ExportManifest(BaseModel):
     files: list[ExportedFile] = Field(default_factory=list)
     blockers: list[str] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
+    # How many of the deck's pictures the video shows, and the outside pictures it
+    # credits.
+    deck_pictures: dict[str, Any] = Field(default_factory=dict)
+    credits: list[dict[str, Any]] = Field(default_factory=list)
 
     @property
     def is_ready(self) -> bool:
@@ -128,8 +132,27 @@ def description_markdown(
     return "\n".join(lines)
 
 
+def credits_markdown(project_name: str, credits: list[dict[str, Any]]) -> str:
+    """Every picture from outside the deck, with what its licence asks: the work,
+    its author, where it is, and the licence."""
+    lines = [f"# {project_name} — picture credits", "",
+             "Pictures from outside the course's deck, each under a licence that allows "
+             "commercial use.", ""]
+    for entry in credits:
+        title = entry.get("title") or entry.get("file", "")
+        page = entry.get("page", "")
+        licence = entry.get("licence", "")
+        lines.append(f"- {f'[{title}]({page})' if page else title}"
+                     f" — {entry.get('author') or 'unknown author'}"
+                     f", {entry.get('source', '')}"
+                     + (f", {licence}" if licence else "")
+                     + (f" ({entry['licence_url']})" if entry.get("licence_url") else ""))
+    return "\n".join(lines) + "\n"
+
+
 def write_export_files(
-    project_root: Path, project_name: str, plan: dict[str, Any], sections: list[dict[str, Any]]
+    project_root: Path, project_name: str, plan: dict[str, Any], sections: list[dict[str, Any]],
+    credits: list[dict[str, Any]] | None = None,
 ) -> list[ExportedFile]:
     """Write the derived files and describe them. Returns what was written."""
     folder = project_root / "export"
@@ -144,6 +167,10 @@ def write_export_files(
         ("description.md", "description", description_markdown(project_name, plan, sections),
          "Audience, objectives and chapters, from the plan."),
     ]
+    if credits:
+        documents.append(("credits.md", "credits", credits_markdown(project_name, credits),
+                          "The pictures from outside the deck, with the credit each "
+                          "licence asks for: put it in the video's description."))
     for name, kind, content, note in documents:
         path = folder / name
         write_text_atomically(path, content)
@@ -211,6 +238,14 @@ def export_readiness(project: Project) -> tuple[list[str], list[str]]:
         if visual.below_bar and visual.clip_path:
             warnings.append(f"Scene {visual.scene_number or ''} of \"{visual.section_title}\" "
                             f"is used below the quality bar: {visual.below_bar}")
+    from pipeline.scene_pictures import deck_usage
+
+    usage = deck_usage(project)
+    if usage["not_shown"] and usage["shown"]:
+        names = ", ".join(p["name"] for p in usage["not_shown"][:4])
+        more = "..." if len(usage["not_shown"]) > 4 else ""
+        warnings.append(f"{len(usage['not_shown'])} of the deck's {usage['deck_pictures']} "
+                        f"pictures appear in no scene: {names}{more}.")
     stranded = script.audit([s.id for s in plan.sections])["orphaned_section_ids"]
     if stranded:
         warnings.append(
@@ -232,9 +267,14 @@ def build_export(slug: str) -> dict[str, Any]:
     script = script_for_later_stages(project)
     review = ReviewStore(project.root).load()
 
+    from pipeline.outside_pictures import credits as outside_credits
+    from pipeline.scene_pictures import deck_usage
+
     blockers, warnings = export_readiness(project)
     sections = _export_sections(project, plan, script)
-    files = write_export_files(project.root, project.name, plan.to_dict(), sections)
+    credits = outside_credits(project)
+    files = write_export_files(project.root, project.name, plan.to_dict(), sections, credits)
+    usage = deck_usage(project)
 
     version = next(
         (v for v in review.versions if v.id == review.active_version_id),
@@ -268,6 +308,9 @@ def build_export(slug: str) -> dict[str, Any]:
         files=files,
         blockers=blockers,
         warnings=warnings,
+        deck_pictures={"deck": usage["deck_pictures"], "shown": usage["shown"],
+                       "not_shown": [p["name"] for p in usage["not_shown"]]},
+        credits=credits,
     )
     return ExportStore(project.root).save(manifest).to_dict()
 

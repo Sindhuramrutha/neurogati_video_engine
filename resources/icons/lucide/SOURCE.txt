@@ -1,0 +1,2 @@
+Lucide 1.49.0 (lucide-static), ISC licence: https://lucide.dev
+Copied unchanged: icons/*.svg, tags.json, LICENSE.

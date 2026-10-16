@@ -137,34 +137,14 @@ def keep_slide(project, visual, library=None) -> Path:
     return slide
 
 
-def _scene_pictures(project, visual, section, pictures: list, narration: str) -> list:
-    """The pictures of the scene's own slides, when it has any; the section's only
-    when it has none. Every scene was offered the whole section's pictures and took
-    the first: Galvani's engraving stood in for the physics of the next slide."""
-    from pipeline.extraction import ExtractionStore
-
-    planned = next((scene for scene in (section.scenes if section else [])
-                    if scene.id == visual.scene_id), None)
-    if not planned or not planned.slides:
-        return pictures
-    slide_of = {block.id: block.slide_number
-                for document in ExtractionStore(project.root).load().documents
-                for block in document.blocks}
-    own = [figure for figure in pictures if slide_of.get(figure.block_id) in planned.slides]
-    # The one the narration names first: "Alessandro Volta" for the scene about him.
-    said = set(re.findall(r"[a-z]{4,}", (narration or "").lower()))
-    return sorted(own or pictures, key=lambda figure: -len(
-        said & set(re.findall(r"[a-z]{4,}", figure.caption.lower()))))
-
-
 def write_brief(project, visual) -> dict[str, Any]:
     """What the script is told. Written before every run, so the script always
     draws the scene as it is now."""
-    from pipeline import scene_illustration as illustration
+    from pipeline import scene_pictures
     from pipeline.assets_handoff import _look_preview
     from pipeline.plan_handoff import plan_for_later_stages
-    from pipeline.plan_pictures import assets_for_later_stages, pictures_of
-    from pipeline.scene_vetting import offered
+    from pipeline.plan_pictures import assets_for_later_stages
+    from pipeline.scene_vetting import notes, offered
     from pipeline.stage_options import video_preferences
     from pipeline.video_setup import platform_needs
 
@@ -178,11 +158,18 @@ def write_brief(project, visual) -> dict[str, Any]:
     library = assets_for_later_stages(project).library
     folder = scene_folder(project, visual, create=True)
     slide = keep_slide(project, visual, library)
-    # Only pictures that teach: a badge or a cover is not offered (scene_vetting).
-    on_screen, deck = offered(folder.parent, on_screen, [
-        str(project.root / f.shown_path) for f in _scene_pictures(
-            project, visual, section, pictures_of(section, plan, library)
-            if section else [], narration)])
+    # Every deck picture, nearest first, none withheld: what each is, and whether
+    # and how to show it, is the agent's to judge (scene_pictures, scene_vetting).
+    tiers = scene_pictures.deck_tiers(project, visual, section, plan, library,
+                                      on_screen, narration)
+    on_screen, _deck = offered(folder.parent, on_screen,
+                               [str(project.root / f.shown_path) for _, f in tiers])
+    look = _look_preview(project, library.look)
+    paths, catalogue = scene_pictures.catalogue(
+        project, tiers, scene_pictures.made_for_scene(folder, on_screen, look),
+        notes(folder.parent, [str(project.root / f.shown_path) for _, f in tiers]),
+        scene_pictures.shown_pictures(project, skip_visual_id=visual.id),
+        slide if slide.exists() else None)
 
     brief: dict[str, Any] = {
         "scene_id": visual.scene_id,
@@ -199,10 +186,11 @@ def write_brief(project, visual) -> dict[str, Any]:
                              len(narration.split()) / WORDS_PER_SECOND), 1),
         "width": FRAME_WIDTH, "height": FRAME_HEIGHT, "fps": FRAME_RATE,
         "language": video_preferences(project.root).language,
-        "look": {k: v for k, v in _look_preview(project, library.look).items() if k != "art"},
-        # The scene's own illustration first, when the script asked for one.
-        "pictures": [str(path) for path in [illustration.kept(
-            folder, on_screen, _look_preview(project, library.look))] if path] + deck,
+        "look": {k: v for k, v in look.items() if k != "art"},
+        # The pictures the brief names first, then those made for the scene, then
+        # the rest of the deck's, nearest first; the catalogue says what each is.
+        "pictures": paths,
+        "picture_catalogue": catalogue,
         "slide_image": str(slide) if slide.exists() else "",
     }
     # Measured and grounded: the narration's own length and word timings, the
@@ -438,9 +426,10 @@ def read_scene(slug: str, visual_id: str) -> dict[str, Any]:
 
 
 def scene_file(slug: str, visual_id: str, name: str) -> Path | None:
-    """render.mp4, poster.png or its painted illustration, for the page."""
+    """render.mp4, poster.png, or a picture made for it (painted, found, an icon),
+    for the page."""
     if name not in ("render.mp4", "poster.png", "preview.mp4") \
-            and not re.fullmatch(r"illustration-[0-9a-f]{12}\.png", name):
+            and not re.fullmatch(r"(illustration|found|icon)-[0-9a-f]{12}\.png", name):
         return None
     project = require_project(slug)
     visual = _visual(VisualPlanStore(project.root).load(), visual_id)
