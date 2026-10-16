@@ -175,8 +175,12 @@ def own_pictures(brief: dict[str, Any]) -> list[str]:
     catalogue = brief.get("picture_catalogue")
     if catalogue is None:       # a brief from before the catalogue: all were near
         return [Path(path).name for path in (brief.get("assets") or {}).get("pictures") or []]
+    # Deck furniture (a badge, a cover) and the slide itself are offered, but no
+    # scene is expected to show them: a check once failed a scene for leaving out
+    # its slide's only picture, a "Check for updates" badge.
     return [f"{entry['file']} ({entry.get('what', '')})"[:90] for entry in catalogue
-            if any(word in entry.get("from", "") for word in near)]
+            if any(word in entry.get("from", "") for word in near)
+            and entry.get("role") not in ("furniture", "slide")]
 
 
 def look_at_picture(path: Path, question: str) -> str:

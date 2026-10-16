@@ -278,29 +278,22 @@ def made_for_scene(folder: Path, on_screen: str, look: dict[str, Any]) -> list[t
         made.append(("painted for this scene", painted,
                      {"what": scene_illustration.wanted(on_screen), "role": "explains",
                       "measured": "Painted from the brief: no words in it."}))
-    found = outside_pictures.kept(folder, on_screen)
-    photo, _icons = outside_pictures.wanted(on_screen)
-    for path, meta in found:
+    for path, meta in outside_pictures.kept(folder, on_screen):
         kind = meta.get("kind")
         made.append((f"{'found' if kind == 'photo' else 'icon'} for this scene: "
                      f"{meta.get('source', '')}, {meta.get('licence', '')}", path,
                      {"what": meta.get("title") or meta.get("asked", ""),
                       "role": "explains" if kind == "photo" else "icon",
                       "measured": f"Asked for: {meta.get('asked', '')}. Credited on Export."}))
-    if photo and not any(meta.get("kind") == "photo" for _, meta in found):
-        stand_in = scene_illustration.kept(folder, f"ILLUSTRATE: {photo}", look)
-        if stand_in is not None:
-            made.append(("painted for this scene (nothing found was right)", stand_in,
-                         {"what": photo, "role": "explains",
-                          "measured": "Painted from the brief: no words in it."}))
     return made
 
 
 def prepare(project, visual, brief: dict[str, Any], state: dict[str, Any],
             note: str = "") -> dict[str, Any]:
     """Make what the brief asks for that is not made yet -- the painting, the photo
-    found on the open web (painted instead when nothing found is right), the icons
-    -- and return the brief written again with them in it. Each is made once and
+    found on the open web, the icons -- and return the brief written again with
+    them in it. A photo that is not found is not painted in its place: a painted
+    photograph of a real person or thing is a fabrication. Each is made once and
     kept, so the rounds after it and a scene made again pay nothing more."""
     from pipeline import outside_pictures, scene_illustration
     from pipeline.scene_lab import write_brief
@@ -315,7 +308,5 @@ def prepare(project, visual, brief: dict[str, Any], state: dict[str, Any],
     photo, icons = outside_pictures.wanted(on_screen)
     if photo or icons:
         asked = True
-        for missed in outside_pictures.gather(folder, on_screen, narration, look, state):
-            scene_illustration.paint(folder, f"ILLUSTRATE: {missed}", look, state,
-                                     narration, note)
+        outside_pictures.gather(folder, on_screen, narration, look, state)
     return write_brief(project, visual) if asked else brief

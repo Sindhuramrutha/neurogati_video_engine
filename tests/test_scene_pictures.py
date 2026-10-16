@@ -133,13 +133,36 @@ def test_with_no_deck_picture_at_all_one_is_painted_from_the_brief(tmp_path):
     assert offered == [] and "ILLUSTRATE: a frog's leg on a hook" in on_screen
 
 
-def test_a_verdict_kept_before_roles_is_read_as_a_note(tmp_path):
+@pytest.mark.real_vetting
+def test_a_verdict_kept_before_roles_is_asked_again_not_guessed(tmp_path, monkeypatch):
+    """Guessed from "does it teach?", a Check for updates badge was offered as the
+    deck's art, and a script built a scene on it."""
     (tmp_path / scene_vetting.VERDICTS).write_text(json.dumps({
-        "a.png": {"teaches": True, "what": "Galen"},
-        "b.png": {"teaches": False, "what": "a floral brain"}}), encoding="utf-8")
-    notes = scene_vetting.notes(tmp_path, ["a.png", "b.png"])
-    assert notes["a.png"]["role"] == "explains"
-    assert notes["b.png"]["role"] == "sets_scene", "the deck's art, offered as a backdrop"
+        "badge.png": {"teaches": False, "what": "Check for updates button"},
+        "galen.png": {"what": "Galen", "role": "explains"}}), encoding="utf-8")
+    asked = []
+    monkeypatch.setattr(scene_vetting, "_ask", lambda path: asked.append(str(path)) or {
+        "what": "a Check for updates badge", "role": "furniture"})
+
+    notes = scene_vetting.notes(tmp_path, ["badge.png", "galen.png"])
+
+    assert asked == ["badge.png"], "only the one kept without a role"
+    assert notes["badge.png"]["role"] == "furniture"
+    assert notes["galen.png"]["role"] == "explains"
+
+
+def test_a_scene_is_not_made_to_show_a_badge_or_the_slide():
+    from pipeline.scene_review import own_pictures
+
+    brief = {"picture_catalogue": [
+        {"file": "badge.png", "from": "this scene's own slide (slide 2)", "role": "furniture",
+         "what": "badge"},
+        {"file": "slide.png", "from": "the slide itself", "role": "slide", "what": "slide"},
+        {"file": "galen.png", "from": "this section (slide 3)", "role": "explains",
+         "what": "Galen"}]}
+    assert own_pictures(brief) == [], "nothing of its own that it should show"
+    brief["picture_catalogue"][0]["role"] = "explains"
+    assert own_pictures(brief) == ["badge.png (badge)"]
 
 
 # --- which deck pictures the video shows ----------------------------------------------------
@@ -238,10 +261,21 @@ def test_a_found_photo_is_the_one_the_vision_model_picked_and_is_credited(tmp_pa
     assert kept and kept[0][0] == path
 
 
-def test_nothing_right_is_found_and_the_photo_is_painted_instead(tmp_path, monkeypatch):
+def test_a_photo_is_searched_for_without_its_descriptive_words():
+    assert outside_pictures.queries("Lewis Carroll, portrait photograph, nineteenth century") \
+        == ["Lewis Carroll portrait photograph nineteenth century", "Lewis Carroll"]
+    assert outside_pictures.queries("Ivan Pavlov with a dog in his laboratory, 1904") == [
+        "Ivan Pavlov with a dog in his laboratory 1904", "Ivan Pavlov dog his laboratory",
+        "Ivan Pavlov dog"]
+
+
+def test_a_photo_that_is_not_found_is_not_painted_in_its_place(tmp_path, monkeypatch):
+    """A painted "portrait photograph" of Lewis Carroll -- bearded, which he was
+    not -- is a fabrication, however it is checked."""
     from pipeline import scene_illustration
 
-    monkeypatch.setattr(outside_pictures, "search_commons", lambda q: [])
+    searched = []
+    monkeypatch.setattr(outside_pictures, "search_commons", lambda q: searched.append(q) or [])
     monkeypatch.setattr(outside_pictures, "search_openverse", lambda q: [])
     painted = []
     monkeypatch.setattr(scene_illustration, "paint",
@@ -250,10 +284,14 @@ def test_nothing_right_is_found_and_the_photo_is_painted_instead(tmp_path, monke
                         lambda project, visual, create=False: tmp_path)
     monkeypatch.setattr("pipeline.scene_lab.write_brief", lambda project, visual: {"again": 1})
 
-    brief = {"on_screen": "PHOTO: a frog's leg twitching", "look": {}, "narration": ""}
-    again = scene_pictures.prepare(Thing(root=tmp_path), Thing(), brief, state())
+    brief = {"on_screen": "PHOTO: Lewis Carroll, portrait photograph", "look": {},
+             "narration": ""}
+    record = state()
+    again = scene_pictures.prepare(Thing(root=tmp_path), Thing(), brief, record)
 
-    assert painted == ["ILLUSTRATE: a frog's leg twitching"]
+    assert searched == ["Lewis Carroll portrait photograph", "Lewis Carroll"]
+    assert painted == [], "nothing painted in its place"
+    assert "Nothing open-licensed was found" in record["events"][-1]["text"]
     assert again == {"again": 1}, "the brief is written again with what was made"
 
 

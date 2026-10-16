@@ -18,8 +18,12 @@ Where they come from:
   (ISC), which needs no network.
 
 A photo is looked at by the vision model before it is used: the best of a few
-candidates for what was asked, or none -- and then it is painted instead, from the
-same words (`scene_illustration`). Each kept file sits in the scene's folder as
+candidates for what was asked, or none. Asked as written, a brief's line ("Lewis
+Carroll, portrait photograph, nineteenth century") found one wrong candidate, so
+the search is also tried with the descriptive words taken off ("Lewis Carroll").
+A photo that is not found is not painted instead: a painted "photograph" of a
+real person, a place or an instrument is a fabrication. The scene goes on with
+the deck's pictures, icons and what it draws. Each kept file sits in the scene's folder as
 `found-<key>.png` or `icon-<key>.png`, with a `.json` beside it (what was asked,
 the source, the licence, the author, the address) and an entry in the scene's
 `sources.json`, which the scene's checks read and Export lists as credits.
@@ -222,6 +226,23 @@ def _choose(asked: str, narration: str, candidates: list[tuple[dict, bytes]]) ->
     return choice.best if 0 <= choice.best <= len(candidates) else 0
 
 
+DESCRIPTIVE = {"photo", "photograph", "photographs", "portrait", "portraits", "picture",
+               "image", "engraving", "drawing", "illustration", "diagram", "historical",
+               "historic", "century", "nineteenth", "eighteenth", "seventeenth",
+               "twentieth", "sixteenth", "black", "white", "old", "a", "an", "the", "of",
+               "in", "with", "showing", "early", "original"}
+
+
+def queries(asked: str) -> list[str]:
+    """What to search for, most specific first: as asked, without its descriptive
+    words, and its first few words."""
+    words = re.findall(r"[A-Za-z0-9'-]+", asked)
+    plain = " ".join(words)
+    core = [w for w in words if w.lower() not in DESCRIPTIVE and not re.fullmatch(r"\d{4}s?", w)]
+    found = [plain, " ".join(core), " ".join(core[:3])]
+    return [q for i, q in enumerate(found) if q and q not in found[:i]]
+
+
 def find_photo(folder: Path, asked: str, narration: str,
                state: dict[str, Any]) -> Path | None:
     """A photograph, engraving or diagram for `asked` from the open web, checked by
@@ -233,11 +254,15 @@ def find_photo(folder: Path, asked: str, narration: str,
     path = folder / f"found-{_key(asked)}.png"
     if path.exists() and path.with_suffix(".json").exists():
         return path
-    try:
-        results = search_commons(asked) + search_openverse(asked)
-    except (ServiceUnavailable, Exception) as failure:      # offline is a reason to paint
-        add_event(state, "note", f"Could not search the open web for \"{asked}\" ({failure}).")
-        return None
+    results: list[dict[str, Any]] = []
+    for query in queries(asked):
+        try:
+            results += search_commons(query) + search_openverse(query)
+        except (ServiceUnavailable, Exception) as failure:   # offline: no photo, said
+            add_event(state, "note", f"Could not search the open web for \"{query}\" "
+                      f"({failure}).")
+        if len(results) >= 2 * CANDIDATES_LOOKED_AT:
+            break
     seen, candidates = set(), []
     for result in results:
         # Openverse also searches Commons: the same file, found twice.
@@ -392,7 +417,7 @@ def _record_source(folder: Path, path: Path, meta: dict[str, Any]) -> None:
 def gather(folder: Path, on_screen: str, narration: str, look: dict[str, Any],
            state: dict[str, Any]) -> list[str]:
     """Find what the brief asks for that is not found yet. Returns what could not
-    be found: a photo that could not be found is painted instead, by the caller."""
+    be found (said in the scene's record; never painted in its place)."""
     photo, icons = wanted(on_screen)
     missed = []
     if photo and find_photo(folder, photo, narration, state) is None:

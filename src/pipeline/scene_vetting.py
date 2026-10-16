@@ -68,12 +68,14 @@ def _ask(path: Path) -> dict[str, Any]:
 
 
 def _as_note(known: dict[str, Any]) -> dict[str, str]:
-    """A cached answer, in today's shape: one kept before roles was a verdict of
-    whether it teaches."""
-    if "role" in known:
-        return {"what": str(known.get("what", "")), "role": str(known["role"])}
-    return {"what": str(known.get("what", "")),
-            "role": "explains" if known.get("teaches", True) else "sets_scene"}
+    return {"what": str(known.get("what", "")), "role": str(known.get("role", "explains"))}
+
+
+def _is_described(known: dict[str, Any], picture: str) -> bool:
+    """Described with a role. A verdict kept before roles said only whether it
+    teaches -- a badge and the deck's art alike were "no" -- so it is asked again
+    rather than guessed: guessed, a badge was offered as the deck's art."""
+    return picture in known and "role" in known[picture]
 
 
 def notes(scenes: Path, pictures: list[str]) -> dict[str, dict[str, str]]:
@@ -90,13 +92,13 @@ def notes(scenes: Path, pictures: list[str]) -> dict[str, dict[str, str]]:
 
     known = read()
     for picture in pictures:
-        if picture in known or _is_made_for_the_scene(picture):
+        if _is_described(known, picture) or _is_made_for_the_scene(picture):
             continue
         # Four scenes start at once and are offered the same deck: one asks about
         # a picture while the others wait for its answer, instead of four asking.
         with _asking(picture):
             known = read()
-            if picture in known:
+            if _is_described(known, picture):
                 continue
             try:
                 answer = _ask(Path(picture))
@@ -109,7 +111,7 @@ def notes(scenes: Path, pictures: list[str]) -> dict[str, dict[str, str]]:
                 scenes.mkdir(parents=True, exist_ok=True)
                 path.write_text(json.dumps(known, indent=1, ensure_ascii=False),
                                 encoding="utf-8")
-    return {p: _as_note(known[p]) for p in pictures if p in known}
+    return {p: _as_note(known[p]) for p in pictures if _is_described(known, p)}
 
 
 _ASKING: dict[str, threading.Lock] = {}
