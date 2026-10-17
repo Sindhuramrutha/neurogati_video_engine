@@ -36,13 +36,7 @@ def stop_and_wait(slug: str) -> None:
         time.sleep(0.25)
 
 
-@delete("/api/projects/{slug:str}", status_code=200, sync_to_thread=False)
-def delete_project(slug: FromPath[str]) -> dict[str, Any]:
-    """Erase a project for good, whatever is running in it: that is stopped first."""
-    store = project_store()
-    project = store.get(slug)
-    if project is None:
-        raise NotFoundException(detail=f"no such project: {slug}")
+def _erase(store, slug: str) -> None:
     stop_and_wait(slug)
     store.delete(slug)
     # Work that was slow to let go may have written a little back: erase that too.
@@ -50,7 +44,32 @@ def delete_project(slug: FromPath[str]) -> dict[str, Any]:
     if (store.root / slug).exists():
         import shutil
         shutil.rmtree(store.root / slug, ignore_errors=True)
+
+
+@delete("/api/projects/{slug:str}", status_code=200, sync_to_thread=False)
+def delete_project(slug: FromPath[str]) -> dict[str, Any]:
+    """Erase a project for good, whatever is running in it: that is stopped first."""
+    store = project_store()
+    project = store.get(slug)
+    if project is None:
+        raise NotFoundException(detail=f"no such project: {slug}")
+    _erase(store, slug)
     return {"deleted": slug, "name": project.name}
 
 
-PROJECT_ADMIN_ROUTES = [delete_project]
+@delete("/api/projects", status_code=200, sync_to_thread=False)
+def delete_every_project() -> dict[str, Any]:
+    """Erase every project for good, each the way one is: what runs in it is stopped
+    first. One that cannot be erased is named; the others are still erased."""
+    store = project_store()
+    deleted, failed = [], []
+    for project in store.list():
+        try:
+            _erase(store, project.slug)
+            deleted.append(project.name)
+        except OSError as failure:
+            failed.append(f"{project.name}: {failure}")
+    return {"deleted": deleted, "failed": failed}
+
+
+PROJECT_ADMIN_ROUTES = [delete_project, delete_every_project]

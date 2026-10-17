@@ -112,8 +112,9 @@ button { cursor: pointer; }
 
 .project-menu {
   position: absolute; left: 0; top: calc(100% + 8px); z-index: 40;
-  width: max(100%, 340px); max-height: 60vh; overflow-y: auto; padding: 6px;
-  display: grid; gap: 4px; background: var(--surface);
+  width: max(100%, 340px); max-height: 60vh; overflow-y: auto; overflow-x: hidden;
+  padding: 6px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px;
+  background: var(--surface);
   border: 3px solid var(--stage-head-ink, #0E0B14); border-radius: 12px;
   box-shadow: 5px 5px 0 var(--stage-head-ink, #0E0B14);
 }
@@ -138,6 +139,14 @@ button { cursor: pointer; }
 }
 
 .project-menu-empty { margin: 8px 10px; font-size: 13px; }
+
+.project-menu-delete-all {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-top: 6px; padding: 9px 10px; cursor: pointer; font: inherit; font-weight: 700;
+  color: #fff; background: var(--c-red, #D92D20);
+  border: 2px solid var(--stage-head-ink, #0E0B14); border-radius: 8px;
+  box-shadow: 2px 2px 0 var(--stage-head-ink, #0E0B14);
+}
 
 .btn {
   background: var(--surface-raised);

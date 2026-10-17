@@ -37,7 +37,9 @@ function paintMenu() {
               title="Delete ${escapeHtml(option.textContent)}"
               aria-label="Delete the project ${escapeHtml(option.textContent)}">
         ${icon(TRASH_ICON, 16, 2)}</button>
-    </div>`).join("")
+    </div>`).join("") + `
+    <button class="project-menu-delete-all" data-delete-all>
+      ${icon(TRASH_ICON, 16, 2)} Delete all ${projects.length} projects</button>`
     : `<p class="project-menu-empty">No projects yet.</p>`;
 }
 
@@ -64,12 +66,35 @@ async function deleteProject(slug, name, onDeleted) {
   paintProjectPicker();
 }
 
+async function deleteEveryProject(count, onDeleted) {
+  const typed = window.prompt(`Delete all ${count} projects for good?\n\nEvery project's `
+      + "folder and everything in it is erased. There is no trash and no way to get any "
+      + "of it back.\n\nType  delete all  to confirm.");
+  if ((typed || "").trim().toLowerCase() !== "delete all") return;
+  try {
+    const result = await requestJsonFromApi("/api/projects", { method: "DELETE" });
+    showStageNotice(result.failed.length ? "bad" : "ok",
+      `Deleted ${result.deleted.length} project(s), for good.`
+      + (result.failed.length ? ` Not deleted: ${result.failed.join("; ")}` : ""));
+    await onDeleted(null);
+  } catch (failure) {
+    console.error("deleting every project failed", failure);
+    showStageNotice("bad", failure.message);
+  }
+  paintProjectPicker();
+}
+
 /** `onDeleted(slug)` refreshes the project list and redraws the page. */
 export function startProjectPicker({ onDeleted }) {
   toggle().onclick = () => showMenu(menu().hidden);
   menu().onclick = event => {
     const pick = event.target.closest("[data-pick]");
     const trash = event.target.closest("[data-trash]");
+    if (event.target.closest("[data-delete-all]")) {
+      showMenu(false);
+      deleteEveryProject(menu().querySelectorAll(".project-row").length, onDeleted);
+      return;
+    }
     if (pick) {
       showMenu(false);
       const chooser = select("#project-select");

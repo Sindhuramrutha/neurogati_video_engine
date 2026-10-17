@@ -112,3 +112,17 @@ def test_work_started_after_a_deletion_is_not_stopped_by_it(project_root):
 def test_deleting_a_project_that_does_not_exist_says_so(project_root):
     with TestClient(app=create_app()) as client:
         assert client.delete("/api/projects/nope").status_code == 404
+
+
+def test_every_project_can_be_deleted_at_once(project_root):
+    """The project menu's "Delete all": each erased the way one is, nothing kept."""
+    slugs = [operations.create_project(name)["slug"] for name in ("One", "Two", "Three")]
+
+    with TestClient(app=create_app()) as client:
+        answer = client.delete("/api/projects")
+        listed = client.get("/api/projects").json()
+
+    assert answer.status_code == 200
+    assert sorted(answer.json()["deleted"]) == ["One", "Three", "Two"]
+    assert answer.json()["failed"] == []
+    assert listed == [] and not any((project_root / slug).exists() for slug in slugs)
