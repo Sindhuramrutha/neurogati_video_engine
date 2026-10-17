@@ -17,16 +17,11 @@ Where they come from:
   BSD, CC0, CC BY or CC BY-SA; and the **Lucide** set bundled in `resources/icons`
   (ISC), which needs no network.
 
-A photo is looked at by the vision model before it is used: the best of a few
-candidates for what was asked, or none. Asked as written, a brief's line ("Lewis
-Carroll, portrait photograph, nineteenth century") found one wrong candidate, so
-the search is also tried with the descriptive words taken off ("Lewis Carroll").
-A photo that is not found is not painted instead: a painted "photograph" of a
-real person, a place or an instrument is a fabrication. The scene goes on with
-the deck's pictures, icons and what it draws. Each kept file sits in the scene's folder as
-`found-<key>.png` or `icon-<key>.png`, with a `.json` beside it (what was asked,
-the source, the licence, the author, the address) and an entry in the scene's
-`sources.json`, which the scene's checks read and Export lists as credits.
+A photo is the best of a few candidates as the vision model judges them, or none;
+one not found is never painted instead (a painted "photograph" of a real person or
+thing is a fabrication). Each kept file is `found-<key>.png` or `icon-<key>.png`
+in the scene's folder, with a `.json` beside it and an entry in `sources.json`,
+which Export lists as credits.
 """
 
 from __future__ import annotations
@@ -91,17 +86,27 @@ def _key(*parts: str) -> str:
     return hashlib.sha256("|".join(parts).encode()).hexdigest()[:12]
 
 
+def _photo_path(folder: Path, asked: str) -> Path:
+    return folder / f"found-{_key(asked)}.png"
+
+
+def _icon_path(folder: Path, name: str) -> Path:
+    return folder / f"icon-{_key(name.lower())}.png"
+
+
 def kept(folder: Path, on_screen: str) -> list[tuple[Path, dict[str, Any]]]:
     """The pictures found for this brief, with what is known about each. Never searches."""
+    from pipeline.storage.documents import read_json_object
+
     photo, icons = wanted(on_screen)
-    names = ([f"found-{_key(photo)}.png"] if photo else []) + \
-        [f"icon-{_key(name.lower())}.png" for name in icons]
+    paths = ([_photo_path(folder, photo)] if photo else []) + \
+        [_icon_path(folder, name) for name in icons]
     found = []
-    for name in names:
-        path = folder / name
-        meta = path.with_suffix(".json")
-        if path.exists() and meta.exists():
-            found.append((path, json.loads(meta.read_text(encoding="utf-8"))))
+    for path in paths:
+        meta = read_json_object(path.with_suffix(".json"), "found picture") \
+            if path.exists() else None
+        if meta:
+            found.append((path, meta))
     return found
 
 
@@ -251,7 +256,7 @@ def find_photo(folder: Path, asked: str, narration: str,
     from pipeline.resilience import ServiceUnavailable
     from pipeline.scene_state import add_event
 
-    path = folder / f"found-{_key(asked)}.png"
+    path = _photo_path(folder, asked)
     if path.exists() and path.with_suffix(".json").exists():
         return path
     results: list[dict[str, Any]] = []
@@ -289,11 +294,7 @@ def find_photo(folder: Path, asked: str, narration: str,
                   f"\"{asked}\" shows it.")
         return None
     meta, data = candidates[best - 1]
-    path.write_bytes(data)
-    record = meta | {"asked": asked, "kind": "photo"}
-    path.with_suffix(".json").write_text(json.dumps(record, ensure_ascii=False, indent=1),
-                                         encoding="utf-8")
-    _record_source(folder, path, record)
+    _keep(folder, path, data, meta | {"asked": asked, "kind": "photo"})
     add_event(state, "note", f"Found a picture for \"{asked}\": {meta['title']} "
               f"({meta['source']}, {meta['licence']}, by {meta['author']}).")
     return path
@@ -372,7 +373,7 @@ def find_icon(folder: Path, name: str, colour: str, state: dict[str, Any]) -> Pa
     colour, kept with its credit."""
     from pipeline.scene_state import add_event
 
-    path = folder / f"icon-{_key(name.lower())}.png"
+    path = _icon_path(folder, name)
     if path.exists() and path.with_suffix(".json").exists():
         return path
     found = None
@@ -386,32 +387,38 @@ def find_icon(folder: Path, name: str, colour: str, state: dict[str, Any]) -> Pa
         return None
     svg, meta = found
     try:
-        path.write_bytes(rasterise(svg, colour))
+        drawn = rasterise(svg, colour)
     except Exception as failure:          # no browser: the scene goes on without it
         add_event(state, "note", f"The icon for \"{name}\" could not be drawn ({failure}).")
         return None
-    record = meta | {"asked": name, "kind": "icon"}
-    path.with_suffix(".json").write_text(json.dumps(record, ensure_ascii=False, indent=1),
-                                         encoding="utf-8")
-    _record_source(folder, path, record)
+    _keep(folder, path, drawn, meta | {"asked": name, "kind": "icon"})
     return path
 
 
 # --- what the scene keeps --------------------------------------------------------------------
 
 
-def _record_source(folder: Path, path: Path, meta: dict[str, Any]) -> None:
-    """The file's licence and credit in the scene's sources.json (read by its checks
-    and by Export's credits)."""
+def _keep(folder: Path, path: Path, data: bytes, meta: dict[str, Any]) -> None:
+    """The picture, what is known about it beside it, and its licence and credit in
+    the scene's sources.json (read by its checks and by Export's credits). Written
+    whole: four scenes are made at once, and Export reads while they write."""
+    from pipeline.storage.documents import write_text_atomically
+
+    path.write_bytes(data)
+    write_text_atomically(path.with_suffix(".json"),
+                          json.dumps(meta, ensure_ascii=False, indent=1))
     record = folder / "sources.json"
     with _SOURCES_LOCK:
-        entries = json.loads(record.read_text(encoding="utf-8")) if record.exists() else []
+        try:
+            entries = json.loads(record.read_text(encoding="utf-8")) if record.exists() else []
+        except ValueError:
+            entries = []
         entries = [e for e in entries if Path(e.get("file", "")).name != path.name]
         entries.append({"file": path.name, "title": meta.get("title", ""),
                         "source": meta.get("source", ""), "licence": meta.get("licence", ""),
                         "licence_url": meta.get("licence_url", ""),
                         "author": meta.get("author", ""), "page": meta.get("page", "")})
-        record.write_text(json.dumps(entries, ensure_ascii=False, indent=1), encoding="utf-8")
+        write_text_atomically(record, json.dumps(entries, ensure_ascii=False, indent=1))
 
 
 def gather(folder: Path, on_screen: str, narration: str, look: dict[str, Any],
@@ -426,24 +433,3 @@ def gather(folder: Path, on_screen: str, narration: str, look: dict[str, Any],
     for name in icons:
         find_icon(folder, name, colour, state)
     return missed
-
-
-def credits(project) -> list[dict[str, Any]]:
-    """Every outside picture any scene keeps, with its credit, for Export."""
-    from pipeline.generation import VisualPlanStore
-    from pipeline.scene_program import scene_folder
-
-    found: dict[str, dict[str, Any]] = {}
-    for visual in VisualPlanStore(project.root).load().visuals:
-        folder = scene_folder(project, visual)
-        record = folder / "sources.json" if folder else None
-        if record is None or not record.exists():
-            continue
-        try:
-            entries = json.loads(record.read_text(encoding="utf-8"))
-        except ValueError:
-            continue
-        for entry in entries:
-            key = entry.get("page") or entry.get("title") or entry.get("file", "")
-            found.setdefault(key, entry)
-    return list(found.values())

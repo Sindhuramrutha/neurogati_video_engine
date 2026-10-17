@@ -6,31 +6,36 @@ first in the list the templates draw from. In Demo 001 that left 32 of 43 scenes
 showing a painting and most of the deck's 35 pictures in no scene at all: a
 video made from a deck that did not look made from it.
 
-Now a scene is offered every deck picture, nearest first, each with where it
-comes from, what it is, what was measured about it, and whether any scene shows
-it yet -- and the agent decides what to show and how:
+Now a scene is offered the deck's pictures, nearest first, each with where it
+comes from, what it is, what was measured about it, and which other scenes show
+it -- and the agent decides what to show and how:
 
 1. the deck pictures its brief names (`PICTURE:`), the scene's main subject;
 2. the pictures made for this scene (painted, found on the open web, icons);
 3. the rest of its own slide's pictures, and the slide itself as the deck shows it;
 4. its section's other pictures;
-5. every other picture in the deck.
+5. a few more from the slides nearest it.
 
-Indexes into this list are what the program and the shots use
-(`brief.assets.pictures`); `brief.picture_catalogue` says what each one is.
-Only a picture a person left out on Assets & Design is never offered.
+The first three are the scene's own (`near`). Indexes into this list are what the
+program and the shots use (`brief.assets.pictures`); `brief.picture_catalogue`
+says what each one is. Only a picture a person left out on Assets & Design is
+never offered.
 """
 
 from __future__ import annotations
 
-import json
 import re
 from pathlib import Path
 from typing import Any
 
 from pipeline.storage.documents import read_json_object
 
-MOST_DECK_PICTURES = 40           # the rest of the deck, nearest slides first
+# The rest of the deck, nearest slides first. Every picture in the deck, offered to
+# every scene, made the prompt long and pulled in pictures that had nothing to do
+# with the scene.
+MOST_FAR_PICTURES = 8
+NAMED, OWN_SLIDE = "named in this scene's brief", "this scene's own slide"
+SECTION, ELSEWHERE = "this section", "elsewhere in the deck"
 SLIDE_ITSELF = "the slide itself, as the deck shows it"
 _PICTURE_REFERENCE = re.compile(r"(?:pictures|\bP)\s*\[\s*(\d+)\s*\]")
 
@@ -96,13 +101,12 @@ def deck_tiers(project, visual, section, plan, library, on_screen: str,
                 seen.add(figure.asset_path)
                 tiers.append((where, figure))
 
-    add("named in this scene's brief", [f for f in offered if _is_named(f, named_text)])
-    add("this scene's own slide", sorted(
+    add(NAMED, [f for f in offered if _is_named(f, named_text)])
+    add(OWN_SLIDE, sorted(
         (f for f in offered if _figure_slide(f, slide_of) in own_slides), key=nearness))
-    add("this section", sorted(
-        (f for f in offered if f.asset_path in in_section), key=nearness))
+    add(SECTION, sorted((f for f in offered if f.asset_path in in_section), key=nearness))
     rest = sorted((f for f in offered if f.asset_path not in seen), key=nearness)
-    add("elsewhere in the deck", rest[:MOST_DECK_PICTURES])
+    add(ELSEWHERE, rest[:MOST_FAR_PICTURES])
     return tiers
 
 
@@ -110,65 +114,51 @@ def catalogue(project, tiers: list[tuple[str, Any]], made: list[tuple[str, Path,
               notes: dict[str, dict[str, str]], shown_in: dict[str, list[str]],
               slide_image: Path | None) -> tuple[list[str], list[dict[str, Any]]]:
     """The scene's pictures as paths (what the program loads) and as a catalogue
-    (what the agent reads), index for index."""
-    from PIL import Image
+    (what the agent reads), index for index: those its brief names, those made for
+    it, its own slide's and the slide itself (all `near`), then the rest."""
+    from pipeline.assets import FigureUse
 
-    paths: list[str] = []
-    entries: list[dict[str, Any]] = []
-
-    def size_of(path: Path) -> str:
-        try:
-            with Image.open(path) as opened:
-                return f"{opened.width}x{opened.height}"
-        except OSError:
-            return ""
-
-    def entry(path: Path, where: str, what: str, role: str, measured: str = "") -> None:
-        key = str(path)
-        record = {"index": len(paths), "file": path.name, "from": where,
-                  "what": what, "role": role, "size": size_of(path)}
-        if measured:
-            record["measured"] = measured
-        shown = [scene for scene in shown_in.get(key, [])]
-        record["shown_in_video"] = (", ".join(shown[:4]) + (" ..." if len(shown) > 4 else "")
-                                    if shown else "not yet -- no scene shows it")
-        paths.append(key)
-        entries.append(record)
-
-    named = [(w, f) for w, f in tiers if w == "named in this scene's brief"]
-    others = [(w, f) for w, f in tiers if w != "named in this scene's brief"]
-
-    def deck(where: str, figure) -> None:
+    def deck(where: str, figure) -> tuple:
         path = project.root / figure.shown_path
         note = notes.get(str(path), {})
-        from pipeline.assets import FigureUse
+        prepared = figure.shown_path == figure.prepared_path
+        size = ((figure.prepared_width, figure.prepared_height) if prepared
+                else (figure.width, figure.height))
         measured = " ".join(part for part in (
             figure.why_not_a_frame,
             "A person chose it on Assets & Design." if figure.use == FigureUse.USE else "",
         ) if part)
-        slide = f"slide {figure.slide_number}" if figure.slide_number else ""
-        entry(path, f"{where} ({slide})" if slide else where,
-              note.get("what") or figure.caption or figure.name,
-              note.get("role", "explains"), measured)
+        slide = f" (slide {figure.slide_number})" if figure.slide_number else ""
+        return (path, where + slide, note.get("what") or figure.caption or figure.name,
+                note.get("role", "explains"), measured, size, where in (NAMED, OWN_SLIDE))
 
-    for where, figure in named:
-        deck(where, figure)
-    for where, path, meta in made:
-        entry(path, where, meta.get("what", ""), meta.get("role", "explains"),
-              meta.get("measured", ""))
-    own = [(w, f) for w, f in others if w == "this scene's own slide"]
-    for where, figure in own:
-        deck(where, figure)
+    ordered = [deck(w, f) for w, f in tiers if w == NAMED]
+    ordered += [(path, where, meta.get("what", ""), meta.get("role", "explains"),
+                 meta.get("measured", ""), None, True) for where, path, meta in made]
+    ordered += [deck(w, f) for w, f in tiers if w == OWN_SLIDE]
     if slide_image is not None and slide_image.exists():
-        entry(slide_image, SLIDE_ITSELF,
-              "the whole slide: its title, words and pictures as the deck lays them out",
-              "slide",
-              "Words are in it: show it briefly (opening its topic, or a recap), never "
-              "to explain on, and never with labels laid over it.")
-    for where, figure in others:
-        if where != "this scene's own slide":
-            deck(where, figure)
-    return paths, entries
+        ordered.append((slide_image, SLIDE_ITSELF, "the whole slide, as the deck lays it out",
+                        "slide", "Words are in it: briefly, never explained on.", None, True))
+    ordered += [deck(w, f) for w, f in tiers if w not in (NAMED, OWN_SLIDE)]
+
+    entries = []
+    for index, (path, where, what, role, measured, size, near) in enumerate(ordered):
+        width, height = size or _size_of(path)
+        entries.append({"index": index, "file": path.name, "from": where, "what": what,
+                        "role": role, "size": f"{width}x{height}" if width else "",
+                        "near": near, "shown_in": shown_in.get(str(path), [])[:4]}
+                       | ({"measured": measured} if measured else {}))
+    return [str(item[0]) for item in ordered], entries
+
+
+def _size_of(path: Path) -> tuple[int, int]:
+    from PIL import Image
+
+    try:
+        with Image.open(path) as opened:
+            return opened.width, opened.height
+    except OSError:
+        return 0, 0
 
 
 # --- which deck pictures the video shows ----------------------------------------------------
@@ -202,8 +192,8 @@ def _shown_indexes(folder: Path) -> set[int]:
     return found
 
 
-def shown_pictures(project, skip_visual_id: str = "",
-                   planned: bool = True) -> dict[str, list[str]]:
+def shown_pictures(project, skip_visual_id: str = "", planned: bool = True,
+                   library=None) -> dict[str, list[str]]:
     """Every picture some scene's program shows, by path: the scenes that show it
     ("scene 7"). Read from each scene's own folder -- its brief's pictures and the
     indexes its program uses.
@@ -216,7 +206,8 @@ def shown_pictures(project, skip_visual_id: str = "",
     from pipeline.plan_pictures import assets_for_later_stages
     from pipeline.scene_program import scene_folder
 
-    figures = assets_for_later_stages(project).library.handed_on() if planned else []
+    library = library or (assets_for_later_stages(project).library if planned else None)
+    figures = library.handed_on() if planned else []
     shown: dict[str, list[str]] = {}
     for number, visual in enumerate(VisualPlanStore(project.root).load().visuals, start=1):
         if visual.id == skip_visual_id:
@@ -249,11 +240,11 @@ def _same_file(project, path: str) -> str:
     return path
 
 
-def deck_usage(project) -> dict[str, Any]:
+def deck_usage(project, library=None) -> dict[str, Any]:
     """Which of the deck's pictures the video shows, and which it does not."""
     from pipeline.plan_pictures import assets_for_later_stages
 
-    library = assets_for_later_stages(project).library
+    library = library or assets_for_later_stages(project).library
     shown = shown_pictures(project, planned=False)
     pictures = []
     for figure in library.handed_on():
@@ -266,23 +257,13 @@ def deck_usage(project) -> dict[str, Any]:
             "not_shown": [p for p in pictures if not p["shown_in"]], "pictures": pictures}
 
 
-def write_usage(project) -> dict[str, Any]:
-    """The usage, kept beside the scenes for the page and the report."""
-    from pipeline.storage.documents import write_text_atomically
-
-    usage = deck_usage(project)
-    write_text_atomically(project.root / "generation" / "deck-pictures.json",
-                          json.dumps(usage, indent=1, ensure_ascii=False))
-    return usage
-
-
 # --- what is made for a scene before its first round ------------------------------------
 
 
 def made_for_scene(folder: Path, on_screen: str, look: dict[str, Any]) -> list[tuple]:
     """The pictures made for this scene alone, as (where from, path, what is known):
-    painted for its ILLUSTRATE line, found for its PHOTO line (or painted in its
-    place when nothing found was right), and its ICONs. Never makes any."""
+    painted for its ILLUSTRATE line, found for its PHOTO line, and its ICONs.
+    Never makes any."""
     from pipeline import outside_pictures, scene_illustration
 
     made: list[tuple] = []
@@ -293,7 +274,7 @@ def made_for_scene(folder: Path, on_screen: str, look: dict[str, Any]) -> list[t
                       "measured": "Painted from the brief: no words in it."}))
     for path, meta in outside_pictures.kept(folder, on_screen):
         kind = meta.get("kind")
-        made.append((f"{'found' if kind == 'photo' else 'icon'} for this scene: "
+        made.append((f"{'found' if kind == 'photo' else 'an icon'} for this scene: "
                      f"{meta.get('source', '')}, {meta.get('licence', '')}", path,
                      {"what": meta.get("title") or meta.get("asked", ""),
                       "role": "explains" if kind == "photo" else "icon",

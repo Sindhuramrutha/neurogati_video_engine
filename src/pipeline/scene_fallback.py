@@ -16,7 +16,7 @@ FALLBACK_NOTE = "A plain stand-in: the headline and the slide's picture."
 
 PROGRAM = '''# /// script
 # requires-python = ">=3.11"
-# dependencies = ["manim>=0.19", "pillow<13"]
+# dependencies = ["manim>=0.19", "pillow"]
 # ///
 """{note}"""
 from manimkit import *

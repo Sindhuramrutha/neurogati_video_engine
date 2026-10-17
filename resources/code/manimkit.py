@@ -4,7 +4,7 @@ What a scene program writes with it:
 
     # /// script
     # requires-python = ">=3.11"
-    # dependencies = ["manim>=0.19", "pillow<13"]
+    # dependencies = ["manim>=0.19", "pillow"]
     # ///
     from manimkit import *      # every Manim name, and the kit
 

@@ -64,7 +64,7 @@ Motion explains the current spoken idea; it never decorates.
 
        # /// script
        # requires-python = ">=3.11"
-       # dependencies = ["manim>=0.19", "pillow<13"]
+       # dependencies = ["manim>=0.19", "pillow"]
        # ///
 
 11. **Record every outside resource** with `scenekit.fetch(url, name, licence,
@@ -96,10 +96,11 @@ Choose whichever explains the idea best; nothing is the default.
   all the stages, and emphasise this one.
 - **What it is grounded in:** `source_text` (the section's slides).
 - **What it may use:**
-  - `assets.pictures`: pictures from the section's slides. When there are any, the
-    scene **shows at least one** (`self.picture(path)`) and explains it on screen:
-    labels joined to its parts, a highlight, a reveal
-  - `assets.slide_image_reference_only`: the deck's slide, never the shot
+  - `assets.pictures`: the pictures offered, by index; `picture_catalogue` says
+    what each is (where from, its role, whether it is the scene's own: `near`,
+    which other scenes show it). A scene with pictures of its own **shows one**
+    (`self.picture(path)`) and explains it on screen: labels joined to its parts,
+    a highlight, a reveal
 - **How it looks:** `look` (`background`, `panel`, `accent`, `text`, `dim`,
   `heading_font`, `body_font`). Use these colours so every scene belongs together.
 - **The frame:** `width`, `height`, `fps`, `language`.

@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.11"
-# dependencies = ["manim>=0.19", "pillow<13"]
+# dependencies = ["manim>=0.19", "pillow"]
 # ///
 """A worked example: a timeline whose stages appear on the words that name them,
 each gaining emphasis while it is spoken about, then fading back as the next

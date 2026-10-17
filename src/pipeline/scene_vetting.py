@@ -27,7 +27,6 @@ from pydantic import BaseModel, Field
 logger = logging.getLogger(__name__)
 
 VERDICTS = "picture-verdicts.json"
-_LOCK = threading.Lock()
 DRAWN = re.compile(r"^\s*(DRAW|PICTURE)\s*:\s*(.+?)\s*$", re.IGNORECASE | re.MULTILINE)
 ROLES = {
     "explains": "explains something: a scene can be built around it",
@@ -67,59 +66,47 @@ def _ask(path: Path) -> dict[str, Any]:
     return {"what": note.what[:120], "role": note.role}
 
 
-def _as_note(known: dict[str, Any]) -> dict[str, str]:
-    return {"what": str(known.get("what", "")), "role": str(known.get("role", "explains"))}
-
-
 def _is_described(known: dict[str, Any], picture: str) -> bool:
     """Described with a role. A verdict kept before roles said only whether it
     teaches -- a badge and the deck's art alike were "no" -- so it is asked again
     rather than guessed: guessed, a badge was offered as the deck's art."""
-    return picture in known and "role" in known[picture]
+    return isinstance(known.get(picture), dict) and "role" in known[picture]
 
 
 def notes(scenes: Path, pictures: list[str]) -> dict[str, dict[str, str]]:
     """What each of these deck pictures is and what it is good for, by path. A
-    picture not yet described is asked about once; one that could not be asked
+    picture not yet described is asked about once (four scenes starting at once
+    wait for the one asking, rather than all asking); one that could not be asked
     about has no note, and is offered all the same."""
     from pipeline.llm import ModelCallFailed, ModelNotConfigured
+    from pipeline.storage.documents import read_json_object, write_text_atomically
 
     path = scenes / VERDICTS
 
     def read() -> dict[str, Any]:
-        with _LOCK:
-            return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+        return read_json_object(path, "picture notes") or {}
 
     known = read()
     for picture in pictures:
         if _is_described(known, picture) or _is_made_for_the_scene(picture):
             continue
-        # Four scenes start at once and are offered the same deck: one asks about
-        # a picture while the others wait for its answer, instead of four asking.
-        with _asking(picture):
+        with _ASKING:
             known = read()
             if _is_described(known, picture):
                 continue
             try:
-                answer = _ask(Path(picture))
+                known[picture] = _ask(Path(picture))
             except (ModelCallFailed, ModelNotConfigured, OSError) as failure:
                 logger.warning("picture not described (%s): %s", picture, failure)
                 continue
-            with _LOCK:
-                known = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
-                known[picture] = answer
-                scenes.mkdir(parents=True, exist_ok=True)
-                path.write_text(json.dumps(known, indent=1, ensure_ascii=False),
-                                encoding="utf-8")
-    return {p: _as_note(known[p]) for p in pictures if _is_described(known, p)}
+            write_text_atomically(path, json.dumps(known, indent=1, ensure_ascii=False))
+    return {p: {"what": str(known[p].get("what", "")), "role": str(known[p]["role"])}
+            for p in pictures if _is_described(known, p)}
 
 
-_ASKING: dict[str, threading.Lock] = {}
-
-
-def _asking(picture: str) -> threading.Lock:
-    with _LOCK:
-        return _ASKING.setdefault(picture, threading.Lock())
+# One picture is asked about at a time across the scenes being made: the others
+# wait and then read its answer from the file.
+_ASKING = threading.Lock()
 
 
 def _is_made_for_the_scene(picture: str) -> bool:
@@ -128,16 +115,15 @@ def _is_made_for_the_scene(picture: str) -> bool:
     return name.startswith(("illustration-", "found-", "icon-"))
 
 
-def offered(scenes: Path, on_screen: str, pictures: list[str]) -> tuple[str, list[str]]:
-    """The brief's on-screen text and every deck picture -- described, none withheld.
-    Only a scene with no deck picture at all, and none asked for, has one painted
-    from what its brief says to DRAW (or the PICTURE it named)."""
+def with_painting_asked(on_screen: str, pictures: list[str]) -> str:
+    """The brief's on-screen text. Only a scene with no deck picture at all, and
+    none asked for, has one painted from what its brief says to DRAW (or the
+    PICTURE it named)."""
     from pipeline.scene_illustration import wanted
 
-    notes(scenes, pictures)
     if not pictures and not wanted(on_screen):
         found = {m.group(1).upper(): m.group(2) for m in DRAWN.finditer(on_screen or "")}
         asked = found.get("DRAW") or found.get("PICTURE", "")
         if asked and asked.lower() not in ("none", "-"):
             on_screen = f"{on_screen.rstrip()}\nILLUSTRATE: {asked}"
-    return on_screen, list(pictures)
+    return on_screen

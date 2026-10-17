@@ -45,7 +45,6 @@ from pipeline.operations import (
 )
 from pipeline.plan_units import MAXIMUM_SECTION_SOURCE_CHARACTERS, section_source_text
 from pipeline.planning import Plan, PlanSection
-from pipeline.script_review import SLIDES_ARE_THE_DIRECTION
 from pipeline.script_review import keep_to_slides as _keep_to_slides
 from pipeline.scripting import (
     SCRIPT_WRITE,
@@ -80,13 +79,9 @@ class DraftedScene(BaseModel):
     )
     brief: str = Field(
         description="What is on screen while this narration plays, in the shape your "
-                    "instructions give: PICTURE (the exact names of the deck's pictures "
-                    "to show, the main one first, or none), DRAW (the real things, "
-                    "named), LAYOUT, BEATS (\"exact words\" -> what appears or changes), "
-                    "LABELS (at most five, from the narration), and -- only for what no "
-                    "deck picture shows -- PHOTO (a real photograph, engraving or diagram "
-                    "to find on the open web), ILLUSTRATE (what to paint) or ICON (up to "
-                    "three simple icons). Never 'such as' or 'something like'."
+                    "instructions give (PICTURE, DRAW, LAYOUT, BEATS, LABELS, and PHOTO, "
+                    "ILLUSTRATE or ICON for what no deck picture shows). Never 'such as' "
+                    "or 'something like'."
     )
 
 
@@ -237,8 +232,8 @@ def _write_section(
         f"written for the ear, and `brief`, exactly what is on screen while that "
         f"narration plays, following your instructions on briefs. {shape} "
         f"Up to about {target_words} words of narration in total, for about "
-        f"{section.estimated_seconds} seconds. {SLIDES_ARE_THE_DIRECTION} Teach it to "
-        f"a learner meeting it for the first time, following your instructions on "
+        f"{section.estimated_seconds} seconds. Keep to its slides and teach it to a "
+        f"learner meeting it for the first time, following your instructions on "
         f"narration. Open where the previous section left off.\n\n"
         f"{VOICE_RULE}\n"
         f"Tone: {preferences.tone_sentence}\n"
@@ -345,26 +340,7 @@ def _section_brief(plan: Plan, section: PlanSection, target_words: int,
                      "topic's opening when it is the deck's art (name them on PICTURE; "
                      "describe no deck picture that is not listed):\n"
                      + "\n".join(f"- {name}" for name in pictures))
-    lines.append(_pictures_to_go_round(pictures or [], len(section.scenes)))
-    return "\n".join(line for line in lines if line)
-
-
-def _pictures_to_go_round(pictures: list[str], scenes: int) -> str:
-    """Said when the section's real pictures are fewer than its scenes. Demo 003's
-    phrenology section had one real picture -- the rest blank speech-bubble shapes --
-    for four scenes, and three of them made it their subject."""
-    from pipeline.scene_vetting import ROLES
-
-    real = sum(1 for line in pictures
-               if ROLES["explains"] in line or ROLES["sets_scene"] in line)
-    if scenes < 2 or real >= scenes:
-        return ""
-    return (f"This section has {real} deck picture(s) that show something, for {scenes} "
-            "scenes. Show each once as a scene's subject (a second time only as a "
-            "close-up of a different part). Give every other scene its own subject, each "
-            "a different thing: a PHOTO to find of the person, instrument, specimen or "
-            "place it names, an ILLUSTRATE, or a diagram to DRAW -- never another version "
-            "of a picture a scene near it already shows.")
+    return "\n".join(lines)
 
 
 def _neighbours(plan: Plan, script: Script, section: PlanSection) -> str:

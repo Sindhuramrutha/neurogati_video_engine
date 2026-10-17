@@ -20,6 +20,7 @@ Stored at `projects/<slug>/export/manifest.json`, beside the files it describes.
 
 from __future__ import annotations
 
+import json
 import logging
 from datetime import UTC, datetime
 from pathlib import Path
@@ -196,7 +197,8 @@ def _export_sections(project: Project, plan: Plan, script: Script) -> list[dict[
         for section, start_ms in zip(plan.sections, starts, strict=False)
     ]
 
-def export_readiness(project: Project) -> tuple[list[str], list[str]]:
+def export_readiness(project: Project, usage: dict[str, Any] | None = None
+                     ) -> tuple[list[str], list[str]]:
     """What stops this project being handed over, and what merely ought to be known.
 
     Blockers are the things that make the files wrong: no plan, no narration, no
@@ -240,7 +242,7 @@ def export_readiness(project: Project) -> tuple[list[str], list[str]]:
                             f"is used below the quality bar: {visual.below_bar}")
     from pipeline.scene_pictures import deck_usage
 
-    usage = deck_usage(project)
+    usage = usage or deck_usage(project)
     if usage["not_shown"] and usage["shown"]:
         names = ", ".join(p["name"] for p in usage["not_shown"][:4])
         more = "..." if len(usage["not_shown"]) > 4 else ""
@@ -267,14 +269,13 @@ def build_export(slug: str) -> dict[str, Any]:
     script = script_for_later_stages(project)
     review = ReviewStore(project.root).load()
 
-    from pipeline.outside_pictures import credits as outside_credits
     from pipeline.scene_pictures import deck_usage
 
-    blockers, warnings = export_readiness(project)
+    usage = deck_usage(project)
+    blockers, warnings = export_readiness(project, usage)
     sections = _export_sections(project, plan, script)
     credits = outside_credits(project)
     files = write_export_files(project.root, project.name, plan.to_dict(), sections, credits)
-    usage = deck_usage(project)
 
     version = next(
         (v for v in review.versions if v.id == review.active_version_id),
@@ -346,3 +347,24 @@ def _youtube_files(project: Project, video: Path, duration_ms: int) -> list[Expo
             path=str(subtitle.relative_to(project.root)).replace("\\", "/"),
             bytes=subtitle.stat().st_size, note="Subtitles for YouTube (SRT)."))
     return files
+
+
+def outside_credits(project) -> list[dict[str, Any]]:
+    """Every outside picture any scene keeps, with its credit, for Export."""
+    from pipeline.generation import VisualPlanStore
+    from pipeline.scene_program import scene_folder
+
+    found: dict[str, dict[str, Any]] = {}
+    for visual in VisualPlanStore(project.root).load().visuals:
+        folder = scene_folder(project, visual)
+        record = folder / "sources.json" if folder else None
+        if record is None or not record.exists():
+            continue
+        try:
+            entries = json.loads(record.read_text(encoding="utf-8"))
+        except ValueError:
+            continue
+        for entry in entries:
+            key = entry.get("page") or entry.get("title") or entry.get("file", "")
+            found.setdefault(key, entry)
+    return list(found.values())

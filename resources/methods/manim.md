@@ -6,7 +6,7 @@ Declare it, and render straight to the file the contract asks for:
 
     # /// script
     # requires-python = ">=3.11"
-    # dependencies = ["manim", "pillow<13"]
+    # dependencies = ["manim", "pillow"]
     # ///
     import shutil
     from pathlib import Path

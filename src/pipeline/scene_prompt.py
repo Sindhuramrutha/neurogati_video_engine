@@ -63,37 +63,12 @@ LAYOUT_RULES = (
     "spare), and the diagram uses most of the frame, not one strip of it.")
 
 
-# The deck's own pictures make the video look like the course it comes from. A
-# vision gate and painting by default once left 32 of 43 scenes on a painting.
 PICTURE_RULES = (
-    "Pictures: the brief's picture_catalogue lists every picture you may show, by index -- "
-    "where it comes from, what it is, its role, what was measured about it, and which "
-    "scenes already show it. Show the deck's own pictures wherever they fit: the video "
-    "should look made from the course's deck. Decide for each scene:\n"
-    "- role explains: a figure, photo, portrait or diagram -- build the scene around it "
-    "(hero, person, steps, compare) and explain it on screen.\n"
-    "- role sets_scene: the deck's own art -- use it as a backdrop while a topic is "
-    "opened, its context given or a section closed (the opener template), not as the "
-    "mechanism you explain.\n"
-    "- role furniture (a cover, a badge, a crop of text) and the slide itself: rarely, "
-    "briefly, only where it truly helps (the course's opening, a recap).\n"
-    "- A picture 'not yet' shown anywhere in the video is worth a place, when it fits "
-    "what is said. One another scene shows or plans to show (shown_in_video names "
-    "them) is NOT this scene's main picture, even when this scene is about the same "
-    "topic: four phrenology scenes on the one phrenology chart looked like one scene "
-    "four times. It may come back only briefly, or as a close-up of a different part, "
-    "beside this scene's own subject: a different deck picture -- the rest of the deck "
-    "is offered too -- one found or made for this scene, or the idea drawn. A picture "
-    "painted for this scene must not be another version of one a scene near it shows. "
-    "Small, cropped or plain pictures may still serve: you judge from what was "
-    "measured.\n"
-    "- Pictures painted or found for this scene fill what the deck does not show; "
-    "they never push out a deck picture that fits.\n"
-    "- An icon (role icon) is a small symbol beside words or a part of a diagram -- "
-    "a step's mark in steps, an item in a hub -- never a scene's main picture and "
-    "never shown large: a lone icon filling half the frame looks cheap. A scene with "
-    "only icons draws the idea itself as its main picture.\n"
-    "A scene with pictures offered shows at least one.")
+    "Pictures: brief.picture_catalogue lists what you may show, by index -- where each "
+    "comes from, what it is, its role (explains, sets_scene, furniture, slide, icon), "
+    "what was measured about it, and which other scenes show it (shown_in). Your "
+    "instructions say how to use them. A scene with pictures of its own (near: true) "
+    "shows one.")
 
 
 def available_renderers() -> list[str]:
@@ -255,7 +230,7 @@ def picture_notes(brief: dict[str, Any], cache_folder: Path, state: dict[str, An
     roles = {entry.get("index"): entry.get("role")
              for entry in brief.get("picture_catalogue") or []}
     chosen = [(index, path) for index, path in enumerate(every)
-              if roles.get(index) != "slide"][:PICTURES_DESCRIBED]
+              if roles.get(index) not in ("slide", "icon")][:PICTURES_DESCRIBED]
     lines = []
     for index, path in chosen:
         if path not in known:
@@ -277,13 +252,6 @@ def request(brief: dict[str, Any], notes: str, earlier: str, entry: str, code: s
              + json.dumps(compact(brief), indent=1, ensure_ascii=False)]
     if notes:
         parts.append("## The nearest pictures, described part by part\n" + notes)
-    unshown = [entry for entry in brief.get("picture_catalogue") or []
-               if entry.get("shown_in_video", "").startswith("not yet")
-               and entry.get("role") not in ("slide", "furniture")]
-    if unshown:
-        parts.append("## Deck pictures no scene shows yet\n" + "\n".join(
-            f"- pictures[{e['index']}] ({e['from']}): {e['what']}" for e in unshown[:8])
-            + "\nGive one a place in this scene if it fits what is said.")
     if earlier:
         parts.append("## What the scenes just before this one did (stay consistent)\n" + earlier)
     if instruction.strip():

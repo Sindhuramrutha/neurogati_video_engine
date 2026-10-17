@@ -167,7 +167,7 @@ def _encode() -> dict[str, str]:
 
 
 SCENE_PROBE = ('# /// script\n# requires-python = ">=3.11"\n'
-               '# dependencies = ["manim>=0.19", "pillow<13"]\n# ///\n'
+               '# dependencies = ["manim>=0.19", "pillow"]\n# ///\n'
                "import manim\nprint(manim.__version__)\n")
 
 

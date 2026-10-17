@@ -136,10 +136,9 @@ class SectionScript(BaseModel):
     # Compared later to say "the plan or the source changed since this was
     # written" -- the gap Planning had with Extraction, one stage further on.
     written_from: dict[str, str] = Field(default_factory=dict)
-    # What the review against the slides left standing when it was drafted: claims
-    # that lead away from the slides or get them wrong, and slide points the
-    # narration does not cover. Each drafted section is revised once from these
-    # before it is saved; what is here is what the agent kept, for a person to see.
+    # What the check against the slides left standing when it was drafted, after
+    # the agent's rounds of revision: claims that lead away from the slides or get
+    # them wrong, and slide points the narration does not cover.
     unsupported: list[str] = Field(default_factory=list)
     uncovered: list[str] = Field(default_factory=list)
     # Where a slide itself is wrong (a person decides: the slide or the fact), and

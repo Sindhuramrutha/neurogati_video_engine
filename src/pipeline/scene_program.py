@@ -155,8 +155,7 @@ def extend_brief(project, visual, folder: Path, brief: dict[str, Any], section) 
         "words": facts["words"],
         "time_range": time_range(project, visual, facts["seconds"], section_visuals),
         "source_text": source[:LONGEST_SOURCE_TEXT],
-        "assets": {"pictures": brief.get("pictures", []),
-                   "slide_image_reference_only": brief.get("slide_image", "")},
+        "assets": {"pictures": brief.get("pictures", [])},
         "renderers": list(RENDERERS),
         "section_scenes": _section_scenes(visual, section_visuals),
     }
@@ -247,20 +246,8 @@ def _clear_last_clip(clip: Path, waits=CLIP_LOCK_WAITS, sleep=None) -> bool:
     return False
 
 
-# Releases known to break a scene's own environment, held back in what a program
-# declares. Pillow 13.0.0 (17 Oct 2026) refuses the image mode Manim 0.22 passes
-# to Image.fromarray: every picture in every Manim scene failed to draw.
-HELD_BACK = {"pillow": "pillow<13"}
-_SCRIPT_BLOCK = re.compile(r"^# /// script\s*$.*?^# ///\s*$", re.MULTILINE | re.DOTALL)
-
-
-def hold_back(code: str) -> str:
-    """A scene program with the releases that break it held back in its declared
-    dependencies -- the model writes its own, and writes "pillow" bare."""
-    block = _SCRIPT_BLOCK.search(code)
-    if not block:
-        return code
-    declared = block.group(0)
-    for name, held in HELD_BACK.items():
-        declared = re.sub(rf'"{name}"', f'"{held}"', declared, flags=re.IGNORECASE)
-    return code[:block.start()] + declared + code[block.end():]
+# Releases known to break a scene's environment, held back for every scene program
+# whatever it declares: `uv run --with` adds them as requirements. Pillow 13.0.0
+# (17 Oct 2026) refuses the image mode Manim 0.22 passes to Image.fromarray, and
+# every picture in every Manim scene failed to draw.
+HELD_BACK = ("pillow<13",)

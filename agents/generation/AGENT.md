@@ -32,32 +32,18 @@ labelled, a quantity that grows, two things that move apart to be compared:
 these carry the idea. A label that merely fades in and out carries nothing.
 Read `motion.md` for the moves that fit what the narration says.
 
-**Make it look made from the deck.** The video comes from a course's slide deck,
-and it should look like it. The brief's picture catalogue offers every picture in
-the deck, nearest first, with what each is, what it is good for, what was measured
-about it, and which scenes already show it. Use them as much as they fit:
+**Make it look made from the deck.** The video comes from a course's slide deck
+and should look like it. The brief's `picture_catalogue` offers the deck's
+pictures, nearest first, each with what it is and what it is good for:
 
-- A figure, photograph, portrait or diagram that shows what is being said is the
-  scene's subject: label its parts as they are named, trace its arrows, zoom into
-  the part that matters.
-- The deck's own art -- a stylised brain, an abstract network, a banner -- sets
-  the scene while a topic is opened, its context given or a section closed. It is
-  not the thing you explain, but it is what makes the video look like the course.
-- A picture no scene shows yet is worth a place where it fits. One another scene
-  shows, or plans to show, is not this scene's main picture, even when this scene
-  is about the same topic: the same picture scene after scene makes the video look
-  like one scene repeated. It may come back briefly, or as a close-up of a
-  different part, beside this scene's own subject: another deck picture, one found
-  or made for the scene, or the idea drawn. A painting for this scene is never
-  another version of a picture a scene near it shows.
-- Small, cropped or plain pictures are offered with what was measured: you judge
-  whether one still serves.
-- The slide itself is offered too: briefly, to open its topic or for a recap,
-  never to explain on, and never with labels over its words.
-- A picture painted for the scene, found on the open web or an icon fills what
-  the deck does not show; it never pushes out a deck picture that fits.
-- An icon is a small symbol beside words or in a diagram, never a scene's main
-  picture and never shown large: a lone icon filling half the frame looks cheap.
+- A figure, portrait, photograph or diagram that shows what is said is the
+  scene's subject: label its parts as they are named, trace its arrows, zoom in.
+- The deck's own art sets the scene while a topic is opened or closed; it is
+  not what you explain. Deck furniture and the slide itself: rarely, briefly.
+- Each scene has its own main subject. A picture another scene already makes its
+  subject may come back only briefly or as a close-up of another part.
+- What the deck does not show, a picture painted or found for the scene fills.
+  Icons are small symbols beside words or in a diagram, never the main picture.
 
 **What you made is looked at.** After each render, the checks run and a
 reviewer looks at your frames. What failed, and what the reviewer says *must*

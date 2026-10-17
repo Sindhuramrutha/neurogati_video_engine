@@ -144,18 +144,17 @@ def review_frames(folder: Path, brief: dict[str, Any], question: str = "") -> Ve
         "- Only words in boxes joined by lines, when the narration names a thing that can "
         "be shown (a neuron, a frog's leg, a battery, a brain region, an experiment): it "
         "does not teach by picture. Say what to draw or which offered picture to show.\n"
-        "- The scene's own pictures (named in its brief, made for it, or from its own "
-        "slide) are offered and none is shown, or one is shown so small or so far from "
-        "what explains it that it does nothing. The deck's own art used as a backdrop "
-        "while a topic is opened is fine: it keeps the video looking like the course.\n"
+        "- The scene has pictures of its own and shows none, or shows one so small or so "
+        "far from what explains it that it does nothing.\n"
+        "- Its main picture is one another scene already makes its subject.\n"
         "- Lines, arrows or boxes running over each other or over words.\n"
         "- Colourless outline boxes on an empty background, or most of the frame empty: "
         "it looks unfinished.\n"
         "- A painted illustration that is wrong for what is said (the wrong thing drawn, "
         "impossible anatomy or apparatus), or that has text in it.")
-    elsewhere = [f"{entry['file']} ({entry.get('what', '')[:50]}): {entry['shown_in_video']}"
-                 for entry in brief.get("picture_catalogue") or []
-                 if not entry.get("shown_in_video", "not yet").startswith("not yet")]
+    elsewhere = [f"{entry['file']} ({entry.get('what', '')[:50]}): "
+                 f"{', '.join(entry['shown_in'])}"
+                 for entry in brief.get("picture_catalogue") or [] if entry.get("shown_in")]
     user = "\n\n".join(part for part in [
         "Narration (spoken over the scene):\n"
         + str(brief.get("narration", ""))[:LONGEST_NARRATION],
@@ -163,10 +162,7 @@ def review_frames(folder: Path, brief: dict[str, Any], question: str = "") -> Ve
         f"How the section is told: {brief.get('how', '')}",
         f"Who it is for: {brief.get('audience', 'not stated')}",
         "The scene's own pictures: " + (", ".join(own_pictures(brief)) or "none"),
-        ("Pictures other scenes already show (another scene's picture as this scene's "
-         "main picture again is a problem -- the video looks like one scene repeated; a "
-         "brief return or a close-up of a different part is fine): " + "; ".join(elsewhere))
-        if elsewhere else "",
+        "Pictures other scenes already show: " + "; ".join(elsewhere[:6]) if elsewhere else "",
         f"The agent asks you specifically: {question}" if question.strip() else "",
         "Look at the frames below, in order.",
     ] if part)
@@ -175,19 +171,14 @@ def review_frames(folder: Path, brief: dict[str, Any], question: str = "") -> Ve
 
 
 def own_pictures(brief: dict[str, Any]) -> list[str]:
-    """The pictures nearest the scene -- named in its brief, made for it, from its own
-    slide -- as the reviewer reads them: the rest of the deck is offered too, but a
-    scene is not expected to show it."""
-    near = ("named", "own slide", "painted", "found", "icon")
+    """The pictures a scene is expected to show one of: its own (named in its brief,
+    made for it, from its own slide). The rest of the deck is offered too, and deck
+    furniture and the slide itself are offered, never expected."""
     catalogue = brief.get("picture_catalogue")
     if catalogue is None:       # a brief from before the catalogue: all were near
         return [Path(path).name for path in (brief.get("assets") or {}).get("pictures") or []]
-    # Deck furniture (a badge, a cover) and the slide itself are offered, but no
-    # scene is expected to show them: a check once failed a scene for leaving out
-    # its slide's only picture, a "Check for updates" badge.
     return [f"{entry['file']} ({entry.get('what', '')})"[:90] for entry in catalogue
-            if any(word in entry.get("from", "") for word in near)
-            and entry.get("role") not in ("furniture", "slide")]
+            if entry.get("near") and entry.get("role") not in ("furniture", "slide")]
 
 
 def look_at_picture(path: Path, question: str) -> str:

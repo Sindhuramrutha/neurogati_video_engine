@@ -44,11 +44,11 @@ from pipeline.generation import WORDS_PER_SECOND, VisualPlanStore, _now, brief_f
 from pipeline.plan_handoff import _check
 from pipeline.rendering import FRAME_HEIGHT, FRAME_RATE, FRAME_WIDTH
 from pipeline.scene_program import (
+    HELD_BACK,
     _clear_last_clip,
     _probe,
     entry_of,
     extend_brief,
-    hold_back,
     make_preview,
     scene_folder,
 )
@@ -146,7 +146,7 @@ def write_brief(project, visual) -> dict[str, Any]:
     from pipeline.assets_handoff import _look_preview
     from pipeline.plan_handoff import plan_for_later_stages
     from pipeline.plan_pictures import assets_for_later_stages
-    from pipeline.scene_vetting import notes, offered
+    from pipeline.scene_vetting import notes, with_painting_asked
     from pipeline.stage_options import video_preferences
     from pipeline.video_setup import platform_needs
 
@@ -164,13 +164,13 @@ def write_brief(project, visual) -> dict[str, Any]:
     # and how to show it, is the agent's to judge (scene_pictures, scene_vetting).
     tiers = scene_pictures.deck_tiers(project, visual, section, plan, library,
                                       on_screen, narration)
-    on_screen, _deck = offered(folder.parent, on_screen,
-                               [str(project.root / f.shown_path) for _, f in tiers])
+    deck = [str(project.root / f.shown_path) for _, f in tiers]
+    on_screen = with_painting_asked(on_screen, deck)
     look = _look_preview(project, library.look)
     paths, catalogue = scene_pictures.catalogue(
         project, tiers, scene_pictures.made_for_scene(folder, on_screen, look),
-        notes(folder.parent, [str(project.root / f.shown_path) for _, f in tiers]),
-        scene_pictures.shown_pictures(project, skip_visual_id=visual.id),
+        notes(folder.parent, deck),
+        scene_pictures.shown_pictures(project, skip_visual_id=visual.id, library=library),
         slide if slide.exists() else None)
 
     brief: dict[str, Any] = {
@@ -209,12 +209,11 @@ def write_brief(project, visual) -> dict[str, Any]:
 def _command(folder: Path) -> list[str]:
     arguments = ["scene.py", "--brief", "brief.json", "--out", "render.mp4"]
     code = (folder / "scene.py").read_text(encoding="utf-8")
-    if (held := hold_back(code)) != code:          # a release known to break it
-        (folder / "scene.py").write_text(code := held, encoding="utf-8")
     uv = shutil.which("uv")
     if uv and INLINE_METADATA.search(code):
         # Its own environment, holding exactly what the script declares.
-        return [uv, "run", "--quiet", "--script", *arguments]
+        held = [part for release in HELD_BACK for part in ("--with", release)]
+        return [uv, "run", "--quiet", *held, "--script", *arguments]
     return [sys.executable, *arguments]
 
 

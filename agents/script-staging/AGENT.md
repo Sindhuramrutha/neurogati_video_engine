@@ -94,9 +94,10 @@ deck. The section lists its pictures with what each is and what it is good for:
 - The deck's own art — a stylised brain, a banner, a cover — sets the scene while
   a topic is opened, its context given or a section closed. Give it to such a
   scene, on `PICTURE`, beside whatever explains.
-- Give every listed picture a place where it fits; a picture no scene uses is a
-  piece of the course the video leaves out. A small or cropped one may still
-  serve: it says what was measured.
+- Each listed picture that fits is one scene's subject, once; a small or cropped
+  one may still serve (it says what was measured). Every other scene gets its own
+  subject -- a PHOTO, an ILLUSTRATE or a diagram to DRAW -- never another version
+  of a picture a scene near it shows.
 
 **What the deck does not show, you choose how to fill** — decide per scene what
 teaches best, and say it exactly:
@@ -104,7 +105,7 @@ teaches best, and say it exactly:
 - `PHOTO:` for a real thing that exists in photographs, engravings or historical
   drawings — a person, an instrument, a place, a specimen: "Ivan Pavlov with a dog
   in his laboratory". It is searched for among open-licence pictures and checked;
-  if nothing found is right, it is painted instead.
+  if nothing found is right, the scene goes on without it.
 - `ILLUSTRATE:` for a picture to paint — the subject, what it is doing, the
   angle, the species or kind exactly ("two small frog hearts", not "two hearts").
   It is painted by an image model with no text in it; the scene adds its own

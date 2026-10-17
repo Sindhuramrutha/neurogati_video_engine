@@ -108,8 +108,10 @@ def test_the_catalogue_says_what_each_picture_is_and_whether_the_video_shows_it(
     assert by_file["slide.png"]["role"] == "slide", "the slide itself is offered, as itself"
     assert paths.index(str(slide)) == 2, "after the scene's own slide's pictures"
     assert by_file["cover.png"]["role"] == "furniture"
-    assert by_file["cover.png"]["shown_in_video"] == "scene 1, scene 4"
-    assert by_file["volta.png"]["shown_in_video"].startswith("not yet")
+    assert by_file["cover.png"]["shown_in"] == ["scene 1", "scene 4"]
+    assert by_file["volta.png"]["shown_in"] == []
+    assert by_file["heart.png"]["near"] and not by_file["volta.png"]["near"], \
+        "its own slide's are its own; its section's are offered, not expected"
     assert "plain graphic" in by_file["banner.png"]["measured"].lower(), \
         "what was measured is said, not used to refuse it"
 
@@ -120,17 +122,17 @@ def test_no_deck_picture_is_withheld_and_each_is_described_once(tmp_path, monkey
     monkeypatch.setattr(scene_vetting, "_ask", lambda path: asked.append(path) or {
         "what": "a Check for updates badge", "role": "furniture"})
 
-    on_screen, offered = scene_vetting.offered(tmp_path, "DRAW: a frog's leg", ["badge.png"])
-    assert offered == ["badge.png"], "furniture is offered, described; the agent decides"
+    on_screen = scene_vetting.with_painting_asked("DRAW: a frog's leg", ["badge.png"])
     assert "ILLUSTRATE" not in on_screen, "a deck picture is there: nothing painted by rule"
-    scene_vetting.offered(tmp_path, "DRAW: a frog's leg", ["badge.png"])
+    scene_vetting.notes(tmp_path, ["badge.png"])
+    assert scene_vetting.notes(tmp_path, ["badge.png"])["badge.png"]["role"] == "furniture", \
+        "furniture is described, not withheld; the agent decides"
     assert [str(p) for p in asked] == ["badge.png"], "asked once per picture, then kept"
-    assert scene_vetting.notes(tmp_path, ["badge.png"])["badge.png"]["role"] == "furniture"
 
 
 def test_with_no_deck_picture_at_all_one_is_painted_from_the_brief(tmp_path):
-    on_screen, offered = scene_vetting.offered(tmp_path, "DRAW: a frog's leg on a hook", [])
-    assert offered == [] and "ILLUSTRATE: a frog's leg on a hook" in on_screen
+    on_screen = scene_vetting.with_painting_asked("DRAW: a frog's leg on a hook", [])
+    assert "ILLUSTRATE: a frog's leg on a hook" in on_screen
 
 
 @pytest.mark.real_vetting
@@ -155,11 +157,9 @@ def test_a_scene_is_not_made_to_show_a_badge_or_the_slide():
     from pipeline.scene_review import own_pictures
 
     brief = {"picture_catalogue": [
-        {"file": "badge.png", "from": "this scene's own slide (slide 2)", "role": "furniture",
-         "what": "badge"},
-        {"file": "slide.png", "from": "the slide itself", "role": "slide", "what": "slide"},
-        {"file": "galen.png", "from": "this section (slide 3)", "role": "explains",
-         "what": "Galen"}]}
+        {"file": "badge.png", "near": True, "role": "furniture", "what": "badge"},
+        {"file": "slide.png", "near": True, "role": "slide", "what": "slide"},
+        {"file": "galen.png", "near": False, "role": "explains", "what": "Galen"}]}
     assert own_pictures(brief) == [], "nothing of its own that it should show"
     brief["picture_catalogue"][0]["role"] = "explains"
     assert own_pictures(brief) == ["badge.png (badge)"]
@@ -320,7 +320,9 @@ def test_export_credits_every_outside_picture_once(tmp_path, monkeypatch):
                         lambda self: Thing(visuals=folders))
     monkeypatch.setattr("pipeline.scene_program.scene_folder", lambda project, visual: visual)
 
-    assert outside_pictures.credits(Thing(root=tmp_path)) == [entry]
+    from pipeline.exporting import outside_credits
+
+    assert outside_credits(Thing(root=tmp_path)) == [entry]
 
 
 def test_a_picture_another_scene_plans_to_show_is_not_offered_as_unused(tmp_path, monkeypatch):
@@ -342,18 +344,3 @@ def test_a_picture_another_scene_plans_to_show_is_not_offered_as_unused(tmp_path
     assert shown == {str(tmp_path / "extraction/assets/galen.png"): ["scene 1, planned"]}
     assert scene_pictures.shown_pictures(project, planned=False) == {}, \
         "the video's count is of what was made, not what was planned"
-
-
-def test_a_section_short_of_real_pictures_is_told_to_give_each_scene_its_own(monkeypatch):
-    """Demo 003's phrenology section: one chart and three blank speech-bubble
-    shapes for four scenes, and three scenes made the chart their subject."""
-    from pipeline.scene_vetting import ROLES
-    from pipeline.script_drafting import _pictures_to_go_round
-
-    chart = f"Slide 6 | what it is: a phrenology chart | {ROLES['explains']}"
-    bubble = f"Slide 6 | what it is: a blank speech bubble | {ROLES['furniture']}"
-    said = _pictures_to_go_round([chart, bubble, bubble, bubble], 4)
-    assert "1 deck picture(s) that show something, for 4 scenes" in said
-    assert "PHOTO" in said and "never another version" in said
-    assert _pictures_to_go_round([chart, chart], 2) == "", "enough to go round"
-    assert _pictures_to_go_round([chart], 1) == ""

@@ -194,11 +194,11 @@ def _pictures_handed_on(project) -> dict[str, Any]:
     what was measured about the rest. Every one is offered to every scene, nearest
     first; what was measured is said to the agent, not used to refuse it."""
     from pipeline.plan_pictures import assets_for_later_stages
-    from pipeline.scene_pictures import write_usage
+    from pipeline.scene_pictures import deck_usage
 
     library = assets_for_later_stages(project).library
     handed_on = library.handed_on()
-    usage = write_usage(project)
+    usage = deck_usage(project, library)
     return {
         "handed_on": len(handed_on),
         "shown": usage["shown"],

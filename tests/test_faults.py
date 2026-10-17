@@ -157,15 +157,17 @@ def test_a_clip_held_open_by_a_player_does_not_end_the_scene(tmp_path, monkeypat
     assert ran["code"] == 1 and "open in another program" in ran["log"]
 
 
-def test_a_release_that_breaks_scenes_is_held_back_in_what_a_program_declares():
+def test_a_release_that_breaks_scenes_is_held_back_for_every_program(tmp_path, monkeypatch):
     """Pillow 13.0.0 (17 Oct 2026) broke every Manim picture: Image.fromarray refused
-    the mode Manim 0.22 passes. The model declares "pillow" bare in its programs."""
-    from pipeline.scene_program import hold_back
+    the mode Manim 0.22 passes. The model declares "pillow" bare, and Manim pulls
+    it in too, so it is held back in how every scene program is run."""
+    from pipeline import scene_lab
 
-    code = ('# /// script\n# requires-python = ">=3.11"\n'
-            '# dependencies = ["manim>=0.19", "Pillow"]\n# ///\nprint("pillow")\n')
-    held = hold_back(code)
-    assert '"manim>=0.19", "pillow<13"]' in held
-    assert held.endswith('print("pillow")\n'), "only the declared dependencies change"
-    assert hold_back(held) == held
-    assert hold_back('print("pillow")') == 'print("pillow")', "no block, nothing to hold"
+    (tmp_path / "scene.py").write_text('# /// script\n# dependencies = ["pillow"]\n# ///\n',
+                                       encoding="utf-8")
+    monkeypatch.setattr(scene_lab.shutil, "which", lambda name: "uv")
+    command = scene_lab._command(tmp_path)
+    assert command[command.index("--with") + 1] == "pillow<13"
+    assert command.index("--with") < command.index("--script")
+    assert '"pillow"' in (tmp_path / "scene.py").read_text(encoding="utf-8"), \
+        "the program the model wrote is left as it wrote it"
