@@ -19,6 +19,7 @@ import json
 import logging
 import re
 import threading
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Literal
 
@@ -73,11 +74,16 @@ def _is_described(known: dict[str, Any], picture: str) -> bool:
     return isinstance(known.get(picture), dict) and "role" in known[picture]
 
 
+DESCRIBED_AT_ONCE = 4
+
+
 def notes(scenes: Path, pictures: list[str]) -> dict[str, dict[str, str]]:
-    """What each of these deck pictures is and what it is good for, by path. A
-    picture not yet described is asked about once (four scenes starting at once
-    wait for the one asking, rather than all asking); one that could not be asked
-    about has no note, and is offered all the same."""
+    """What each of these deck pictures is and what it is good for, by path. The
+    deck is described once, when its script is drafted (`describe_deck`); here,
+    what is already described is read, and any picture still undescribed is asked
+    about -- a few at a time, and once: scenes starting together wait for the batch
+    being asked, then read its answers. One that could not be asked about has no
+    note, and is offered all the same."""
     from pipeline.llm import ModelCallFailed, ModelNotConfigured
     from pipeline.storage.documents import read_json_object, write_text_atomically
 
@@ -86,26 +92,46 @@ def notes(scenes: Path, pictures: list[str]) -> dict[str, dict[str, str]]:
     def read() -> dict[str, Any]:
         return read_json_object(path, "picture notes") or {}
 
+    def undescribed(known: dict[str, Any]) -> list[str]:
+        return [p for p in dict.fromkeys(pictures)
+                if not _is_described(known, p) and not _is_made_for_the_scene(p)]
+
     known = read()
-    for picture in pictures:
-        if _is_described(known, picture) or _is_made_for_the_scene(picture):
-            continue
+    if undescribed(known):
         with _ASKING:
             known = read()
-            if _is_described(known, picture):
-                continue
-            try:
-                known[picture] = _ask(Path(picture))
-            except (ModelCallFailed, ModelNotConfigured, OSError) as failure:
-                logger.warning("picture not described (%s): %s", picture, failure)
-                continue
-            write_text_atomically(path, json.dumps(known, indent=1, ensure_ascii=False))
+            asking = undescribed(known)
+
+            def ask(picture: str) -> tuple[str, dict[str, Any] | None]:
+                try:
+                    return picture, _ask(Path(picture))
+                except (ModelCallFailed, ModelNotConfigured, OSError) as failure:
+                    logger.warning("picture not described (%s): %s", picture, failure)
+                    return picture, None
+
+            with ThreadPoolExecutor(max_workers=DESCRIBED_AT_ONCE) as pool:
+                answers = dict(pool.map(ask, asking))
+            known.update({p: a for p, a in answers.items() if a is not None})
+            if any(a is not None for a in answers.values()):
+                write_text_atomically(path, json.dumps(known, indent=1, ensure_ascii=False))
     return {p: {"what": str(known[p].get("what", "")), "role": str(known[p]["role"])}
             for p in pictures if _is_described(known, p)}
 
 
-# One picture is asked about at a time across the scenes being made: the others
-# wait and then read its answer from the file.
+def describe_deck(project) -> dict[str, dict[str, str]]:
+    """Every picture the deck hands on, described once -- at the hand-off to the
+    script, so no scene waits on it later."""
+    from pipeline.plan_pictures import assets_for_later_stages
+    from pipeline.scene_program import SCENES
+
+    library = assets_for_later_stages(project).library
+    return notes(project.root / SCENES, [
+        str(project.root / f.shown_path) for f in library.handed_on()
+        if (project.root / f.shown_path).exists()])
+
+
+# One batch is asked about at a time across the scenes being made: the others wait
+# and then read its answers from the file.
 _ASKING = threading.Lock()
 
 

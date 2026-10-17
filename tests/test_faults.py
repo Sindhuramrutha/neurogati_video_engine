@@ -171,3 +171,42 @@ def test_a_release_that_breaks_scenes_is_held_back_for_every_program(tmp_path, m
     assert command.index("--with") < command.index("--script")
     assert '"pillow"' in (tmp_path / "scene.py").read_text(encoding="utf-8"), \
         "the program the model wrote is left as it wrote it"
+
+
+def test_the_page_plays_a_copy_of_each_round_s_clip_never_the_file_rendered_to(tmp_path):
+    """The page playing render.mp4 held it open, and on Windows the next round could
+    not replace it. Each version of a clip is now its own file to the page."""
+    import os
+
+    from pipeline.scene_program import PLAYED, played_copy
+
+    clip = tmp_path / "render.mp4"
+    clip.write_bytes(b"round one")
+    first = played_copy(clip)
+    assert first.parent == tmp_path / PLAYED and first.read_bytes() == b"round one"
+    assert played_copy(clip) == first, "the same version, the same file"
+
+    clip.unlink()                         # the next round replaces the clip freely
+    clip.write_bytes(b"round two, longer")
+    os.utime(clip, ns=(1, 2))
+    second = played_copy(clip)
+    assert second != first and second.read_bytes() == b"round two, longer"
+    assert not first.exists(), "an older copy nothing holds is removed"
+
+
+def test_a_scene_s_rounds_render_against_the_brief_it_was_started_with(monkeypatch, tmp_path):
+    """Written again every round, the brief reread the extraction, every other
+    scene's folder and every picture's notes, for a brief that had not changed."""
+    from pipeline import scene_round
+
+    seen = []
+    monkeypatch.setattr("pipeline.scene_lab.run_scene",
+                        lambda slug, visual_id, brief=None: seen.append(brief) or {
+                            "checks": [{"status": "fail", "name": "x", "detail": "",
+                                        "rule": "", "key": "ran"}],
+                            "log": "", "brief": brief})
+    monkeypatch.setattr("pipeline.scene_program.save_spec", lambda folder, spec: None)
+    brief = {"scene_id": "s", "seconds": 1}
+    scene_round.render_round("p", "v", tmp_path, "manim", {}, {"renders": 0, "calls": {}},
+                             brief)
+    assert seen == [brief]

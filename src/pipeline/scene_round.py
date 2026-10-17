@@ -27,7 +27,8 @@ _render_slots = threading.Semaphore(max(1, int(os.environ.get("SCENE_RENDERS_AT_
 
 
 def render_round(slug: str, visual_id: str, folder: Path, renderer: str,
-                 spec: dict[str, Any], state: dict[str, Any]) -> dict[str, Any]:
+                 spec: dict[str, Any], state: dict[str, Any],
+                 brief: dict[str, Any] | None = None) -> dict[str, Any]:
     from pipeline.scene_lab import run_scene
     from pipeline.scene_program import save_spec
     from pipeline.scene_review import review_frames
@@ -35,7 +36,7 @@ def render_round(slug: str, visual_id: str, folder: Path, renderer: str,
     save_spec(folder, spec | {"renderer": renderer, "entry": ENTRY_FILES[renderer]})
     state["renders"] += 1
     with _render_slots:
-        result = run_scene(slug, visual_id)
+        result = run_scene(slug, visual_id, brief)
     failing = [c for c in result["checks"] if c["status"] == "fail"]
     warnings = [f"warn {c['name']}: {c['detail']}" for c in result["checks"]
                 if c["status"] == "warn"]

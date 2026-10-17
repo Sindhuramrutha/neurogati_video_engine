@@ -218,7 +218,7 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
                       f"({renderer}): {spec.get('approach', '')}")
 
             doing(folder, state, f"Rendering with {renderer}, checking, reviewing the frames")
-            result = render_round(slug, visual_id, folder, renderer, spec, state)
+            result = render_round(slug, visual_id, folder, renderer, spec, state, brief)
             if project_work.stopped():
                 return
             state["last_render"] = {k: result[k] for k in

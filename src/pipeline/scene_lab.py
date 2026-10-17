@@ -326,9 +326,11 @@ def _visual(plan, visual_id: str):
     return visual
 
 
-def run_scene(slug: str, visual_id: str) -> dict[str, Any]:
+def run_scene(slug: str, visual_id: str, brief: dict[str, Any] | None = None
+              ) -> dict[str, Any]:
     """Run the scene's script, check its clip, and -- only if no check fails --
-    make the clip what the scene shows."""
+    make the clip what the scene shows. A scene being made passes the brief it was
+    started with; run on its own (the page), the brief is written as it is now."""
     project = require_project(slug)
     store = VisualPlanStore(project.root)
     visual = _visual(store.load(), visual_id)
@@ -337,7 +339,7 @@ def run_scene(slug: str, visual_id: str) -> dict[str, Any]:
     if not (folder / entry).exists():
         raise OperationFailed(f"This scene has no {entry} yet. Write one first.")
 
-    brief = write_brief(project, visual)
+    brief = brief or write_brief(project, visual)
     (folder / "layout.json").unlink(missing_ok=True)     # never the last renderer's record
     if renderer in ("web", "revideo"):
         from pipeline.scene_revideo import render_revideo
@@ -433,13 +435,16 @@ def read_scene(slug: str, visual_id: str) -> dict[str, Any]:
 
 
 def scene_file(slug: str, visual_id: str, name: str) -> Path | None:
-    """render.mp4, poster.png, or a picture made for it (painted, found, an icon),
-    for the page."""
+    """For the page: the clip (a copy per version), the poster, a picture made for it."""
     if name not in ("render.mp4", "poster.png", "preview.mp4") \
             and not re.fullmatch(r"(illustration|found|icon)-[0-9a-f]{12}\.png", name):
         return None
+    from pipeline.scene_program import played_copy
+
     project = require_project(slug)
     visual = _visual(VisualPlanStore(project.root).load(), visual_id)
     folder = scene_folder(project, visual)
     path = folder / name if folder else None
-    return path if path and path.exists() else None
+    if not (path and path.exists()):
+        return None
+    return played_copy(path) if path.suffix == ".mp4" else path

@@ -108,7 +108,8 @@ def test_a_failing_layout_is_looked_at_and_what_is_seen_is_passed_on(tmp_path, m
     crossing = {"key": "crossing", "name": "No shape runs through words", "status": "fail",
                 "rule": "...", "detail": "a Circle through “The brain” at 17.2 s"}
     monkeypatch.setattr("pipeline.scene_lab.run_scene",
-                        lambda slug, visual_id: {"checks": [crossing], "log": "", "brief": {}})
+                        lambda slug, visual_id, brief=None:
+                        {"checks": [crossing], "log": "", "brief": {}})
     asked = []
 
     def review(folder, brief, question=""):
@@ -134,7 +135,8 @@ def test_a_crash_is_not_sent_for_a_look(tmp_path, monkeypatch):
     ran = {"key": "ran", "name": "The program ran", "status": "fail", "rule": "...",
            "detail": "It stopped with an error."}
     monkeypatch.setattr("pipeline.scene_lab.run_scene",
-                        lambda slug, visual_id: {"checks": [ran], "log": "Traceback", "brief": {}})
+                        lambda slug, visual_id, brief=None:
+                        {"checks": [ran], "log": "Traceback", "brief": {}})
     monkeypatch.setattr("pipeline.scene_review.review_frames",
                         lambda *a, **k: pytest.fail("a crash has nothing to look at"))
     state = {"renders": 0, "calls": {"agent": 0, "vision": 0}}

@@ -295,14 +295,13 @@ def section_pictures(project, plan: Plan) -> dict[str, list[str]]:
     what each is and what it is good for (described once, `scene_vetting`): the
     script is written knowing what the section will show."""
     from pipeline.plan_pictures import assets_for_later_stages, pictures_of
-    from pipeline.scene_program import SCENES
-    from pipeline.scene_vetting import ROLES, notes
+    from pipeline.scene_vetting import ROLES, describe_deck
 
     library = assets_for_later_stages(project).library
     attached = {section.id: pictures_of(section, plan, library) for section in plan.sections}
-    described = notes(project.root / SCENES, sorted({
-        str(project.root / figure.shown_path) for figures in attached.values()
-        for figure in figures if (project.root / figure.shown_path).exists()}))
+    # The whole deck, described once here at the hand-off to the script: the scenes
+    # made later read it, and none waits on it.
+    described = describe_deck(project)
 
     def line(figure) -> str:
         note = described.get(str(project.root / figure.shown_path), {})

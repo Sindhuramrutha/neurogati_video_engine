@@ -225,7 +225,7 @@ def _probe(video: Path) -> dict[str, Any]:
             "has_sound": any(s.get("codec_type") == "audio" for s in streams)}
 
 
-CLIP_LOCK_WAITS = (0.5, 1, 2, 4, 8)      # seconds; a page playing the clip lets go soon
+CLIP_LOCK_WAITS = (0.25, 0.5, 1)    # seconds: only a player outside the app holds it now
 
 
 def _clear_last_clip(clip: Path, waits=CLIP_LOCK_WAITS, sleep=None) -> bool:
@@ -251,3 +251,33 @@ def _clear_last_clip(clip: Path, waits=CLIP_LOCK_WAITS, sleep=None) -> bool:
 # (17 Oct 2026) refuses the image mode Manim 0.22 passes to Image.fromarray, and
 # every picture in every Manim scene failed to draw.
 HELD_BACK = ("pillow<13",)
+
+
+PLAYED = "played"            # beside the scene's files: the copies the page plays
+
+
+def played_copy(clip: Path) -> Path:
+    """A copy of `clip` named for this version of it, for the page to play. A page
+    playing render.mp4 itself held it open, and on Windows the next round could
+    not replace it -- the round waited, then failed. Each round's clip is now a new
+    file to the page; copies of earlier versions are removed when nothing holds
+    them."""
+    stat = clip.stat()
+    folder = clip.parent / PLAYED
+    copy = folder / f"{clip.stem}-{stat.st_mtime_ns}-{stat.st_size}{clip.suffix}"
+    if copy.exists():
+        return copy
+    folder.mkdir(exist_ok=True)
+    partial = copy.with_name(copy.name + ".part")
+    shutil.copyfile(clip, partial)
+    try:
+        partial.replace(copy)
+    except PermissionError:             # another request made the same copy first
+        partial.unlink(missing_ok=True)
+    for older in folder.glob(f"{clip.stem}-*{clip.suffix}"):
+        if older != copy:
+            try:
+                older.unlink()
+            except OSError:             # still being played: removed another time
+                pass
+    return copy

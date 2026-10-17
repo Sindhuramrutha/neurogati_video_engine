@@ -289,7 +289,8 @@ def test_a_photo_that_is_not_found_is_not_painted_in_its_place(tmp_path, monkeyp
     record = state()
     again = scene_pictures.prepare(Thing(root=tmp_path), Thing(), brief, record)
 
-    assert searched == ["Lewis Carroll portrait photograph", "Lewis Carroll"]
+    assert sorted(searched) == ["Lewis Carroll", "Lewis Carroll portrait photograph"], \
+        "as asked, and without its descriptive words (searched at once)"
     assert painted == [], "nothing painted in its place"
     assert "Nothing open-licensed was found" in record["events"][-1]["text"]
     assert again == {"again": 1}, "the brief is written again with what was made"
@@ -299,10 +300,13 @@ def test_an_icon_comes_from_the_bundled_set_when_the_web_is_not_there(tmp_path, 
     def offline(name):
         raise OSError("no network")
 
-    monkeypatch.setattr(outside_pictures, "_iconify", offline)
-    monkeypatch.setattr(outside_pictures, "rasterise", lambda svg, colour: b"PNG" + colour.encode())
+    from pipeline import icon_pictures
 
-    path = outside_pictures.find_icon(tmp_path, "brain", "#4472c4", state())
+    monkeypatch.setattr(icon_pictures, "_iconify", offline)
+    monkeypatch.setattr(icon_pictures, "rasterise",
+                        lambda svgs, colour: [b"PNG" + colour.encode() for _ in svgs])
+
+    path = icon_pictures.find_icon(tmp_path, "brain", "#4472c4", state())
 
     record = json.loads(path.with_suffix(".json").read_text(encoding="utf-8"))
     assert record["source"] == "Lucide (bundled)" and record["licence"] == "ISC"

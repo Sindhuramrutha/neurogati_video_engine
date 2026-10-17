@@ -32,12 +32,11 @@ import json
 import logging
 import re
 import threading
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel, Field
-
-from pipeline.config import REPO_ROOT
 
 logger = logging.getLogger(__name__)
 
@@ -50,14 +49,7 @@ CANDIDATES_LOOKED_AT = 5
 MOST_ICONS = 3
 SMALLEST_PHOTO_SIDE = 300
 LONGEST_SIDE = 1600
-ICON_PIXELS = 512
-LUCIDE = REPO_ROOT / "resources" / "icons" / "lucide"
 _SOURCES_LOCK = threading.Lock()
-
-# Licences that allow use in a commercial video, with credit where they ask for it.
-ICON_LICENCES = {"MIT", "Apache-2.0", "ISC", "BSD-2-Clause", "BSD-3-Clause", "CC0-1.0",
-                 "Unlicense", "CC-BY-3.0", "CC-BY-4.0", "CC-BY-SA-3.0", "CC-BY-SA-4.0"}
-
 
 def commercial_licence(name: str) -> bool:
     """Whether a picture under this licence may be used in a commercial video:
@@ -248,6 +240,46 @@ def queries(asked: str) -> list[str]:
     return [q for i, q in enumerate(found) if q and q not in found[:i]]
 
 
+def _search(asked: str, state: dict[str, Any]) -> list[dict[str, Any]]:
+    """Every search for `asked` -- each form of the query, on Commons and Openverse
+    -- run at once, the results in the order they would have come one by one."""
+    from pipeline.scene_state import add_event
+
+    asks = [(query, search) for query in queries(asked)
+            for search in (search_commons, search_openverse)]
+
+    def run(ask) -> list[dict[str, Any]]:
+        query, search = ask
+        try:
+            return search(query)
+        except Exception as failure:           # offline: no photo, and said so
+            add_event(state, "note", f"Could not search the open web for \"{query}\" "
+                      f"({failure}).")
+            return []
+
+    with ThreadPoolExecutor(max_workers=len(asks)) as pool:
+        return [result for found in pool.map(run, asks) for result in found]
+
+
+def _candidates(results: list[dict[str, Any]]) -> list[tuple[dict, bytes]]:
+    """The first few results that download, each file once (Openverse also searches
+    Commons: the same file, found twice), downloaded at once."""
+    seen, unique = set(), []
+    for result in results:
+        same = re.sub(r"^file:|\.(jpe?g|png|gif|webp|tiff?)$", "",
+                      result["title"].lower()).strip()
+        if result["url"] not in seen and same not in seen:
+            seen.update({result["url"], same})
+            unique.append(result)
+    unique = unique[:2 * CANDIDATES_LOOKED_AT]
+    if not unique:
+        return []
+    with ThreadPoolExecutor(max_workers=len(unique)) as pool:
+        downloads = list(pool.map(lambda result: _picture_bytes(result["url"]), unique))
+    return [(result, data) for result, data in zip(unique, downloads, strict=True)
+            if data][:CANDIDATES_LOOKED_AT]
+
+
 def find_photo(folder: Path, asked: str, narration: str,
                state: dict[str, Any]) -> Path | None:
     """A photograph, engraving or diagram for `asked` from the open web, checked by
@@ -259,27 +291,7 @@ def find_photo(folder: Path, asked: str, narration: str,
     path = _photo_path(folder, asked)
     if path.exists() and path.with_suffix(".json").exists():
         return path
-    results: list[dict[str, Any]] = []
-    for query in queries(asked):
-        try:
-            results += search_commons(query) + search_openverse(query)
-        except (ServiceUnavailable, Exception) as failure:   # offline: no photo, said
-            add_event(state, "note", f"Could not search the open web for \"{query}\" "
-                      f"({failure}).")
-        if len(results) >= 2 * CANDIDATES_LOOKED_AT:
-            break
-    seen, candidates = set(), []
-    for result in results:
-        # Openverse also searches Commons: the same file, found twice.
-        same = re.sub(r"^file:|\.(jpe?g|png|gif|webp|tiff?)$", "", result["title"].lower()).strip()
-        if result["url"] in seen or same in seen:
-            continue
-        seen.update({result["url"], same})
-        data = _picture_bytes(result["url"])
-        if data:
-            candidates.append((result, data))
-        if len(candidates) >= CANDIDATES_LOOKED_AT:
-            break
+    candidates = _candidates(_search(asked, state))
     if not candidates:
         add_event(state, "note", f"Nothing open-licensed was found for \"{asked}\".")
         return None
@@ -297,101 +309,6 @@ def find_photo(folder: Path, asked: str, narration: str,
     _keep(folder, path, data, meta | {"asked": asked, "kind": "photo"})
     add_event(state, "note", f"Found a picture for \"{asked}\": {meta['title']} "
               f"({meta['source']}, {meta['licence']}, by {meta['author']}).")
-    return path
-
-
-# --- icons -----------------------------------------------------------------------------------
-
-
-def _iconify(name: str) -> tuple[str, dict[str, Any]] | None:
-    """The first icon Iconify has for `name` in a set whose licence allows
-    commercial use: (its SVG, what to credit)."""
-    data = _get("https://api.iconify.design/search", {"query": name, "limit": 48})
-    collections = data.get("collections") or {}
-    for icon in data.get("icons") or []:
-        prefix, _, icon_name = icon.partition(":")
-        collection = collections.get(prefix) or {}
-        licence = (collection.get("license") or {}).get("spdx", "")
-        if licence not in ICON_LICENCES or collection.get("palette"):
-            continue
-        svg = _get(f"https://api.iconify.design/{prefix}/{icon_name}.svg",
-                   {"height": ICON_PIXELS}, as_json=False).decode("utf-8")
-        return svg, {"source": f"Iconify: {collection.get('name', prefix)}",
-                     "title": icon, "licence": licence,
-                     "licence_url": (collection.get("license") or {}).get("url", ""),
-                     "author": (collection.get("author") or {}).get("name", "unknown"),
-                     "page": f"https://icon-sets.iconify.design/{prefix}/{icon_name}/"}
-    return None
-
-
-def _lucide(name: str) -> tuple[str, dict[str, Any]] | None:
-    """The bundled Lucide icon whose name or tags best match `name`."""
-    tags_file = LUCIDE / "tags.json"
-    if not tags_file.exists():
-        return None
-    words = set(re.findall(r"[a-z]+", name.lower()))
-    tags = json.loads(tags_file.read_text(encoding="utf-8"))
-
-    def score(item) -> int:
-        icon, its_tags = item
-        named = set(icon.split("-"))
-        return 3 * len(words & named) + len(words & {w for t in its_tags for w in t.split()})
-
-    icon, _ = max(tags.items(), key=score, default=("", []))
-    if not icon or score((icon, tags[icon])) == 0:
-        return None
-    svg = (LUCIDE / "icons" / f"{icon}.svg").read_text(encoding="utf-8")
-    return svg, {"source": "Lucide (bundled)", "title": icon, "licence": "ISC",
-                 "licence_url": "https://lucide.dev/license", "author": "Lucide Contributors",
-                 "page": f"https://lucide.dev/icons/{icon}"}
-
-
-def rasterise(svg: str, colour: str, pixels: int = ICON_PIXELS) -> bytes:
-    """An SVG icon as a transparent PNG in `colour`, drawn by the browser the web
-    renderer already uses (Chromium, through Playwright)."""
-    from playwright.sync_api import sync_playwright
-
-    svg = re.sub(r"<!--.*?-->", "", svg, flags=re.DOTALL).replace("currentColor", colour)
-    svg = re.sub(r'\swidth="[^"]*"', "", svg, count=1)
-    svg = re.sub(r'\sheight="[^"]*"', "", svg, count=1)
-    svg = svg.replace("<svg", f'<svg width="{pixels}" height="{pixels}"', 1)
-    page_html = ("<html><body style='margin:0;background:transparent'>"
-                 f"<div id='icon' style='width:{pixels}px;height:{pixels}px'>{svg}</div>"
-                 "</body></html>")
-    with sync_playwright() as playwright:
-        browser = playwright.chromium.launch()
-        try:
-            page = browser.new_page(viewport={"width": pixels, "height": pixels})
-            page.set_content(page_html)
-            return page.locator("#icon").screenshot(omit_background=True)
-        finally:
-            browser.close()
-
-
-def find_icon(folder: Path, name: str, colour: str, state: dict[str, Any]) -> Path | None:
-    """An icon for `name`, from Iconify or else the bundled set, in the scene's
-    colour, kept with its credit."""
-    from pipeline.scene_state import add_event
-
-    path = _icon_path(folder, name)
-    if path.exists() and path.with_suffix(".json").exists():
-        return path
-    found = None
-    try:
-        found = _iconify(name)
-    except Exception as failure:          # offline: the bundled set
-        logger.info("Iconify not reached for %s: %s", name, failure)
-    found = found or _lucide(name)
-    if found is None:
-        add_event(state, "note", f"No icon was found for \"{name}\".")
-        return None
-    svg, meta = found
-    try:
-        drawn = rasterise(svg, colour)
-    except Exception as failure:          # no browser: the scene goes on without it
-        add_event(state, "note", f"The icon for \"{name}\" could not be drawn ({failure}).")
-        return None
-    _keep(folder, path, drawn, meta | {"asked": name, "kind": "icon"})
     return path
 
 
@@ -429,7 +346,8 @@ def gather(folder: Path, on_screen: str, narration: str, look: dict[str, Any],
     missed = []
     if photo and find_photo(folder, photo, narration, state) is None:
         missed.append(photo)
-    colour = look.get("accent") or look.get("text") or "#1a1816"
-    for name in icons:
-        find_icon(folder, name, colour, state)
+    if icons:
+        from pipeline.icon_pictures import find_icons
+
+        find_icons(folder, icons, look.get("accent") or look.get("text") or "#1a1816", state)
     return missed
