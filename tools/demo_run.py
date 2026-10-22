@@ -46,7 +46,7 @@ def _checks(view: dict) -> list[dict]:
     return [c for c in view["checks"] if c["status"] == "fail"]
 
 
-def build(name: str, deck: Path, minutes: int, voice: str = "") -> str:
+def build(name: str, deck: Path, minutes: int, voice: str = "", length: str = "") -> str:
     from pipeline import operations, plan_agent, video_setup
     from pipeline.assets_handoff import confirm_assets
     from pipeline.core import require_project
@@ -64,7 +64,7 @@ def build(name: str, deck: Path, minutes: int, voice: str = "") -> str:
     confirm_assets(slug)
     video_setup.save(slug, SETUP | ({"voice": voice} if voice else {}))
 
-    plan_agent.set_setup(slug, {"length_text": f"About {minutes} minutes",
+    plan_agent.set_setup(slug, {"length_text": length or f"About {minutes} minutes",
                                 "audience": "Curious learners new to neuroscience"})
     view = plan_agent.send_message(slug, ASK.format(minutes=minutes))
     for _ in range(2):
@@ -212,6 +212,8 @@ def main() -> None:
         ROOT.parents[1] / "contents" / "01-DEMYSTIFYING THE BRAIN"
         / "Demystifying-the-Brain  Chapter 1.pptx"))
     parser.add_argument("--minutes", type=int, default=32)
+    parser.add_argument("--length", default="",
+                        help='the length in words, e.g. "35 min or more, never shorter"')
     parser.add_argument("--voice", default="",
                         help="an Edge voice the app offers, e.g. en-IN-NeerjaNeural")
     parser.add_argument("--slug", default="", help="carry on this project")
@@ -222,7 +224,9 @@ def main() -> None:
     if chosen.slug:
         slug, todo = chosen.slug, steps[steps.index(chosen.start):]
     else:
-        slug, todo = build(chosen.name, Path(chosen.deck), chosen.minutes, chosen.voice), steps
+        slug = build(chosen.name, Path(chosen.deck), chosen.minutes, chosen.voice,
+                     chosen.length)
+        todo = steps
     for step in todo:
         say("--", step)
         globals()[step](slug)
