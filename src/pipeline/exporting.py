@@ -71,6 +71,8 @@ class ExportManifest(BaseModel):
     # credits.
     deck_pictures: dict[str, Any] = Field(default_factory=dict)
     credits: list[dict[str, Any]] = Field(default_factory=list)
+    # Built as a draft: scenes whose own checks still fail were accepted, on purpose.
+    draft: bool = False
 
     @property
     def is_ready(self) -> bool:
@@ -197,14 +199,50 @@ def _export_sections(project: Project, plan: Plan, script: Script) -> list[dict[
         for section, start_ms in zip(plan.sections, starts, strict=False)
     ]
 
-def export_readiness(project: Project, usage: dict[str, Any] | None = None
+def scene_problems(project: Project) -> dict[str, list[dict[str, Any]]]:
+    """The scenes in the video that are below the bar, by how bad.
+
+    `failing`: its own fixed checks still fail -- text over text, a blank frame, a
+    shape through words. The video has a visible defect there.
+    `below_bar`: every check passes, and the reviewer still wants changes.
+    """
+    from pipeline.generation import VisualPlanStore
+    from pipeline.scene_kept import failing_checks
+    from pipeline.scene_program import scene_folder
+
+    failing, below = [], []
+    for number, visual in enumerate(VisualPlanStore(project.root).load().visuals, start=1):
+        if not visual.clip_path:
+            continue
+        folder = scene_folder(project, visual)
+        checks = [c.get("name", "") for c in failing_checks(folder)] if folder else []
+        entry = {"scene": number, "visual_id": visual.id, "section": visual.section_title,
+                 "checks": checks, "why": visual.below_bar}
+        if checks:
+            failing.append(entry)
+        elif visual.below_bar:
+            below.append(entry)
+    return {"failing": failing, "below_bar": below}
+
+
+def _scene_list(entries: list[dict[str, Any]], with_checks: bool) -> str:
+    shown = [f"scene {e['scene']} ({e['section']}"
+             + (f": {', '.join(e['checks'])}" if with_checks else "") + ")"
+             for e in entries[:6]]
+    return "; ".join(shown) + (f"; and {len(entries) - 6} more" if len(entries) > 6 else "")
+
+
+def export_readiness(project: Project, usage: dict[str, Any] | None = None,
+                     draft: bool = False, problems: dict[str, list] | None = None
                      ) -> tuple[list[str], list[str]]:
     """What stops this project being handed over, and what merely ought to be known.
 
     Blockers are the things that make the files wrong: no plan, no narration, no
-    render, or a cut built from a script that is no longer current. Everything
-    else is a warning, because "one comment is still open" is a judgement and
-    this stage does not get to make it.
+    render, a cut built from a script that is no longer current -- and a scene in
+    the video whose own checks still fail, a visible defect, unless the export is
+    built as a draft on purpose. Everything else is a warning, because "one comment
+    is still open" or "the reviewer wants a better layout" is a judgement and this
+    stage does not get to make it.
     """
     from pipeline.plan_handoff import plan_for_later_stages
     plan = plan_for_later_stages(project)
@@ -234,12 +272,18 @@ def export_readiness(project: Project, usage: dict[str, Any] | None = None
     ]
     if open_comments:
         warnings.append(f"{len(open_comments)} review comment(s) are still open.")
-    from pipeline.generation import VisualPlanStore
-
-    for visual in VisualPlanStore(project.root).load().visuals:
-        if visual.below_bar and visual.clip_path:
-            warnings.append(f"Scene {visual.scene_number or ''} of \"{visual.section_title}\" "
-                            f"is used below the quality bar: {visual.below_bar}")
+    problems = problems or scene_problems(project)
+    if problems["failing"]:
+        said = (f"{len(problems['failing'])} scene(s) in the video still fail their own "
+                f"checks: {_scene_list(problems['failing'], True)}. "
+                "Remake them on Generation")
+        if draft:
+            warnings.append(f"Accepted as a draft: {said}.")
+        else:
+            blockers.append(f"{said}, or build the export as a draft.")
+    if problems["below_bar"]:
+        warnings.append(f"{len(problems['below_bar'])} scene(s) pass their checks but are "
+                        f"below the reviewer's bar: {_scene_list(problems['below_bar'], False)}.")
     from pipeline.scene_pictures import deck_usage
 
     usage = usage or deck_usage(project)
@@ -255,12 +299,14 @@ def export_readiness(project: Project, usage: dict[str, Any] | None = None
         )
     return blockers, warnings
 
-def build_export(slug: str) -> dict[str, Any]:
+def build_export(slug: str, draft: bool = False) -> dict[str, Any]:
     """Write the transcript, chapters and description, and list what is ready.
 
     Refuses nothing: a project with problems still gets its manifest, with the
     problems named in it. Withholding the files would not make the video better,
-    and someone checking what is wrong needs the transcript to do it.
+    and someone checking what is wrong needs the transcript to do it. Scenes whose
+    own checks still fail make it not ready, unless it is built as a `draft`: then
+    they are accepted, and the manifest says so.
     """
     from pipeline.plan_handoff import plan_for_later_stages
     project = require_project(slug)
@@ -272,7 +318,9 @@ def build_export(slug: str) -> dict[str, Any]:
     from pipeline.scene_pictures import deck_usage
 
     usage = deck_usage(project)
-    blockers, warnings = export_readiness(project, usage)
+    problems = scene_problems(project)
+    draft = draft and bool(problems["failing"])
+    blockers, warnings = export_readiness(project, usage, draft, problems)
     sections = _export_sections(project, plan, script)
     credits = outside_credits(project)
     files = write_export_files(project.root, project.name, plan.to_dict(), sections, credits)
@@ -312,18 +360,21 @@ def build_export(slug: str) -> dict[str, Any]:
         deck_pictures={"deck": usage["deck_pictures"], "shown": usage["shown"],
                        "not_shown": [p["name"] for p in usage["not_shown"]]},
         credits=credits,
+        draft=draft,
     )
-    return ExportStore(project.root).save(manifest).to_dict()
+    return ExportStore(project.root).save(manifest).to_dict() | {"scene_problems": problems}
 
 def read_export(slug: str) -> dict[str, Any]:
     """The last export, with today's blockers rather than the ones it was built with."""
     project = require_project(slug)
     manifest = ExportStore(project.root).load()
-    blockers, warnings = export_readiness(project)
+    problems = scene_problems(project)
+    blockers, warnings = export_readiness(project, draft=manifest.draft, problems=problems)
     return manifest.to_dict() | {
         "blockers_now": blockers,
         "warnings_now": warnings,
         "is_ready_now": not blockers,
+        "scene_problems": problems,
     }
 
 

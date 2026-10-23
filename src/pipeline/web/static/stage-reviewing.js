@@ -72,6 +72,7 @@ export async function renderReviewingStage(stage, navigateToStage, renderAgentSt
     <div class="card stage-content">
 
       ${renderReadinessCard(review)}
+      ${renderSceneProblems(review.scene_problems)}
 
       <div class="review-grid">
         <div>
@@ -92,9 +93,32 @@ export async function renderReviewingStage(stage, navigateToStage, renderAgentSt
 
 /* ---- readiness ---------------------------------------------------------- */
 
+/** Scenes by severity: their own checks still fail (a visible defect, it blocks the
+ *  hand-over), or only the reviewer wants more (counted, not listed one by one). */
+function renderSceneProblems(problems) {
+  const failing = problems?.failing ?? [];
+  const below = problems?.below_bar ?? [];
+  if (!failing.length && !below.length) return "";
+  return `
+    ${failing.length ? `
+      <div class="notice bad" style="margin:0 0 10px">
+        <b>${failing.length} scene(s) in the video still fail their own checks:</b>
+        <ul class="ready-checks">${failing.map(e => `<li>Scene ${e.scene}
+          (${escapeHtml(e.section)}): ${escapeHtml(e.checks.join(", "))}</li>`).join("")}</ul>
+        <button class="btn" data-goto="generation">Remake them on Generation</button>
+      </div>` : ""}
+    ${below.length ? `
+      <div class="notice warn" style="margin:0 0 10px">
+        ${below.length} scene(s) pass their checks but are below the reviewer's bar:
+        scenes ${below.map(e => e.scene).join(", ")}. Open one on Generation to read what
+        the reviewer wants.
+      </div>` : ""}`;
+}
+
 function renderReadinessCard(review) {
   const openCount = review.audit.open_comment_count;
   const byStage = review.audit.by_stage;
+  const failingScenes = review.scene_problems?.failing?.length ?? 0;
   const isReady = review.is_ready_to_export;
   // With no open comments, any warning left is an advisory -- a section far over
   // its planned length, versions that share one file. They do not block export,
@@ -116,12 +140,14 @@ function renderReadinessCard(review) {
                                 isReady && !hasChecks ? 2.4 : 2)}</span>
       <span class="text">
         <b>${!isReady
-          ? `${openCount} comment(s) still open`
+          ? (failingScenes ? `${failingScenes} scene(s) fail their own checks` : "")
+            + (failingScenes && openCount ? " · " : "")
+            + (openCount ? `${openCount} comment(s) still open` : "")
           : hasChecks
             ? `No open comments — ${warnings.length} thing${warnings.length === 1 ? "" : "s"} to check`
             : "Nothing outstanding"}</b>
         <span>${!isReady
-          ? `Where the work is: ${clusters}`
+          ? (openCount ? `Where the work is: ${clusters}` : "Listed below; export waits for them.")
           : hasChecks
             ? `<ul class="ready-checks">${warnings.map(w => `<li>${escapeHtml(w)}</li>`).join("")}</ul>`
             : review.versions.some(v => v.is_rendered)

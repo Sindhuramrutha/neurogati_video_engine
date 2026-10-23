@@ -80,10 +80,14 @@ def test_a_deck_becomes_a_video_and_its_hand_over(project_root, monkeypatch):
     video = project.root / "reviewing" / "output" / rendered["video_file_name"]
     assert video.exists() and seconds_of(video) > 1.0
 
-    # Export: the hand-over is complete, and says nothing stops it.
-    exported = operations.build_export(slug)
+    # Export: the stand-in scene fails its own checks, so the hand-over is not ready;
+    # built as a draft on purpose, it is complete and says it is a draft.
+    blocked = operations.build_export(slug)
+    assert any("still fail their own checks" in b for b in blocked["blockers"])
+    exported = operations.build_export(slug, draft=True)
     manifest = json.loads((project.root / "export" / "manifest.json").read_text("utf-8"))
     assert not manifest.get("blockers"), manifest.get("blockers")
+    assert manifest["draft"]
     transcript = (project.root / "export" / "transcript.md").read_text(encoding="utf-8")
     for words in NARRATION:
         assert words in transcript

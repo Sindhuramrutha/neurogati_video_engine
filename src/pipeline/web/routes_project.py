@@ -706,10 +706,10 @@ def get_export(slug: FromPath[str]) -> dict[str, Any]:
 
 
 @post("/api/projects/{slug:str}/export", sync_to_thread=False)
-def build_project_export(slug: FromPath[str]) -> dict[str, Any]:
-    """Write the transcript, chapters and description, and list what is ready."""
+def build_project_export(slug: FromPath[str], draft: bool = False) -> dict[str, Any]:
+    """Write the export files; `?draft=true` accepts scenes whose checks still fail."""
     try:
-        return build_export(slug)
+        return build_export(slug, draft=draft)
     except OperationFailed as failure:
         raise ClientException(detail=str(failure)) from failure
 

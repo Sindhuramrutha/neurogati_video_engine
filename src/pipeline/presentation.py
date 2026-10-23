@@ -142,7 +142,13 @@ def present_artifact(project: Project, artifact_name: str, document: Any) -> dic
             ] if stale_chapters else []),
             *cut_freshness(plan, CompositionStore(project.root).load())["warnings"],
         ]
+        from pipeline.exporting import scene_problems
+
+        problems = scene_problems(project)
+        presented["is_ready_to_export"] = (presented["is_ready_to_export"]
+                                           and not problems["failing"])
         return presented | {
+            "scene_problems": problems,
             "plan_sections": [
                 {"id": s.id, "title": s.title, "estimated_seconds": s.estimated_seconds}
                 for s in plan.sections

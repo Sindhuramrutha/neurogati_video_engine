@@ -73,12 +73,18 @@ function renderRunBar(manifest) {
       <span class="run-text">
         <b>${blocked
           ? `Not ready to hand over`
-          : manifest.is_empty ? "Ready to build" : "Ready to hand over"}</b>
-        <span>${built}</span>
+          : manifest.is_empty ? "Ready to build"
+            : manifest.draft ? "Built as a draft" : "Ready to hand over"}</b>
+        <span>${built}${manifest.draft
+          ? " · scenes with failing checks were accepted on purpose" : ""}</span>
       </span>
       <button class="btn btn-accent" id="build-export-button">
         ${manifest.is_empty ? "Build export" : "Build again"}
       </button>
+      ${(manifest.scene_problems?.failing ?? []).length && !manifest.draft ? `
+        <button class="btn" id="build-draft-button"
+                title="Accept the scenes whose own checks still fail, and mark it a draft">
+          Build as a draft anyway</button>` : ""}
     </div>`;
 }
 
@@ -138,6 +144,24 @@ function wireExportStage(stage, navigateToStage, renderAgentStage) {
 
   wireGotoButtons(navigateToStage);
   select("#export-agent-button").onclick = () => renderAgentStage(stage);
+
+  const draftButton = select("#build-draft-button");
+  if (draftButton) {
+    draftButton.onclick = async () => {
+      const count = applicationState.exportManifest?.scene_problems?.failing?.length ?? 0;
+      if (!window.confirm(`Build the export as a draft, with ${count} scene(s) whose own `
+          + "checks still fail? The manifest will say it is a draft.")) return;
+      try {
+        applicationState.exportManifest = await requestJsonFromApi(
+          projectApiPath("/export?draft=true"), { method: "POST" });
+        showStageNotice("warn", `Built as a draft, with ${count} scene(s) accepted as they are.`);
+      } catch (buildFailure) {
+        console.error("building the draft export failed", buildFailure);
+        showStageNotice("bad", buildFailure.message);
+      }
+      await rerender();
+    };
+  }
 
   select("#build-export-button").onclick = async () => {
     const button = select("#build-export-button");
