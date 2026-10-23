@@ -48,10 +48,21 @@ def _path(folder: Path, asked: str, look: dict[str, Any]) -> Path:
 
 
 def kept(folder: Path, on_screen: str, look: dict[str, Any]) -> Path | None:
-    """The scene's illustration, if it has been painted. Never paints."""
+    """The scene's illustration, if it has been painted and passed its check. Never
+    paints."""
     asked = wanted(on_screen)
     path = _path(folder, asked, look) if asked else None
-    return path if path and path.exists() else None
+    return path if path and _passed(path) else None
+
+
+def _passed(path: Path) -> bool:
+    """A picture left by a run stopped while it was painted has no record of passing
+    its check, and is never used: it is painted again."""
+    from pipeline.storage.documents import read_json_object
+
+    record = path.with_suffix(".json")
+    return path.exists() and record.exists() and \
+        (read_json_object(record, "illustration") or {}).get("checked") is True
 
 
 def prompt(asked: str, look: dict[str, Any]) -> str:
@@ -63,13 +74,16 @@ def prompt(asked: str, look: dict[str, Any]) -> str:
         "drawn as a clearly illustrated portrait, not a photograph. Plain solid "
         f"{look.get('background', '#ffffff')} background, so it sits on a video frame of "
         f"that colour. Accent colours {accents}. Absolutely no text, letters, numbers, "
-        "labels or captions anywhere in the picture.")
+        "labels or captions anywhere in the picture. This background and style hold "
+        "whatever the description says of them; paint the subject as still, without the "
+        "glows or changes the scene animates on top of it.")
 
 
 class Checked(BaseModel):
-    matches: bool = Field(description="Does the picture show what was asked, correctly for "
-                                      "the science -- the right subject, the right species "
-                                      "and parts -- with no text in it?")
+    matches: bool = Field(description="Does the picture show the subject asked for, correctly "
+                                      "for the science -- the right subject, species and parts "
+                                      "that matter -- with no text in it? Small details "
+                                      "missing are fine.")
     framed: bool = Field(description="Is the subject whole, centred and large -- not cut off "
                                      "at an edge, not small in an empty picture?")
     clean: bool = Field(description="Is it well drawn -- no deformed anatomy or hands, no "
@@ -93,7 +107,9 @@ def check(path: Path, asked: str, narration: str) -> Checked:
         Checked,
         "You check an illustration painted for a science lesson before it is used. Be "
         "strict about the science: the wrong animal, organ, instrument or setup, extra "
-        "or missing parts that matter, or any text in the picture, is a no.",
+        "or missing parts that matter, or any text in the picture, is a no. Do not judge "
+        "its background colour or drawing style, which the video sets, nor motion, glows "
+        "or changes the description mentions: the scene animates those on top.",
         f"It was asked to show: {asked}\n\nWhat is said while it is on screen:\n"
         f"{narration[:1200]}", [("The illustration", _jpeg(path))], max_tokens=VISION_TOKENS)
 
@@ -139,7 +155,7 @@ def paint(folder: Path, on_screen: str, look: dict[str, Any],
     if not asked:
         return None
     path = _path(folder, asked, look)
-    if path.exists():
+    if _passed(path):
         return path
     reference = folder.parent / STYLE_REFERENCE
     with _lock_for(folder.parent):

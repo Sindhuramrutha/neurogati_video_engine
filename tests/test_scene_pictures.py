@@ -163,6 +163,8 @@ def test_a_scene_is_not_made_to_show_a_badge_or_the_slide():
     assert own_pictures(brief) == [], "nothing of its own that it should show"
     brief["picture_catalogue"][0]["role"] = "explains"
     assert own_pictures(brief) == ["badge.png (badge)"]
+    brief["picture_catalogue"][0]["main_of"] = "scene 3"
+    assert own_pictures(brief) == [], "another scene's subject is not expected here"
 
 
 # --- which deck pictures the video shows ----------------------------------------------------
@@ -273,6 +275,19 @@ def test_a_painting_never_right_is_not_used(tmp_path, monkeypatch):
     assert path is None and not (tmp_path / "illustration-x.png").exists()
     assert record["calls"]["image"] == scene_illustration.PAINTED_AT_MOST
     assert "made without it" in record["events"][-1]["text"]
+
+
+def test_a_painting_left_unchecked_by_a_stopped_run_is_painted_again(tmp_path):
+    """A run stopped mid-painting left a picture with no record of its check, and
+    the next run used it as painted."""
+    from pipeline import scene_illustration
+
+    brief, look = "ILLUSTRATE: two frog hearts", {"background": "#ffffff"}
+    path = scene_illustration._path(tmp_path, "two frog hearts", look)
+    path.write_bytes(b"png")
+    assert scene_illustration.kept(tmp_path, brief, look) is None
+    path.with_suffix(".json").write_text('{"checked": true}', encoding="utf-8")
+    assert scene_illustration.kept(tmp_path, brief, look) == path
 
 
 def test_an_icon_comes_from_the_bundled_set(tmp_path, monkeypatch):

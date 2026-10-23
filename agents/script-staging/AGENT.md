@@ -105,7 +105,9 @@ teaches best, and say it exactly:
   angle, the species or kind exactly ("two small frog hearts", not "two hearts").
   It is painted by an image model with no text in it, and checked for its subject,
   framing and finish before it is used; the scene adds its own labels and motion
-  on top. A real person is painted as a clearly illustrated portrait, never as a
+  on top. Describe one still picture: not glows, splits or changes over time (the
+  BEATS animate those), nor its background or style (the video's look sets them).
+  A real person is painted as a clearly illustrated portrait, never as a
   photograph. An idea with no obvious shape still gets a concrete
   picture: "the law of specific energies" is the same spark touching two nerves,
   one running to an eye and one to an ear.

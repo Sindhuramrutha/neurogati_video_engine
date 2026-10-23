@@ -173,12 +173,14 @@ def review_frames(folder: Path, brief: dict[str, Any], question: str = "") -> Ve
 def own_pictures(brief: dict[str, Any]) -> list[str]:
     """The pictures a scene is expected to show one of: its own (named in its brief,
     made for it, from its own slide). The rest of the deck is offered too, and deck
-    furniture and the slide itself are offered, never expected."""
+    furniture and the slide itself are offered, never expected; nor is another
+    scene's subject, which may only be shown small here."""
     catalogue = brief.get("picture_catalogue")
     if catalogue is None:       # a brief from before the catalogue: all were near
         return [Path(path).name for path in (brief.get("assets") or {}).get("pictures") or []]
     return [f"{entry['file']} ({entry.get('what', '')})"[:90] for entry in catalogue
-            if entry.get("near") and entry.get("role") not in ("furniture", "slide")]
+            if entry.get("near") and entry.get("role") not in ("furniture", "slide")
+            and not entry.get("main_of")]
 
 
 def look_at_picture(path: Path, question: str) -> str:
