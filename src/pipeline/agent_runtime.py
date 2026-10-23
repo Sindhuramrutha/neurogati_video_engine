@@ -82,8 +82,11 @@ def stage_context(project: Project, stage: Stage, include_source: bool = True) -
         Stage.EXTRACTION: [],
         Stage.SCENE_PLAN: [],
         Stage.SCRIPT_STAGING: ["plan", "script"],
+        Stage.ASSETS: ["assets"],
+        Stage.GENERATION: ["scenes"],
         Stage.STUDIO: ["script", "composition"],
-        Stage.REVIEWING: ["plan", "script", "composition", "review"],
+        Stage.REVIEWING: ["plan", "script", "composition", "review", "scenes"],
+        Stage.EXPORT: ["export", "scenes"],
     }
 
     # Files that are not in the extraction are named as such, so an agent does not
@@ -191,6 +194,13 @@ def artifact_for_agents(project: Project, artifact_name: str) -> str:
     if artifact_name == "extraction":
         return _capped(ExtractionStore(project.root).load().as_markdown(),
                        MAXIMUM_CONTEXT_CHARACTERS)
+
+    from pipeline import agent_inputs
+
+    readers = {"assets": agent_inputs.assets_text, "scenes": agent_inputs.scenes_text,
+               "export": agent_inputs.export_text}
+    if artifact_name in readers:
+        return _capped(readers[artifact_name](project), MAXIMUM_CONTEXT_CHARACTERS)
 
     stores = {"composition": CompositionStore, "review": ReviewStore}
     if artifact_name in stores:

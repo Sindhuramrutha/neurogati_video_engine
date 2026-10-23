@@ -79,7 +79,9 @@ def write_timeline_from_render(
             # character -- so the track carried no information at all. The
             # number leads because it is the part that still distinguishes them
             # once the text is cut off.
-            label = section.title if window.kind == "title" else (
+            # The opening card says what it is: labelled with the title alone, a
+            # review read it as a stray duplicate of the first scene.
+            label = f"Title card: {section.title}" if window.kind == "title" else (
                 f"{window.scene_index + 1}. {shot.headline}" if shot.headline
                 else f"{window.scene_index + 1}. {section.title}")
             tracks_by_kind[TrackKind.VIDEO].clips.append(Clip(
