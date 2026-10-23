@@ -707,3 +707,22 @@ def test_an_answer_that_is_only_a_plan_is_asked_for_what_it_planned(project_root
     assert asked[0] == () and asked[1][0]["content"].startswith("I will draw")
     assert asked[1][1]["content"] == scene_maker.SEND_IT
     assert agent_view(slug, visual.id)["renders"] == 1, "no round lost to the plan"
+
+
+def test_written_by_hand_and_failing_twice_a_scene_is_answered_with_shots(project_root,
+                                                                          monkeypatch):
+    """Nine of the eleven Chapter 1 scenes that ended failing a check were written by
+    hand, round after round. After two such failures only shots are taken."""
+    slug, project, visual = scripted_project("Shots only")
+    monkeypatch.setattr(scene_maker, "MOST_ROUNDS", 3)
+    monkeypatch.setattr(scene_maker, "ESCALATIONS", ())
+    model = Model(whole(CRASHES), whole(CRASHES), *[whole(GOOD)] * 3)
+    wired(monkeypatch, model)
+
+    make_scene(slug, visual.id)
+
+    assert scene_maker.SHOTS_ONLY in model.requests[2], "told to answer with shots"
+    view = agent_view(slug, visual.id)
+    assert any("answered with shots" in e["text"] for e in view["events"])
+    written = sum(e["kind"] == "write" for e in view["events"])
+    assert written == 2, "a program written by hand is not taken a third time"

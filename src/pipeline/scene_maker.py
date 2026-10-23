@@ -83,6 +83,11 @@ ESCALATION_NOTE = (
     "write a new program that shows the idea with a different shot -- a different "
     "composition, a different way of moving, another picture of the mechanism. Do not "
     "rebuild the last version.")
+# Written by hand and failing the checks twice, a scene is answered with shots (which pass
+# them by construction): 9 of 11 Chapter 1 scenes that ended failing were hand-written.
+HAND_FAILURES = 2
+SHOTS_ONLY = ("Programs written by hand failed the checks twice here: answer with shots only "
+              "now, no code -- the shots that teach the idea best; the brief is direction.")
 ASKS_PER_ROUND = 3        # an unusable answer is asked again, without a render
 SEND_IT = ("Now send it, exactly as the answer format says: the ```json block with the "
            "shots -- or, only if no shot can show the idea, the json block and the "
@@ -174,6 +179,7 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
                 "last_render": {"passed": not failing, "good": False, "reviewed": False,
                                 "failing": failing, "problems": [], "polish": []}}
     met, climbed, best_on_disk, stalled = False, 0, True, 0
+    hand_failed, shots_only = 0, False
     try:
         doing(folder, state, "Looking at the slide's pictures")
         notes, parts = picture_notes(brief, folder.parent, state)
@@ -207,7 +213,7 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
                   f"(round {number} of up to {rounds})")
             written = _written(system, brief, notes, earlier, entry, code, feedback,
                                instruction if number == 1 else "", renderers, spec,
-                               folder, state, parts)
+                               folder, state, parts, shots_only)
             if project_work.stopped():
                 return
             if written is None:
@@ -226,6 +232,14 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
                                      "polish", "scores", "score")}
             feedback = "\n\n".join(part for part in (
                 result["feedback"], _still_stretch(folder, brief, spec)) if part)
+            if not result["passed"] and not is_shots(spec):
+                hand_failed += 1
+                if hand_failed >= HAND_FAILURES and not shots_only:
+                    shots_only = True
+                    add_event(state, "note", "Written by hand, it failed the checks twice: "
+                              "from now on it is answered with shots.")
+            if shots_only:
+                feedback = SHOTS_ONLY + "\n\n" + feedback
             add_event(state, "render", f"Round {number}: " + (
                 "good" if result["good"] else "passed its checks" if result["passed"]
                 else f"{len(result['failing'])} check(s) fail: " + "; ".join(result["failing"])))
@@ -309,7 +323,7 @@ def _below_bar(state: dict[str, Any], stood_in: bool) -> str:
 
 
 def _written(system, brief, notes, earlier, entry, code, feedback, instruction, renderers,
-             spec, folder, state, parts=None):
+             spec, folder, state, parts=None, shots_only=False):
     """The program the model writes this round, asked again at once when its answer
     cannot be used -- an edit that matches nothing is not worth a render. None if no
     answer could be used."""
@@ -346,6 +360,8 @@ def _written(system, brief, notes, earlier, entry, code, feedback, instruction, 
                               if e.get("main_of")))
                 return (program_for(answer.spec, pictures), merged, renderer,
                         ENTRY_FILES[renderer], True)
+            if shots_only:
+                raise ValueError(SHOTS_ONLY)
             renderer = str(merged.get("renderer", "")).strip().lower()
             if renderer not in renderers:
                 raise ValueError(f"the renderer must be one of {', '.join(renderers)}"
