@@ -248,7 +248,8 @@ def request(brief: dict[str, Any], notes: str, earlier: str, entry: str, code: s
     if shots:
         # Written from its shots: they are what to change, not the program.
         parts.append("## The scene's shots as they are now (the program is written from "
-                     "them: answer with corrected shots)\n```json\n"
+                     "them: answer with corrected shots -- change what the last round "
+                     "found, and keep every other shot and value as it is)\n```json\n"
                      + json.dumps({"shots": shots}, indent=1, ensure_ascii=False) + "\n```")
     elif code.strip():
         parts.append(f"## {entry} as it is now\n```\n{code}\n```")

@@ -151,7 +151,18 @@ def review_frames(folder: Path, brief: dict[str, Any], question: str = "") -> Ve
         "- Colourless outline boxes on an empty background, or most of the frame empty: "
         "it looks unfinished.\n"
         "- A painted illustration that is wrong for what is said (the wrong thing drawn, "
-        "impossible anatomy or apparatus), or that has text in it.")
+        "impossible anatomy or apparatus), or that has text in it.\n\n"
+        "What the scene is made of, so judge it and ask for changes in these terms: shots "
+        "-- a hero (one picture large; as each part is named, the rest of the picture "
+        "dims and an outline draws round that part, and a pulse can travel through "
+        "parts), steps or compare (pictures side by side, built on the words), a person "
+        "(portrait, name, what they did), an opener, a key_idea (one point to remember), "
+        "and flow, hub or timeline diagrams for ideas no picture shows. Motion that "
+        "explains is attention moved to what is said as it is said, and things built up "
+        "in order on the words: score that, not the absence of free-drawn animation, "
+        "which the scene cannot make. Each problem names a change it can make -- which "
+        "shot, which picture or part, on which words (\"name the heart as 'seat of the "
+        "soul' when it is said\", \"end on a key_idea: the error lasted centuries\").")
     elsewhere = [f"{entry['file']} ({entry.get('what', '')[:50]}): "
                  f"{', '.join(entry['shown_in'])}"
                  for entry in brief.get("picture_catalogue") or [] if entry.get("shown_in")]

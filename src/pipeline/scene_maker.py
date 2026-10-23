@@ -39,8 +39,6 @@ from pipeline.core import require_project
 from pipeline.generation import VisualPlanStore
 from pipeline.llm import ModelCallFailed, ModelNotConfigured, ModelOutputTruncated
 from pipeline.scene_edit import apply_edits, parse_answer
-from pipeline.scene_illustration import paint as paint_illustration
-from pipeline.scene_illustration import wanted as wanted_illustration
 from pipeline.scene_kept import (
     adopt,
     drop_kept,
@@ -71,10 +69,14 @@ from pipeline.scene_state import STOP, add_event, doing, load_state, save_state
 logger = logging.getLogger(__name__)
 
 MOST_ROUNDS = 6           # refining until the reviewer calls it good takes rounds
-# Still below the bar after them: a step up the ladder, not more of the same. First a
-# fresh program with a different shot; then the picture repainted from the reviewer's
-# notes, and fresh again. Only when every step is spent is the best version used.
-ESCALATIONS = ("fresh", "repaint")
+# A scene stops when it stops getting better: two rounds in a row that do not beat its
+# best. Every scene used to run its whole ladder of 14 rounds -- a fresh start, then a
+# repaint and another -- and on Chapter 1 the steps after the first approach made the
+# kept version in 2 scenes of 21. So a scene starts over only when its best is far
+# off: it fails a check, or the reviewer scores it under FAR_SCORE.
+STALLED_ROUNDS = 2
+FAR_SCORE = 2.0
+ESCALATIONS = ("fresh",)
 ESCALATION_ROUNDS = 4
 ESCALATION_NOTE = (
     "The rounds so far did not reach the bar, so this is a fresh start, not a fix: "
@@ -82,6 +84,9 @@ ESCALATION_NOTE = (
     "composition, a different way of moving, another picture of the mechanism. Do not "
     "rebuild the last version.")
 ASKS_PER_ROUND = 3        # an unusable answer is asked again, without a render
+SEND_IT = ("Now send it, exactly as the answer format says: the ```json block with the "
+           "shots -- or, only if no shot can show the idea, the json block and the "
+           "complete file. No plan and no explanation outside the blocks.")
 # As long as the model will write: 65,536 tokens is what the provider accepts.
 ROUND_TOKENS = 65536
 CALL_ATTEMPTS = 6         # a failed model call is tried again, waiting longer each time
@@ -95,7 +100,8 @@ class _GaveUp(Exception):
     """The model cannot be reached: the scene stops, and says why."""
 
 
-def _ask(system: str, user: str, folder: Path, state: dict[str, Any]) -> str | None:
+def _ask(system: str, user: str, folder: Path, state: dict[str, Any],
+         then: tuple = ()) -> str | None:
     """One model call, waited out through a blip (resilience.py: jittered backoff,
     the provider's Retry-After, a circuit shared by every process; up to half an
     hour before the scene stops). None if the answer was cut off."""
@@ -103,7 +109,7 @@ def _ask(system: str, user: str, folder: Path, state: dict[str, Any]) -> str | N
     from pipeline.resilience import ServiceUnavailable, call
 
     def attempt() -> tuple[str, dict[str, int]]:
-        return complete_scene(system, user, max_tokens=ROUND_TOKENS)
+        return complete_scene(system, user, max_tokens=ROUND_TOKENS, then=then)
 
     def said(failure: BaseException, pause: float) -> None:
         add_event(state, "retry", f"The model could not answer ({failure}); trying again "
@@ -167,7 +173,7 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
                 "renderer": renderer, "feedback": "",
                 "last_render": {"passed": not failing, "good": False, "reviewed": False,
                                 "failing": failing, "problems": [], "polish": []}}
-    met, climbed, best_on_disk = False, 0, True
+    met, climbed, best_on_disk, stalled = False, 0, True, 0
     try:
         doing(folder, state, "Looking at the slide's pictures")
         notes, parts = picture_notes(brief, folder.parent, state)
@@ -185,22 +191,18 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
                 add_event(state, "stopped", "Stopped by the person.")
                 break
             if number > rounds:
-                if climbed == len(ESCALATIONS):
-                    break                     # the ladder is spent: the best is used
-                # Below the bar after its rounds: not more of the same, a step up.
-                step, climbed, rounds = ESCALATIONS[climbed], climbed + 1, rounds + \
-                    ESCALATION_ROUNDS
+                near = best is not None and best["rank"][0] == 1 and best["rank"][2] >= FAR_SCORE
+                if climbed == len(ESCALATIONS) or near:
+                    break                     # no better to be had this way: the best is used
+                # Far off the bar: not more of the same, a different approach.
+                climbed, rounds, stalled = climbed + 1, number - 1 + ESCALATION_ROUNDS, 0
                 still = (best or {}).get("feedback") or feedback
-                if step == "repaint" and _repaint(folder, brief, still, state):
-                    brief = write_brief(project, visual)
-                    notes, parts = picture_notes(brief, folder.parent, state)
                 code, spec = "", {}
                 feedback = ESCALATION_NOTE + (f"\nWhat the best version still needed:\n"
                                               f"{still}" if still else "")
-                add_event(state, "escalate", f"Still below the bar after {number - 1} rounds: "
-                          + ("repainting the picture and starting over"
-                             if step == "repaint" else "starting over with a different shot")
-                          + f" ({ESCALATION_ROUNDS} more rounds).")
+                add_event(state, "escalate", f"Still far off the bar after {number - 1} rounds: "
+                          f"starting over with a different shot ({ESCALATION_ROUNDS} more "
+                          "rounds).")
             doing(folder, state, f"{'Fixing' if code else 'Writing'} the scene "
                   f"(round {number} of up to {rounds})")
             written = _written(system, brief, notes, earlier, entry, code, feedback,
@@ -246,8 +248,14 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
                 best = {"rank": this, "spec": dict(spec), "entry": entry,
                         "renderer": renderer, "feedback": feedback,
                         "last_render": state["last_render"]}
-                best_on_disk = True
-            elif best is not None and climbed:
+                best_on_disk, stalled = True, 0
+                continue
+            # Not better than the best. Twice in a row, once the best passes its checks,
+            # and this approach is spent: more rounds of it were thrown away.
+            stalled += 1
+            if best is not None and best["rank"][0] == 1 and stalled >= STALLED_ROUNDS:
+                rounds = number
+            if best is not None and climbed:
                 # A fresh approach is refined on its own terms, not undone back to the
                 # old one; the best stays kept and comes back if nothing beats it.
                 best_on_disk = False
@@ -279,7 +287,7 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
     elif best is not None and best["rank"][0] == 0:
         adopt(slug, visual_id)                # the best one made, with its problems named
     _conclude(state, spec, has_clip(folder))
-    if not met and climbed == len(ESCALATIONS) and state["status"] == "done":
+    if not met and state["status"] == "done":
         why = _below_bar(state, stood_in)
         mark_below_bar(slug, visual_id, why)
         state["below_bar"] = why
@@ -300,21 +308,6 @@ def _below_bar(state: dict[str, Any], stood_in: bool) -> str:
     return "the reviewer did not call it good."
 
 
-def _repaint(folder: Path, brief: dict[str, Any], notes: str, state: dict[str, Any]) -> bool:
-    """Paint the scene's illustration again, told what the reviewer found. False when
-    the scene has no painted picture to repaint (it draws on the slide's own)."""
-    from pipeline.scene_illustration import kept as kept_illustration
-
-    if not wanted_illustration(brief["on_screen"]):
-        return False
-    old = kept_illustration(folder, brief["on_screen"], brief["look"])
-    if old is not None:
-        old.unlink(missing_ok=True)
-    doing(folder, state, "Repainting the scene's illustration")
-    return paint_illustration(folder, brief["on_screen"], brief["look"], state,
-                              brief["narration"], note=notes[:600]) is not None
-
-
 def _written(system, brief, notes, earlier, entry, code, feedback, instruction, renderers,
              spec, folder, state, parts=None):
     """The program the model writes this round, asked again at once when its answer
@@ -322,11 +315,13 @@ def _written(system, brief, notes, earlier, entry, code, feedback, instruction, 
     answer could be used."""
     # What the last render found stays in every ask: a re-ask that said only "your
     # answer could not be used" had the model fix the format and forget the scene.
-    found, note = feedback, ""
+    found, note, then = feedback, "", ()
     for _ in range(ASKS_PER_ROUND):
         feedback = "\n\n".join(part for part in (note, found) if part)
         text = _ask(system, request(brief, notes, earlier, entry, code, feedback,
-                                    instruction, renderers, spec.get("shots")), folder, state)
+                                    instruction, renderers, spec.get("shots")), folder, state,
+                    then)
+        then = ()
         if text is None:
             note = ("Your last answer was cut off at the length limit. Send the "
                     "complete file, written more compactly.")
@@ -351,6 +346,15 @@ def _written(system, brief, notes, earlier, entry, code, feedback, instruction, 
                                  + (f", not {renderer!r}" if renderer else ""))
             written = answer.code if answer.code else apply_edits(code, answer.edits)
         except ValueError as unusable:
+            if "```" not in text:
+                # Most unusable answers were a plan with nothing after it: the model
+                # is asked, in the same conversation, for what it planned.
+                then = ({"role": "assistant", "content": text},
+                        {"role": "user", "content": SEND_IT})
+                note = ""
+                add_event(state, "note", "Its answer was a plan with no shots or file; "
+                          "asked for them.")
+                continue
             note = (f"Your last answer could not be used: {unusable}. Correct it and send "
                     "it again, in the fenced blocks described below.")
             add_event(state, "note", f"Its answer could not be used ({unusable}); asking "

@@ -197,10 +197,9 @@ view is the file that moves on to the next stages.
   finished. The slide's pictures are described once, and the last three scenes
   are summarised, so scenes stay consistent.
 - **It never stops to ask.** Where the brief is silent it decides and says what
-  it assumed. A scene still below the bar after 6 rounds is not given more of
-  the same: it starts over with a different shot (4 rounds), then has its
-  picture repainted from the reviewer's notes and starts over again (4 more).
-  Only then is it made from its best version, with any failing checks and the
+  it assumed. A scene stops when two rounds in a row do not beat its best; only
+  one still far off the bar starts over with a different shot (4 rounds). It is
+  then made from its best version, with any failing checks and the
   reviewer's remaining remarks shown, and named on Export as *below the quality
   bar*. If no round drew anything, a plain stand-in is drawn, and only when not
   even that makes a clip is it marked *could not be made*. You change a scene by

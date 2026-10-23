@@ -37,9 +37,12 @@ the brief's assets.pictures, "when" the exact narration words a part arrives on:
   one picture large and its parts named (a label is a part's name, 1-4 words, never a
   statement). "part" is one of the picture's parts exactly as its description lists them:
   the pointer is drawn to where that part really is, and a callout naming no listed part
-  is left out. Optional "moves": [{"through": [2 to 6 part names, in order], "when"}] -- a
-  glowing pulse runs through those parts on the words: a signal down a nerve, current
-  through a wire. Use it wherever the narration says something travels.
+  is left out. On each callout's words the rest of the picture dims and an outline draws
+  round that part: the viewer's eye is led part to part as the narration names them, so
+  give each part the words that speak of it. Optional "moves": [{"through": [2 to 6
+  part names, in order], "when"}] -- a glowing pulse runs through those parts on the
+  words: a signal down a nerve, current through a wire. Use it wherever the narration
+  says something travels.
 - steps: "title", "steps": [{"label", "picture" (or null), "when"}] -- 2 to 4 steps in order
 - compare: "title", "left" and "right": {"heading", "picture" (or null), "points": [up to
   3 short], "when"}

@@ -32,6 +32,8 @@ GOOD_VERDICT = Verdict(scores=scored(), teaches=True, motion_explains=True, look
 BAD_VERDICT = Verdict(scores=scored(low=4, motion=2), teaches=True, motion_explains=False,
                       looks_finished=True, problems=["Labels only fade in and out."],
                       polish=["Larger title."])
+FAR_VERDICT = Verdict(scores=scored(low=1), teaches=False, motion_explains=False,
+                      looks_finished=False, problems=["Labels only fade in and out."])
 SPEC = '```json\n{"renderer": "pillow", "approach": "A bar grows under the word touch."}\n```\n'
 
 
@@ -240,12 +242,12 @@ def test_a_refinement_the_reviewer_likes_less_does_not_replace_the_kept_one(proj
 # --- the quality ladder ------------------------------------------------------------------
 
 
-def test_below_the_bar_after_its_rounds_a_scene_starts_over_with_a_different_shot(
+def test_far_off_the_bar_after_its_rounds_a_scene_starts_over_with_a_different_shot(
         project_root, monkeypatch):
     slug, project, visual = scripted_project("Ladder")
     monkeypatch.setattr(scene_maker, "MOST_ROUNDS", 1)
     model = Model(whole(GOOD), whole(GOOD.replace("Touch", "Touching")))
-    wired(monkeypatch, model, BAD_VERDICT, GOOD_VERDICT)
+    wired(monkeypatch, model, FAR_VERDICT, GOOD_VERDICT)
 
     make_scene(slug, visual.id)
 
@@ -265,12 +267,12 @@ def test_with_the_ladder_spent_the_best_version_is_used_and_named(project_root, 
     slug, project, visual = scripted_project("Spent")
     monkeypatch.setattr(scene_maker, "MOST_ROUNDS", 1)
     monkeypatch.setattr(scene_maker, "ESCALATION_ROUNDS", 1)
-    model = Model(whole(GOOD), whole(CRASHES), whole(CRASHES))
-    wired(monkeypatch, model, BAD_VERDICT)
+    model = Model(whole(GOOD), whole(CRASHES))
+    wired(monkeypatch, model, FAR_VERDICT)
 
     make_scene(slug, visual.id)
 
-    assert len(model.requests) == 3, "its round, one per step up, then it stops"
+    assert len(model.requests) == 2, "its round, the one fresh start, then it stops"
     folder = scene_folder(project, visual)
     assert "RuntimeError" not in (folder / "scene.py").read_text(encoding="utf-8"), \
         "the fresh attempts were worse, so the best version is back"
@@ -279,7 +281,7 @@ def test_with_the_ladder_spent_the_best_version_is_used_and_named(project_root, 
     recorded = next(v for v in VisualPlanStore(project.root).load().visuals if v.id == visual.id)
     assert recorded.clip_path and "Labels only fade in and out." in recorded.below_bar
     _, warnings = export_readiness(project)
-    assert any("below the quality bar" in w for w in warnings), "named on Export"
+    assert any("below the reviewer's bar" in w for w in warnings), "named on Export"
 
 
 def test_a_new_run_clears_below_the_bar(project_root, monkeypatch):
@@ -667,3 +669,41 @@ def test_a_rate_limit_refusal_slows_every_process_and_holds_them_off(monkeypatch
     llm_pace.refused("Too many requests", now=2000.0)
     assert llm_pace.per_minute() == 8, "a refusal that states no limit keeps the one learned"
     assert llm_pace._cooling(2030.0) == 30
+
+
+def test_near_the_bar_a_scene_stops_when_two_rounds_do_not_beat_its_best(project_root,
+                                                                         monkeypatch):
+    """Every scene used to spend all 14 rounds; the steps after the first approach made
+    the kept version in 2 scenes of 21. Close to the bar, it stops when it stalls."""
+    slug, project, visual = scripted_project("Stalls")
+    model = Model(*[whole(GOOD)] * 6)
+    wired(monkeypatch, model, *[BAD_VERDICT] * 6)
+
+    make_scene(slug, visual.id)
+
+    assert len(model.requests) == 3, "its best, then two rounds that are no better"
+    view = agent_view(slug, visual.id)
+    assert not any(e["kind"] == "escalate" for e in view["events"]), "near: no fresh start"
+    assert view["status"] == "done"
+
+
+def test_an_answer_that_is_only_a_plan_is_asked_for_what_it_planned(project_root,
+                                                                    monkeypatch):
+    """Most unusable answers described the fix and stopped. The model is asked, in
+    the same conversation, to send it."""
+    slug, project, visual = scripted_project("Plan only")
+    asked = []
+
+    class Talks(Model):
+        def __call__(self, system_prompt, user_prompt, **kwargs):
+            asked.append(kwargs.get("then", ()))
+            return super().__call__(system_prompt, user_prompt, **kwargs)
+
+    model = Talks("I will draw a bar that grows under the word touch.", whole(GOOD))
+    wired(monkeypatch, model, GOOD_VERDICT)
+
+    make_scene(slug, visual.id)
+
+    assert asked[0] == () and asked[1][0]["content"].startswith("I will draw")
+    assert asked[1][1]["content"] == scene_maker.SEND_IT
+    assert agent_view(slug, visual.id)["renders"] == 1, "no round lost to the plan"

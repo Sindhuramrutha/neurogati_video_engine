@@ -148,6 +148,14 @@ word. A whole equation fading in term by term is one beat, not eight.
 Too many beats is as unusable as too few. Densely packed prose produces frantic
 pacing; give each idea room.
 
+Write beats as what the scene can do, because Generation builds them from a few
+shots, not free drawing: a picture with its parts named and lit one by one on their
+words; a pulse travelling through parts of a picture; steps or two sides built up in
+order; a person with what they did; one point to remember; a flow, hub or timeline
+for an idea no picture shows. "The ribbon cracks and splits into four glowing
+pieces" cannot be made and sets every reviewer against the scene; "the head, then
+ear, eye and speech named in turn" can.
+
 ## Continuity
 
 Scenes play back to back. If the previous scene established concrete values, reuse

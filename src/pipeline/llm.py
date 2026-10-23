@@ -222,13 +222,12 @@ def complete_text(system_prompt: str, user_prompt: str, *, max_tokens: int = 200
     )[0]
 
 
-def complete_scene(system_prompt: str, user_prompt: str, *,
-                   max_tokens: int) -> tuple[str, dict[str, int]]:
-    """One round of making a scene, as plain text, and what it used."""
-    return _chat(get_settings().ir_llm, "scene",
-                 [{"role": "system", "content": system_prompt},
-                  {"role": "user", "content": user_prompt}],
-                 max_tokens, program=True)
+def complete_scene(system_prompt: str, user_prompt: str, *, max_tokens: int,
+                   then: tuple = ()) -> tuple[str, dict[str, int]]:
+    """One round of making a scene, as plain text, and what it used; `then` carries
+    on the conversation (its answer, and what it is asked next)."""
+    return _chat(get_settings().ir_llm, "scene", [{"role": "system", "content": system_prompt},
+                 {"role": "user", "content": user_prompt}, *then], max_tokens, program=True)
 
 
 def _structured[ModelType: BaseModel](
