@@ -120,7 +120,8 @@ def _index(value: Any, pictures: Pictures, where: str, main: bool = False) -> in
         # The same picture scene after scene made the video look like one scene.
         raise ValueError(f"{where}: picture {index} is another scene's subject; here it may "
                          "only be small (steps, compare). Give this scene its own main "
-                         "picture: another one, one painted for it, or a diagram")
+                         "picture: another one; or ask for one painted -- add \"paint\": "
+                         "\"the picture, its subject exactly\" to the json; or a diagram")
     return index
 
 

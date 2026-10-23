@@ -187,12 +187,16 @@ def render(slug: str) -> None:
     # checks is approved, as the person would on the Make tab.
     say("approved:", approve_passed(slug))
     voice = video_setup.edge_voice(_root(slug), "en")
+    before = {j["id"] for j in _call("GET", "/api/render-queue")["jobs"]}
     _call("POST", "/api/render-queue", {"slug": slug, "voice_provider": "edge",
                                         "voice": voice})
     say("render queued with", voice)
     while True:
         time.sleep(30)
-        job = next(j for j in _call("GET", "/api/render-queue")["jobs"] if j["slug"] == slug)
+        # The job just queued: the first one for the project was an earlier render,
+        # long done, and was reported as this one.
+        job = next(j for j in _call("GET", "/api/render-queue")["jobs"]
+                   if j["slug"] == slug and j["id"] not in before)
         if job["status"] in ("done", "failed", "paused"):
             say("render", job["status"], job.get("message", ""), job.get("video_file", ""))
             if job["status"] != "done":
