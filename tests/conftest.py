@@ -77,6 +77,7 @@ def shared_state_in_tmp(tmp_path, monkeypatch):
     """The request window and the circuit breakers are shared through files in
     .cache; each test gets its own, and the gate's waits take no time."""
     monkeypatch.setattr("pipeline.llm_pace._shared_file", lambda: tmp_path / "pace.json")
+    monkeypatch.setattr("pipeline.llm_pace._limit_file", lambda: tmp_path / "limit.json")
     monkeypatch.setattr("pipeline.resilience._breakers", lambda: tmp_path / "breakers")
     monkeypatch.setattr("pipeline.resilience._SLEEP", lambda seconds: None)
     # With waits taking no time, an open circuit would be waited out in real time;

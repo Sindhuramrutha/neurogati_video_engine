@@ -649,3 +649,21 @@ def test_a_scene_that_stops_on_an_error_is_failed_with_its_reason(project_root, 
     assert state["status"] == "failed"
     assert "could not be spoken" in state["error"]
     assert scene_agent.queue_view(slug)["failed"] == 1
+
+
+def test_a_rate_limit_refusal_slows_every_process_and_holds_them_off(monkeypatch):
+    """The provider's limit went from 30 a minute to 15 while the app sent 28: every
+    call past 15 was refused. A refusal that states the limit sets the pace a little
+    under it, and every call waits a whole minute after it."""
+    from pipeline import llm_pace
+
+    monkeypatch.delenv("LLM_REQUESTS_PER_MINUTE", raising=False)
+    assert llm_pace.per_minute() == llm_pace.DEFAULT_PER_MINUTE
+    llm_pace.refused("You have reached the request limit: Maximum 10 requests within "
+                     "1 minutes. (request id: x)", now=1000.0)
+    assert llm_pace.per_minute() == 8
+    assert llm_pace._cooling(1000.0) == 60 and llm_pace._cooling(1061.0) == 0
+
+    llm_pace.refused("Too many requests", now=2000.0)
+    assert llm_pace.per_minute() == 8, "a refusal that states no limit keeps the one learned"
+    assert llm_pace._cooling(2030.0) == 30

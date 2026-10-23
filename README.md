@@ -333,7 +333,7 @@ stdin.
 | `IMAGE_MODEL`, `IMAGE_BASE_URL`, `IMAGE_API_KEY` | `google/gemini-2.5-flash-image`, text model's values | The model that draws a replacement for a figure that did not extract. |
 | `VISION_MODEL`, `VISION_BASE_URL`, `VISION_API_KEY` | `google/gemini-3.5-flash`, text model's values | The model that looks at pictures: the Extraction agent reading slides, the slide pictures described for Generation, every review of a scene's frames, and handwriting OCR. The text model cannot see. |
 | `LLM_TIMEOUT_SECONDS` | `600` | Per-request timeout. |
-| `LLM_REQUESTS_PER_MINUTE` | `28` | How many model calls are sent in a minute, across the whole app (TokenRouter allows 30). |
+| `LLM_REQUESTS_PER_MINUTE` | `13` | How many model calls are sent in a minute, across the whole app (TokenRouter allows 15). A refusal that states a lower limit lowers it, and holds every call off for a minute. |
 | `SCENE_AGENTS_AT_ONCE` | `4` | Scenes made side by side on Generation. |
 | `SCENE_RENDERS_AT_ONCE` | `2` | Scenes rendering at the same moment; rendering is what uses the memory. |
 | `LLM_MAX_RETRIES` | `3` | Retries on transient failures. |

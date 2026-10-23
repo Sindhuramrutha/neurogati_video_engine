@@ -103,7 +103,7 @@ def _build_client(base_url: str, api_key: str, purpose: str):
     import httpx
     from openai import OpenAI
 
-    from pipeline.llm_pace import take_a_place
+    from pipeline.llm_pace import notice, take_a_place
 
     if not api_key or api_key == "not-needed":
         raise ModelNotConfigured(
@@ -112,7 +112,8 @@ def _build_client(base_url: str, api_key: str, purpose: str):
     settings = get_settings()
     # Every request -- retries and re-asks included -- waits for a place in the
     # provider's per-minute limit (llm_pace.py) instead of being refused.
-    paced = httpx.Client(event_hooks={"request": [lambda _request: take_a_place()]})
+    paced = httpx.Client(event_hooks={"request": [lambda _request: take_a_place()],
+                                      "response": [notice]})
     return OpenAI(base_url=base_url, api_key=api_key, http_client=paced,
                   timeout=settings.llm_timeout_seconds, max_retries=settings.llm_max_retries)
 

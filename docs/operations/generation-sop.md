@@ -109,8 +109,8 @@ answers it. A scene still below the bar after its 6 rounds climbs a ladder
 picture repainted from the reviewer's notes and fresh again, **4 rounds each** --
 so at most 14 rounds. Only then is its best version used, and it is named on
 Export as below the quality bar. Every model call
-waits for a place in the provider's per-minute limit (TokenRouter allows 30 a
-minute, so the pace is set to 28: `LLM_REQUESTS_PER_MINUTE`), so a whole video
+waits for a place in the provider's per-minute limit (TokenRouter allows 15 a
+minute, so the pace is set to 13: `LLM_REQUESTS_PER_MINUTE`), so a whole video
 takes tens of minutes, not seconds. Scenes are made **four at a time**
 (`SCENE_AGENTS_AT_ONCE`): more than that, with Manim and a browser rendering,
 used up this machine's memory.

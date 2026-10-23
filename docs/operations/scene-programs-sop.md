@@ -114,7 +114,7 @@ Up to 3 rounds. An answer that cannot be used is asked again at once, without
 a render, and still carries what the last render found. A call that fails is retried three times, waiting longer each
 time, before the scene is marked **could not be made** with the reason. Every
 model call waits for a place in the provider's per-minute limit
-(`LLM_REQUESTS_PER_MINUTE`, 28 by default).
+(`LLM_REQUESTS_PER_MINUTE`, 13 by default).
 
 ## The renderers
 
