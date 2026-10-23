@@ -79,12 +79,11 @@ DRAW: the real things to draw, named -- "a frog's leg, its nerve, two metal wire
 LAYOUT: where each thing sits -- "the leg large on the left; the battery on the right"
 BEATS: "exact narration words" -> what appears, moves or changes then (one per idea)
 LABELS: the few words on screen, each from the narration -- at most five, short
-PHOTO: a real photograph, engraving or diagram to find on the open web
 ILLUSTRATE: a picture to paint
 ICON: up to three simple icons, by name -- "microscope, lightning"
 ```
 
-The last three are only for what no deck picture shows; use any, all or none.
+The last two are only for what no deck picture shows; use either, both or none.
 
 **The deck's pictures come first.** The video should look made from the course's
 deck. The section lists its pictures with what each is and what it is good for:
@@ -96,20 +95,18 @@ deck. The section lists its pictures with what each is and what it is good for:
   scene, on `PICTURE`, beside whatever explains.
 - Each listed picture that fits is one scene's subject, once; a small or cropped
   one may still serve (it says what was measured). Every other scene gets its own
-  subject -- a PHOTO, an ILLUSTRATE or a diagram to DRAW -- never another version
-  of a picture a scene near it shows.
+  subject -- an ILLUSTRATE or a diagram to DRAW -- never another version of a
+  picture a scene near it shows.
 
 **What the deck does not show, you choose how to fill** — decide per scene what
 teaches best, and say it exactly:
 
-- `PHOTO:` for a real thing that exists in photographs, engravings or historical
-  drawings — a person, an instrument, a place, a specimen: "Ivan Pavlov with a dog
-  in his laboratory". It is searched for among open-licence pictures and checked;
-  if nothing found is right, the scene goes on without it.
 - `ILLUSTRATE:` for a picture to paint — the subject, what it is doing, the
   angle, the species or kind exactly ("two small frog hearts", not "two hearts").
-  It is painted by an image model with no text in it; the scene adds its own
-  labels and motion on top. An idea with no obvious shape still gets a concrete
+  It is painted by an image model with no text in it, and checked for its subject,
+  framing and finish before it is used; the scene adds its own labels and motion
+  on top. A real person is painted as a clearly illustrated portrait, never as a
+  photograph. An idea with no obvious shape still gets a concrete
   picture: "the law of specific energies" is the same spark touching two nerves,
   one running to an eye and one to an ear.
 - `ICON:` for small supporting symbols beside words or in a diagram — a

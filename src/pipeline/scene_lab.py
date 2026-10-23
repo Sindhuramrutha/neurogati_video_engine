@@ -171,7 +171,7 @@ def write_brief(project, visual) -> dict[str, Any]:
         project, tiers, scene_pictures.made_for_scene(folder, on_screen, look),
         notes(folder.parent, deck),
         scene_pictures.shown_pictures(project, skip_visual_id=visual.id, library=library),
-        slide if slide.exists() else None)
+        slide if slide.exists() else None, scene_pictures.scene_number(project, visual))
 
     brief: dict[str, Any] = {
         "scene_id": visual.scene_id,

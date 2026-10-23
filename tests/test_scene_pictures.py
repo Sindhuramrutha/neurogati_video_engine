@@ -11,7 +11,7 @@ from types import SimpleNamespace as Thing
 
 import pytest
 
-from pipeline import outside_pictures, scene_pictures, scene_vetting
+from pipeline import scene_pictures, scene_vetting
 from pipeline.assets import AssetLibrary, LibraryFigure
 from pipeline.planning import Plan, PlanScene, PlanSection, SourceReference
 from pipeline.scene_shots import program_for
@@ -209,100 +209,75 @@ def test_an_opener_needs_a_picture():
         program_for({"shots": [{"template": "opener", "title": "x", "picture": None}]}, 1)
 
 
-# --- pictures from outside the deck ---------------------------------------------------------
-
-
-@pytest.mark.parametrize("licence, allowed", [
-    ("Public domain", True), ("CC0", True), ("CC BY 4.0", True), ("CC BY-SA 3.0", True),
-    ("by-sa-4.0", True), ("pdm-1.0", True),
-    ("CC BY-NC 2.0", False), ("CC BY-ND 4.0", False), ("CC BY-NC-SA 3.0", False),
-    ("GFDL", False), ("", False), ("All rights reserved", False)])
-def test_only_licences_that_allow_commercial_use_are_kept(licence, allowed):
-    assert outside_pictures.commercial_licence(licence) is allowed
-
-
-def test_the_brief_asks_for_a_photo_and_icons_on_their_own_lines():
-    photo, icons = outside_pictures.wanted(
-        "PICTURE: none\nPHOTO: Ivan Pavlov with a dog in his laboratory\n"
-        "ICON: microscope, brain and lightning, bell")
-    assert photo == "Ivan Pavlov with a dog in his laboratory"
-    assert icons == ["microscope", "brain", "lightning"], "at most three"
-    assert outside_pictures.wanted("PHOTO: none\nICON: -") == ("", [])
+# --- pictures made for a scene: painted by the image model, or a bundled icon ---------------
 
 
 def state():
     return {"calls": {"agent": 0, "vision": 0}, "events": []}
 
 
-def test_a_found_photo_is_the_one_the_vision_model_picked_and_is_credited(tmp_path,
-                                                                           monkeypatch):
-    results = [{"source": "Wikimedia Commons", "title": f"File:Pavlov {n}.jpg",
-                "url": f"https://x/{n}.jpg", "page": f"https://x/page/{n}",
-                "licence": "CC BY 4.0", "licence_url": "", "author": f"Author {n}"}
-               for n in (1, 2)]
-    monkeypatch.setattr(outside_pictures, "search_commons", lambda q: results)
-    monkeypatch.setattr(outside_pictures, "search_openverse", lambda q: [
-        results[0] | {"source": "Openverse (wikimedia)", "url": "https://y/1.jpg",
-                      "title": "File:Pavlov 1.jpg"}])
-    monkeypatch.setattr(outside_pictures, "_picture_bytes", lambda url: url.encode())
-    looked = []
-    monkeypatch.setattr(outside_pictures, "_choose",
-                        lambda asked, said, candidates: looked.append(candidates) or 2)
+def test_the_brief_asks_for_a_painting_and_icons_on_their_own_lines():
+    from pipeline import icon_pictures, scene_illustration
 
-    path = outside_pictures.find_photo(tmp_path, "Pavlov's dog", "Pavlov rang", state())
-
-    assert len(looked[0]) == 2, "the same file found twice is looked at once"
-    assert path.read_bytes() == b"https://x/2.jpg"
-    record = json.loads(path.with_suffix(".json").read_text(encoding="utf-8"))
-    assert record["author"] == "Author 2" and record["licence"] == "CC BY 4.0"
-    sources = json.loads((tmp_path / "sources.json").read_text(encoding="utf-8"))
-    assert sources[0]["file"] == path.name and sources[0]["author"] == "Author 2"
-    kept = outside_pictures.kept(tmp_path, "PHOTO: Pavlov's dog")
-    assert kept and kept[0][0] == path
+    brief = "PICTURE: none\nILLUSTRATE: two frog hearts in beakers\nICON: microscope, brain"
+    assert scene_illustration.wanted(brief) == "two frog hearts in beakers"
+    assert icon_pictures.wanted(brief) == ["microscope", "brain"]
+    assert icon_pictures.wanted("ICON: a, b, c, d") == ["a", "b", "c"], "at most three"
 
 
-def test_a_photo_is_searched_for_without_its_descriptive_words():
-    assert outside_pictures.queries("Lewis Carroll, portrait photograph, nineteenth century") \
-        == ["Lewis Carroll portrait photograph nineteenth century", "Lewis Carroll"]
-    assert outside_pictures.queries("Ivan Pavlov with a dog in his laboratory, 1904") == [
-        "Ivan Pavlov with a dog in his laboratory 1904", "Ivan Pavlov dog his laboratory",
-        "Ivan Pavlov dog"]
-
-
-def test_a_photo_that_is_not_found_is_not_painted_in_its_place(tmp_path, monkeypatch):
-    """A painted "portrait photograph" of Lewis Carroll -- bearded, which he was
-    not -- is a fabrication, however it is checked."""
+def test_a_photo_asked_for_is_painted_never_searched_for():
+    """Every picture comes from the image model; an old brief's PHOTO line is read as
+    a painting, and a real person is painted as an illustration, not a photograph."""
     from pipeline import scene_illustration
 
-    searched = []
-    monkeypatch.setattr(outside_pictures, "search_commons", lambda q: searched.append(q) or [])
-    monkeypatch.setattr(outside_pictures, "search_openverse", lambda q: [])
-    painted = []
-    monkeypatch.setattr(scene_illustration, "paint",
-                        lambda folder, on_screen, *a, **k: painted.append(on_screen))
-    monkeypatch.setattr("pipeline.scene_program.scene_folder",
-                        lambda project, visual, create=False: tmp_path)
-    monkeypatch.setattr("pipeline.scene_lab.write_brief", lambda project, visual: {"again": 1})
+    assert scene_illustration.wanted("PHOTO: Ivan Pavlov with a dog") == \
+        "Ivan Pavlov with a dog"
+    asked = scene_illustration.prompt("Ivan Pavlov with a dog", {"background": "#ffffff"})
+    assert "Never photorealistic" in asked and "illustrated portrait" in asked
 
-    brief = {"on_screen": "PHOTO: Lewis Carroll, portrait photograph", "look": {},
-             "narration": ""}
+
+def checked(matches=True, framed=True, clean=True, wrong=""):
+    from pipeline.scene_illustration import Checked
+
+    return Checked(matches=matches, framed=framed, clean=clean, wrong=wrong)
+
+
+def test_a_painting_is_used_only_once_it_is_right_and_well_framed(tmp_path, monkeypatch):
+    from pipeline import scene_illustration
+
+    verdicts = [checked(framed=False, wrong="the heart is cut off at the top"), checked()]
+    monkeypatch.setattr(scene_illustration, "check", lambda path, asked, said: verdicts.pop(0))
+    monkeypatch.setattr(scene_illustration, "blend", lambda path, background: None)
+    asked = []
+
+    path = scene_illustration._paint_checked(
+        tmp_path / "illustration-x.png", "a frog heart", {}, "", state(),
+        lambda request: asked.append(request) or b"png")
+
+    assert path is not None and path.exists()
+    assert "cut off at the top" in asked[1], "painted again with what was wrong"
+
+
+def test_a_painting_never_right_is_not_used(tmp_path, monkeypatch):
+    """Kept after one retry, a wrong painting (human hearts for frog hearts) went
+    into the scene. Now it is left out, and the scene is made without it."""
+    from pipeline import scene_illustration
+
+    monkeypatch.setattr(scene_illustration, "check",
+                        lambda path, asked, said: checked(matches=False, wrong="human hearts"))
     record = state()
-    again = scene_pictures.prepare(Thing(root=tmp_path), Thing(), brief, record)
 
-    assert sorted(searched) == ["Lewis Carroll", "Lewis Carroll portrait photograph"], \
-        "as asked, and without its descriptive words (searched at once)"
-    assert painted == [], "nothing painted in its place"
-    assert "Nothing open-licensed was found" in record["events"][-1]["text"]
-    assert again == {"again": 1}, "the brief is written again with what was made"
+    path = scene_illustration._paint_checked(
+        tmp_path / "illustration-x.png", "two frog hearts", {}, "", record, lambda r: b"png")
+
+    assert path is None and not (tmp_path / "illustration-x.png").exists()
+    assert record["calls"]["image"] == scene_illustration.PAINTED_AT_MOST
+    assert "made without it" in record["events"][-1]["text"]
 
 
-def test_an_icon_comes_from_the_bundled_set_when_the_web_is_not_there(tmp_path, monkeypatch):
-    def offline(name):
-        raise OSError("no network")
-
+def test_an_icon_comes_from_the_bundled_set(tmp_path, monkeypatch):
     from pipeline import icon_pictures
 
-    monkeypatch.setattr(icon_pictures, "_iconify", offline)
     monkeypatch.setattr(icon_pictures, "rasterise",
                         lambda svgs, colour: [b"PNG" + colour.encode() for _ in svgs])
 
@@ -311,6 +286,65 @@ def test_an_icon_comes_from_the_bundled_set_when_the_web_is_not_there(tmp_path, 
     record = json.loads(path.with_suffix(".json").read_text(encoding="utf-8"))
     assert record["source"] == "Lucide (bundled)" and record["licence"] == "ISC"
     assert path.read_bytes() == b"PNG#4472c4", "drawn in the scene's colour"
+
+
+# --- a pointer lands on the part it names -------------------------------------------------
+
+
+PARTS = [{"name": "cerebellum", "box": [0.5, 0.6, 0.7, 0.8], "sure": True},
+         {"name": "pineal gland", "box": [0.4, 0.4, 0.5, 0.5], "sure": False},
+         {"name": "spinal cord", "box": [0.55, 0.8, 0.6, 1.0], "sure": True}]
+
+
+def test_a_callout_points_at_the_middle_of_the_part_it_names():
+    from pipeline.picture_parts import anchor
+
+    assert anchor(PARTS, "Cerebellum") == (0.6, 0.7)
+    assert anchor(PARTS, "the cerebellum") == (0.6, 0.7), "a near enough name"
+    assert anchor(PARTS, "pineal gland") is None, "not sure where it is: no pointer"
+    assert anchor(PARTS, "toga") is None, "not in the picture: no pointer"
+
+
+def test_a_hero_s_callouts_are_drawn_to_located_parts_and_unknown_ones_left_out():
+    from pipeline.scene_shots import Pictures
+
+    program = program_for({"shots": [{"template": "hero", "picture": 0, "title": "The brain",
+                                      "callouts": [
+        {"label": "Cerebellum", "part": "cerebellum", "when": "balance"},
+        {"label": "Brain", "part": "toga", "when": "statue"}],
+        "moves": [{"through": ["cerebellum", "spinal cord"], "when": "down"}]}]},
+        Pictures(1, {0: PARTS}))
+
+    assert "('Cerebellum', (0.60, 0.70), 'balance')" in program
+    assert "Brain'" not in program, "a pointer at the statue's clothing is not drawn"
+    assert "moves=[([(0.60, 0.70), (0.57, 0.90)], 'down')]" in program
+
+
+def test_another_scene_s_subject_is_never_this_scene_s_main_picture():
+    """The robot hand holding a brain was the subject of the opening and again of the
+    next section's scene."""
+    from pipeline.scene_shots import Pictures
+
+    taken = Pictures(2, {}, frozenset({0}))
+    with pytest.raises(ValueError, match="another scene's subject"):
+        program_for({"shots": [{"template": "key_idea", "statement": "A mind", "picture": 0,
+                                "when": "x"}]}, taken)
+    for template in ("person", "opener"):
+        with pytest.raises(ValueError, match="another scene's subject"):
+            program_for({"shots": [{"template": template, "picture": 0, "name": "N",
+                                    "line": "L", "title": "T"}]}, taken)
+    small = program_for({"shots": [{"template": "steps", "title": "Steps", "steps": [
+        {"label": "One", "picture": 0, "when": "a"},
+        {"label": "Two", "picture": 1, "when": "b"}]}]}, taken)
+    assert "P[0]" in small, "small, in steps, it may still be shown"
+
+
+def test_a_picture_belongs_to_the_first_scene_that_names_or_shows_it_large():
+    from pipeline.scene_pictures import _owner
+
+    assert _owner(["scene 3, planned", "scene 7"], False, 5) == 3
+    assert _owner(["scene 7"], True, 5) == 5, "this scene names it, and comes first"
+    assert _owner(["scene 2, small"], False, 5) == 0, "shown small claims nothing"
 
 
 def test_export_credits_every_outside_picture_once(tmp_path, monkeypatch):

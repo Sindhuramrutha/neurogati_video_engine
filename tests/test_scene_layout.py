@@ -182,8 +182,9 @@ def test_a_scene_paints_its_illustration_once_and_only_when_asked(tmp_path, monk
         return buffer.getvalue()
 
     painted, verdicts = [], [scene_illustration.Checked(
-        matches=False, wrong="human hearts; they must be small frog hearts"),
-        scene_illustration.Checked(matches=True)]
+        matches=False, framed=True, clean=True,
+        wrong="human hearts; they must be small frog hearts"),
+        scene_illustration.Checked(matches=True, framed=True, clean=True)]
     monkeypatch.setattr("pipeline.llm.draw_image",
                         lambda prompt: painted.append(prompt) or picture("#fbfbfa"))
     monkeypatch.setattr(scene_illustration, "check", lambda path, asked, said: verdicts.pop(0))
@@ -210,7 +211,7 @@ def test_a_scene_paints_its_illustration_once_and_only_when_asked(tmp_path, monk
     styled = []
     monkeypatch.setattr(scene_illustration, "_paint_like",
                         lambda request, style: styled.append(style) or picture("#fafafa"))
-    verdicts.append(scene_illustration.Checked(matches=True))
+    verdicts.append(scene_illustration.Checked(matches=True, framed=True, clean=True))
     other = brief.replace("frog's leg on a bench", "voltaic pile")
     assert scene_illustration.paint(scene, other, look, state) is not None
     assert styled == [reference.read_bytes()], "later pictures are painted from the style"

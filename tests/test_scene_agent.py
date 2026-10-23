@@ -352,19 +352,24 @@ def test_a_later_scene_is_told_what_the_ones_before_it_did(project_root, monkeyp
     assert "stay consistent" in model.requests[1] and "stay consistent" not in model.requests[0]
 
 
-def test_a_picture_is_described_once_and_kept(tmp_path, monkeypatch):
+@pytest.mark.real_parts
+def test_a_picture_s_parts_are_located_once_and_kept(tmp_path, monkeypatch):
     picture = tmp_path / "figure.png"
     picture.write_bytes(b"x")
     seen = []
-    monkeypatch.setattr("pipeline.scene_review.look_at_picture",
-                        lambda path, question: seen.append(path) or "a labelled brain")
+    monkeypatch.setattr("pipeline.picture_parts._ask", lambda path: seen.append(path) or {
+        "summary": "a labelled brain",
+        "parts": [{"name": "cerebellum", "box": [0.5, 0.6, 0.7, 0.8], "sure": True},
+                  {"name": "pineal gland", "box": [0.4, 0.4, 0.5, 0.5], "sure": False}]})
     brief = {"assets": {"pictures": [str(picture)]}}
     state = {"calls": {"agent": 0, "vision": 0}}
 
-    first = scene_maker.picture_notes(brief, tmp_path, state)
-    second = scene_maker.picture_notes(brief, tmp_path, state)
+    first, parts = scene_maker.picture_notes(brief, tmp_path, state)
+    second, _ = scene_maker.picture_notes(brief, tmp_path, state)
 
     assert "pictures[0] (figure.png): a labelled brain" in first and first == second
+    assert "Parts you may point to: cerebellum." in first, "only the parts it is sure of"
+    assert parts[0][0]["name"] == "cerebellum"
     assert len(seen) == 1 and state["calls"]["vision"] == 1
 
 

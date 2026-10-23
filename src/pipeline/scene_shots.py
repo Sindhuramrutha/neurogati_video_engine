@@ -18,7 +18,10 @@ begins on its own `when`.
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from typing import Any
+
+from pipeline.picture_parts import anchor
 
 TEMPLATES = ("hero", "steps", "compare", "person", "key_idea", "opener", "flow", "hub",
              "timeline")
@@ -30,13 +33,13 @@ STATING = {"is", "are", "was", "were", "be", "been", "has", "have", "had", "does
 GUIDE = """Shots (the preferred answer -- no code): a ```json block with "shots", a list of
 one to three of these, each {"template": ..., then its slots}; "picture" is an index into
 the brief's assets.pictures, "when" the exact narration words a part arrives on:
-- hero: "title", "picture", "when", "callouts": [{"label", "at": [x, y], "when"}] -- one
-  picture large and its parts named (a label is a part's name, 1-4 words, never a
-  statement); at = the part's place as fractions of the picture
-  from its top left, from the picture's description. Optional "moves": [{"along": [[x, y],
-  ...2 to 8 points on the picture], "when"}] -- a glowing pulse runs along that path on
-  the words: a signal down a nerve, current through a wire, liquid carried across. Use it
-  wherever the narration says something travels; no need to write the scene by hand.
+- hero: "title", "picture", "when", "callouts": [{"label", "part", "when"}] (0 to 5) --
+  one picture large and its parts named (a label is a part's name, 1-4 words, never a
+  statement). "part" is one of the picture's parts exactly as its description lists them:
+  the pointer is drawn to where that part really is, and a callout naming no listed part
+  is left out. Optional "moves": [{"through": [2 to 6 part names, in order], "when"}] -- a
+  glowing pulse runs through those parts on the words: a signal down a nerve, current
+  through a wire. Use it wherever the narration says something travels.
 - steps: "title", "steps": [{"label", "picture" (or null), "when"}] -- 2 to 4 steps in order
 - compare: "title", "left" and "right": {"heading", "picture" (or null), "points": [up to
   3 short], "when"}
@@ -56,8 +59,10 @@ topic or gives its context can open on the deck's own art (opener). Narration th
 in steps ("step two... then...") is steps, or one shot per step, not one still hero. Spread
 the "when"s over the WHOLE narration: the frame must change on the later sentences too --
 end on a key_idea when the narration ends on its point.
-Labels are a few words from the narration. Write a program by hand only when no shot can
-show the idea: then send the file, and say why in "approach"."""
+Labels are a few words from the narration. A picture whose catalogue entry has "main_of"
+is another scene's subject: here it may only be small (steps, compare), never the picture
+of a hero, person, opener or key_idea. Write a program by hand only when no shot can show
+the idea: then send the file, and say why in "approach"."""
 
 
 def _text(value: Any, where: str, required: bool = True) -> str:
@@ -68,18 +73,38 @@ def _text(value: Any, where: str, required: bool = True) -> str:
     return str(value).strip()[:120]
 
 
-def _picture(value: Any, pictures: int, where: str, required: bool = False) -> str:
+@dataclass(frozen=True)
+class Pictures:
+    """What the shots may use: how many pictures the brief offers, where each one's
+    parts are (picture_parts), and which are another scene's subject."""
+    count: int
+    parts: dict[int, list] = field(default_factory=dict)
+    taken: frozenset[int] = frozenset()
+
+
+def _picture(value: Any, pictures: Pictures, where: str, required: bool = False,
+             main: bool = False) -> str:
     if value is None or value == "":
         if required:
             raise ValueError(f"{where} needs a picture, and none is given")
         return "None"
+    return f"P[{_index(value, pictures, where, main)}]"
+
+
+def _index(value: Any, pictures: Pictures, where: str, main: bool = False) -> int:
     try:
         index = int(value)
     except (TypeError, ValueError) as wrong:
         raise ValueError(f"{where}: a picture is an index into assets.pictures") from wrong
-    if not 0 <= index < pictures:
-        raise ValueError(f"{where}: there is no picture {index} (the brief offers {pictures})")
-    return f"P[{index}]"
+    if not 0 <= index < pictures.count:
+        raise ValueError(f"{where}: there is no picture {index} "
+                         f"(the brief offers {pictures.count})")
+    if main and index in pictures.taken:
+        # The same picture scene after scene made the video look like one scene.
+        raise ValueError(f"{where}: picture {index} is another scene's subject; here it may "
+                         "only be small (steps, compare). Give this scene its own main "
+                         "picture: another one, one painted for it, or a diagram")
+    return index
 
 
 def _when(value: Any) -> str:
@@ -92,7 +117,7 @@ def _items(value: Any, where: str, least: int, most: int) -> list[dict]:
     return [item if isinstance(item, dict) else {"label": item} for item in value]
 
 
-def _shot_code(shot: dict, pictures: int, at: int) -> list[str]:
+def _shot_code(shot: dict, pictures: Pictures, at: int) -> list[str]:
     template = shot.get("template")
     # A scene opens on its picture at once: a first shot waiting for its words
     # left the screen blank until the narration reached "Galen".
@@ -100,12 +125,10 @@ def _shot_code(shot: dict, pictures: int, at: int) -> list[str]:
     where = f"shot {at + 1} ({template})"
     title = repr(_text(shot.get("title"), f"{where} title", required=False))
     if template == "hero":
+        index = _index(shot.get("picture"), pictures, where, main=True)
+        found = pictures.parts.get(index, [])
         callouts = []
-        for number, c in enumerate(_items(shot.get("callouts", []), f"{where} callouts", 1, 5)):
-            point = c.get("at")
-            if not (isinstance(point, list) and len(point) == 2):
-                raise ValueError(f"{where} callout {number + 1}: 'at' must be [x, y]")
-            x, y = (min(1.0, max(0.0, float(v))) for v in point)
+        for c in _items(shot.get("callouts", []), f"{where} callouts", 0, 5):
             label = _text(c.get("label"), f"{where} callout label")
             if (len(label.split()) > MOST_CALLOUT_WORDS or label.rstrip().endswith((".", "!"))
                     or STATING.intersection(label.lower().split())):
@@ -113,21 +136,19 @@ def _shot_code(shot: dict, pictures: int, at: int) -> list[str]:
                 raise ValueError(f"{where} callout {label!r} is a statement: a callout names "
                                  f"a part of the picture in 1 to {MOST_CALLOUT_WORDS} words "
                                  "('Frog's leg'); put a statement in a key_idea shot")
-            callouts.append(f"({label!r}, "
-                            f"({x:.2f}, {y:.2f}), {_when(c.get('when'))})")
+            point = anchor(found, str(c.get("part") or label))
+            if point is not None:     # no part surely there: no pointer at all
+                callouts.append(f"({label!r}, ({point[0]:.2f}, {point[1]:.2f}), "
+                                f"{_when(c.get('when'))})")
         moves = []
-        for number, move in enumerate(_items(shot.get("moves", []), f"{where} moves", 0, 3)):
-            along = move.get("along")
-            if not (isinstance(along, list) and 2 <= len(along) <= 8
-                    and all(isinstance(p, list) and len(p) == 2 for p in along)):
-                raise ValueError(f"{where} move {number + 1}: 'along' must be 2 to 8 [x, y] "
-                                 "points on the picture")
-            points = ", ".join(f"({min(1.0, max(0.0, float(x))):.2f}, "
-                               f"{min(1.0, max(0.0, float(y))):.2f})" for x, y in along)
-            moves.append(f"([{points}], {_when(move.get('when'))})")
-        return [f"self.hero({_picture(shot.get('picture'), pictures, where, True)}, "
-                f"[{', '.join(callouts)}], title={title}, cue={opening}"
-                + (f", moves=[{', '.join(moves)}]" if moves else "") + ")"]
+        for move in _items(shot.get("moves", []), f"{where} moves", 0, 3):
+            through = [anchor(found, str(name)) for name in move.get("through") or []]
+            if 2 <= len(through) <= 6 and all(through):
+                moves.append("[" + ", ".join(f"({x:.2f}, {y:.2f})" for x, y in through)
+                             + f"], {_when(move.get('when'))}")
+        return [f"self.hero(P[{index}], [{', '.join(callouts)}], title={title}, cue={opening}"
+                + (f", moves=[{', '.join('(' + m + ')' for m in moves)}]" if moves else "")
+                + ")"]
     if template == "steps":
         steps = [f"({_text(s.get('label'), f'{where} step label')!r}, "
                  f"{_picture(s.get('picture'), pictures, where)}, {_when(s.get('when'))})"
@@ -146,19 +167,19 @@ def _shot_code(shot: dict, pictures: int, at: int) -> list[str]:
                          f"[{', '.join(points)}], {_when(side.get('when'))})")
         return [f"self.compare({sides[0]}, {sides[1]}, title={title})"]
     if template == "person":
-        return [f"self.person({_picture(shot.get('picture'), pictures, where, True)}, "
+        return [f"self.person({_picture(shot.get('picture'), pictures, where, True, main=True)}, "
                 f"{_text(shot.get('name'), f'{where} name')!r}, "
                 f"{_text(shot.get('line'), f'{where} line')!r}, cue={opening}, "
                 f"line_cue={_when(shot.get('line_when'))})"]
     if template == "key_idea":
         return [f"self.key_idea({_text(shot.get('statement'), f'{where} statement')!r}, "
-                f"{_picture(shot.get('picture'), pictures, where)}, "
+                f"{_picture(shot.get('picture'), pictures, where, main=True)}, "
                 f"cue={opening})"]
     if template == "opener":
         lines = [f"({_text(item.get('text') or item.get('label'), f'{where} line')!r}, "
                  f"{_when(item.get('when'))})"
                  for item in _items(shot.get("lines", []), f"{where} lines", 0, 3)]
-        return [f"self.opener({_picture(shot.get('picture'), pictures, where, True)}, "
+        return [f"self.opener({_picture(shot.get('picture'), pictures, where, True, main=True)}, "
                 f"{_text(shot.get('title'), f'{where} title')!r}, [{', '.join(lines)}], "
                 f"cue={opening})"]
     if template in ("flow", "hub", "timeline"):
@@ -253,9 +274,12 @@ def is_shots(spec: dict) -> bool:
     return isinstance(spec.get("shots"), list) and bool(spec["shots"])
 
 
-def program_for(spec: dict, pictures: int) -> str:
+def program_for(spec: dict, pictures: int | Pictures) -> str:
     """The scene program for these shots, or a ValueError saying what is wrong
-    with them, for the model to correct."""
+    with them, for the model to correct. `pictures` is how many the brief offers, or
+    -- with where their parts are and which are taken -- a `Pictures`."""
+    if isinstance(pictures, int):
+        pictures = Pictures(pictures)
     shots = spec["shots"]
     if len(shots) > MOST_SHOTS:
         raise ValueError(f"a scene has at most {MOST_SHOTS} shots")

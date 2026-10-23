@@ -16,17 +16,11 @@ from pathlib import Path
 from typing import Any
 
 from pipeline.generation import VisualPlanStore
-from pipeline.llm import ModelCallFailed, ModelNotConfigured
 from pipeline.scene_lab import scene_folder
 from pipeline.scene_program import ENTRY_FILES
 
 EARLIER_SCENES = 3
 PICTURES_DESCRIBED = 3
-PICTURE_QUESTION = ("Describe this picture part by part: what is drawn, every label, arrows "
-                    "and where they point, the layout, and what it teaches. For each part a "
-                    "scene might point to, give where it is as (x, y) fractions of the "
-                    "picture's width and height from its top left, e.g. 'the frog's leg "
-                    "(0.55, 0.40)'. Under 160 words.")
 KITS = {
     "manim": "manim -- scene.py starting `from manimkit import *` (every Manim name and the "
              "kit: ExplainerScene, self.label, self.when, self.until, self.finish, "
@@ -100,8 +94,8 @@ def kit_api(renderers: list[str]) -> str:
         "manim: self.picture(self.brief.assets.pictures[0], height=3.0, at=(x, y)) -- "
         "never a made-up file path. web: kit.picture(kit.pictures[0], {x, y, height}). "
         "revideo: <Img src={pictures[0]} />. The index (0 here) is the picture_catalogue's.\n"
-        "A picture named illustration-*.png was painted for this scene, one named "
-        "found-*.png found on the open web, icon-*.png is an icon: none of them has words "
+        "A picture named illustration-*.png was painted for this scene and icon-*.png is "
+        "an icon: neither has words "
         "in it. Whatever the main picture is, teach on top of it: every label a callout "
         "beside the part it names (manim: self.callout(text, (x, y), side)), a highlight "
         "or zoom on what is being said. Never cover it with boxes; never draw an arrow "
@@ -217,32 +211,27 @@ def earlier_scenes(project, visual) -> str:
     return "\n".join(lines)
 
 
-def picture_notes(brief: dict[str, Any], cache_folder: Path, state: dict[str, Any]) -> str:
+def picture_notes(brief: dict[str, Any], cache_folder: Path,
+                  state: dict[str, Any]) -> tuple[str, dict[int, list]]:
     """The scene's nearest pictures -- the ones its brief names, the ones made for
-    it, its own slide's -- described part by part once by the vision model and
-    kept, so the program can be built around what the author drew. The slide
-    itself is not described: it is shown whole, if at all."""
-    from pipeline.scene_review import look_at_picture
-    from pipeline.storage.documents import read_json_object, write_text_atomically
+    it, its own slide's -- each with what it shows and where its parts are, located
+    once by the vision model and kept (picture_parts). Returns the lines the model
+    reads and each picture's parts, by index, which its callouts are drawn to. The
+    slide itself and icons are not described: they are shown whole, if at all."""
+    from pipeline.picture_parts import described, parts_of
 
-    known = read_json_object(cache_folder / "picture-parts.json", "picture notes") or {}
     every = brief.get("assets", {}).get("pictures", [])
     roles = {entry.get("index"): entry.get("role")
              for entry in brief.get("picture_catalogue") or []}
     chosen = [(index, path) for index, path in enumerate(every)
               if roles.get(index) not in ("slide", "icon")][:PICTURES_DESCRIBED]
-    lines = []
+    lines, parts = [], {}
     for index, path in chosen:
-        if path not in known:
-            state["calls"]["vision"] += 1
-            try:
-                known[path] = look_at_picture(Path(path), PICTURE_QUESTION)
-            except (ModelCallFailed, ModelNotConfigured, OSError):
-                continue
-            write_text_atomically(cache_folder / "picture-parts.json",
-                                  json.dumps(known, ensure_ascii=False, indent=1))
-        lines.append(f"- pictures[{index}] ({Path(path).name}): {known[path]}")
-    return "\n".join(lines)
+        found = parts_of(cache_folder, path, state)
+        if found:
+            lines.append(described(index, Path(path).name, found))
+            parts[index] = found.get("parts", [])
+    return "\n".join(lines), parts
 
 
 def request(brief: dict[str, Any], notes: str, earlier: str, entry: str, code: str,
@@ -251,7 +240,7 @@ def request(brief: dict[str, Any], notes: str, earlier: str, entry: str, code: s
     parts = ["## The scene's brief (word_starts are word@seconds)\n"
              + json.dumps(compact(brief), indent=1, ensure_ascii=False)]
     if notes:
-        parts.append("## The nearest pictures, described part by part\n" + notes)
+        parts.append("## The nearest pictures and the parts you may point to\n" + notes)
     if earlier:
         parts.append("## What the scenes just before this one did (stay consistent)\n" + earlier)
     if instruction.strip():

@@ -79,7 +79,7 @@ class DraftedScene(BaseModel):
     )
     brief: str = Field(
         description="What is on screen while this narration plays, in the shape your "
-                    "instructions give (PICTURE, DRAW, LAYOUT, BEATS, LABELS, and PHOTO, "
+                    "instructions give (PICTURE, DRAW, LAYOUT, BEATS, LABELS, and "
                     "ILLUSTRATE or ICON for what no deck picture shows). Never 'such as' "
                     "or 'something like'."
     )

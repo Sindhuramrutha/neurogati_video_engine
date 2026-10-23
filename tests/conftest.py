@@ -63,6 +63,16 @@ def pictures_teach(request, monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def pictures_located(request, monkeypatch):
+    """Each picture's parts are located by the vision model; in tests a picture has
+    one part it is sure of, "brain", unless a test is marked `real_parts`."""
+    if request.node.get_closest_marker("real_parts") is None:
+        monkeypatch.setattr("pipeline.picture_parts._ask", lambda path: {
+            "summary": "a labelled brain",
+            "parts": [{"name": "brain", "box": [0.2, 0.2, 0.6, 0.6], "sure": True}]})
+
+
+@pytest.fixture(autouse=True)
 def shared_state_in_tmp(tmp_path, monkeypatch):
     """The request window and the circuit breakers are shared through files in
     .cache; each test gets its own, and the gate's waits take no time."""
@@ -78,6 +88,7 @@ def pytest_configure(config):
     config.addinivalue_line("markers",
                             "real_fact_check: run the script's check against its slides")
     config.addinivalue_line("markers", "real_vetting: describe pictures with the stand-in model")
+    config.addinivalue_line("markers", "real_parts: locate picture parts with a stand-in model")
 
 
 # Two seconds or more each (measured on the machine Demo 001 was made on): renders,

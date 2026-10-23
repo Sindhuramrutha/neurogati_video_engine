@@ -127,7 +127,7 @@ def read(slug: str) -> dict[str, Any]:
 
 def prepare(slug: str, section_id: str) -> dict[str, Any]:
     """Each scene of the section briefed and the pictures its brief asks for made
-    (AI: an image per painting, a look per photo found; kept, so making the scene
+    (AI: an image and a check per painting; kept, so making the scene
     later makes nothing again)."""
     from pipeline.scene_lab import write_brief
     from pipeline.scene_pictures import prepare as prepare_pictures

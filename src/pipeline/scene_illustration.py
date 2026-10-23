@@ -28,7 +28,10 @@ STYLE_REFERENCE = "style-reference.png"     # beside the scenes: the project's o
 _LOCKS: dict[str, threading.Lock] = {}
 _LOCKS_GUARD = threading.Lock()
 BACKGROUND_TOLERANCE = 14     # per channel: a painted "white" is #fafafa, not #ffffff
-ASKED = re.compile(r"^\s*ILLUSTRATE\s*:\s*(.+?)\s*$", re.IGNORECASE | re.MULTILINE)
+# PHOTO is read as a picture to paint: every picture comes from the image model, and
+# a "photograph" of a real person or thing would be a fabrication.
+ASKED = re.compile(r"^\s*(?:ILLUSTRATE|PHOTO)\s*:\s*(.+?)\s*$", re.IGNORECASE | re.MULTILINE)
+PAINTED_AT_MOST = 3
 LONGEST_REQUEST = 600
 
 
@@ -55,19 +58,29 @@ def prompt(asked: str, look: dict[str, Any]) -> str:
     accents = ", ".join((look.get("accents") or [look.get("accent", "")])[:3])
     return (
         f"A clean, flat educational illustration for a science explainer video: {asked}. "
-        "Accurate to the science; simple shapes, soft shading, one clear subject filling "
-        f"most of the picture. Plain solid {look.get('background', '#ffffff')} background, "
-        f"so it sits on a video frame of that colour. Accent colours {accents}. "
-        "Absolutely no text, letters, numbers, labels or captions anywhere in the picture.")
+        "Accurate to the science; simple shapes, soft shading, one clear subject, whole and "
+        "centred, filling most of the picture. Never photorealistic: a real person is "
+        "drawn as a clearly illustrated portrait, not a photograph. Plain solid "
+        f"{look.get('background', '#ffffff')} background, so it sits on a video frame of "
+        f"that colour. Accent colours {accents}. Absolutely no text, letters, numbers, "
+        "labels or captions anywhere in the picture.")
 
 
 class Checked(BaseModel):
     matches: bool = Field(description="Does the picture show what was asked, correctly for "
                                       "the science -- the right subject, the right species "
                                       "and parts -- with no text in it?")
-    wrong: str = Field("", description="If not: what is wrong, and what it should be, in "
-                                       "one sentence (\"human hearts; they must be small "
+    framed: bool = Field(description="Is the subject whole, centred and large -- not cut off "
+                                     "at an edge, not small in an empty picture?")
+    clean: bool = Field(description="Is it well drawn -- no deformed anatomy or hands, no "
+                                    "garbled parts, no artefacts, not photorealistic?")
+    wrong: str = Field("", description="If any is no: what is wrong, and what it should be, "
+                                       "in one sentence (\"human hearts; they must be small "
                                        "frog hearts\").")
+
+    @property
+    def good(self) -> bool:
+        return self.matches and self.framed and self.clean
 
 
 def check(path: Path, asked: str, narration: str) -> Checked:
@@ -175,8 +188,11 @@ def _paint_checked(path: Path, asked: str, look: dict[str, Any], narration: str,
 
     # A person's note from the storyboard ("show the leg larger") goes with it.
     request = prompt(asked, look) + (f" Also: {note.strip()}" if note.strip() else "")
+    # Checked for its subject, its framing and how well it is drawn before it may be
+    # used; painted again with what was wrong. One that is never right, or cannot be
+    # checked, is not used: a wrong picture misleads more than none.
     verdict = None
-    for attempt in (1, 2):
+    for attempt in range(1, PAINTED_AT_MOST + 1):
         state["calls"]["image"] = state["calls"].get("image", 0) + 1
         try:
             path.write_bytes(painter(request))
@@ -188,17 +204,24 @@ def _paint_checked(path: Path, asked: str, look: dict[str, Any], narration: str,
         state["calls"]["vision"] += 1
         try:
             verdict = check(path, asked, narration)
-        except (ModelCallFailed, ModelNotConfigured):
-            break                         # not checked: used as painted, and said so
-        if verdict.matches or attempt == 2:
+        except (ModelCallFailed, ModelNotConfigured) as failure:
+            add_event(state, "note", f"The illustration could not be checked ({failure}); "
+                      "the scene is made without it.")
+            path.unlink(missing_ok=True)
+            return None
+        if verdict.good:
             break
-        add_event(state, "note", f"The illustration was wrong ({verdict.wrong}); painted again.")
-        request = prompt(asked, look) + f" Correct this from the last attempt: {verdict.wrong}"
+        if attempt < PAINTED_AT_MOST:
+            add_event(state, "note", f"The illustration was not right ({verdict.wrong}); "
+                      "painted again.")
+            request = prompt(asked, look) + f" Correct this from the last attempt: {verdict.wrong}"
+    if not verdict.good:
+        add_event(state, "note", f"The illustration for \"{asked}\" was still not right after "
+                  f"{PAINTED_AT_MOST} tries ({verdict.wrong}); the scene is made without it.")
+        path.unlink(missing_ok=True)
+        return None
     blend(path, look.get("background", "#ffffff"))
-    path.with_suffix(".json").write_text(json.dumps({
-        "asked": asked, "checked": verdict is not None,
-        "matches": verdict.matches if verdict else None,
-        "wrong": verdict.wrong if verdict else ""}, ensure_ascii=False), encoding="utf-8")
-    add_event(state, "note", f"Painted an illustration: {asked}" + (
-        "" if verdict is None or verdict.matches else f" (still not right: {verdict.wrong})"))
+    path.with_suffix(".json").write_text(json.dumps({"asked": asked, "checked": True},
+                                                    ensure_ascii=False), encoding="utf-8")
+    add_event(state, "note", f"Painted an illustration: {asked}")
     return path

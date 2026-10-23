@@ -42,7 +42,7 @@ timing is measured from the narration audio rather than estimated.
 | **Assets & Design** | Every extracted picture, with what it measures and where it came from — the source, a person or a model — and a decision about each: use it or skip it. Decisions are keyed by the picture itself, so re-extracting never loses them. Also holds **the look**: the source deck's colours, fonts and proportions, and whether the video should follow them. | `assets/library.json` |
 | **Scene Plan** | The video's shape, agreed in a conversation with the planning agent: its length, its sections (each a run of slides) and the scenes each is made of. You set the length in your own words and how strictly the slides' order is kept; the agent proposes, you agree or say what to change, and only then are the scenes written. The order is held by code. The plan carries each section's pictures, the brand kit and the look on. | `scene-plan/plan.json`, `scene-plan/conversation.json` |
 | **Script & Staging** | Each plan section written as **scenes**: what is said, and a brief of what is on screen while it is said. The Scripting agent drafts one section or every unwritten one at once, from that section's own source text. Beside the editor sit the section's plan details, its source text and any review comments. Flags narration written against a plan section or source that has changed since, and narration whose section the plan no longer has. `{{VARIABLES}}` are filled everywhere they are spoken or shown. | `script-staging/script.json` |
-| **Generation** | Every scene made by a short loop: one screen, drawn by a program the model writes, renders, has reviewed and fixes until it is good, in time with the narration. Things come onto the screen as the words name them; some stay, some go, and new things keep arriving. The model chooses its renderer — a web page (GSAP, D3, three.js, anime.js), Revideo, Manim or matplotlib — is offered every picture in the deck (its own slide's first) with what each is, fills what the deck does not show with a photo found under an open licence, an icon or a painting, and has its frames reviewed by a vision model. Fixed checks decide whether a clip may be used, then you approve it. | `generation/visuals.json`, `generation/scenes/` |
+| **Generation** | Every scene made by a short loop: one screen, drawn by a program the model writes, renders, has reviewed and fixes until it is good, in time with the narration. Things come onto the screen as the words name them; some stay, some go, and new things keep arriving. The model chooses its renderer — a web page (GSAP, D3, three.js, anime.js), Revideo, Manim or matplotlib — is offered every picture in the deck (its own slide's first) with what each is, fills what the deck does not show with a painting from the image model or an icon, and has its frames reviewed by a vision model. Fixed checks decide whether a clip may be used, then you approve it. | `generation/visuals.json`, `generation/scenes/` |
 | **Studio** | A multi-track timeline with playback, seeking and clip properties. Rendering synthesises the narration, measures each section's real audio length, and cuts the picture to fit. Each section is drawn with its own extracted pictures, and — when the project asks for it — the source deck's background, colours and fonts. | `studio/composition.json` |
 | **Reviewing** | Plays the rendered video with chapters and subtitles, keeps every render as a separate version, and collects comments routed back to the stage that should fix them. | `reviewing/review.json`, `reviewing/output/` |
 | **Export** | The video and everything that travels with it: a transcript, chapter marks a video host can read, a description built from the plan, and the subtitles. Every file is derived, never hand-written. Says plainly what would make the hand-over wrong — a cut built from an abandoned script, a section nobody narrated, a missing video file. | `export/manifest.json`, `export/` |
@@ -213,12 +213,19 @@ view is the file that moves on to the next stages.
   scene's subject; the deck's own art opens a topic behind its title (the
   `opener` shot). Generation and Export say how many of the deck's pictures the
   video shows, and which it does not.
-- **What the deck does not show is found, drawn or painted.** The script says,
-  scene by scene: `PHOTO:` searches Wikimedia Commons and Openverse, keeping
-  only public domain, CC0, CC BY and CC BY-SA pictures, and a vision model picks
-  the one that is right (or it is painted instead); `ICON:` takes an icon from
-  Iconify's openly licensed sets, or the bundled Lucide set offline;
-  `ILLUSTRATE:` paints one. Each is credited in `export/credits.md`.
+- **What the deck does not show is painted or drawn, never searched for.** The
+  script says, scene by scene: `ILLUSTRATE:` has the image model paint it, and the
+  painting is checked for its subject, its framing and its finish -- painted
+  again with what was wrong, up to three times, and left out if it is never
+  right. A real person is painted as a clearly illustrated portrait, never as a
+  photograph. `ICON:` draws a symbol from the bundled Lucide set.
+- **A pointer lands on what it names.** Each picture's parts are located once
+  by the vision model, as boxes, with whether it can see each clearly. A callout
+  names a part and its pointer goes to that part; a part it is not sure of gets no
+  callout.
+- **Each scene has its own subject.** A deck picture belongs to the first scene
+  whose script names it (or shows it large); another scene may show it small, never
+  as its main picture -- the shots are refused until it changes.
 - **It chooses the renderer.** A web page (GSAP, D3, three.js, anime.js) for rich
   motion, charts and 3D; Revideo for physical, spring motion and typeset maths;
   Manim for diagrams and flows; matplotlib for a chart.

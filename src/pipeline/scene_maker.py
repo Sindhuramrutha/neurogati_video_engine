@@ -38,7 +38,6 @@ from pipeline import project_work
 from pipeline.core import require_project
 from pipeline.generation import VisualPlanStore
 from pipeline.llm import ModelCallFailed, ModelNotConfigured, ModelOutputTruncated
-from pipeline.outside_pictures import wanted as outside_wanted
 from pipeline.scene_edit import apply_edits, parse_answer
 from pipeline.scene_illustration import paint as paint_illustration
 from pipeline.scene_illustration import wanted as wanted_illustration
@@ -66,7 +65,7 @@ from pipeline.scene_prompt import (  # noqa: F401 -- kit_api, compact: read thro
     system_prompt,
 )
 from pipeline.scene_round import render_round
-from pipeline.scene_shots import is_shots, program_for, uncovered
+from pipeline.scene_shots import Pictures, is_shots, program_for, uncovered
 from pipeline.scene_state import STOP, add_event, doing, load_state, save_state
 
 logger = logging.getLogger(__name__)
@@ -150,10 +149,9 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
     renderers = available_renderers()
     brief = write_brief(project, visual)
     # Made once, before the first round, when the script asked for a picture the
-    # deck does not have: painted, found on the open web, or an icon.
-    if wanted_illustration(brief["on_screen"]) or any(outside_wanted(brief["on_screen"])):
-        doing(folder, state, "Making the pictures the deck does not have")
-        brief = prepare_pictures(project, visual, brief, state)
+    # deck does not have: painted (and checked), or an icon.
+    doing(folder, state, "Making the pictures the deck does not have")
+    brief = prepare_pictures(project, visual, brief, state)
     renderer, entry = entry_of(folder)
     code = "" if fresh or not (folder / entry).exists() else \
         (folder / entry).read_text(encoding="utf-8")
@@ -172,7 +170,7 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
     met, climbed, best_on_disk = False, 0, True
     try:
         doing(folder, state, "Looking at the slide's pictures")
-        notes = picture_notes(brief, folder.parent, state)
+        notes, parts = picture_notes(brief, folder.parent, state)
         system = system_prompt(project, renderers)
         earlier = earlier_scenes(project, visual)
         feedback = ""
@@ -195,7 +193,7 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
                 still = (best or {}).get("feedback") or feedback
                 if step == "repaint" and _repaint(folder, brief, still, state):
                     brief = write_brief(project, visual)
-                    notes = picture_notes(brief, folder.parent, state)
+                    notes, parts = picture_notes(brief, folder.parent, state)
                 code, spec = "", {}
                 feedback = ESCALATION_NOTE + (f"\nWhat the best version still needed:\n"
                                               f"{still}" if still else "")
@@ -207,7 +205,7 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
                   f"(round {number} of up to {rounds})")
             written = _written(system, brief, notes, earlier, entry, code, feedback,
                                instruction if number == 1 else "", renderers, spec,
-                               folder, state)
+                               folder, state, parts)
             if project_work.stopped():
                 return
             if written is None:
@@ -318,7 +316,7 @@ def _repaint(folder: Path, brief: dict[str, Any], notes: str, state: dict[str, A
 
 
 def _written(system, brief, notes, earlier, entry, code, feedback, instruction, renderers,
-             spec, folder, state):
+             spec, folder, state, parts=None):
     """The program the model writes this round, asked again at once when its answer
     cannot be used -- an edit that matches nothing is not worth a render. None if no
     answer could be used."""
@@ -341,7 +339,10 @@ def _written(system, brief, notes, earlier, entry, code, feedback, instruction, 
                 # The shots, as data: the program is written from them (scene_shots).
                 renderer = "manim"
                 merged = {**merged, "renderer": renderer}
-                pictures = len((brief.get("assets") or {}).get("pictures") or [])
+                pictures = Pictures(
+                    len((brief.get("assets") or {}).get("pictures") or []), parts or {},
+                    frozenset(e["index"] for e in brief.get("picture_catalogue") or []
+                              if e.get("main_of")))
                 return (program_for(answer.spec, pictures), merged, renderer,
                         ENTRY_FILES[renderer], True)
             renderer = str(merged.get("renderer", "")).strip().lower()

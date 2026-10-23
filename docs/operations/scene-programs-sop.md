@@ -81,13 +81,13 @@ conversation to remember, so a round costs the same whether it is the first or
 the fifth.
 
 1. **Before round 1:** what the brief asks for that the deck does not have is
-   made once and kept -- a painting (`ILLUSTRATE:`), a photograph found among
-   open-licence pictures (`PHOTO:`, painted instead when nothing found is
-   right), icons (`ICON:`) -- each credited (`outside_pictures.py`). Every deck
-   picture is described once by the vision model (what it is, and whether it
-   explains, sets the scene or is deck furniture); the scene's nearest pictures
-   are described part by part; and the last three scenes of the video are
-   summarised in a line each, so this one stays consistent with them.
+   made once and kept -- a painting (`ILLUSTRATE:`, checked for its subject,
+   framing and finish, and left out if it is never right) and icons (`ICON:`,
+   from the bundled set). Every deck picture is described once by the vision
+   model (what it is, and whether it explains, sets the scene or is deck
+   furniture); the scene's nearest pictures have their parts located as boxes
+   (`picture_parts.py`), which callouts are drawn to; and the last three scenes
+   of the video are summarised in a line each, so this one stays consistent.
 2. **Round 1:** the model writes the whole program, and says which renderer it
    chose and what it assumed.
 3. **Render:** the program is run with that renderer and every check is run. If

@@ -47,8 +47,8 @@ the export.
 7. **Pictures: the deck's first.** The agent is told each of the section's
    deck pictures -- what it is and what it is good for -- and names on
    `PICTURE:` the ones each scene shows. For what the deck does not show it
-   writes `PHOTO:` (found among open-licence pictures), `ILLUSTRATE:`
-   (painted) or `ICON:`, as fits the scene.
+   writes `ILLUSTRATE:` (painted by the image model) or `ICON:`, as fits the
+   scene.
 
 ## The four tabs, in order
 

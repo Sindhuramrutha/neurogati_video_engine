@@ -11,7 +11,7 @@ comes from, what it is, what was measured about it, and which other scenes show
 it -- and the agent decides what to show and how:
 
 1. the deck pictures its brief names (`PICTURE:`), the scene's main subject;
-2. the pictures made for this scene (painted, found on the open web, icons);
+2. the pictures made for this scene (painted by the image model, icons);
 3. the rest of its own slide's pictures, and the slide itself as the deck shows it;
 4. its section's other pictures;
 5. a few more from the slides nearest it.
@@ -110,9 +110,27 @@ def deck_tiers(project, visual, section, plan, library, on_screen: str,
     return tiers
 
 
+def scene_number(project, visual) -> int:
+    """Where the scene comes in the whole video, from 1."""
+    from pipeline.generation import VisualPlanStore
+
+    ids = [v.id for v in VisualPlanStore(project.root).load().visuals]
+    return ids.index(visual.id) + 1 if visual.id in ids else 0
+
+
+def _owner(shown: list[str], names_it: bool, this_scene: int) -> int:
+    """The scene whose subject a picture is: the earliest that names it on its PICTURE
+    line or shows it large -- this scene too, when it names it. 0 for none."""
+    claims = [int(s.split(",")[0].split()[1]) for s in shown if not s.endswith(", small")]
+    if names_it and this_scene:
+        claims.append(this_scene)
+    return min(claims, default=0)
+
+
 def catalogue(project, tiers: list[tuple[str, Any]], made: list[tuple[str, Path, dict]],
               notes: dict[str, dict[str, str]], shown_in: dict[str, list[str]],
-              slide_image: Path | None) -> tuple[list[str], list[dict[str, Any]]]:
+              slide_image: Path | None, this_scene: int = 0
+              ) -> tuple[list[str], list[dict[str, Any]]]:
     """The scene's pictures as paths (what the program loads) and as a catalogue
     (what the agent reads), index for index: those its brief names, those made for
     it, its own slide's and the slide itself (all `near`), then the rest."""
@@ -144,9 +162,13 @@ def catalogue(project, tiers: list[tuple[str, Any]], made: list[tuple[str, Path,
     entries = []
     for index, (path, where, what, role, measured, size, near) in enumerate(ordered):
         width, height = size or _size_of(path)
+        shown = shown_in.get(str(path), [])
+        owner = _owner(shown, where.startswith(NAMED), this_scene)
         entries.append({"index": index, "file": path.name, "from": where, "what": what,
                         "role": role, "size": f"{width}x{height}" if width else "",
-                        "near": near, "shown_in": shown_in.get(str(path), [])[:4]}
+                        "near": near, "shown_in": shown[:4]}
+                       | ({"main_of": f"scene {owner}"} if owner and owner != this_scene
+                          else {})
                        | ({"measured": measured} if measured else {}))
     return [str(item[0]) for item in ordered], entries
 
@@ -164,31 +186,43 @@ def _size_of(path: Path) -> tuple[int, int]:
 # --- which deck pictures the video shows ----------------------------------------------------
 
 
+MAIN_TEMPLATES = ("hero", "person", "opener", "key_idea")   # one picture, large
+
+
 def _shown_indexes(folder: Path) -> set[int]:
     """The picture indexes a scene's program shows: from its shots, or read from a
     program written by hand."""
-    spec = read_json_object(folder / "spec.json", "scene spec") or {}
-    found: set[int] = set()
+    return set(_shown_as(folder))
 
-    def walk(value: Any) -> None:
+
+def _shown_as(folder: Path) -> dict[int, str]:
+    """Each picture index a scene's program shows, and how: "main" (the one large
+    picture of a hero, person, opener or key_idea shot) or "small"."""
+    spec = read_json_object(folder / "spec.json", "scene spec") or {}
+    found: dict[int, str] = {}
+
+    def walk(value: Any, main: bool) -> None:
         if isinstance(value, dict):
             for key, item in value.items():
                 if key == "picture" and isinstance(item, int):
-                    found.add(item)
+                    if main or item not in found:
+                        found[item] = "main" if main else "small"
                 else:
-                    walk(item)
+                    walk(item, False)
         elif isinstance(value, list):
             for item in value:
-                walk(item)
+                walk(item, main)
 
     if isinstance(spec.get("shots"), list) and spec["shots"]:
-        walk(spec["shots"])
+        for shot in spec["shots"]:
+            if isinstance(shot, dict):
+                walk(shot, shot.get("template") in MAIN_TEMPLATES)
         return found
     for name in ("scene.py", "scene.html", "scene.tsx"):
         program = folder / name
         if program.exists():
             text = program.read_text(encoding="utf-8", errors="replace")
-            found |= {int(n) for n in _PICTURE_REFERENCE.findall(text)}
+            found.update({int(n): "small" for n in _PICTURE_REFERENCE.findall(text)})
     return found
 
 
@@ -212,15 +246,16 @@ def shown_pictures(project, skip_visual_id: str = "", planned: bool = True,
     for number, visual in enumerate(VisualPlanStore(project.root).load().visuals, start=1):
         if visual.id == skip_visual_id:
             continue
-        here: set[str] = set()
+        here: dict[str, str] = {}
         folder = scene_folder(project, visual)
         if folder is not None and (folder / "brief.json").exists():
             brief = read_json_object(folder / "brief.json", "brief") or {}
             pictures = (brief.get("assets") or {}).get("pictures") or brief.get("pictures") or []
-            here |= {_same_file(project, pictures[index]) for index in _shown_indexes(folder)
-                     if 0 <= index < len(pictures)}
-        for path in here:
-            shown.setdefault(path, []).append(f"scene {number}")
+            here = {_same_file(project, pictures[index]): how
+                    for index, how in _shown_as(folder).items() if 0 <= index < len(pictures)}
+        for path, how in here.items():
+            shown.setdefault(path, []).append(
+                f"scene {number}" + ("" if how == "main" else ", small"))
         named = _named(visual.brief)
         for figure in figures:
             path = str(project.root / figure.shown_path)
@@ -262,45 +297,40 @@ def deck_usage(project, library=None) -> dict[str, Any]:
 
 def made_for_scene(folder: Path, on_screen: str, look: dict[str, Any]) -> list[tuple]:
     """The pictures made for this scene alone, as (where from, path, what is known):
-    painted for its ILLUSTRATE line, found for its PHOTO line, and its ICONs.
-    Never makes any."""
-    from pipeline import outside_pictures, scene_illustration
+    the one painted for its ILLUSTRATE (or PHOTO) line, and its ICONs. Never makes any."""
+    from pipeline import icon_pictures, scene_illustration
 
     made: list[tuple] = []
     painted = scene_illustration.kept(folder, on_screen, look)
     if painted is not None:
         made.append(("painted for this scene", painted,
                      {"what": scene_illustration.wanted(on_screen), "role": "explains",
-                      "measured": "Painted from the brief: no words in it."}))
-    for path, meta in outside_pictures.kept(folder, on_screen):
-        kind = meta.get("kind")
-        made.append((f"{'found' if kind == 'photo' else 'an icon'} for this scene: "
-                     f"{meta.get('source', '')}, {meta.get('licence', '')}", path,
-                     {"what": meta.get("title") or meta.get("asked", ""),
-                      "role": "explains" if kind == "photo" else "icon",
-                      "measured": f"Asked for: {meta.get('asked', '')}. Credited on Export."}))
+                      "measured": "Painted and checked: right subject, framed, no words."}))
+    for path, meta in icon_pictures.kept(folder, on_screen):
+        made.append((f"an icon for this scene: {meta.get('source', '')}", path,
+                     {"what": meta.get("title") or meta.get("asked", ""), "role": "icon",
+                      "measured": f"Asked for: {meta.get('asked', '')}."}))
     return made
 
 
 def prepare(project, visual, brief: dict[str, Any], state: dict[str, Any],
             note: str = "") -> dict[str, Any]:
-    """Make what the brief asks for that is not made yet -- the painting, the photo
-    found on the open web, the icons -- and return the brief written again with
-    them in it. A photo that is not found is not painted in its place: a painted
-    photograph of a real person or thing is a fabrication. Each is made once and
-    kept, so the rounds after it and a scene made again pay nothing more."""
-    from pipeline import outside_pictures, scene_illustration
+    """Make what the brief asks for that is not made yet -- the painting (from the
+    image model, checked before it is used) and the icons (from the bundled set) --
+    and return the brief written again with them in it. Each is made once and kept,
+    so the rounds after it and a scene made again pay nothing more."""
+    from pipeline import icon_pictures, scene_illustration
     from pipeline.scene_lab import write_brief
     from pipeline.scene_program import scene_folder
 
-    folder = scene_folder(project, visual, create=True)
     on_screen, look, narration = brief["on_screen"], brief["look"], brief["narration"]
-    asked = False
-    if scene_illustration.wanted(on_screen):
-        asked = True
+    painting, icons = scene_illustration.wanted(on_screen), icon_pictures.wanted(on_screen)
+    if not painting and not icons:
+        return brief
+    folder = scene_folder(project, visual, create=True)
+    if painting:
         scene_illustration.paint(folder, on_screen, look, state, narration, note)
-    photo, icons = outside_pictures.wanted(on_screen)
-    if photo or icons:
-        asked = True
-        outside_pictures.gather(folder, on_screen, narration, look, state)
-    return write_brief(project, visual) if asked else brief
+    if icons:
+        icon_pictures.find_icons(folder, icons, look.get("accent") or look.get("text")
+                                 or "#1a1816", state)
+    return write_brief(project, visual)
