@@ -84,7 +84,23 @@ def get_render_job(slug: FromPath[str]) -> dict[str, Any]:
     return _client_error(job_view, slug)
 
 
+@post("/api/projects/{slug:str}/finish", sync_to_thread=False)
+def finish_video(slug: FromPath[str]) -> dict[str, Any]:
+    """Finish the video in one go: the scenes still missing or failing, the render,
+    the export (`pipeline.finishing`)."""
+    from pipeline import finishing
+
+    return _client_error(finishing.start, slug)
+
+
+@get("/api/projects/{slug:str}/finish", sync_to_thread=False)
+def get_finish_status(slug: FromPath[str]) -> dict[str, Any]:
+    from pipeline import finishing
+
+    return _client_error(finishing.status, slug)
+
+
 RENDER_JOB_ROUTES = [
     get_render_queue, add_render_job, hold_render_queue, clear_finished_render_jobs,
-    act_on_render_job, get_render_job,
+    act_on_render_job, get_render_job, finish_video, get_finish_status,
 ]

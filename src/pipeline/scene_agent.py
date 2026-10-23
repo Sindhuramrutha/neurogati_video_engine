@@ -45,12 +45,30 @@ def _run_safely(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
     _waiting_for_a_place.pop((slug, visual_id), None)
     try:
         make_scene(slug, visual_id, instruction=instruction, fresh=fresh)
+        if _still_failing(slug, visual_id):
+            # Ended failing its own checks: made once more from the start before it
+            # is left to a person. On Chapter 1 every such scene was remade by hand.
+            make_scene(slug, visual_id, fresh=True)
     except Exception as failure:
         logger.exception("scene %s failed", visual_id)
         _record_failure(slug, visual_id, failure)
     finally:
         _working.discard((slug, visual_id))
         _running.discard((slug, visual_id))
+
+
+def _still_failing(slug: str, visual_id: str) -> bool:
+    """Finished -- not stopped by the person, not interrupted -- and its own checks
+    still fail."""
+    from pipeline import project_work
+    from pipeline.scene_kept import failing_checks
+
+    if project_work.stopped():
+        return False
+    project = require_project(slug)
+    folder = scene_folder(project, _visual(VisualPlanStore(project.root).load(), visual_id))
+    return (folder is not None and load_state(folder).get("status") == "done"
+            and bool(failing_checks(folder)))
 
 
 def _record_failure(slug: str, visual_id: str, failure: Exception) -> None:

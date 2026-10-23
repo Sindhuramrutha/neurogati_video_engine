@@ -13,6 +13,8 @@ import {
   select, showStageNotice, stageHeader, wireGotoButtons,
 } from "/static/ui-kit.js";
 
+let finishPoll = null;
+
 const KIND_LABELS = {
   video: "Video", subtitles: "Subtitles", transcript: "Transcript",
   chapters: "Chapters", description: "Description", audio: "Narration",
@@ -34,6 +36,9 @@ export async function renderExportStage(stage, navigateToStage, renderAgentStage
     return;
   }
   applicationState.exportManifest = manifest;
+  const finish = await requestJsonFromApi(projectApiPath("/finish"))
+    .catch(() => ({ state: "idle" }));
+  applicationState.finishing = finish;
 
   body.innerHTML = `
     ${stageHeader("export", "Export", {
@@ -42,6 +47,7 @@ export async function renderExportStage(stage, navigateToStage, renderAgentStage
 
     <div class="card stage-content">
 
+      ${renderFinishBar(finish)}
       ${renderRunBar(manifest)}
       ${renderBlockers(manifest)}
 
@@ -57,6 +63,24 @@ export async function renderExportStage(stage, navigateToStage, renderAgentStage
     </div>`;
 
   wireExportStage(stage, navigateToStage, renderAgentStage);
+}
+
+/** Finishing the video in one go, on the server: the scenes still missing or
+ *  failing their checks, the render, the export -- with the step it is on. */
+function renderFinishBar(finish) {
+  const ended = { done: "Finished", blocked: "Finished, not ready", failed: "Stopped" };
+  return `
+    <div class="run-bar ${finish.running ? "stale" : finish.state === "done" ? "ready" : ""}"
+         style="margin-bottom:12px">
+      <span class="run-text">
+        <b>${finish.running ? "Finishing the video…" : ended[finish.state] ?? "Finish the video"}</b>
+        <span>${escapeHtml(finish.running || ended[finish.state] ? finish.step ?? ""
+          : "Makes the scenes still missing, remakes those failing their checks, "
+            + "renders and builds the export.")}</span>
+      </span>
+      ${finish.running ? "" : `
+        <button class="btn btn-accent" id="finish-video-button">Finish the video</button>`}
+    </div>`;
 }
 
 function renderRunBar(manifest) {
@@ -144,6 +168,24 @@ function wireExportStage(stage, navigateToStage, renderAgentStage) {
 
   wireGotoButtons(navigateToStage);
   select("#export-agent-button").onclick = () => renderAgentStage(stage);
+
+  const finishButton = select("#finish-video-button");
+  if (finishButton) finishButton.onclick = async () => {
+    finishButton.disabled = true;
+    try {
+      await requestJsonFromApi(projectApiPath("/finish"), { method: "POST" });
+    } catch (finishFailure) {
+      showStageNotice("bad", `Could not start finishing — ${finishFailure.message}`);
+    }
+    await rerender();
+  };
+  // While it finishes, the page follows it.
+  clearTimeout(finishPoll);
+  if (applicationState.finishing?.running) {
+    finishPoll = setTimeout(() => {
+      if (select("#export-agent-button")?.isConnected) rerender();
+    }, 15000);
+  }
 
   const draftButton = select("#build-draft-button");
   if (draftButton) {

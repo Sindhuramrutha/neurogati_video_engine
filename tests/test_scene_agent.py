@@ -726,3 +726,26 @@ def test_written_by_hand_and_failing_twice_a_scene_is_answered_with_shots(projec
     assert any("answered with shots" in e["text"] for e in view["events"])
     written = sum(e["kind"] == "write" for e in view["events"])
     assert written == 2, "a program written by hand is not taken a third time"
+
+
+def test_a_scene_that_ends_failing_its_checks_is_made_again_once(project_root, monkeypatch):
+    """Every Chapter 1 scene that ended failing its checks was remade by hand. The
+    queue does it: once, from the start, before leaving it to a person."""
+    import json
+
+    from pipeline import scene_agent
+
+    slug, project, visual = scripted_project("Again")
+    made = []
+
+    def make(slug_, visual_id, instruction="", fresh=False):
+        made.append(fresh)
+        folder = scene_folder(project, visual, create=True)
+        (folder / "agent.json").write_text(json.dumps({"status": "done"}), encoding="utf-8")
+        (folder / "checks.json").write_text(json.dumps({"checks": [
+            {"name": "No shapes collide", "status": "fail"}]}), encoding="utf-8")
+
+    monkeypatch.setattr(scene_agent, "make_scene", make)
+    scene_agent._run_safely(slug, visual.id, "", False)
+
+    assert made == [False, True], "made, then made again from the start -- once"
