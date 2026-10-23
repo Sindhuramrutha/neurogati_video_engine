@@ -768,7 +768,12 @@ class ExplainerScene(Scene):
             image = self._fit(picture, centred, tall, (0.0, middle))
         else:
             image = self._fit(picture, beside, tall, (0.0, middle))
-            image.align_to([-self.SAFE_X, 0, 0], manim.LEFT)
+            # The picture and its label column centred together: a tall picture
+            # held to the left edge left most of the frame empty beside it.
+            widest = max((Text(text, font_size=max(self.LABEL_SIZE, self.smallest_size())).width
+                          for text, _, _ in callouts), default=0.0)
+            column = min(widest, 2 * self.SAFE_X - image.width - 0.85) + 0.85 if callouts else 0
+            image.align_to([max(-self.SAFE_X, -(image.width + column) / 2), 0, 0], manim.LEFT)
         self._at_cue(cue)
         self.play(manim.FadeIn(image, scale=0.96, run_time=0.7))
         sides = {1: [], -1: []}

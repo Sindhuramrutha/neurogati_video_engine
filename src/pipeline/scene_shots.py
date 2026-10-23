@@ -61,8 +61,13 @@ the "when"s over the WHOLE narration: the frame must change on the later sentenc
 end on a key_idea when the narration ends on its point.
 Labels are a few words from the narration. A picture whose catalogue entry has "main_of"
 is another scene's subject: here it may only be small (steps, compare), never the picture
-of a hero, person, opener or key_idea. Write a program by hand only when no shot can show
-the idea: then send the file, and say why in "approach"."""
+of a hero, person, opener or key_idea. A picture painted for this scene was made to be its
+main picture: show it large. The brief's DRAW, LAYOUT and BEATS are direction -- what to
+teach, on which words -- not a drawing to copy: a shot that teaches the same idea on the
+same words fulfils them (ten stops on a road are a timeline of its main stops; a thought
+coming apart is a hub, or the painting with its parts named). Write a program by hand
+only when no shot can teach the idea -- hand-placed layouts are what fail the checks and
+the reviewer most -- then send the file, and say why in "approach"."""
 
 
 def _text(value: Any, where: str, required: bool = True) -> str:
