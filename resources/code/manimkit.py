@@ -745,12 +745,15 @@ class ExplainerScene(Scene):
         if cue:
             self.until(min(self.when(cue), BRIEF.seconds - 3.0))
 
-    def _broken(self, text: str, width: float, size: int) -> str:
-        """`text` with line breaks between words, so each line fits `width` at `size`."""
+    def _broken(self, text: str, width: float, size: int, bold: bool = False) -> str:
+        """`text` with line breaks between words, so each line fits `width` at `size`,
+        measured in the weight it is drawn in: bold is wider, and a heading measured
+        in the regular weight ran across a compare's dividing line."""
+        weight = "BOLD" if bold else "NORMAL"
         lines: list[str] = []
         for word in text.split() or [text]:
             trial = f"{lines[-1]} {word}" if lines else word
-            if lines and Text(trial, font_size=size).width <= width:
+            if lines and Text(trial, font_size=size, weight=weight).width <= width:
                 lines[-1] = trial
             else:
                 lines.append(word)
@@ -761,18 +764,13 @@ class ExplainerScene(Scene):
         measured -- between words only, never inside one ("Electroc/hemical"); a
         word wider than the line sets the type smaller, down to the smallest."""
         size = max(size, self.smallest_size())
-        words = text.split() or [text]
-        widest = max(Text(word, font_size=size).width for word in words)
+        weight = "BOLD" if style.get("bold") else "NORMAL"
+        widest = max(Text(word, font_size=size, weight=weight).width
+                     for word in text.split() or [text])
         if widest > width:
             size = max(self.smallest_size(), int(size * width / widest))
-        lines: list[str] = []
-        for word in words:
-            trial = f"{lines[-1]} {word}" if lines else word
-            if lines and Text(trial, font_size=size).width <= width:
-                lines[-1] = trial
-            else:
-                lines.append(word)
-        return self.label("\n".join(lines), size=size, **style)
+        return self.label(self._broken(text, width, size, bool(style.get("bold"))),
+                          size=size, **style)
 
     def _fit(self, path: str, width: float, height: float, at: tuple[float, float]):
         image = self.picture(path, height=1.0)
