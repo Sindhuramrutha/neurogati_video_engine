@@ -7,6 +7,7 @@ offered only their own slide's, and a painting came first in every list: 32 of 4
 scenes showed a painting and most of the deck appeared nowhere."""
 
 import json
+from pathlib import Path
 from types import SimpleNamespace as Thing
 
 import pytest
@@ -120,7 +121,7 @@ def test_the_catalogue_says_what_each_picture_is_and_whether_the_video_shows_it(
 def test_no_deck_picture_is_withheld_and_each_is_described_once(tmp_path, monkeypatch):
     asked = []
     monkeypatch.setattr(scene_vetting, "_ask", lambda path: asked.append(path) or {
-        "what": "a Check for updates badge", "role": "furniture"})
+        "what": "a Check for updates badge", "role": "furniture", "fragment": False})
 
     on_screen = scene_vetting.with_painting_asked("DRAW: a frog's leg", ["badge.png"])
     assert "ILLUSTRATE" not in on_screen, "a deck picture is there: nothing painted by rule"
@@ -141,10 +142,11 @@ def test_a_verdict_kept_before_roles_is_asked_again_not_guessed(tmp_path, monkey
     deck's art, and a script built a scene on it."""
     (tmp_path / scene_vetting.VERDICTS).write_text(json.dumps({
         "badge.png": {"teaches": False, "what": "Check for updates button"},
-        "galen.png": {"what": "Galen", "role": "explains"}}), encoding="utf-8")
+        "galen.png": {"what": "Galen", "role": "explains", "fragment": False}}),
+        encoding="utf-8")
     asked = []
     monkeypatch.setattr(scene_vetting, "_ask", lambda path: asked.append(str(path)) or {
-        "what": "a Check for updates badge", "role": "furniture"})
+        "what": "a Check for updates badge", "role": "furniture", "fragment": False})
 
     notes = scene_vetting.notes(tmp_path, ["badge.png", "galen.png"])
 
@@ -468,3 +470,31 @@ def test_a_scene_with_nothing_to_show_may_ask_for_a_picture_once(tmp_path, monke
     assert made and made[0][2]["what"] == spec["paint"], "offered as the scene's own"
     assert paint_asked(None, None, tmp_path, spec, brief, state()) is None, "once a scene"
     assert paint_asked(None, None, tmp_path, {"shots": []}, brief, state()) is None
+
+
+def test_a_fragment_cut_out_of_a_larger_figure_is_not_offered(tmp_path):
+    """"...uid sample" and half a pair of tweezers, cut out of a larger diagram in
+    the deck itself, was a Chapter 1 scene's picture."""
+    from types import SimpleNamespace
+
+    from pipeline.assets import FigureUse
+    from pipeline.scene_pictures import catalogue
+
+    project = SimpleNamespace(root=tmp_path)
+
+    def figure(name, use=FigureUse.UNDECIDED):
+        (tmp_path / name).write_bytes(b"")
+        return SimpleNamespace(shown_path=name, prepared_path="", width=800, height=600,
+                               why_not_a_frame="", use=use, slide_number=11,
+                               caption=name, name=name)
+
+    notes = {str(tmp_path / "piece.png"): {"what": "a piece", "role": "explains",
+                                            "fragment": True},
+             str(tmp_path / "whole.png"): {"what": "a whole", "role": "explains",
+                                            "fragment": False}}
+    tiers = [("own slide", figure("piece.png")), ("own slide", figure("whole.png"))]
+
+    paths, _ = catalogue(project, tiers, [], notes, {}, None)
+    assert [Path(p).name for p in paths] == ["whole.png"]
+    chosen = [("own slide", figure("piece.png", FigureUse.USE))]
+    assert catalogue(project, chosen, [], notes, {}, None)[0], "a person's choice stays"

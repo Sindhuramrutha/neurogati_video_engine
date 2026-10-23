@@ -59,7 +59,8 @@ def pictures_teach(request, monkeypatch):
     marked `real_vetting`."""
     if request.node.get_closest_marker("real_vetting") is None:
         monkeypatch.setattr("pipeline.scene_vetting._ask",
-                            lambda path: {"what": "a figure", "role": "explains"})
+                            lambda path: {"what": "a figure", "role": "explains",
+                                          "fragment": False})
 
 
 @pytest.fixture(autouse=True)

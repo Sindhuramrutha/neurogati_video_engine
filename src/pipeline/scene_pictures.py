@@ -136,6 +136,13 @@ def catalogue(project, tiers: list[tuple[str, Any]], made: list[tuple[str, Path,
     it, its own slide's and the slide itself (all `near`), then the rest."""
     from pipeline.assets import FigureUse
 
+    # A fragment cut out of a larger figure -- its words sliced at an edge -- is not
+    # offered: on Chapter 1, "...uid sample" and half a pair of tweezers was a scene's
+    # picture. One a person chose with "Use" stays.
+    tiers = [(where, figure) for where, figure in tiers
+             if figure.use == FigureUse.USE
+             or not notes.get(str(project.root / figure.shown_path), {}).get("fragment")]
+
     def deck(where: str, figure) -> tuple:
         path = project.root / figure.shown_path
         note = notes.get(str(path), {})

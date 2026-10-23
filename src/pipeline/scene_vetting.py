@@ -44,6 +44,12 @@ class PictureNote(BaseModel):
         "topic -- a stylised brain, an abstract network, a banner -- that sets the mood "
         "while a topic is opened. furniture: a logo, badge or button, a book or journal "
         "cover, a crop of a slide's text, a placeholder."))
+    fragment: bool = Field(False, description=(
+        "True only when it is a scrap cut out of a larger figure so that it no longer "
+        "reads on its own: words sliced mid-word at an edge ('...uid sample'), or the "
+        "thing it shows cut through so you cannot tell what it is. A drawing, engraving "
+        "or photograph that runs to its edges, or a detail that is complete and "
+        "recognisable in itself, is NOT a fragment -- when in doubt, false."))
 
 
 def _ask(path: Path) -> dict[str, Any]:
@@ -64,14 +70,17 @@ def _ask(path: Path) -> dict[str, Any]:
     except ServiceUnavailable as failure:
         from pipeline.llm import ModelCallFailed
         raise ModelCallFailed(str(failure)) from failure
-    return {"what": note.what[:120], "role": note.role}
+    return {"what": note.what[:120], "role": note.role, "fragment": note.fragment}
 
 
 def _is_described(known: dict[str, Any], picture: str) -> bool:
     """Described with a role. A verdict kept before roles said only whether it
     teaches -- a badge and the deck's art alike were "no" -- so it is asked again
     rather than guessed: guessed, a badge was offered as the deck's art."""
-    return isinstance(known.get(picture), dict) and "role" in known[picture]
+    # Asked again too when kept before fragments were asked about: a crop sliced
+    # through its own words was shown as a Chapter 1 scene's picture.
+    return (isinstance(known.get(picture), dict) and "role" in known[picture]
+            and "fragment" in known[picture])
 
 
 DESCRIBED_AT_ONCE = 4
