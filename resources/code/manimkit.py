@@ -327,6 +327,59 @@ class ExplainerScene(Scene):
         self._flat = [(i, w) for i, timed in enumerate(self._spoken)
                       for w in _words(timed.get("text", ""))]
         self._narration = _words(BRIEF.narration)
+        self._backdrop = self._background()
+        if self._backdrop is not None:
+            self.add(self._backdrop)
+
+    @property
+    def shown(self) -> list:
+        """What is on screen, without the background under it: that is the frame's
+        ground, not something laid out on it."""
+        return [m for m in self.mobjects if m is not self._backdrop]
+
+    def clear(self):
+        """Everything off the screen but the background, which stays across shots."""
+        super().clear()
+        if self._backdrop is not None:
+            self.add(self._backdrop)
+        return self
+
+    def _background(self):
+        """The scene's background (`brief.background`): painted art, stretched to the
+        frame, or a gradient -- split into coloured sections when asked. None when the
+        scene has none or a person switched it off."""
+        from manim import DOWN, RIGHT, ImageMobject, Polygon, Rectangle, VGroup
+        found = BRIEF.__dict__.get("background")
+        if not found:
+            return None
+        width, height = FRAME_WIDTH_UNITS + 0.05, FRAME_HEIGHT_UNITS + 0.05
+        if found.get("kind") == "image":
+            layer = ImageMobject(found["path"])
+            layer.stretch_to_fit_width(width).stretch_to_fit_height(height)
+            return layer.set_z_index(-100)
+        colours = list(found.get("colours") or []) or [self.look["background"]]
+        base = Rectangle(width=width, height=height, stroke_width=0)
+        base.set_fill(colours if len(colours) > 1 else colours[0], opacity=1)
+        base.set_sheen_direction(RIGHT + DOWN)
+        parts = [base]
+        panel = found.get("panel") or colours[-1]
+        half_w, half_h = width / 2, height / 2
+        corners = {
+            "left": [(-half_w, half_h), (-half_w / 3, half_h), (-half_w / 3, -half_h),
+                     (-half_w, -half_h)],
+            "right": [(half_w / 3, half_h), (half_w, half_h), (half_w, -half_h),
+                      (half_w / 3, -half_h)],
+            "top": [(-half_w, half_h), (half_w, half_h), (half_w, half_h / 2),
+                    (-half_w, half_h / 2)],
+            "bottom": [(-half_w, -half_h / 2), (half_w, -half_h / 2), (half_w, -half_h),
+                       (-half_w, -half_h)],
+            "diagonal": [(half_w * 0.2, half_h), (half_w, half_h), (half_w, -half_h),
+                         (-half_w * 0.3, -half_h)],
+        }.get(found.get("split") or "none")
+        if corners:
+            parts.append(Polygon(*[[x, y, 0] for x, y in corners], stroke_width=0)
+                         .set_fill(panel, opacity=1))
+        return VGroup(*parts).set_z_index(-100)
 
     # --- layout kept for the script -----------------------------------------------------
 
@@ -392,9 +445,9 @@ class ExplainerScene(Scene):
     def _outline_points(self, skip: set[int]) -> np.ndarray:
         """Points along the outline of every shape on screen (not words, not `skip`),
         in scene units -- the same outlines, as finely followed, as the checks see."""
-        words = {id(part) for top in self.mobjects for m in top.get_family()
+        words = {id(part) for top in self.shown for m in top.get_family()
                  if isinstance(m, TEXT_KINDS) for part in m.get_family()}
-        traces = [_trace(m) for top in self.mobjects for m in top.get_family()
+        traces = [_trace(m) for top in self.shown for m in top.get_family()
                   if id(m) not in skip and id(m) not in words and isinstance(m, VMobject)
                   and len(m.points) and _stroked(m)]
         return np.vstack(traces) if traces else np.zeros((0, 2))
@@ -404,10 +457,10 @@ class ExplainerScene(Scene):
         neither on words already on screen, nor on a picture (whose own words
         cannot be seen from here), nor on a line, arrow or outline, staying
         inside the margin."""
-        others = self._boxes(self.mobjects, own | self._leaving, solid=True)
+        others = self._boxes(self.shown, own | self._leaving, solid=True)
         if not any(isinstance(m, manim.ImageMobject) for m in mobject.get_family()):
             others += [(m.get_left()[0], m.get_bottom()[1], m.get_right()[0], m.get_top()[1])
-                       for top in self.mobjects for m in top.get_family()
+                       for top in self.shown for m in top.get_family()
                        if isinstance(m, manim.ImageMobject) and id(m) not in self._leaving]
         outline = self._outline_points(own | self._leaving)
         if not others and not len(outline):
@@ -918,7 +971,7 @@ class ExplainerScene(Scene):
             self.play(manim.Transform(light, made, run_time=0.7))
             made = light
         # Over the picture, under every line, dot and label already on it.
-        self.bring_to_front(*[m for m in self.mobjects if m is not image and m is not made])
+        self.bring_to_front(*[m for m in self.shown if m is not image and m is not made])
         return made
 
     def _travel(self, points: list) -> None:
@@ -1133,7 +1186,7 @@ class ExplainerScene(Scene):
         text_kinds = (Text, MarkupText, Paragraph)
         recorded = {id(m): (text, behind, fill) for m, text, behind, fill in self._labels}
         texts, word_ids = [], set()
-        for top in self.mobjects:
+        for top in self.shown:
             for m in top.get_family():
                 if not isinstance(m, text_kinds) or id(m) in word_ids:
                     continue
@@ -1152,7 +1205,7 @@ class ExplainerScene(Scene):
                               "color": fill, "behind": behind,
                               "recorded": id(m) in recorded})
         shapes, pictures = [], []
-        for top in self.mobjects:
+        for top in self.shown:
             for m in top.get_family():
                 if isinstance(m, ImageMobject):
                     left, top_px = _px(m.get_corner([-1, 1, 0]))
@@ -1192,7 +1245,7 @@ class ExplainerScene(Scene):
         extent = ([round(float(min(b[0] for b in boxes))), round(float(min(b[1] for b in boxes))),
                    round(float(max(b[2] for b in boxes))), round(float(max(b[3] for b in boxes)))]
                   if boxes else None)
-        graphics = [top for top in self.mobjects
+        graphics = [top for top in self.shown
                     if not isinstance(top, text_kinds)
                     and any(id(m) not in word_ids and (isinstance(m, ImageMobject) or (
                         isinstance(m, VMobject) and len(m.points)

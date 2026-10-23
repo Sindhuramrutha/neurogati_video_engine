@@ -13,7 +13,7 @@ from litestar.enums import RequestEncodingType
 from litestar.exceptions import ClientException, NotFoundException
 from litestar.params import Body, FromPath
 
-from pipeline import scene_agent
+from pipeline import scene_agent, scene_backgrounds
 from pipeline.core import OperationFailed
 from pipeline.scene_author import (
     add_resource,
@@ -36,7 +36,8 @@ def get_scene(slug: FromPath[str], visual_id: FromPath[str]) -> dict[str, Any]:
     """A scene's folder: its script, brief, checks, log and sources."""
     try:
         return read_scene(slug, visual_id) | {
-            "agent": scene_agent.agent_view(slug, visual_id)}
+            "agent": scene_agent.agent_view(slug, visual_id),
+            "background": scene_backgrounds.state_of(slug, visual_id)}
     except OperationFailed as failure:
         raise ClientException(detail=str(failure)) from failure
 
@@ -103,6 +104,15 @@ async def run_scene_script(
     return await _in_thread(run_scene, slug, visual_id)
 
 
+@post("/api/projects/{slug:str}/scenes/{visual_id:str}/background")
+async def switch_scene_background(
+    slug: FromPath[str], visual_id: FromPath[str], data: dict[str, Any]
+) -> dict[str, Any]:
+    """Switch the scene's background off (`on`: false) or back on; the scene is drawn
+    again with it, or without it."""
+    return await _in_thread(scene_backgrounds.toggle, slug, visual_id, bool(data.get("on")))
+
+
 @post("/api/projects/{slug:str}/scenes/{visual_id:str}/approve")
 async def approve_scene_program(
     slug: FromPath[str], visual_id: FromPath[str], data: dict[str, Any]
@@ -165,5 +175,6 @@ def delete_resource(kind: FromPath[str], file_name: FromPath[str]) -> dict[str, 
 
 SCENE_LAB_ROUTES = [get_scene, start_scene_agents, scene_agents,
                     stop_scene_agent, stop_all_scene_agents, run_scene_script,
+                    switch_scene_background,
                     approve_scene_program, approve_passed_programs,
                     read_scene_file, get_resources, upload_resource, delete_resource]

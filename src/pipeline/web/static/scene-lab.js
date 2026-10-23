@@ -305,6 +305,15 @@ export function renderScenePanel(scene) {
                    src="${sceneFileUrl(visual.id, "render.mp4", scene.checked_at)}"></video>
                  <p class="panel-sub">Its clip, silent: it did not pass, so it has no preview.</p>`
               : `<div class="scene-clip scene-clip-empty">No clip yet</div>`}
+          ${scene.background?.kind ? `
+            <div class="scene-actions" style="margin:8px 0">
+              <button class="btn" id="background-scene-button"
+                      data-on="${scene.background.on ? "1" : ""}">
+                Background: ${scene.background.on ? "on — switch off" : "off — switch on"}</button>
+              <span class="muted">${scene.background.kind === "image"
+                ? `Painted: ${escapeHtml(scene.background.describe)}`
+                : `Gradient: ${escapeHtml((scene.background.colours ?? []).join(", "))}`}</span>
+            </div>` : ""}
           ${checks.length ? `
             <table class="assets-rule-table plan-checks scene-checks">
               <tbody>${checks.map(check => `
@@ -438,6 +447,14 @@ export function wireSceneLab(rerender, visuals) {
     };
     sceneLabState.navigate?.("studio");
   };
+
+  // The scene is drawn again, with its background or without it.
+  const background = document.querySelector("#background-scene-button");
+  if (background) background.onclick = () => busy(background,
+    background.dataset.on ? "Drawing the scene without its background"
+      : "Drawing the scene with its background",
+    () => post(`/scenes/${encodeURIComponent(openId)}/background`,
+      { on: !background.dataset.on }));
 
   const run = document.querySelector("#run-scene-button");
   if (run) run.onclick = () => busy(run, "Running the scene's script",

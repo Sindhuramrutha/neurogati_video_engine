@@ -199,27 +199,22 @@ def test_a_scene_paints_its_illustration_once_and_only_when_asked(tmp_path, monk
     again = scene_illustration.paint(scene, brief, look, state)
 
     assert first == again == scene_illustration.kept(scene, brief, look)
-    reference = scene.parent / scene_illustration.STYLE_REFERENCE
-    assert reference.read_bytes() == first.read_bytes(), "the first painting is the style"
     assert len(painted) == 2 and state["calls"]["image"] == 2, "wrong once, painted again"
     assert "no text" in painted[0].lower() and "#ffffff" in painted[0]
     assert "small frog hearts" in painted[1], "the second asks for the correction"
-    assert Image.open(first).getpixel((0, 0)) == (255, 255, 255), "no panel edge"
+    assert Image.open(first).getpixel((0, 0))[3] == 0, "cut out: no panel round it"
     assert scene_illustration.paint(scene, "PICTURE: none\nDRAW: a box", look, state) is None
     assert scene_illustration.wanted("ILLUSTRATE: none") == ""
 
-    styled = []
-    monkeypatch.setattr(scene_illustration, "_paint_like",
-                        lambda request, style: styled.append(style) or picture("#fafafa"))
     verdicts.append(scene_illustration.Checked(matches=True, framed=True, clean=True))
     other = brief.replace("frog's leg on a bench", "voltaic pile")
     assert scene_illustration.paint(scene, other, look, state) is not None
-    assert styled == [reference.read_bytes()], "later pictures are painted from the style"
+    assert "voltaic pile" in painted[-1], "each painted afresh, in its own scene's style"
 
-    def down(request, style):
+    def down(request):
         raise ModelCallFailed("no image model")
 
-    monkeypatch.setattr(scene_illustration, "_paint_like", down)
+    monkeypatch.setattr("pipeline.llm.draw_image", down)
     third = brief.replace("frog's leg on a bench", "two frog hearts in beakers")
     assert scene_illustration.paint(scene, third, look, state) is None, "made without it"
 
@@ -286,3 +281,40 @@ def test_every_shot_template_passes_the_layout_checks_by_construction():
     for key in ("ran", "bounds", "overlap", "contrast", "legible", "crossing", "collide",
                 "fills", "paragraphs"):
         assert checks[key]["status"] == "pass", (key, checks[key]["detail"])
+
+
+@pytest.mark.skipif(not (shutil.which("uv") and shutil.which("ffmpeg")),
+                    reason="needs uv and ffmpeg to render a Manim scene")
+@pytest.mark.usefixtures("project_root")
+@pytest.mark.parametrize("kind", ["gradient", "image"])
+def test_a_background_lies_under_every_shot_and_is_not_laid_out(kind):
+    """A scene sat on one flat white frame, scene after scene. Its background -- art or
+    a gradient split in sections -- lies under every shot, stays when a shot changes,
+    and the layout checks do not take it for a picture the words lie on."""
+    import json
+
+    from PIL import Image
+
+    slug, project, visual = scripted_project(f"Backdrop {kind}")
+    with_program(slug, project, visual, TEMPLATED, renderer="manim")
+    folder = scene_folder(project, visual)
+    picture = Image.new("RGB", (800, 600), (255, 255, 255))
+    picture.paste((90, 140, 200), (200, 150, 600, 450))
+    picture.save(folder / "picture.png")
+    if kind == "image":
+        Image.new("RGB", (1376, 768), (250, 232, 240)).save(folder / "background-x.png")
+        found = {"kind": "image", "file": "background-x.png", "on": True}
+    else:
+        found = {"kind": "gradient", "colours": ["#fdf6ec", "#efe4ff"], "split": "right",
+                 "panel": "#fde8d8", "on": True}
+    (folder / "background.json").write_text(json.dumps(found), encoding="utf-8")
+
+    result = run_scene(slug, visual.id)
+
+    checks = {c["key"]: c for c in result["checks"]}
+    for key in ("ran", "bounds", "overlap", "contrast", "legible", "crossing", "collide",
+                "fills", "paragraphs"):
+        assert checks[key]["status"] == "pass", (key, checks[key]["detail"])
+    with Image.open(folder / "frames" / "frame-5.png") as last:
+        corner = last.convert("RGB").getpixel((5, last.height // 2))
+    assert corner != (255, 255, 255), "the background is there to the last shot"

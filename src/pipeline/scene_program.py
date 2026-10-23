@@ -143,6 +143,7 @@ def extend_brief(project, visual, folder: Path, brief: dict[str, Any], section) 
     """The measured, grounded brief a scene program is written and checked against."""
     from pipeline.extraction import ExtractionStore
     from pipeline.plan_units import section_source_text
+    from pipeline.scene_backgrounds import for_brief
 
     facts = measure_narration(project, folder, brief["narration"])
     source = ""
@@ -158,6 +159,9 @@ def extend_brief(project, visual, folder: Path, brief: dict[str, Any], section) 
         "assets": {"pictures": brief.get("pictures", [])},
         "renderers": list(RENDERERS),
         "section_scenes": _section_scenes(visual, section_visuals),
+        # What the kit lays under the scene, kept across its shots; None when it
+        # has none or a person switched it off (`scene_backgrounds`).
+        "background": for_brief(folder),
     }
 
 

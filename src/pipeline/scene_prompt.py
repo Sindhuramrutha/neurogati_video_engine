@@ -231,7 +231,9 @@ def picture_notes(brief: dict[str, Any], cache_folder: Path,
         if found:
             lines.append(described(index, Path(path).name, found))
             parts[index] = found.get("parts", [])
-    return "\n".join(lines), parts
+    from pipeline.scene_backgrounds import tally
+
+    return "\n".join([*lines, tally(cache_folder)]), parts
 
 
 def request(brief: dict[str, Any], notes: str, earlier: str, entry: str, code: str,

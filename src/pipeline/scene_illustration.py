@@ -17,16 +17,11 @@ from __future__ import annotations
 
 import hashlib
 import re
-import shutil
-import threading
 from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel, Field
 
-STYLE_REFERENCE = "style-reference.png"     # beside the scenes: the project's own style
-_LOCKS: dict[str, threading.Lock] = {}
-_LOCKS_GUARD = threading.Lock()
 BACKGROUND_TOLERANCE = 14     # per channel: a painted "white" is #fafafa, not #ffffff
 # PHOTO is read as a picture to paint: every picture comes from the image model, and
 # a "photograph" of a real person or thing would be a fabrication.
@@ -68,15 +63,18 @@ def _passed(path: Path) -> bool:
 def prompt(asked: str, look: dict[str, Any]) -> str:
     accents = ", ".join((look.get("accents") or [look.get("accent", "")])[:3])
     return (
-        f"A clean, flat educational illustration for a science explainer video: {asked}. "
-        "Accurate to the science; simple shapes, soft shading, one clear subject, whole and "
-        "centred, filling most of the picture. Never photorealistic: a real person is "
-        "drawn as a clearly illustrated portrait, not a photograph. Plain solid "
-        f"{look.get('background', '#ffffff')} background, so it sits on a video frame of "
-        f"that colour. Accent colours {accents}. Absolutely no text, letters, numbers, "
-        "labels or captions anywhere in the picture. This background and style hold "
-        "whatever the description says of them; paint the subject as still, without the "
-        "glows or changes the scene animates on top of it.")
+        f"An illustration for a science explainer video: {asked}. In the style the "
+        "description gives -- a flat cartoon, a cute character, a pastel painting, a "
+        "collage -- or else a clean, flat educational illustration. Accurate to the "
+        "science; one clear subject, whole and centred, filling most of the picture. "
+        "Light, pleasant colours that suit each other; never dark or gloomy; appealing, "
+        "but never overdone. Never photorealistic: a real person is drawn as a clearly "
+        f"illustrated portrait, not a photograph. Plain solid "
+        f"{look.get('background', '#ffffff')} background, nothing else behind the "
+        f"subject -- it is cut out and laid on the scene's own background. Accent colours "
+        f"{accents}. Absolutely no text, letters, numbers, labels or captions anywhere in "
+        "the picture. Paint the subject as still, without the glows or changes the scene "
+        "animates on top of it.")
 
 
 class Checked(BaseModel):
@@ -115,8 +113,9 @@ def check(path: Path, asked: str, narration: str) -> Checked:
 
 
 def blend(path: Path, background: str) -> None:
-    """The painted background made the frame's own colour, from each corner inward,
-    so the picture has no visible panel edge on the frame."""
+    """The painted background cut away, from each corner inward: the subject stands
+    on whatever is behind it -- the frame's colour, a gradient, painted art -- with
+    no panel round it. (Made the frame's colour, it was a white card on a background.)"""
     from PIL import Image, ImageDraw
 
     colour = tuple(int(background.lstrip("#")[i:i + 2], 16) for i in (0, 2, 4))
@@ -132,23 +131,24 @@ def blend(path: Path, background: str) -> None:
                 abs(a - b) for a, b in zip(corner_colour, colour, strict=False)) \
                 <= BACKGROUND_TOLERANCE * 3:
             ImageDraw.floodfill(image, corner, marker, thresh=BACKGROUND_TOLERANCE)
-    pixels = image.load()
+    cut = image.convert("RGBA")
+    pixels = cut.load()
     for x in range(width):
         for y in range(height):
-            if pixels[x, y] == marker:
-                pixels[x, y] = colour
-    image.save(path)
+            if pixels[x, y][:3] == marker:
+                pixels[x, y] = (*colour, 0)
+    cut.save(path)
 
 
 def paint(folder: Path, on_screen: str, look: dict[str, Any],
           state: dict[str, Any], narration: str = "", note: str = "") -> Path | None:
     """Paint the illustration the brief asks for, once: checked, repainted once if
-    it is wrong, its background made the frame's. None when it asks for none, or the
-    image model could not paint it (the scene is made without it).
+    it is wrong, its background cut away. None when it asks for none, or the image
+    model could not paint it (the scene is made without it).
 
-    The project's first painting is its style: every later one is painted from it,
-    so a video's pictures look drawn by one hand. Scenes are made several at once,
-    so the first is painted under a lock and the others wait for it."""
+    Each in the style its scene asks for: a video's scenes may differ in style, as
+    the explainers it is measured against do -- painted from the first, every
+    picture looked drawn by one hand, and alike."""
     from pipeline.llm import draw_image
 
     asked = wanted(on_screen)
@@ -157,42 +157,7 @@ def paint(folder: Path, on_screen: str, look: dict[str, Any],
     path = _path(folder, asked, look)
     if _passed(path):
         return path
-    reference = folder.parent / STYLE_REFERENCE
-    with _lock_for(folder.parent):
-        if not reference.exists():
-            made = _paint_checked(path, asked, look, narration, state, draw_image, note)
-            if made is not None:
-                shutil.copyfile(made, reference)
-            return made
-    style = reference.read_bytes()
-    return _paint_checked(path, asked, look, narration, state,
-                          lambda request: _paint_like(request, style), note)
-
-
-def _lock_for(scenes: Path) -> threading.Lock:
-    with _LOCKS_GUARD:
-        return _LOCKS.setdefault(str(scenes.resolve()), threading.Lock())
-
-
-def _paint_like(request: str, reference: bytes) -> bytes:
-    """A new picture in the style of `reference`: its line, palette, shading and
-    level of detail, with a different subject."""
-    import base64
-
-    from pipeline.llm import ModelCallFailed, _picture_from_chat
-    from pipeline.resilience import call
-
-    encoded = base64.b64encode(reference).decode("ascii")
-    picture = call("images", lambda: _picture_from_chat([
-        {"type": "text", "text": "Draw a NEW picture in exactly the style of this reference "
-                                 "picture -- the same line weight, palette, shading, level of "
-                                 "detail and plain background. Do not copy its subject. The "
-                                 f"new picture: {request}"},
-        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encoded}"}},
-    ], "illustration in the project's style"), attempts=4, give_up_after=600)
-    if not picture:
-        raise ModelCallFailed("The image model returned no picture in the project's style.")
-    return picture
+    return _paint_checked(path, asked, look, narration, state, draw_image, note)
 
 
 def _paint_checked(path: Path, asked: str, look: dict[str, Any], narration: str,

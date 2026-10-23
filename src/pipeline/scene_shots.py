@@ -66,6 +66,14 @@ end on a key_idea when the narration ends on its point.
 When no offered picture shows the idea, add "paint": "one still picture, its subject
 exactly" to the json (once per scene): it is painted, checked and offered to you as this
 scene's own picture -- better than a scene of words alone.
+Background: add "background" to the json -- {"kind": "image", "describe": "the art behind
+the scene: a soft pastel botanical border, a cosy illustrated bookshelf, warm paper with
+a faint grid..."} or {"kind": "gradient", "colours": ["#hex", "#hex"], "split": "none" |
+"left" | "right" | "top" | "bottom" | "diagonal", "panel": "#hex"} (a gradient split
+into a coloured section). About seven scenes in ten get painted art and the rest a
+gradient: the notes say how the video stands. Always light and pleasant, in colours that
+suit each other -- artistic, a frame people want to look at, but calm and never overdone;
+never a dark frame. Words on screen are not needed: a picture or a diagram can carry it.
 Labels are a few words from the narration. A callout names a part the narration speaks of,
 on the words that speak of it -- never one it does not (a desk, a pedestal, a head that
 is only there): a label that teaches nothing is clutter, and none is better. The label
@@ -340,7 +348,7 @@ def program_for(spec: dict, pictures: int | Pictures) -> str:
             raise ValueError(f"shot {at + 1} must be an object")
         if at:
             body += [f"self._at_cue({_when(_begins(shot))})",
-                     "self.play(*[FadeOut(m) for m in self.mobjects], run_time=0.4)",
+                     "self.play(*[FadeOut(m) for m in self.shown], run_time=0.4)",
                      "self.clear()"]
         body += _shot_code(shot, pictures, at)
     body.append("self.finish()")

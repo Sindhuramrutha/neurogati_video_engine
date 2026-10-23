@@ -348,7 +348,7 @@ def picture_in_reply(message: Any) -> bytes:
     return b""
 
 
-def _picture_from_chat(content: Any, purpose: str) -> bytes:
+def _picture_from_chat(content: Any, purpose: str, model: str = "") -> bytes:
     """Ask the image model for a picture through the chat endpoint.
 
     The way Gemini image models are served: the picture comes back in the reply.
@@ -356,6 +356,7 @@ def _picture_from_chat(content: Any, purpose: str) -> bytes:
     endpoint instead for a provider that uses that.
     """
     base_url, api_key, model_name = get_settings().image_llm
+    model_name = model or model_name
     client = _build_client(base_url, api_key, "images")
     try:
         response = client.chat.completions.create(

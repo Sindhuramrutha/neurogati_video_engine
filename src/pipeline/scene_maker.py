@@ -38,6 +38,7 @@ from pipeline import project_work
 from pipeline.core import require_project
 from pipeline.generation import VisualPlanStore
 from pipeline.llm import ModelCallFailed, ModelNotConfigured, ModelOutputTruncated
+from pipeline.scene_backgrounds import choose as choose_background
 from pipeline.scene_edit import apply_edits, parse_answer
 from pipeline.scene_kept import (
     adopt,
@@ -144,8 +145,7 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
 
     project = require_project(slug)
     visual = _visual(VisualPlanStore(project.root).load(), visual_id)
-    # A note left on the scene's storyboard card is what the person asked for.
-    instruction = instruction or note_for(project, visual_id)
+    instruction = instruction or note_for(project, visual_id)   # the storyboard card's note
     folder = scene_folder(project, visual, create=True)
     (folder / STOP).unlink(missing_ok=True)
     state = load_state(folder)
@@ -219,6 +219,7 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
                 brief, (notes, parts) = painted, picture_notes(painted, folder.parent, state)
                 code, spec, feedback = "", {}, PAINTED
                 continue
+            brief = choose_background(project, visual, folder, spec, brief, state) or brief
             (folder / entry).write_text(code, encoding="utf-8")
             add_event(state, "write", f"{'Rewrote' if rewrote else 'Edited'} {entry} "
                       f"({renderer}): {spec.get('approach', '')}")
@@ -327,8 +328,7 @@ def _written(system, brief, notes, earlier, entry, code, feedback, instruction, 
     """The program the model writes this round, asked again at once when its answer
     cannot be used -- an edit that matches nothing is not worth a render. None if no
     answer could be used."""
-    # What the last render found stays in every ask: a re-ask that said only "your
-    # answer could not be used" had the model fix the format and forget the scene.
+    # What the last render found stays in every ask (a bare re-ask forgot the scene).
     found, note, then = feedback, "", ()
     for _ in range(ASKS_PER_ROUND):
         feedback = "\n\n".join(part for part in (note, found) if part)
