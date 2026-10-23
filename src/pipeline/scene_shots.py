@@ -63,9 +63,11 @@ topic or gives its context can open on the deck's own art (opener). Narration th
 in steps ("step two... then...") is steps, or one shot per step, not one still hero. Spread
 the "when"s over the WHOLE narration: the frame must change on the later sentences too --
 end on a key_idea when the narration ends on its point.
-When no offered picture shows the idea, add "paint": "one still picture, its subject
-exactly" to the json (once per scene): it is painted, checked and offered to you as this
-scene's own picture -- better than a scene of words alone.
+The scene's pictures are yours: look at what each shows, and use it, leave it out, or
+have one painted -- add "paint": "one still picture, its subject and style exactly" to
+the json, for one no offered picture shows, or for a better version of one that is not
+right, saying what to change (up to three a scene). It is painted, checked and offered to
+you as this scene's own picture -- far better than a scene of words alone.
 Background: add "background" to the json -- {"kind": "image", "describe": "the art behind
 the scene: a soft pastel botanical border, a cosy illustrated bookshelf, warm paper with
 a faint grid..."} or {"kind": "gradient", "colours": ["#hex", "#hex"], "split": "none" |

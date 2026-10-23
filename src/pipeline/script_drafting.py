@@ -334,10 +334,9 @@ def _section_brief(plan: Plan, section: PlanSection, target_words: int,
     if section.how:
         lines.append(f"How it is told: {section.how}")
     if pictures:
-        lines.append("Pictures from the deck for this section -- give each one that fits a "
-                     "place: the subject of a scene when it shows what is said, or behind a "
-                     "topic's opening when it is the deck's art (name them on PICTURE; "
-                     "describe no deck picture that is not listed):\n"
+        lines.append("Pictures from the deck for this section -- a person chose each for "
+                     "the video, and each must be shown, large, as one scene's subject (name "
+                     "it on PICTURE there; every other scene gets an ILLUSTRATE):\n"
                      + "\n".join(f"- {name}" for name in pictures))
     return "\n".join(lines)
 

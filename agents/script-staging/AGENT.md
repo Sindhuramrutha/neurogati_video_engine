@@ -73,7 +73,7 @@ The brief is all Generation has to draw from: a vague one becomes words in boxes
 Write every brief in this shape, each part on its own line:
 
 ```
-PICTURE: the exact names of the deck pictures to show, the main one first -- or "none"
+PICTURE: the name of a deck picture the person chose, if this scene shows it -- or "none"
 DRAW: the real things to draw, named -- "a frog's leg, its nerve, two metal wires
       touching it" -- not "a diagram" or "an illustration"
 LAYOUT: where each thing sits -- "the leg large on the left; the battery on the right"
@@ -83,34 +83,32 @@ ILLUSTRATE: a picture to paint
 ICON: up to three simple icons, by name -- "microscope, lightning"
 ```
 
-The last two are only for what no deck picture shows; use either, both or none.
+`ILLUSTRATE` is how most scenes get their picture; `PICTURE` only names a deck
+picture a person chose.
 
-**The deck's pictures come first.** The video should look made from the course's
-deck. The section lists its pictures with what each is and what it is good for:
+**The video's pictures are painted for it.** The deck's own pictures are not used,
+except the two or three a person chose for the video: the section lists those, by
+the names they were given. Each chosen picture must be shown, large, as one scene's
+subject -- name it on `PICTURE` there. Every other scene gets its own subject: an
+`ILLUSTRATE` or a diagram to `DRAW`, never another version of a picture a scene near
+it shows.
 
-- One that shows what is being said — a figure, portrait, photograph, diagram —
-  is that scene's subject. Name it on `PICTURE`.
-- The deck's own art — a stylised brain, a banner, a cover — sets the scene while
-  a topic is opened, its context given or a section closed. Give it to such a
-  scene, on `PICTURE`, beside whatever explains.
-- Each listed picture that fits is one scene's subject, once; a small or cropped
-  one may still serve (it says what was measured). Every other scene gets its own
-  subject -- an ILLUSTRATE or a diagram to DRAW -- never another version of a
-  picture a scene near it shows.
+**Choose how each scene looks** -- decide per scene what teaches best and is a
+pleasure to watch, and say it exactly. The bar is a well-made explainer channel: flat
+illustrated characters and objects, a cute character for the brain, a visual metaphor
+(a seesaw for two forces), collage, a cosy illustrated room. Never a dark or gloomy
+picture; never overdone.
 
-**What the deck does not show, you choose how to fill** — decide per scene what
-teaches best, and say it exactly:
-
-- `ILLUSTRATE:` for a picture to paint — the subject, what it is doing, the
-  angle, the species or kind exactly ("two small frog hearts", not "two hearts").
-  It is painted by an image model with no text in it, and checked for its subject,
-  framing and finish before it is used; the scene adds its own labels and motion
-  on top. Describe one still picture: not glows, splits or changes over time (the
-  BEATS animate those), nor its background or style (the video's look sets them).
-  A real person is painted as a clearly illustrated portrait, never as a
-  photograph. An idea with no obvious shape still gets a concrete
-  picture: "the law of specific energies" is the same spark touching two nerves,
-  one running to an eye and one to an ear.
+- `ILLUSTRATE:` for a picture to paint -- the subject, what it is doing, the
+  angle, the species or kind exactly ("two small frog hearts", not "two hearts"),
+  and its style when it matters (a flat cartoon, a cute character, a pastel
+  painting, a collage). It is painted by an image model with no text in it, and
+  checked for its subject, framing and finish before it is used; the scene adds
+  its own labels, motion and background. Describe one still picture: not glows,
+  splits or changes over time (the BEATS animate those). A real person is painted
+  as a clearly illustrated portrait, never as a photograph. An idea with no obvious
+  shape still gets a concrete picture: "the law of specific energies" is the same
+  spark touching two nerves, one running to an eye and one to an ear.
 - `ICON:` for small supporting symbols beside words or in a diagram — a
   microscope, a lightning bolt, a bell.
 

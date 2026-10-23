@@ -24,6 +24,7 @@ never offered.
 
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 from typing import Any
@@ -312,8 +313,7 @@ def made_for_scene(folder: Path, on_screen: str, look: dict[str, Any]) -> list[t
         made.append(("painted for this scene", painted,
                      {"what": scene_illustration.wanted(on_screen), "role": "explains",
                       "measured": "Painted and checked: right subject, framed, no words."}))
-    asked = _asked_painting(folder)
-    if asked and not scene_illustration.wanted(on_screen):
+    for asked in reversed(_asked_paintings(folder)):     # the newest first
         painted = scene_illustration.kept(folder, f"ILLUSTRATE: {asked}", look)
         if painted is not None:
             made.append(("painted for this scene, as its maker asked", painted,
@@ -326,30 +326,39 @@ def made_for_scene(folder: Path, on_screen: str, look: dict[str, Any]) -> list[t
     return made
 
 
-ASKED_PAINTING = "painting-asked.txt"
+ASKED_PAINTINGS = "paintings-asked.json"
+MOST_ASKED = 3                  # pictures a scene's maker may have painted for it
 PAINTED = ("A picture was painted for this scene, as you asked: it is in the catalogue now "
-           "as this scene's own picture. Answer again, with it as the main picture.")
+           "as this scene's own picture. Answer again, with it as the main picture -- or, "
+           "if it is not right, ask for it again, saying what to change.")
 
 
-def _asked_painting(folder: Path) -> str:
-    path = folder / ASKED_PAINTING
-    return path.read_text(encoding="utf-8").strip() if path.exists() else ""
+def _asked_paintings(folder: Path) -> list[str]:
+    try:
+        found = json.loads((folder / ASKED_PAINTINGS).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    return [str(asked) for asked in found] if isinstance(found, list) else []
 
 
 def paint_asked(project, visual, folder: Path, spec: dict[str, Any], brief: dict[str, Any],
                 state: dict[str, Any]) -> dict[str, Any] | None:
-    """The scene's maker asked for a picture no offered one shows (its answer's
-    "paint"): painted and checked like any other, once per scene, and the brief
-    written again with it. Scenes about an idea the deck has no picture of -- dualism
-    -- failed "It pictures the idea" in every round, with nothing to show it with.
-    None when nothing was asked, it was asked before, or it could not be painted."""
+    """The scene's maker owns its pictures: it may ask for one painted (its answer's
+    "paint") -- one no offered picture shows, or a better version of one it judged
+    wrong, saying what to change -- up to MOST_ASKED a scene. Each is painted and
+    checked like any other, and the brief written again with it; one the maker no
+    longer uses is simply not shown. Scenes about an idea with no picture (dualism)
+    failed "It pictures the idea" in every round with nothing to show it with. None
+    when nothing new was asked, too many were, or it could not be painted."""
     from pipeline import scene_illustration
     from pipeline.scene_lab import write_brief
 
     asked = str(spec.get("paint") or "").strip()[:300]
-    if not asked or _asked_painting(folder) or scene_illustration.wanted(brief["on_screen"]):
+    before = _asked_paintings(folder)
+    if not asked or asked in before or len(before) >= MOST_ASKED:
         return None
-    (folder / ASKED_PAINTING).write_text(asked, encoding="utf-8")
+    (folder / ASKED_PAINTINGS).write_text(json.dumps([*before, asked], ensure_ascii=False),
+                                          encoding="utf-8")
     painted = scene_illustration.paint(folder, f"ILLUSTRATE: {asked}", brief["look"], state,
                                        brief["narration"])
     return write_brief(project, visual) if painted is not None else None

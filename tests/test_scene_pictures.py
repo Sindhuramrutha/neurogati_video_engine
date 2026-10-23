@@ -445,7 +445,7 @@ def test_a_picture_another_scene_plans_to_show_is_not_offered_as_unused(tmp_path
         "the video's count is of what was made, not what was planned"
 
 
-def test_a_scene_with_nothing_to_show_may_ask_for_a_picture_once(tmp_path, monkeypatch):
+def test_a_scene_s_maker_may_have_its_pictures_painted_and_painted_again(tmp_path, monkeypatch):
     """Scenes about an idea the deck has no picture of failed "It pictures the idea"
     in every round. The maker may ask for one painting; it is offered back."""
     from pipeline import scene_illustration
@@ -467,8 +467,16 @@ def test_a_scene_with_nothing_to_show_may_ask_for_a_picture_once(tmp_path, monke
     assert paint_asked(None, None, tmp_path, spec, brief, state()) == {"new": 1}
     made = made_for_scene(tmp_path, brief["on_screen"], look)
     assert made and made[0][2]["what"] == spec["paint"], "offered as the scene's own"
-    assert paint_asked(None, None, tmp_path, spec, brief, state()) is None, "once a scene"
+    again = paint_asked(None, None, tmp_path, spec, brief, state())
+    assert again is None, "the same picture is not painted twice"
     assert paint_asked(None, None, tmp_path, {"shots": []}, brief, state()) is None
+    better = {"paint": "the same, with the mind drawn as a soft glow"}
+    redone = paint_asked(None, None, tmp_path, better, brief, state())
+    assert redone == {"new": 1}, "a better version of one that is not right"
+    assert made_for_scene(tmp_path, brief["on_screen"], look)[0][2]["what"] == better["paint"]
+    paint_asked(None, None, tmp_path, {"paint": "a third"}, brief, state())
+    fourth = paint_asked(None, None, tmp_path, {"paint": "a fourth"}, brief, state())
+    assert fourth is None, "three a scene at most"
 
 
 def test_a_fragment_cut_out_of_a_larger_figure_is_not_offered(tmp_path):
