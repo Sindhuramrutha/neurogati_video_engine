@@ -96,6 +96,14 @@ def _render(slug: str) -> None:
 
     approve_passed(slug)
     _say(slug, "working", "Rendering the video")
+    # A render of an older cut still in the queue would refuse this one: one rendering
+    # is waited for, one paused or waiting (interrupted by a restart) is dropped.
+    while any(j["slug"] == slug and j["status"] == "rendering"
+              for j in render_queue.queue_view()["jobs"]):
+        time.sleep(POLL_SECONDS)
+    for job in render_queue.queue_view()["jobs"]:
+        if job["slug"] == slug and job["status"] in render_queue.UNFINISHED:
+            render_queue.delete_job(job["id"])
     before = {job["id"] for job in render_queue.queue_view()["jobs"]}
     voice = video_setup.edge_voice(require_project(slug).root, "en")
     render_queue.add_job(slug, "edge", voice)
