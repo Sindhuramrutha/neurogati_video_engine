@@ -275,6 +275,13 @@ def uncovered(spec: dict, words: list[dict], seconds: float) -> str:
             "or set later parts' \"when\" on them.")
 
 
+def _begins(shot: dict) -> str | None:
+    """The words a shot begins on: its own "when", or its first part's. A steps or
+    flow shot has its cues on its parts; without them the shot before it was cleared
+    a second after it appeared, and the frame stood empty until the first part."""
+    return shot.get("when") or shot.get("begins") or next(iter(_cues({"shots": [shot]})), None)
+
+
 def is_shots(spec: dict) -> bool:
     return isinstance(spec.get("shots"), list) and bool(spec["shots"])
 
@@ -293,7 +300,7 @@ def program_for(spec: dict, pictures: int | Pictures) -> str:
         if not isinstance(shot, dict):
             raise ValueError(f"shot {at + 1} must be an object")
         if at:
-            body += [f"self._at_cue({_when(shot.get('when') or shot.get('begins'))})",
+            body += [f"self._at_cue({_when(_begins(shot))})",
                      "self.play(*[FadeOut(m) for m in self.mobjects], run_time=0.4)",
                      "self.clear()"]
         body += _shot_code(shot, pictures, at)

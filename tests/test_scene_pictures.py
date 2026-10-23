@@ -335,6 +335,20 @@ def test_a_hero_s_callouts_are_drawn_to_located_parts_and_unknown_ones_left_out(
     assert "moves=[([(0.60, 0.70), (0.57, 0.90)], 'down')]" in program
 
 
+def test_a_shot_is_held_until_the_words_the_next_one_begins_on():
+    """A hero followed by steps was cleared a second after it appeared: the steps had
+    no "when" of their own, so the hold was for nothing, and the frame stood empty
+    under the steps' title until its first step was said."""
+    program = program_for({"shots": [
+        {"template": "hero", "picture": 0, "title": "Aristotle", "callouts": []},
+        {"template": "steps", "title": "What anyone could observe", "steps": [
+            {"label": "Heart stops", "when": "heart stops"},
+            {"label": "Brain injured", "when": "survive"}]}]}, 1)
+
+    hero, hold = program.index("self.hero("), program.index("self._at_cue('heart stops')")
+    assert hero < hold < program.index("FadeOut")
+
+
 def test_another_scene_s_subject_is_never_this_scene_s_main_picture():
     """The robot hand holding a brain was the subject of the opening and again of the
     next section's scene."""
