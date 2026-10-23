@@ -669,9 +669,13 @@ class ExplainerScene(Scene):
         joined to the middle by a line from edge to edge. Has .centre, .items, .lines
         (lines[i] joins the centre to items[i])."""
         from manim import DOWN, LEFT, RIGHT, Line, VGroup
-        middle = self.boxed(centre, size=size + 4, stroke=self.colour(0),
-                            fill=self.tint(self.colour(0), 0.3))
-        items = [self.boxed(text, size=size, stroke=self.colour(i + 1))
+        middle = self.boxed(self._broken(centre, 4.2, size + 4), size=size + 4,
+                            stroke=self.colour(0), fill=self.tint(self.colour(0), 0.3))
+        # Each item wrapped to the room its side has: set on one line, a wide hub was
+        # shrunk to fit and its words went below the smallest readable size.
+        room = (2 * self.SAFE_X - middle.width - 2 * gap) / 2 - 0.6
+        items = [self.boxed(self._broken(text, max(2.0, room), size), size=size,
+                            stroke=self.colour(i + 1))
                  for i, text in enumerate(around)]
         left = VGroup(*items[0::2]).arrange(DOWN, buff=0.5, aligned_edge=RIGHT)
         right = VGroup(*items[1::2]).arrange(DOWN, buff=0.5, aligned_edge=LEFT) \
@@ -740,6 +744,17 @@ class ExplainerScene(Scene):
         # narration's last words was still fading in as the scene ended.
         if cue:
             self.until(min(self.when(cue), BRIEF.seconds - 3.0))
+
+    def _broken(self, text: str, width: float, size: int) -> str:
+        """`text` with line breaks between words, so each line fits `width` at `size`."""
+        lines: list[str] = []
+        for word in text.split() or [text]:
+            trial = f"{lines[-1]} {word}" if lines else word
+            if lines and Text(trial, font_size=size).width <= width:
+                lines[-1] = trial
+            else:
+                lines.append(word)
+        return "\n".join(lines)
 
     def _wrapped(self, text: str, width: float, size: int, **style) -> Text:
         """Words broken into lines that fit `width` (scene units) at `size`,
