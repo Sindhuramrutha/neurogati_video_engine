@@ -139,7 +139,10 @@ class LibraryFigure(BaseModel):
 
     @property
     def name(self) -> str:
-        """What a person would call it: its slide, or else its caption."""
+        """What a person would call it: the name they gave it, its slide, or else
+        its caption."""
+        if self.use == FigureUse.USE and self.note:
+            return self.note
         if self.slide_number:
             return f"Slide {self.slide_number} · {self.slide_title}".rstrip(" ·")
         return self.caption or self.slide_title or self.asset_path.split("/")[-1]
@@ -199,8 +202,10 @@ class AssetLibrary(BaseModel):
         return value[:MAXIMUM_FIGURES]
 
     def handed_on(self) -> list[LibraryFigure]:
-        """Every picture of the last transfer that was not left out."""
-        return [f for f in self.figures if f.in_extraction and not f.is_left_out]
+        """The deck pictures the video uses: the two or three a person chose and
+        named (`chosen_pictures`). Every other picture is made for the video; the
+        deck's own, offered to every scene, made a video look like its slides."""
+        return [f for f in self.figures if f.in_extraction and f.use == FigureUse.USE]
 
     def usable(self) -> list[LibraryFigure]:
         """What a scene may show as its picture: handed on, and large and clear
@@ -343,7 +348,9 @@ def rebuild_library(
                                         "background_art": look.background_art,
                                         "choices": look.choices if same else {}})
 
-    return AssetLibrary(figures=figures, look=look)
+    from pipeline.chosen_pictures import mark
+
+    return mark(AssetLibrary(figures=figures, look=look), project_root)
 
 
 # --- what a client calls -----------------------------------------------------

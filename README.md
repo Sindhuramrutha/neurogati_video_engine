@@ -329,7 +329,8 @@ stdin.
 | `LLM_BASE_URL` | `https://api.tokenrouter.com/v1` | Any OpenAI-compatible endpoint. |
 | `LLM_MODEL` | `deepseek/deepseek-v4-flash` | Model id as the provider spells it. |
 | `IR_LLM_API_KEY`, `IR_LLM_BASE_URL`, `IR_LLM_MODEL` | text model's values | A separate provider for structured output (drafted plans and scripts). |
-| `IMAGE_MODEL`, `IMAGE_BASE_URL`, `IMAGE_API_KEY` | `google/gemini-2.5-flash-image`, text model's values | The model that draws a replacement for a figure that did not extract. |
+| `IMAGE_MODEL`, `IMAGE_BASE_URL`, `IMAGE_API_KEY` | `google/gemini-3.1-flash-image-preview`, text model's values | The model that paints a scene's pictures (16:9). |
+| `BACKGROUND_IMAGE_MODEL` | `google/gemini-3.1-flash-lite-image` | The cheaper model that paints scene backgrounds. |
 | `VISION_MODEL`, `VISION_BASE_URL`, `VISION_API_KEY` | `google/gemini-3.5-flash`, text model's values | The model that looks at pictures: the Extraction agent reading slides, the slide pictures described for Generation, every review of a scene's frames, and handwriting OCR. The text model cannot see. |
 | `LLM_TIMEOUT_SECONDS` | `600` | Per-request timeout. |
 | `LLM_REQUESTS_PER_MINUTE` | `13` | How many model calls are sent in a minute, across the whole app (TokenRouter allows 15). A refusal that states a lower limit lowers it, and holds every call off for a minute. |

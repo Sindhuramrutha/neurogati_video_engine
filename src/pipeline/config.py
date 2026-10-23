@@ -37,7 +37,13 @@ class Settings(BaseSettings):
     # the OpenAI-compatible endpoints that serve one usually serve both.
     image_base_url: str | None = None
     image_api_key: str | None = None
-    image_model: str = "google/gemini-2.5-flash-image"
+    # The pictures a scene teaches with -- accuracy matters, so the full model. It
+    # paints 16:9 natively; 2.5 painted only squares. (openai/gpt-5-image-mini is
+    # refused by TokenRouter for this account: "violation of provider Terms".)
+    image_model: str = "google/gemini-3.1-flash-image-preview"
+    # Backgrounds: most of a video's pictures, and nothing in them must be right --
+    # the lite model, faster and cheaper, paints them as well.
+    background_image_model: str = "google/gemini-3.1-flash-lite-image"
 
     # --- Vision: the Extraction agent looking at slides, and handwriting OCR ---
     # The text model cannot see a picture, so this is a separate, multimodal one --

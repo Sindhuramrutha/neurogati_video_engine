@@ -161,9 +161,8 @@ def catalogue(project, tiers: list[tuple[str, Any]], made: list[tuple[str, Path,
     ordered += [(path, where, meta.get("what", ""), meta.get("role", "explains"),
                  meta.get("measured", ""), None, True) for where, path, meta in made]
     ordered += [deck(w, f) for w, f in tiers if w == OWN_SLIDE]
-    if slide_image is not None and slide_image.exists():
-        ordered.append((slide_image, SLIDE_ITSELF, "the whole slide, as the deck lays it out",
-                        "slide", "Words are in it: briefly, never explained on.", None, True))
+    # The slide itself is not offered: a video's pictures are made for it, and the
+    # deck's only as a person chose them (`chosen_pictures`).
     ordered += [deck(w, f) for w, f in tiers if w not in (NAMED, OWN_SLIDE)]
 
     entries = []

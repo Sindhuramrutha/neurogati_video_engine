@@ -136,8 +136,10 @@ def test_a_decision_survives_re_extraction(project_root):
 def test_a_picture_that_left_the_extraction_keeps_its_decision(project_root):
     slug, project = project_with_pictures("Gone", [("Figure 1", (400, 300), "source")])
     operations.refresh_asset_library(slug)
-    figure_id = operations.read_asset_library(slug)["figures"][0]["id"]
-    operations.decide_figure(slug, figure_id, FigureUse.USE)
+    from pipeline import chosen_pictures
+
+    picture = operations.read_asset_library(slug)["figures"][0]["asset_path"]
+    chosen_pictures.choose(slug, picture, "The first figure")
 
     extraction = ExtractionStore(project.root).load()
     extraction.documents[0].blocks = extraction.documents[0].blocks[:1]
@@ -147,7 +149,7 @@ def test_a_picture_that_left_the_extraction_keeps_its_decision(project_root):
 
     assert library["figures"] == [], "only what the last transfer has is listed"
     assert library["audit"]["figure_count"] == 0 and library["audit"]["gone_count"] == 1
-    assert library["gone_figures"] == ["Figure 1"], "named on the page, not just counted"
+    assert library["gone_figures"] == ["The first figure"], "named on the page, as named"
     assert any("not in the" in w and "not handed on" in w for w in library["warnings"])
 
     # It comes back, and so does the decision about it.

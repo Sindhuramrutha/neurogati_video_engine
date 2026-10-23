@@ -73,4 +73,5 @@ markers = [
     "real_preflight: renders and scene making ask the doctor first, as they do outside tests",
     "smoke: one video from a deck to its export, end to end (in the pre-commit hook)",
     "slow: over about five seconds; left out of the pre-commit hook's fast suite",
+    "real_picks: only the deck pictures a person chose are handed on, as outside tests",
 ]

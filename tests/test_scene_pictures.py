@@ -106,8 +106,7 @@ def test_the_catalogue_says_what_each_picture_is_and_whether_the_video_shows_it(
 
     assert [entry["index"] for entry in catalogue] == list(range(len(paths)))
     by_file = {entry["file"]: entry for entry in catalogue}
-    assert by_file["slide.png"]["role"] == "slide", "the slide itself is offered, as itself"
-    assert paths.index(str(slide)) == 2, "after the scene's own slide's pictures"
+    assert str(slide) not in paths, "the slide itself is not offered: pictures are made"
     assert by_file["cover.png"]["role"] == "furniture"
     assert by_file["cover.png"]["shown_in"] == ["scene 1", "scene 4"]
     assert by_file["volta.png"]["shown_in"] == []

@@ -15,6 +15,7 @@
 import {
   openRawFile, releaseRawFile, renderRawFileShell, stepRawFile,
 } from "/static/raw-file-viewer.js";
+import { loadPicks, renderPicksCard, wirePicksCard } from "/static/extraction-picks.js";
 import { requestJsonFromApi } from "/static/shared-client.js";
 import {
   ICON, applicationState, escapeHtml, fileTypeBadge, footerNav, hideProgress, icon,
@@ -27,7 +28,7 @@ import {
 let loaded = null;
 
 async function loadExtractionPage(stage) {
-  const [settings, extraction, review] = await Promise.all([
+  const [settings, extraction, review, picks] = await Promise.all([
     requestJsonFromApi(projectApiPath(`/settings/${stage.key}`)),
     requestJsonFromApi(projectApiPath("/extraction")).catch(extractionFailure => {
       console.error("extraction load failed", extractionFailure);
@@ -39,8 +40,9 @@ async function loadExtractionPage(stage) {
       console.warn("extraction review load failed", reviewFailure);
       return null;
     }),
+    loadPicks(),
   ]);
-  return { slug: applicationState.selectedProject?.slug, settings, extraction, review };
+  return { slug: applicationState.selectedProject?.slug, settings, extraction, review, picks };
 }
 
 export async function renderExtractionStage(
@@ -63,7 +65,7 @@ export async function renderExtractionStage(
       return;
     }
   }
-  const { settings, extraction, review } = loaded;
+  const { settings, extraction, review, picks } = loaded;
   applicationState.stageSettings[stage.key] = settings;
   applicationState.extractionReview = review;
 
@@ -75,6 +77,8 @@ export async function renderExtractionStage(
     })}
 
     <div class="stage-content stage-content-bare">
+
+      ${renderPicksCard(extraction, picks)}
 
       <div class="extraction-tabs">
         ${renderStageTabs()}
@@ -768,6 +772,7 @@ function wireExtractionStage(stage, navigateToStage, renderAgentStage) {
   wireCollection(page);
   wireViewChoices(page);
   wireGotoButtons(navigateToStage);
+  wirePicksCard(page.refresh);
 
   // The AGENT.md is the real "settings" for this stage: it governs behaviour.
   select("#extraction-agent-button").onclick = () => renderAgentStage(stage);

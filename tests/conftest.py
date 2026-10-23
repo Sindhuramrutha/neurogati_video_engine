@@ -167,3 +167,15 @@ def pytest_collection_modifyitems(items):
     for item in items:
         if item.originalname in SLOW_TESTS.get(item.path.name, ()):
             item.add_marker(pytest.mark.slow)
+
+
+@pytest.fixture(autouse=True)
+def every_picture_handed_on(request, monkeypatch):
+    """A video uses only the two or three deck pictures a person chose
+    (`chosen_pictures`). Tests of how pictures flow on from there -- to a section,
+    a scene, a frame -- hand every picture on, as if each were chosen, unless a
+    test is marked `real_picks`."""
+    if request.node.get_closest_marker("real_picks") is None:
+        monkeypatch.setattr(
+            "pipeline.assets.AssetLibrary.handed_on",
+            lambda self: [f for f in self.figures if f.in_extraction and not f.is_left_out])
