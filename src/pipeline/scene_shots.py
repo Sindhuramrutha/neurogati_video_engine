@@ -64,7 +64,9 @@ the "when"s over the WHOLE narration: the frame must change on the later sentenc
 end on a key_idea when the narration ends on its point.
 Labels are a few words from the narration. A callout names a part the narration speaks of,
 on the words that speak of it -- never one it does not (a desk, a pedestal, a head that
-is only there): a label that teaches nothing is clutter, and none is better.
+is only there): a label that teaches nothing is clutter, and none is better. The label
+must be true of the very part it points at -- read the parts list before choosing -- and
+name that part or what it is in this story, never an idea about the whole picture.
 A picture whose catalogue entry has "main_of"
 is another scene's subject: here it may only be small (steps, compare), never the picture
 of a hero, person, opener or key_idea. A picture painted for this scene was made to be its

@@ -860,7 +860,9 @@ class ExplainerScene(Scene):
             label, point, line, box = what
             colour = self.colour(named)
             named += 1
-            if box is not None:
+            # A part that is most of the picture is not singled out: a ring round
+            # the whole of it says nothing.
+            if box is not None and (box[2] - box[0]) * (box[3] - box[1]) < 0.45:
                 light = self._spotlight(image, [at(box[0], box[1]), at(box[2], box[3])],
                                         colour, light)
                 last = moment
@@ -888,7 +890,7 @@ class ExplainerScene(Scene):
         centre = [(left + right) / 2, (top + bottom) / 2, 0]
         hole = RoundedRectangle(corner_radius=0.15, width=width, height=height).move_to(centre)
         cover = Rectangle(width=image.width, height=image.height).move_to(image)
-        shade = Cutout(cover, hole, fill_color=self.look["background"], fill_opacity=0.62,
+        shade = Cutout(cover, hole, fill_color=self.look["background"], fill_opacity=0.42,
                        stroke_width=0)
         ring = hole.copy().set_fill(opacity=0).set_stroke(colour, width=5)
         # Marks of attention laid on the picture, not shapes of the layout: the
