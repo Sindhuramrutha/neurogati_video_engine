@@ -51,6 +51,7 @@ from pipeline.scene_kept import (
     restore_best,
 )
 from pipeline.scene_lab import _visual, run_scene, scene_folder, write_brief
+from pipeline.scene_pictures import PAINTED, paint_asked
 from pipeline.scene_pictures import prepare as prepare_pictures
 from pipeline.scene_program import ENTRY_FILES, entry_of
 from pipeline.scene_prompt import (  # noqa: F401 -- kit_api, compact: read through here
@@ -69,11 +70,8 @@ from pipeline.scene_state import STOP, add_event, doing, load_state, save_state
 logger = logging.getLogger(__name__)
 
 MOST_ROUNDS = 6           # refining until the reviewer calls it good takes rounds
-# A scene stops when it stops getting better: two rounds in a row that do not beat its
-# best. Every scene used to run its whole ladder of 14 rounds -- a fresh start, then a
-# repaint and another -- and on Chapter 1 the steps after the first approach made the
-# kept version in 2 scenes of 21. So a scene starts over only when its best is far
-# off: it fails a check, or the reviewer scores it under FAR_SCORE.
+# A scene stops when two rounds in a row do not beat its best: a ladder of 14 rounds made
+# the kept version in 2 Chapter 1 scenes of 21. It starts over only when far off.
 STALLED_ROUNDS = 2
 FAR_SCORE = 2.0
 ESCALATIONS = ("fresh",)
@@ -92,8 +90,7 @@ ASKS_PER_ROUND = 3        # an unusable answer is asked again, without a render
 SEND_IT = ("Now send it, exactly as the answer format says: the ```json block with the "
            "shots -- or, only if no shot can show the idea, the json block and the "
            "complete file. No plan and no explanation outside the blocks.")
-# As long as the model will write: 65,536 tokens is what the provider accepts.
-ROUND_TOKENS = 65536
+ROUND_TOKENS = 65536      # as long as the model will write: what the provider accepts
 CALL_ATTEMPTS = 6         # a failed model call is tried again, waiting longer each time
 MODEL_GIVE_UP_SECONDS = 1800
 
@@ -159,16 +156,14 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
 
     renderers = available_renderers()
     brief = write_brief(project, visual)
-    # Made once, before the first round, when the script asked for a picture the
-    # deck does not have: painted (and checked), or an icon.
+    # Made once, before the first round: a painting (checked) or icons the script asked for.
     doing(folder, state, "Making the pictures the deck does not have")
     brief = prepare_pictures(project, visual, brief, state)
     renderer, entry = entry_of(folder)
     code = "" if fresh or not (folder / entry).exists() else \
         (folder / entry).read_text(encoding="utf-8")
     spec = {} if not code else _spec_of(folder)
-    # The best version so far. The scene as it is now counts, when it has a clip
-    # made for this brief: a change asked for must not lose it.
+    # The best so far: the scene as it is counts, when its clip was made for this brief.
     best = None
     drop_kept(folder)
     if code and passes_as_written(project, visual) and has_clip(folder):
@@ -219,6 +214,11 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
             if written is None:
                 continue                      # nothing usable after asking again
             code, spec, renderer, entry, rewrote = written
+            painted = paint_asked(project, visual, folder, spec, brief, state)
+            if painted is not None:           # asked for a picture: answered with it
+                brief, (notes, parts) = painted, picture_notes(painted, folder.parent, state)
+                code, spec, feedback = "", {}, PAINTED
+                continue
             (folder / entry).write_text(code, encoding="utf-8")
             add_event(state, "write", f"{'Rewrote' if rewrote else 'Edited'} {entry} "
                       f"({renderer}): {spec.get('approach', '')}")

@@ -105,7 +105,9 @@ function renderSceneProblems(problems) {
         <b>${failing.length} scene(s) in the video still fail their own checks:</b>
         <ul class="ready-checks">${failing.map(e => `<li>Scene ${e.scene}
           (${escapeHtml(e.section)}): ${escapeHtml(e.checks.join(", "))}</li>`).join("")}</ul>
-        <button class="btn" data-goto="generation">Remake them on Generation</button>
+        <button class="btn" id="remake-failing-button"
+          data-visual-ids="${escapeHtml(failing.map(e => e.visual_id).join(","))}">
+          Remake these ${failing.length} scene(s)</button>
       </div>` : ""}
     ${below.length ? `
       <div class="notice warn" style="margin:0 0 10px">
@@ -424,6 +426,24 @@ function wireReviewingStage(stage, navigateToStage, renderAgentStage) {
 
   wireGotoButtons(navigateToStage);
   select("#reviewing-agent-button").onclick = () => renderAgentStage(stage);
+
+  // Remakes the failing scenes from the start -- the button used to only open
+  // Generation, and read as broken -- then shows them being made there.
+  const remakeButton = select("#remake-failing-button");
+  if (remakeButton) remakeButton.onclick = async () => {
+    remakeButton.disabled = true;
+    try {
+      await requestJsonFromApi(projectApiPath("/scene-agents"), {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ visual_ids: remakeButton.dataset.visualIds.split(","),
+                               fresh: true }),
+      });
+      navigateToStage("generation");
+    } catch (remakeFailure) {
+      remakeButton.disabled = false;
+      showStageNotice("bad", `Could not start the remake — ${remakeFailure.message}`);
+    }
+  };
 
   // Into the render queue at the bottom of the page; when this project's
   // render finishes there, this page redraws to play it.

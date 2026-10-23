@@ -438,3 +438,29 @@ def test_a_picture_another_scene_plans_to_show_is_not_offered_as_unused(tmp_path
     assert shown == {str(tmp_path / "extraction/assets/galen.png"): ["scene 1, planned"]}
     assert scene_pictures.shown_pictures(project, planned=False) == {}, \
         "the video's count is of what was made, not what was planned"
+
+
+def test_a_scene_with_nothing_to_show_may_ask_for_a_picture_once(tmp_path, monkeypatch):
+    """Scenes about an idea the deck has no picture of failed "It pictures the idea"
+    in every round. The maker may ask for one painting; it is offered back."""
+    from pipeline import scene_illustration
+    from pipeline.scene_pictures import made_for_scene, paint_asked
+
+    look = {"background": "#ffffff"}
+    brief = {"on_screen": "PICTURE: none\nDRAW: none", "look": look, "narration": "Dualism."}
+
+    def paint(folder, on_screen, look, state, narration="", note=""):
+        path = scene_illustration._path(folder, scene_illustration.wanted(on_screen), look)
+        path.write_bytes(b"png")
+        path.with_suffix(".json").write_text('{"checked": true}', encoding="utf-8")
+        return path
+
+    monkeypatch.setattr(scene_illustration, "paint", paint)
+    monkeypatch.setattr("pipeline.scene_lab.write_brief", lambda project, visual: {"new": 1})
+    spec = {"shots": [], "paint": "a clockwork body and a glowing mind beside it"}
+
+    assert paint_asked(None, None, tmp_path, spec, brief, state()) == {"new": 1}
+    made = made_for_scene(tmp_path, brief["on_screen"], look)
+    assert made and made[0][2]["what"] == spec["paint"], "offered as the scene's own"
+    assert paint_asked(None, None, tmp_path, spec, brief, state()) is None, "once a scene"
+    assert paint_asked(None, None, tmp_path, {"shots": []}, brief, state()) is None

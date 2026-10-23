@@ -306,11 +306,47 @@ def made_for_scene(folder: Path, on_screen: str, look: dict[str, Any]) -> list[t
         made.append(("painted for this scene", painted,
                      {"what": scene_illustration.wanted(on_screen), "role": "explains",
                       "measured": "Painted and checked: right subject, framed, no words."}))
+    asked = _asked_painting(folder)
+    if asked and not scene_illustration.wanted(on_screen):
+        painted = scene_illustration.kept(folder, f"ILLUSTRATE: {asked}", look)
+        if painted is not None:
+            made.append(("painted for this scene, as its maker asked", painted,
+                         {"what": asked, "role": "explains", "measured": "Painted and "
+                          "checked: right subject, framed, no words."}))
     for path, meta in icon_pictures.kept(folder, on_screen):
         made.append((f"an icon for this scene: {meta.get('source', '')}", path,
                      {"what": meta.get("title") or meta.get("asked", ""), "role": "icon",
                       "measured": f"Asked for: {meta.get('asked', '')}."}))
     return made
+
+
+ASKED_PAINTING = "painting-asked.txt"
+PAINTED = ("A picture was painted for this scene, as you asked: it is in the catalogue now "
+           "as this scene's own picture. Answer again, with it as the main picture.")
+
+
+def _asked_painting(folder: Path) -> str:
+    path = folder / ASKED_PAINTING
+    return path.read_text(encoding="utf-8").strip() if path.exists() else ""
+
+
+def paint_asked(project, visual, folder: Path, spec: dict[str, Any], brief: dict[str, Any],
+                state: dict[str, Any]) -> dict[str, Any] | None:
+    """The scene's maker asked for a picture no offered one shows (its answer's
+    "paint"): painted and checked like any other, once per scene, and the brief
+    written again with it. Scenes about an idea the deck has no picture of -- dualism
+    -- failed "It pictures the idea" in every round, with nothing to show it with.
+    None when nothing was asked, it was asked before, or it could not be painted."""
+    from pipeline import scene_illustration
+    from pipeline.scene_lab import write_brief
+
+    asked = str(spec.get("paint") or "").strip()[:300]
+    if not asked or _asked_painting(folder) or scene_illustration.wanted(brief["on_screen"]):
+        return None
+    (folder / ASKED_PAINTING).write_text(asked, encoding="utf-8")
+    painted = scene_illustration.paint(folder, f"ILLUSTRATE: {asked}", brief["look"], state,
+                                       brief["narration"])
+    return write_brief(project, visual) if painted is not None else None
 
 
 def prepare(project, visual, brief: dict[str, Any], state: dict[str, Any],

@@ -45,8 +45,9 @@ def get_scene(slug: FromPath[str], visual_id: FromPath[str]) -> dict[str, Any]:
 async def start_scene_agents(slug: FromPath[str], data: dict[str, Any]) -> dict[str, Any]:
     """AI: make these scenes (`visual_ids`) on the server -- or, with no ids, every
     scene without a clip that passed. With `instruction`, a scene is changed as asked.
-    `everything` remakes every scene from nothing. Not before the first section's
-    storyboard is approved: it sets the style every scene follows."""
+    `everything` remakes every scene from nothing; `fresh` remakes the ones named
+    from nothing. Not before the first section's storyboard is approved: it sets the
+    style every scene follows."""
     from pipeline.operations import require_project as _project
     from pipeline.storyboard import gate
 
@@ -54,8 +55,8 @@ async def start_scene_agents(slug: FromPath[str], data: dict[str, Any]) -> dict[
     if reason:
         raise ClientException(detail=reason)
     ids = data.get("visual_ids")
-    fresh = bool(data.get("everything"))
-    if fresh:
+    fresh = bool(data.get("everything") or data.get("fresh"))
+    if data.get("everything"):
         from pipeline.generation import VisualPlanStore
         from pipeline.operations import require_project
 

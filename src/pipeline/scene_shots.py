@@ -63,6 +63,9 @@ topic or gives its context can open on the deck's own art (opener). Narration th
 in steps ("step two... then...") is steps, or one shot per step, not one still hero. Spread
 the "when"s over the WHOLE narration: the frame must change on the later sentences too --
 end on a key_idea when the narration ends on its point.
+When no offered picture shows the idea, add "paint": "one still picture, its subject
+exactly" to the json (once per scene): it is painted, checked and offered to you as this
+scene's own picture -- better than a scene of words alone.
 Labels are a few words from the narration. A callout names a part the narration speaks of,
 on the words that speak of it -- never one it does not (a desk, a pedestal, a head that
 is only there): a label that teaches nothing is clutter, and none is better. The label
