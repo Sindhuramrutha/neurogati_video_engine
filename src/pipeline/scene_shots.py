@@ -295,13 +295,17 @@ def uncovered(spec: dict, words: list[dict], seconds: float) -> str:
             "or set later parts' \"when\" on them.")
 
 
-def unheard(spec: dict, words: list[dict]) -> list[str]:
+def unheard(spec: dict, words: list[dict], narration: str = "") -> list[str]:
     """The "when"s that are not words the narration says. One not found was timed by
-    a guess: two of three steps never came on screen before the scene moved on."""
+    a guess: two of three steps never came on screen before the scene moved on. The
+    written narration counts too: the voice's timings spell a name as it is said
+    ("Layvenhook"), and "Leeuwenhoek" was refused in every round."""
     if not words:                  # no timings yet: nothing to time the cues against
         return []
-    spoken = " " + " ".join(_norm(w.get("text", "")) for w in words) + " "
-    return [cue for cue in _cues(spec) if _norm(cue) and f" {_norm(cue)} " not in spoken]
+    said = [" " + " ".join(_norm(w.get("text", "")) for w in words) + " ",
+            f" {_norm(narration)} "]
+    return [cue for cue in _cues(spec)
+            if _norm(cue) and not any(f" {_norm(cue)} " in text for text in said)]
 
 
 def _norm(text: str) -> str:

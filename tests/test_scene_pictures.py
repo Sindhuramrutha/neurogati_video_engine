@@ -374,6 +374,10 @@ def test_a_cue_must_be_words_the_narration_says():
         {"label": "Lab", "when": "Straight to the lab"}]}]}
 
     assert unheard(spec, words) == ["no sense"]
+    # The voice says a name as it is respelled; the written narration has the name.
+    said = [{"text": w} for w in "Layvenhook saw animalkyoolz".split()]
+    named = {"shots": [{"template": "key_idea", "statement": "x", "when": "Leeuwenhoek"}]}
+    assert unheard(named, said, "Leeuwenhoek saw animalcules") == []
 
 
 def test_another_scene_s_subject_is_never_this_scene_s_main_picture():

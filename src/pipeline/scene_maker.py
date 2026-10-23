@@ -345,7 +345,7 @@ def _written(system, brief, notes, earlier, entry, code, feedback, instruction, 
             answer = parse_answer(text)
             merged = {**spec, **answer.spec}
             if not answer.code and not answer.edits and is_shots(answer.spec):
-                missing = unheard(answer.spec, brief.get("words") or [])
+                missing = unheard(answer.spec, brief.get("words") or [], brief["narration"])
                 if missing:
                     raise ValueError(
                         "these \"when\"s are not words the narration says, so they cannot "
