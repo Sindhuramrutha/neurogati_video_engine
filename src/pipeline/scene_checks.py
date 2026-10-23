@@ -334,8 +334,18 @@ def frame_checks(video: Path, seconds: float, background: str, folder: Path) -> 
         return [_check("frames", "Frames can be read", "Sampled frames open", FAIL,
                        "No frame could be read from the clip.")]
 
-    blank = [i for i, f in enumerate(frames)
-             if ImageStat.Stat(f.convert("L")).stddev[0] < FLATTEST_FRAME]
+    def flat(frame) -> bool:
+        return ImageStat.Stat(frame.convert("L")).stddev[0] < FLATTEST_FRAME
+
+    # A sample that lands in the half second between two shots is taken again a
+    # moment on: a passing cut is not a blank frame, an empty frame that is held is.
+    for index, frame in enumerate(frames):
+        if flat(frame):
+            at = min(seconds - 0.1, seconds * FRAME_SHARES[index] + 1.2)
+            again = _frame(video, at, kept / f"frame-{index}.png")
+            if again is not None:
+                frames[index] = again
+    blank = [i for i, f in enumerate(frames) if flat(f)]
     distinct, last = 1, frames[0]
     changes = []
     for frame in frames[1:]:

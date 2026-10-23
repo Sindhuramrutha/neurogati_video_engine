@@ -63,7 +63,7 @@ from pipeline.scene_prompt import (  # noqa: F401 -- kit_api, compact: read thro
     system_prompt,
 )
 from pipeline.scene_round import render_round
-from pipeline.scene_shots import Pictures, is_shots, program_for, uncovered
+from pipeline.scene_shots import Pictures, is_shots, program_for, uncovered, unheard
 from pipeline.scene_state import STOP, add_event, doing, load_state, save_state
 
 logger = logging.getLogger(__name__)
@@ -331,6 +331,12 @@ def _written(system, brief, notes, earlier, entry, code, feedback, instruction, 
             answer = parse_answer(text)
             merged = {**spec, **answer.spec}
             if not answer.code and not answer.edits and is_shots(answer.spec):
+                missing = unheard(answer.spec, brief.get("words") or [])
+                if missing:
+                    raise ValueError(
+                        "these \"when\"s are not words the narration says, so they cannot "
+                        "be timed: " + "; ".join(f'"{cue}"' for cue in missing[:5])
+                        + ". Copy each one exactly from the narration's words.")
                 # The shots, as data: the program is written from them (scene_shots).
                 renderer = "manim"
                 merged = {**merged, "renderer": renderer}

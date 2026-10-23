@@ -362,6 +362,20 @@ def test_a_shot_is_held_until_the_words_the_next_one_begins_on():
     assert hero < hold < program.index("FadeOut")
 
 
+def test_a_cue_must_be_words_the_narration_says():
+    """A "when" not found was timed by a guess: two of three steps never came on
+    screen before the scene moved on."""
+    from pipeline.scene_shots import unheard
+
+    words = [{"text": w} for w in "He woke in the night, and went straight to the lab.".split()]
+    spec = {"shots": [{"template": "steps", "title": "A dream", "steps": [
+        {"label": "Woke", "when": "woke in the night"},
+        {"label": "Notes", "when": "no sense"},
+        {"label": "Lab", "when": "Straight to the lab"}]}]}
+
+    assert unheard(spec, words) == ["no sense"]
+
+
 def test_another_scene_s_subject_is_never_this_scene_s_main_picture():
     """The robot hand holding a brain was the subject of the opening and again of the
     next section's scene."""

@@ -741,7 +741,7 @@ class ExplainerScene(Scene):
         if cue:
             self.until(min(self.when(cue), BRIEF.seconds - 3.0))
 
-    def _wrapped(self, text: str, width: float, size: int) -> Text:
+    def _wrapped(self, text: str, width: float, size: int, **style) -> Text:
         """Words broken into lines that fit `width` (scene units) at `size`,
         measured -- between words only, never inside one ("Electroc/hemical"); a
         word wider than the line sets the type smaller, down to the smallest."""
@@ -757,7 +757,7 @@ class ExplainerScene(Scene):
                 lines[-1] = trial
             else:
                 lines.append(word)
-        return self.label("\n".join(lines), size=size)
+        return self.label("\n".join(lines), size=size, **style)
 
     def _fit(self, path: str, width: float, height: float, at: tuple[float, float]):
         image = self.picture(path, height=1.0)
@@ -1003,9 +1003,11 @@ class ExplainerScene(Scene):
             # Words in an accent only where the accent reads; else in the ink.
             readable = _contrast(colour, self.look["background"]) >= 4.5
             ink = colour if readable else self.look["text"]
-            parts = [self.label(heading, size=self.HEADING_SIZE, bold=True, color=ink,
-                                at=(x, top))]
-            y = top - 0.6
+            # Wrapped to its own column: a long heading ran across the dividing line.
+            head = self._wrapped(heading, 5.8, self.HEADING_SIZE, bold=True, color=ink)
+            head.move_to([x, top + 0.25 - head.height / 2, 0])
+            parts = [head]
+            y = head.get_bottom()[1] - 0.35
             if picture:
                 image = self._fit(picture, 5.6, 2.6, (x, y - 1.3))
                 parts.append(image)

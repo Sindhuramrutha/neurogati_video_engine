@@ -27,6 +27,7 @@ TEMPLATES = ("hero", "steps", "compare", "person", "key_idea", "opener", "flow",
              "timeline")
 MOST_SHOTS = 3
 MOST_CALLOUT_WORDS = 4
+MOST_IDEA_WORDS = 14            # more read as a paragraph on screen
 # A label with one of these says something ("thought is segmented"); it names nothing.
 STATING = {"is", "are", "was", "were", "be", "been", "has", "have", "had", "does", "did"}
 
@@ -187,7 +188,12 @@ def _shot_code(shot: dict, pictures: Pictures, at: int) -> list[str]:
                 f"{_text(shot.get('line'), f'{where} line')!r}, cue={opening}, "
                 f"line_cue={_when(shot.get('line_when'))})"]
     if template == "key_idea":
-        return [f"self.key_idea({_text(shot.get('statement'), f'{where} statement')!r}, "
+        statement = _text(shot.get("statement"), f"{where} statement")
+        if len(statement.split()) > MOST_IDEA_WORDS:
+            raise ValueError(f"{where} statement has {len(statement.split())} words: one "
+                             f"point to remember is at most {MOST_IDEA_WORDS} -- the narration "
+                             "says the rest")
+        return [f"self.key_idea({statement!r}, "
                 f"{_picture(shot.get('picture'), pictures, where, main=True)}, "
                 f"cue={opening})"]
     if template == "opener":
@@ -283,6 +289,21 @@ def uncovered(spec: dict, words: list[dict], seconds: float) -> str:
             f'while the narration says "{said}" the frame stands still. Give those words a '
             "shot that begins on them -- a key_idea with their point, or steps or compare -- "
             "or set later parts' \"when\" on them.")
+
+
+def unheard(spec: dict, words: list[dict]) -> list[str]:
+    """The "when"s that are not words the narration says. One not found was timed by
+    a guess: two of three steps never came on screen before the scene moved on."""
+    if not words:                  # no timings yet: nothing to time the cues against
+        return []
+    spoken = " " + " ".join(_norm(w.get("text", "")) for w in words) + " "
+    return [cue for cue in _cues(spec) if _norm(cue) and f" {_norm(cue)} " not in spoken]
+
+
+def _norm(text: str) -> str:
+    import re
+
+    return " ".join(re.findall(r"[a-z0-9']+", text.lower()))
 
 
 def _begins(shot: dict) -> str | None:
