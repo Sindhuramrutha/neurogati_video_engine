@@ -235,7 +235,8 @@ class TheScene(ExplainerScene):
     def construct(self):
         end = self.brief.seconds
         self.hero("picture.png", title="The body", callouts=[
-            ("Touch", (0.3, 0.3), None), ("Movement", (0.7, 0.5), None),
+            ("Touch", (0.3, 0.3), None, (0.2, 0.2, 0.4, 0.4)),
+            ("Movement", (0.7, 0.5), None, (0.6, 0.4, 0.8, 0.6)),
             ("Reach", (0.8, 0.2), None)],
             moves=[([(0.1, 0.5), (0.5, 0.4), (0.9, 0.5)], None)])
         self.until(end * 0.2)

@@ -101,8 +101,8 @@ def _words(text: str) -> str:
     return " ".join(re.findall(r"[a-z0-9]+", text.lower()))
 
 
-def anchor(parts: list[dict[str, Any]], name: str) -> tuple[float, float] | None:
-    """The middle of the part `name` names, when the picture has it and the model was
+def region(parts: list[dict[str, Any]], name: str) -> list[float] | None:
+    """The box of the part `name` names, when the picture has it and the model was
     sure of it; None otherwise (no pointer is drawn)."""
     wanted = _words(name)
     if not wanted:
@@ -110,9 +110,15 @@ def anchor(parts: list[dict[str, Any]], name: str) -> tuple[float, float] | None
     sure = [p for p in parts if p.get("sure")]
     match = next((p for p in sure if _words(p["name"]) == wanted), None) or next(
         (p for p in sure if wanted in _words(p["name"]) or _words(p["name"]) in wanted), None)
-    if match is None:
+    return match["box"] if match else None
+
+
+def anchor(parts: list[dict[str, Any]], name: str) -> tuple[float, float] | None:
+    """The middle of the part `name` names (see `region`)."""
+    box = region(parts, name)
+    if box is None:
         return None
-    left, top, right, bottom = match["box"]
+    left, top, right, bottom = box
     return (left + right) / 2, (top + bottom) / 2
 
 

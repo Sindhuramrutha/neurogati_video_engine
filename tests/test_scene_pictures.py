@@ -342,7 +342,8 @@ def test_a_hero_s_callouts_are_drawn_to_located_parts_and_unknown_ones_left_out(
         "moves": [{"through": ["cerebellum", "spinal cord"], "when": "down"}]}]},
         Pictures(1, {0: PARTS}))
 
-    assert "('Cerebellum', (0.60, 0.70), 'balance')" in program
+    assert "('Cerebellum', (0.60, 0.70), 'balance', (0.50, 0.60, 0.70, 0.80))" \
+        in program, "the part's box goes with it, for the spotlight"
     assert "Brain'" not in program, "a pointer at the statue's clothing is not drawn"
     assert "moves=[([(0.60, 0.70), (0.57, 0.90)], 'down')]" in program
 

@@ -21,7 +21,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from pipeline.picture_parts import anchor
+from pipeline.picture_parts import anchor, region
 
 TEMPLATES = ("hero", "steps", "compare", "person", "key_idea", "opener", "flow", "hub",
              "timeline")
@@ -144,10 +144,12 @@ def _shot_code(shot: dict, pictures: Pictures, at: int) -> list[str]:
                 raise ValueError(f"{where} callout {label!r} is a statement: a callout names "
                                  f"a part of the picture in 1 to {MOST_CALLOUT_WORDS} words "
                                  "('Frog's leg'); put a statement in a key_idea shot")
-            point = anchor(found, str(c.get("part") or label))
-            if point is not None:     # no part surely there: no pointer at all
-                callouts.append(f"({label!r}, ({point[0]:.2f}, {point[1]:.2f}), "
-                                f"{_when(c.get('when'))})")
+            box = region(found, str(c.get("part") or label))
+            if box is not None:       # no part surely there: no pointer at all
+                left, top, right, bottom = box
+                middle = f"({(left + right) / 2:.2f}, {(top + bottom) / 2:.2f})"
+                callouts.append(f"({label!r}, {middle}, {_when(c.get('when'))}, "
+                                f"({left:.2f}, {top:.2f}, {right:.2f}, {bottom:.2f}))")
         moves = []
         for move in _items(shot.get("moves", []), f"{where} moves", 0, 3):
             through = [anchor(found, str(name)) for name in move.get("through") or []]
