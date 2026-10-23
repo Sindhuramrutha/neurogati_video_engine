@@ -320,6 +320,18 @@ def test_a_callout_points_at_the_middle_of_the_part_it_names():
     assert anchor(PARTS, "toga") is None, "not in the picture: no pointer"
 
 
+def test_a_part_s_box_is_read_in_the_vision_model_s_own_convention():
+    """Boxes come as [ymin, xmin, ymax, xmax] out of 1000; read as fractions, every
+    one was clamped to nothing and no picture of Chapter 1 had a part to point to."""
+    from pipeline.picture_parts import _box
+
+    # Aristotle, upper left of the painting; the lying figure, wide and low.
+    assert _box([198, 210, 560, 458]) == [0.21, 0.198, 0.458, 0.56]
+    assert _box([804, 404, 868, 642]) == [0.404, 0.804, 0.642, 0.868]
+    assert _box([0.2, 0.1, 0.6, 0.5]) == [0.1, 0.2, 0.5, 0.6]
+    assert _box([500, 500, 500, 600]) is None and _box([1, 2]) is None
+
+
 def test_a_hero_s_callouts_are_drawn_to_located_parts_and_unknown_ones_left_out():
     from pipeline.scene_shots import Pictures
 

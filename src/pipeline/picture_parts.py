@@ -19,15 +19,15 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-PARTS_FILE = "picture-parts-v2.json"       # beside the scenes, for the whole project
+PARTS_FILE = "picture-parts-v3.json"       # beside the scenes, for the whole project
 MOST_PARTS = 12
 _LOCK = threading.Lock()
 
 
 class Part(BaseModel):
     name: str = Field(description="What the part is, in 1 to 4 words, as a label would say it.")
-    box: list[float] = Field(description="Its bounding box as fractions of the picture's "
-                                         "width and height: [left, top, right, bottom].")
+    box: list[float] = Field(description="Its bounding box as [ymin, xmin, ymax, xmax], each "
+                                         "from 0 to 1000 of the picture's height or width.")
     sure: bool = Field(description="True only when this part is clearly visible in this "
                                    "picture and the box is tight around it.")
 
@@ -56,10 +56,21 @@ def _ask(path: Path) -> dict[str, Any]:
         raise ModelCallFailed(str(failure)) from failure
     parts = []
     for part in found.parts[:MOST_PARTS]:
-        box = [min(1.0, max(0.0, float(v))) for v in (part.box + [0, 0, 0, 0])[:4]]
-        if box[2] > box[0] and box[3] > box[1]:
+        box = _box(part.box)
+        if box is not None:
             parts.append({"name": part.name.strip()[:40], "box": box, "sure": part.sure})
     return {"summary": found.summary.strip()[:400], "parts": parts}
+
+
+def _box(asked: list[float]) -> list[float] | None:
+    """[left, top, right, bottom] as fractions, from the model's [ymin, xmin, ymax,
+    xmax] out of 1000 (its own convention: read as fractions in the other order, every
+    box was clamped to nothing and no picture had a part). None when it is empty."""
+    if len(asked) != 4:
+        return None
+    scale = 1000.0 if max(asked) > 1.5 else 1.0
+    top, left, bottom, right = (min(1.0, max(0.0, float(v) / scale)) for v in asked)
+    return [left, top, right, bottom] if right > left and bottom > top else None
 
 
 def parts_of(scenes: Path, path: str, state: dict[str, Any] | None = None) -> dict[str, Any]:
