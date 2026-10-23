@@ -695,6 +695,9 @@ class ExplainerScene(Scene):
                           color=self.colour(index))
                 label.next_to(dot, RIGHT, buff=0.4)
                 dots.append(dot)
+            # Centred as a block: held to the left edge, it left most of the frame empty.
+            column = VGroup(spine, *dots, *labels)
+            column.shift(RIGHT * -column.get_center()[0])
         whole = VGroup(spine, *dots, *labels)
         self.safe(whole)
         whole.spine, whole.dots, whole.labels = spine, dots, labels

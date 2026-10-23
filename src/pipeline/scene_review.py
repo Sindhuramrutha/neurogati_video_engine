@@ -158,7 +158,9 @@ def review_frames(folder: Path, brief: dict[str, Any], question: str = "") -> Ve
     user = "\n\n".join(part for part in [
         "Narration (spoken over the scene):\n"
         + str(brief.get("narration", ""))[:LONGEST_NARRATION],
-        f"What the scene should show: {brief.get('on_screen', '')}",
+        "What the script suggested showing -- direction, not a drawing to match: judge "
+        "whether the scene teaches the same idea on the words, not whether it copies "
+        f"these drawings or animations: {brief.get('on_screen', '')}",
         f"How the section is told: {brief.get('how', '')}",
         f"Who it is for: {brief.get('audience', 'not stated')}",
         "The scene's own pictures: " + (", ".join(own_pictures(brief)) or "none"),
