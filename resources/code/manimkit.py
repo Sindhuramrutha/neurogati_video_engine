@@ -736,8 +736,10 @@ class ExplainerScene(Scene):
     # arrives on (`cue`: words from the narration). End the scene with self.finish().
 
     def _at_cue(self, cue: str | None) -> None:
+        # Never later than a few seconds before the end: a closing point cued on the
+        # narration's last words was still fading in as the scene ended.
         if cue:
-            self.until(self.when(cue))
+            self.until(min(self.when(cue), BRIEF.seconds - 3.0))
 
     def _wrapped(self, text: str, width: float, size: int) -> Text:
         """Words broken into lines that fit `width` (scene units) at `size`,
