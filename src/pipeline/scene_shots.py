@@ -59,7 +59,10 @@ topic or gives its context can open on the deck's own art (opener). Narration th
 in steps ("step two... then...") is steps, or one shot per step, not one still hero. Spread
 the "when"s over the WHOLE narration: the frame must change on the later sentences too --
 end on a key_idea when the narration ends on its point.
-Labels are a few words from the narration. A picture whose catalogue entry has "main_of"
+Labels are a few words from the narration. A callout names a part the narration speaks of,
+on the words that speak of it -- never one it does not (a desk, a pedestal, a head that
+is only there): a label that teaches nothing is clutter, and none is better.
+A picture whose catalogue entry has "main_of"
 is another scene's subject: here it may only be small (steps, compare), never the picture
 of a hero, person, opener or key_idea. A picture painted for this scene was made to be its
 main picture: show it large. The brief's DRAW, LAYOUT and BEATS are direction -- what to
