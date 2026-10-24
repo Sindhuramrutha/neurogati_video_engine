@@ -179,3 +179,11 @@ def every_picture_handed_on(request, monkeypatch):
         monkeypatch.setattr(
             "pipeline.assets.AssetLibrary.handed_on",
             lambda self: [f for f in self.figures if f.in_extraction and not f.is_left_out])
+
+
+@pytest.fixture(autouse=True)
+def no_art_direction(request, monkeypatch):
+    """A scene's look is planned by the art director (`art_direction`) before it is
+    made; in tests a scene has no direction unless a test is marked `real_direction`."""
+    if request.node.get_closest_marker("real_direction") is None:
+        monkeypatch.setattr("pipeline.art_direction.ensure", lambda project, visual_id: None)

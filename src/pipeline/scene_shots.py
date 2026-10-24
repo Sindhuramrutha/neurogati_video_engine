@@ -27,7 +27,7 @@ TEMPLATES = ("hero", "steps", "compare", "person", "key_idea", "opener", "flow",
              "timeline")
 MOST_SHOTS = 3
 MOST_CALLOUT_WORDS = 4
-MOST_IDEA_WORDS = 14            # more read as a paragraph on screen
+MOST_IDEA_WORDS = 18            # more read as a paragraph on screen (the check allows 18)
 # A label with one of these says something ("thought is segmented"); it names nothing.
 STATING = {"is", "are", "was", "were", "be", "been", "has", "have", "had", "does", "did"}
 
@@ -63,6 +63,9 @@ topic or gives its context can open on the deck's own art (opener). Narration th
 in steps ("step two... then...") is steps, or one shot per step, not one still hero. Spread
 the "when"s over the WHOLE narration: the frame must change on the later sentences too --
 end on a key_idea when the narration ends on its point.
+The brief's "direction" is the art director's plan for this scene -- its style, picture,
+background, layout and motion; its picture and background are already made for you.
+Follow it; depart from it only for a reason you give in "approach".
 The scene's pictures are yours: look at what each shows, and use it, leave it out, or
 have one painted -- add "paint": "one still picture, its subject and style exactly" to
 the json, for one no offered picture shows, or for a better version of one that is not
@@ -124,8 +127,11 @@ def _index(value: Any, pictures: Pictures, where: str, main: bool = False) -> in
     except (TypeError, ValueError) as wrong:
         raise ValueError(f"{where}: a picture is an index into assets.pictures") from wrong
     if not 0 <= index < pictures.count:
-        raise ValueError(f"{where}: there is no picture {index} "
-                         f"(the brief offers {pictures.count})")
+        # A scene with no picture asked for one 23 times; it is told how to get one.
+        raise ValueError(f"{where}: there is no picture {index} (the brief offers "
+                         f"{pictures.count}). To show one, ask for it painted: add "
+                         "\"paint\": \"the picture, its subject and style exactly\" to the "
+                         "json, or use a shot without a picture")
     if main and index in pictures.taken:
         # The same picture scene after scene made the video look like one scene.
         raise ValueError(f"{where}: picture {index} is another scene's subject; here it may "

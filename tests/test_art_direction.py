@@ -1,0 +1,44 @@
+"""The video's look is planned before its scenes are made, reviewed by its director,
+and made real before each scene's first round."""
+
+import json
+
+import pytest
+
+from pipeline import art_direction
+from pipeline.art_direction import SceneLook, SectionLooks
+from pipeline.generation import VisualPlanStore
+from tests.test_scene_lab import project_root, scripted_project  # noqa: F401
+
+
+def look(number, kind="image"):
+    return SceneLook(scene=number, style="flat cartoon", picture=f"a frog heart {number}",
+                     background_kind=kind, background="a pale botanical border",
+                     colours=["#fdf6ec", "#efe4ff"], layout="centre", motion="lit on words")
+
+
+@pytest.mark.real_direction
+def test_each_section_is_planned_then_reviewed_and_kept(project_root, monkeypatch):  # noqa: F811
+    slug, project, visual = scripted_project("Directed")
+    asked = []
+
+    def model(response_model, system, user, max_tokens=0):
+        asked.append(user)
+        numbers = [index for index, _ in enumerate(
+            VisualPlanStore(project.root).load().visuals, start=1)]
+        return SectionLooks(scenes=[look(n, "gradient" if len(asked) % 2 else "image")
+                                    for n in numbers])
+
+    monkeypatch.setattr("pipeline.llm.complete_structured", model)
+
+    art_direction.direct(slug)
+
+    sections = len({v.section_id for v in VisualPlanStore(project.root).load().visuals})
+    assert len(asked) == 2 * sections, "each section planned, then reviewed"
+    assert "Review it as a demanding director" in asked[1]
+    kept = art_direction.for_scene(project, visual.id)
+    assert kept["background_kind"] == "image", "the reviewed plan is the one kept"
+    assert json.loads((project.root / "generation" / "art-direction.json")
+                      .read_text(encoding="utf-8"))["scenes"]
+    art_direction.direct(slug)
+    assert len(asked) == 2 * sections, "a planned section is not planned again"

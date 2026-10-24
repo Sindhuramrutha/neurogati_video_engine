@@ -364,6 +364,31 @@ def paint_asked(project, visual, folder: Path, spec: dict[str, Any], brief: dict
     return write_brief(project, visual) if painted is not None else None
 
 
+def _directed(project, visual, folder: Path, brief: dict[str, Any],
+              state: dict[str, Any]) -> dict[str, Any]:
+    """The art director's plan made real before the first round: the scene's planned
+    background, and its planned picture when the script asked none painted -- so a
+    scene never depends on its maker remembering either."""
+    from pipeline import art_direction, scene_backgrounds, scene_illustration
+
+    direction = art_direction.ensure(project, visual.id)
+    if not direction:
+        return brief
+    if not scene_backgrounds.read(folder):
+        planned = {"kind": direction.get("background_kind"),
+                   "describe": direction.get("background", ""),
+                   "colours": direction.get("colours") or [],
+                   "split": direction.get("split", "none")}
+        brief = scene_backgrounds.choose(project, visual, folder, {"background": planned},
+                                         brief, state) or brief
+    picture = str(direction.get("picture") or "")
+    painted = scene_illustration.wanted(brief["on_screen"])
+    if picture and not picture.lower().startswith("chosen") and not painted:
+        asked = f"{picture} -- in this style: {direction.get('style', '')}"
+        brief = paint_asked(project, visual, folder, {"paint": asked}, brief, state) or brief
+    return brief
+
+
 def prepare(project, visual, brief: dict[str, Any], state: dict[str, Any],
             note: str = "") -> dict[str, Any]:
     """Make what the brief asks for that is not made yet -- the painting (from the
@@ -374,11 +399,12 @@ def prepare(project, visual, brief: dict[str, Any], state: dict[str, Any],
     from pipeline.scene_lab import write_brief
     from pipeline.scene_program import scene_folder
 
+    folder = scene_folder(project, visual, create=True)
+    brief = _directed(project, visual, folder, brief, state)
     on_screen, look, narration = brief["on_screen"], brief["look"], brief["narration"]
     painting, icons = scene_illustration.wanted(on_screen), icon_pictures.wanted(on_screen)
     if not painting and not icons:
         return brief
-    folder = scene_folder(project, visual, create=True)
     if painting:
         scene_illustration.paint(folder, on_screen, look, state, narration, note)
     if icons:

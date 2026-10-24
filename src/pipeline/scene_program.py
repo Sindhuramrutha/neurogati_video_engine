@@ -141,6 +141,7 @@ def time_range(project, visual, seconds: float, section_visuals: list) -> dict[s
 
 def extend_brief(project, visual, folder: Path, brief: dict[str, Any], section) -> dict:
     """The measured, grounded brief a scene program is written and checked against."""
+    from pipeline import art_direction
     from pipeline.extraction import ExtractionStore
     from pipeline.plan_units import section_source_text
     from pipeline.scene_backgrounds import for_brief
@@ -162,6 +163,8 @@ def extend_brief(project, visual, folder: Path, brief: dict[str, Any], section) 
         # What the kit lays under the scene, kept across its shots; None when it
         # has none or a person switched it off (`scene_backgrounds`).
         "background": for_brief(folder),
+        # The art director's plan for this scene (`art_direction`): its maker follows it.
+        "direction": art_direction.for_scene(project, visual.id),
     }
 
 
