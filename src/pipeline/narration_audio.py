@@ -104,6 +104,21 @@ def speak(text: str, path: Path, provider: str, voice: str,
     return replace(spoken, words=words)
 
 
+EDGE_BEFORE_MS = 60           # kept before a scene's first word
+EDGE_AFTER_MS = 200           # and after its last: the word's own fall, never clipped
+
+
+def _speech_span(piece: SpeechResult) -> tuple[int, int]:
+    """(start, end) in ms of the piece to keep: its speech and a short edge. The whole
+    piece when the voice reported no word timings."""
+    if not piece.words:
+        return 0, piece.duration_ms
+    first = piece.words[0].start_ms
+    last = max(w.start_ms + w.duration_ms for w in piece.words)
+    return (max(0, first - EDGE_BEFORE_MS),
+            min(piece.duration_ms, last + EDGE_AFTER_MS))
+
+
 def speak_scenes(scenes: list[str], path: Path, provider: str, voice: str,
                  sounds: dict[str, str] | None = None,
                  pause_ms: int = SCENE_PAUSE_MS,
@@ -127,13 +142,21 @@ def speak_scenes(scenes: list[str], path: Path, provider: str, voice: str,
     with tempfile.TemporaryDirectory() as folder:
         pieces = [speak(scene, Path(folder) / f"scene{index:03d}{path.suffix}", provider,
                         voice, sounds) for index, scene in enumerate(scenes)]
+        # Each scene cut to its speech, a short natural edge kept: the voice's own
+        # silence at both ends of every scene doubled v9's planned pauses -- a
+        # planned second was heard as two. Then the planned pause is added.
+        spans = [_speech_span(piece) for piece in pieces]
         words, offset = [], 0
         for index, piece in enumerate(pieces):
-            words += [WordTiming(w.text, w.start_ms + offset, w.duration_ms) for w in piece.words]
-            offset += piece.duration_ms + gaps[index]
+            start, end = spans[index]
+            words += [WordTiming(w.text, w.start_ms - start + offset, w.duration_ms)
+                      for w in piece.words]
+            offset += (end - start) + gaps[index]
         inputs = [argument for piece in pieces for argument in ("-i", str(piece.audio_path))]
         padded = "".join(
-            f"[{index}:a]aformat=sample_rates=24000:channel_layouts=mono"
+            f"[{index}:a]aformat=sample_rates=24000:channel_layouts=mono,"
+            f"atrim=start={spans[index][0] / 1000:.3f}:end={spans[index][1] / 1000:.3f},"
+            "asetpts=PTS-STARTPTS"
             + (f",apad=pad_dur={gaps[index] / 1000:.3f}" if gaps[index] else "")
             + f"[p{index}];" for index in range(len(pieces)))
         joined = "".join(f"[p{index}]" for index in range(len(pieces)))

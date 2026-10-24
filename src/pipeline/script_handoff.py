@@ -141,7 +141,13 @@ def script_checks(project, script: Script) -> list[dict[str, str]]:
         or "Every written section is close to its planned length."))
 
     length = plan.length
-    spoken = sum(by_id[s.id].estimated_seconds for s in sections if s.id in by_id)
+    # At the voice's own pace: at an assumed 150 words a minute v9's 41.8 minutes
+    # read as 38, inside the 35 to 40 agreed.
+    from pipeline.scripting import estimate_seconds
+    from pipeline.voice_pace import for_project
+
+    pace = for_project(project)
+    spoken = sum(estimate_seconds(by_id[s.id].body, pace) for s in sections if s.id in by_id)
     checks.append(_check(
         "total", "Total length", "Within the length the plan agreed",
         NOT_APPLICABLE if not spoken or not length.is_known

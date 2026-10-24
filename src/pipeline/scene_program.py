@@ -105,6 +105,10 @@ def measure_narration(project, folder: Path, narration: str) -> dict[str, Any]:
     except SpeechFailed as failure:
         raise OperationFailed(f"The narration could not be spoken to measure it: {failure}") \
             from failure
+    from pipeline import voice_pace
+    from pipeline.scripting import count_words
+
+    voice_pace.record(spoken.voice or voice, count_words(narration), spoken.duration_ms)
     facts = {"key": key, "provider": provider, "voice": spoken.voice,
              "seconds": round(spoken.duration_ms / 1000, 2),
              "words": [w.to_dict() for w in spoken.words], "measured_at": _now()}

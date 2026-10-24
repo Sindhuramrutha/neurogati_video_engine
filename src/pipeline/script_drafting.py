@@ -27,6 +27,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from pipeline import voice_pace
 from pipeline.agent_runtime import (
     MAXIMUM_SOURCE_CHARACTERS,
     build_system_prompt,
@@ -111,7 +112,8 @@ def draft_section(slug: str, section_id: str, instruction: str = "") -> dict[str
         written, notes = _write_section(
             agent, plan, script, extraction, section, instruction,
             video_preferences(project.root), section_pictures(project, plan),
-            _facts(project, section), identity_text(project, plan, extraction))
+            _facts(project, section), identity_text(project, plan, extraction),
+            voice_pace.for_project(project))
     except ModelNotConfigured as not_configured:
         raise OperationFailed(str(not_configured)) from not_configured
     except ModelCallFailed as call_failure:
@@ -125,7 +127,7 @@ def draft_section(slug: str, section_id: str, instruction: str = "") -> dict[str
     ] + [written]
     saved = store.save(_script_in_plan_order(project, latest))
 
-    target_words = _target_words(section)
+    target_words = _target_words(section, voice_pace.for_project(project))
     return present_artifact(project, "script", saved) | {
         "stage": Stage.SCRIPT_STAGING.value,
         "agent": agent.name,
@@ -159,6 +161,7 @@ def draft_unwritten_sections(slug: str, instruction: str = "") -> dict[str, Any]
     preferences = video_preferences(project.root)
     pictures = section_pictures(project, plan)
     identity = identity_text(project, plan, extraction)
+    pace = voice_pace.for_project(project)
     _ensure_facts(slug)
 
     store = ScriptStore(project.root)
@@ -171,7 +174,7 @@ def draft_unwritten_sections(slug: str, instruction: str = "") -> dict[str, Any]
         try:
             written, section_notes = _write_section(
                 agent, plan, script, extraction, section, instruction, preferences, pictures,
-                _facts(project, section), identity)
+                _facts(project, section), identity, pace)
         except Exception as failure:          # one section's error, never the run's
             logger.warning("drafting %s failed: %s", section.title, failure, exc_info=True)
             return [f'"{section.title}" could not be drafted: {failure}']
@@ -212,8 +215,9 @@ def draft_unwritten_sections(slug: str, instruction: str = "") -> dict[str, Any]
 # --- one section --------------------------------------------------------------------
 
 
-def _target_words(section: PlanSection) -> int:
-    return max(20, int(section.estimated_seconds * WORDS_PER_SECOND_OF_SPEECH))
+def _target_words(section: PlanSection, pace: float = WORDS_PER_SECOND_OF_SPEECH * 60) -> int:
+    """Words for the section's seconds at the voice's own pace (`voice_pace`)."""
+    return max(20, int(section.estimated_seconds * pace / 60))
 
 
 def _write_section(
@@ -227,13 +231,14 @@ def _write_section(
     pictures: dict[str, list[str]] | None = None,
     facts: tuple[list[str], list] = ([], []),
     identity: str = "",
+    pace: float = WORDS_PER_SECOND_OF_SPEECH * 60,
 ) -> tuple[SectionScript, list[str]]:
     """Ask for this section's scenes. Returns the section, unsaved, and any notes.
     `facts` are the section's rules from the fact ledger and what they forbid;
     `identity` is what the video is -- its course, which part, what it teaches
     (`video_identity.py`)."""
     notes: list[str] = []
-    target_words = _target_words(section)
+    target_words = _target_words(section, pace)
 
     # The plan decided the scenes: how many, what each does, how long. The
     # script writes into exactly those.
@@ -241,7 +246,7 @@ def _write_section(
     shape = (
         f"Write exactly {len(planned)} scenes, in this order -- the plan decided them; "
         f"do not add, drop, merge or split any. Each scene's seconds are a target at "
-        f"about {round(WORDS_PER_SECOND_OF_SPEECH * 60)} words a minute, not a quota: say "
+        f"about {round(pace)} words a minute (this voice's own pace), not a quota: say "
         f"what the material supports, shorter is fine, and never pad or repeat."
         if planned else
         "Write it as a sequence of scenes of about 15 to 45 seconds (roughly 40 to 110 "

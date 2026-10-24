@@ -58,3 +58,20 @@ def test_each_scene_is_followed_by_the_pause_the_plan_gave_it(tmp_path):
 
     assert abs(measure_audio_duration_ms(joined.audio_path)
                - (sum(alone) + 1500 + 2000)) < 150
+
+
+def test_a_scene_is_cut_to_its_speech_before_the_pause_is_added():
+    """The voice's own silence at both ends of each scene doubled v9's pauses: a planned
+    second was heard as two. The kept span is the speech and a short edge."""
+    from pathlib import Path
+
+    from pipeline.narration_audio import EDGE_AFTER_MS, EDGE_BEFORE_MS, _speech_span
+    from pipeline.speech import SpeechResult
+
+    piece = SpeechResult(audio_path=Path("x.mp3"), duration_ms=6_000, provider_key="edge",
+                         voice="v", words=(WordTiming("One", 400, 300),
+                                           WordTiming("two", 900, 400)))
+    assert _speech_span(piece) == (400 - EDGE_BEFORE_MS, 1300 + EDGE_AFTER_MS)
+    silent = SpeechResult(audio_path=Path("x.mp3"), duration_ms=6_000, provider_key="silent",
+                          voice="")
+    assert _speech_span(silent) == (0, 6_000), "no timings: nothing cut"

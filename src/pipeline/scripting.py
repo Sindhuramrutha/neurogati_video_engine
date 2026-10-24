@@ -59,8 +59,12 @@ def count_words(text: str) -> int:
     return len(text.split())
 
 
-def estimate_seconds(text: str) -> int:
-    return round(count_words(text) / NARRATION_WORDS_PER_MINUTE * 60)
+def estimate_seconds(text: str, words_per_minute: float | None = None) -> int:
+    """Seconds to speak `text`: at the pace given, else of the voice heard last
+    (`voice_pace`) -- 150 words a minute assumed was ten too fast for Neerja."""
+    from pipeline.voice_pace import words_per_minute as heard
+
+    return round(count_words(text) / (words_per_minute or heard()) * 60)
 
 
 class ScriptVariable(BaseModel):
