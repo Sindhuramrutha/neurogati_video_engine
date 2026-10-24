@@ -7,8 +7,8 @@ the queue around it:
   at a time; leaving the page does not stop them;
 - `stop` and `stop_all` drop a scene from the queue, or tell one that is working to
   stop after its round (nothing it made is deleted);
-- `agent_view` and `queue_view` are what the page shows: never a conversation, only
-  status, what is happening now, and the steps taken.
+- `agent_view` and `queue_view` are what the page shows: status, what is happening
+  now, the steps taken, and each ask with how it ended (`conversation`).
 
 A scene never waits for an answer: it finishes, or fails with the reason; the
 person changes it afterwards by saying what to change (`instruction`).
@@ -165,8 +165,33 @@ def agent_view(slug: str, visual_id: str) -> dict[str, Any]:
                                         "tokens", "last_render", "error", "doing",
                                         "updated_at")} \
         | {"events": state["events"][-60:], "running": (slug, visual_id) in _running,
+           "conversation": conversation(state["events"]),
            "status": _shown_status(slug, visual_id, state["status"]),
            "most_renders": MOST_RENDERS}
+
+
+ENDINGS = ("done", "failed", "stopped")
+
+
+def conversation(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Every making of this scene as a turn: what it was asked (blank when it was
+    simply started) and how that making ended, oldest first."""
+    turns: list[dict[str, Any]] = []
+    for event in events:
+        kind, text = event.get("kind"), event.get("text", "")
+        if kind == "start" or text == "Stopped before it started.":
+            asked = "" if kind != "start" or text in ("Started.", "Started again.") else text
+            turns.append({"at": event.get("at", ""), "asked": asked, "answer": "",
+                          "status": "working"})
+            if kind == "start":
+                continue
+        if turns and (kind in ENDINGS or text.startswith("Stopped on an error")):
+            turns[-1].update(answer=text, status=kind if kind in ENDINGS else "failed",
+                             ended_at=event.get("at", ""))
+    for turn in turns[:-1]:              # a later start means this one never finished
+        if turn["status"] == "working":
+            turn.update(status="stopped", answer="Interrupted before it finished.")
+    return turns
 
 
 def queue_view(slug: str) -> dict[str, Any]:

@@ -221,6 +221,7 @@ function renderAgentControls(scene) {
         ${busy ? `<button class="btn" id="stop-agent-button">Stop</button>` : ""}
       </div>
       ${agent.status === "failed" ? `<p class="panel-sub">${escapeHtml(agent.error)}</p>` : ""}
+      ${renderChat(agent)}
       ${!busy ? `
         <div class="scene-actions">
           <input id="scene-instruction" maxlength="600"
@@ -228,6 +229,30 @@ function renderAgentControls(scene) {
           <button class="btn ${scene.code ? "" : "btn-accent"}" id="agent-scene-button">
             ${scene.code ? "Change it" : "Make it"} <span class="fact warn">AI</span></button>
         </div>` : ""}
+    </div>`;
+}
+
+const CHAT_WHEN = at => (at ? new Date(at).toLocaleString([], {
+  day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "");
+
+/** Every ask of this scene and how it ended, oldest first, like a chat. */
+function renderChat(agent) {
+  const turns = agent.conversation ?? [];
+  if (!turns.length) return "";
+  const last = turns.length - 1;
+  return `
+    <div class="scene-chat" id="scene-chat">${turns.map((turn, index) => `
+      <div class="chat-turn asked">${turn.asked
+        ? escapeHtml(turn.asked) : "<i>Make it</i>"}<span class="chat-when">${
+        escapeHtml(CHAT_WHEN(turn.at))}</span></div>
+      <div class="chat-turn answer ${escapeHtml(turn.status)}">${turn.answer
+        ? escapeHtml(turn.answer) : `<i>${agent.running
+          ? `${escapeHtml(agent.doing || "Working on it")}…` : "Interrupted before it finished."}</i>`}${
+        index === last && turn.status === "done" && agent.summary
+          ? `
+
+<b>It made:</b> ${escapeHtml(agent.summary)}` : ""}${turn.ended_at
+        ? `<span class="chat-when">${escapeHtml(CHAT_WHEN(turn.ended_at))}</span>` : ""}</div>`).join("")}
     </div>`;
 }
 
@@ -435,6 +460,8 @@ export function wireSceneLab(rerender, visuals) {
   if (previous) { previous.disabled = at <= 0; previous.onclick = () => step(-1); }
   if (following) { following.disabled = at < 0 || at >= order.length - 1; following.onclick = () => step(1); }
   sceneLabState.step = step;
+  const chat = document.getElementById("scene-chat");
+  if (chat) chat.scrollTop = chat.scrollHeight;          // the latest turn, as a chat opens
   const details = document.querySelector(".scene-details");
   if (details) details.addEventListener("toggle", () => { sceneLabState.detailsOpen = details.open; });
   const close = document.querySelector("#close-scene-button");

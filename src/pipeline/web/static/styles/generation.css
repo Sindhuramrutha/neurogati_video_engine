@@ -4,8 +4,9 @@
 
 .shot-card {
   display: grid; gap: 8px; padding: 11px;
-  background: var(--surface); border: var(--edge) solid var(--line); border-radius: 12px;
+  background: var(--c-orange, #FF8A5B); border: var(--edge) solid var(--line); border-radius: 12px;
 }
+.shot-card .shot-section { color: var(--x-ink, #2A2622); }
 .shot-card.is-stale { background: var(--c-yellow-soft); }
 .shot-card.unbuilt { background: var(--surface-raised); }
 
@@ -245,3 +246,15 @@
 }
 .scene-details > summary { cursor: pointer; font-weight: 800; padding: 4px 0; }
 .scene-details[open] > summary { margin-bottom: 8px; }
+
+/* The scene's conversation: what was asked, and what came of it, oldest first. */
+.scene-chat { display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto;
+  margin: 10px 0; padding: 4px 2px; }
+.chat-turn { max-width: 82%; padding: 9px 12px; border-radius: 14px; font-size: 13.5px;
+  line-height: 1.45; border: 2px solid var(--x-ink, #2A2622); white-space: pre-wrap; }
+.chat-turn.asked { align-self: flex-end; background: var(--c-yellow, #FFD93D);
+  border-bottom-right-radius: 4px; }
+.chat-turn.answer { align-self: flex-start; background: var(--surface, #FFF);
+  border-bottom-left-radius: 4px; }
+.chat-turn.answer.failed, .chat-turn.answer.stopped { background: var(--c-orange-soft, #FFE8DE); }
+.chat-turn .chat-when { display: block; font-size: 11px; color: var(--text-faint); margin-top: 4px; }

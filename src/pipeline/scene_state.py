@@ -15,7 +15,7 @@ from pipeline.generation import _now
 
 STATE = "agent.json"
 STOP = "stop-agent"
-LONGEST_EVENT = 300
+LONGEST_EVENT = 600          # a person's whole ask (the box takes 600)
 
 
 def fresh_state() -> dict[str, Any]:
