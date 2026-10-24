@@ -93,3 +93,21 @@ def test_a_chosen_picture_is_planned_once_in_the_whole_video(project_root,  # no
     assert len(kept) > 1 and kept[0].startswith("chosen: Cover")
     assert sum(p.startswith("chosen") for p in kept) == 1 and kept[1:] == [""] * (len(kept) - 1)
     assert offered[0] == ["Cover"] and all(o == [] for o in offered[1:])
+
+
+def test_the_director_knows_how_real_people_looked(monkeypatch):
+    """Golgi was drawn with a full beard in three videos running."""
+    asked = []
+
+    def model(response_model, system, user, max_tokens=0):
+        asked.append(system)
+        return SectionLooks(scenes=[look(1)])
+
+    monkeypatch.setattr("pipeline.llm.complete_structured", model)
+    visual = type("V", (), {"id": "v1", "scene_id": "s1", "brief": "Golgi",
+                            "narration_preview": "", "section_title": "One"})()
+    art_direction._plan_section([visual], {"v1": 1}, {}, [], [])
+
+    assert "Camillo Golgi" in asked[0] and "no beard" in asked[0]
+    assert "never a row or strip" in SceneLook.model_json_schema()["properties"]["picture"][
+        "description"]

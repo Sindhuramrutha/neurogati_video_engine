@@ -54,6 +54,9 @@ class SceneLook(BaseModel):
                                      "A real person by name, with their known likeness "
                                      "('Lewis Carroll, clean-shaven, dark wavy hair, in "
                                      "his forties'), never an invented one. "
+                                     "One subject, large and whole -- never a row or strip "
+                                     "of small panels, a montage or a collage of frames: a "
+                                     "strip ends up thin and tiny in a wide frame. "
                                      "Only the subject: it is cut out and stood on the "
                                      "background, so its setting -- a room, a landscape, a "
                                      "sky -- belongs to the background, never here.")
@@ -141,6 +144,17 @@ def _pick_in(picture: str, picks: list[str]) -> str:
     return next((pick for pick in picks if pick.lower() in picture.lower()), "")
 
 
+def _likenesses() -> str:
+    """How real people looked (resources/methods/likenesses.md), for describing them."""
+    from pipeline.config import REPO_ROOT
+
+    try:
+        return "\n\n" + (REPO_ROOT / "resources" / "methods" / "likenesses.md").read_text(
+            encoding="utf-8")
+    except OSError:
+        return ""
+
+
 def _narrations(project) -> dict[str, str]:
     from pipeline.scripting import ScriptStore
 
@@ -175,7 +189,8 @@ def _plan_section(visuals: list, number: dict[str, int], narrations: dict[str, s
         "detail sits at its edges round a calm centre -- never a frame or border), the "
         "rest a light "
         "gradient, maybe split into a coloured section -- its layout and its motion on the "
-        "words. Words on screen are optional. No two scenes look alike.")
+        "words. Words on screen are optional. No two scenes look alike."
+        + _likenesses())
     try:
         first = complete_structured(SectionLooks, system, f"{context}\n\n{scenes}",
                                     max_tokens=DIRECTION_TOKENS)

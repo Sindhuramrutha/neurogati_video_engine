@@ -41,7 +41,11 @@ class Scores(BaseModel):
     composition: int = Field(description="1-5. One focal point, balanced, the frame used, "
                                          "nothing overlapping or cut off.")
     labels: int = Field(description="1-5. Few, short, readable labels, each beside what it "
-                                    "names; no line through words.")
+                                    "names and TRUE of the very thing it points at; no line "
+                                    "through words. 1: a label names something the part is "
+                                    "not ('mistaken ideas' on a hand), points at nothing, "
+                                    "names what teaches nothing (a cover's publisher), or "
+                                    "pins a person with a dot or ring.")
     motion: int = Field(description="1-5. Things build, move, connect or highlight on the "
                                      "words that say so -- not only fade in and out.")
     finish: int = Field(description="1-5. Would it pass as a finished course video: clean, "
