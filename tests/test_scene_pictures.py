@@ -15,7 +15,18 @@ import pytest
 from pipeline import scene_pictures, scene_vetting
 from pipeline.assets import AssetLibrary, LibraryFigure
 from pipeline.planning import Plan, PlanScene, PlanSection, SourceReference
-from pipeline.scene_shots import program_for
+from pipeline.scene_shots import program_for as written_program
+
+
+def program_for(spec, pictures):
+    """The program, its broken calls joined back onto one line each, to look in."""
+    import re
+
+    code = written_program(spec, pictures)
+    code = re.sub(r"([(\[])\n\s*", r"\1", code)
+    code = re.sub(r",\n\s*([)\]])", r"\1", code)
+    return re.sub(r",\n\s*", ", ", code)
+
 
 # --- what a scene is offered --------------------------------------------------------------
 

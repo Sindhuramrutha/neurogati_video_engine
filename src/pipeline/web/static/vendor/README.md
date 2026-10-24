@@ -20,3 +20,12 @@ can be deleted -- which the browser's own PDF viewer cannot give.
 `pdf.min.js` and `pdf.worker.min.js` are `build/pdf.min.mjs` and
 `build/pdf.worker.min.mjs` from the npm package `pdfjs-dist`, renamed so the
 static server sends them as JavaScript. Both are ES modules.
+
+## CodeMirror 5.65.16 (MIT, `codemirror/LICENSE`)
+
+The code editor for a scene's script in the Generation stage's side panel:
+line numbers, Python colouring, bracket matching and search. The minified files
+are jsDelivr's builds of the npm package `codemirror@5.65.16` (`lib/`, `mode/python`,
+`addon/edit/matchbrackets`, `addon/search/{search,searchcursor}`,
+`addon/dialog/dialog`, `theme/material-darker`). Version 5 rather than 6 because
+it is plain scripts with one global (`CodeMirror`), needing no bundler.

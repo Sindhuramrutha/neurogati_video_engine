@@ -16,6 +16,7 @@
  * page refreshes itself while agents work. A clip that fails a check is never used.
  */
 
+import { mountCodeEditor } from "/static/code-editor.js";
 import { requestJsonFromApi } from "/static/shared-client.js";
 import {
   ICON, applicationState, escapeHtml, hideProgress, icon, projectApiPath, refreshProjectSummary,
@@ -25,6 +26,8 @@ import {
 export const sceneLabState = {
   openId: null, navigate: null, agents: null, poll: null,
   sectionOpen: {},      // section id -> what the person chose; absent: the default
+  drafts: {},           // scene id -> its script as edited and not yet saved
+  editor: null,         // the open scene's code editor
 };
 
 const AGENT_LABELS = {
@@ -256,6 +259,32 @@ function renderChat(agent) {
     </div>`;
 }
 
+/** The scene's script, in a real editor: edited by hand, saved and run from here. */
+function renderCodeEditor(scene) {
+  const draft = sceneLabState.drafts[scene.visual.id];
+  const code = draft ?? scene.code;
+  return `
+    <div class="scene-code-wrap" id="scene-code-wrap">
+      <div class="scene-code-bar">
+        <label class="scene-label" for="scene-code">${escapeHtml(scene.entry)}</label>
+        <span class="fact warn" id="code-unsaved" ${draft === undefined ? "hidden" : ""}>
+          Unsaved changes</span>
+        <div class="spacer"></div>
+        <span class="muted code-keys">Ctrl+S save and run · Ctrl+F find · Ctrl+/ comment</span>
+        <button class="btn" id="code-revert-button" ${draft === undefined ? "hidden" : ""}>
+          Undo my changes</button>
+        <button class="btn" id="code-full-button">Full screen</button>
+        <button class="btn btn-accent" id="run-scene-button" ${code.trim() ? "" : "disabled"}>
+          Save and run</button>
+      </div>
+      <textarea id="scene-code" class="scene-code" spellcheck="false"
+        placeholder="No script yet. Have the agent write one, or write it here.">${escapeHtml(code)}</textarea>
+      <textarea id="scene-code-saved" hidden>${escapeHtml(scene.code)}</textarea>
+      <p class="panel-sub">Saved edits are this scene's program until it is made again: asking
+        the agent to change it, or remaking it, writes it afresh from its shots.</p>
+    </div>`;
+}
+
 /** What the agent made and how: its record, read when wanted. */
 function renderAgentRecord(scene) {
   const agent = scene.agent ?? { status: "idle", events: [], remarks: [] };
@@ -335,8 +364,14 @@ export function renderScenePanel(scene) {
             Background: ${scene.background.on ? "on — switch off" : "off — switch on"}</button>
         </div>` : ""}
 
+      <details class="scene-code-row" ${sceneLabState.codeOpen ? "open" : ""}>
+        <summary>Code — ${escapeHtml(scene.entry)}, the scene's Python program${
+          sceneLabState.drafts[visual.id] !== undefined ? " · unsaved changes" : ""}</summary>
+        ${renderCodeEditor(scene)}
+      </details>
+
       <details class="scene-details" ${sceneLabState.detailsOpen ? "open" : ""}>
-        <summary>Details — the reviewer's remarks, its steps, checks and program</summary>
+        <summary>Details — the reviewer's remarks, its steps, checks and log</summary>
         ${renderAgentRecord(scene)}
         <dl class="scene-spec">
           <dt>Renderer</dt><dd>${escapeHtml(spec.renderer || "not chosen yet")}${
@@ -370,17 +405,59 @@ export function renderScenePanel(scene) {
           <p><b>Said:</b> ${escapeHtml(scene.brief.narration ?? visual.narration_preview)}</p>
           <p><b>On screen:</b> ${escapeHtml(scene.brief.on_screen ?? visual.brief)}</p>
         </details>
-        <label class="scene-label" for="scene-code">${escapeHtml(scene.entry)}</label>
-        <textarea id="scene-code" class="scene-code" spellcheck="false"
-          placeholder="No script yet. Have the agent write one, or write it here.">${escapeHtml(scene.code)}</textarea>
-        <div class="scene-actions">
-          <button class="btn" id="run-scene-button" ${scene.code ? "" : "disabled"}>
-            Save and run</button>
-        </div>
         ${scene.log ? `<details class="scene-log"><summary>What it printed (log.txt)</summary>
           <pre>${escapeHtml(scene.log)}</pre></details>` : ""}
       </details>
     </section>`;
+}
+
+/** The editor's buttons, and the draft kept while it is not saved. */
+function wireCodeEditor(openId, busy) {
+  sceneLabState.editor = null;
+  const area = document.querySelector("#scene-code");
+  const run = document.querySelector("#run-scene-button");
+  if (!area || !run) return;
+  sceneLabState.savedCode = document.querySelector("#scene-code-saved")?.value ?? "";
+  const codeNow = () => sceneLabState.editor?.getValue() ?? area.value;
+  const changed = text => {
+    if (sceneLabState.openId !== openId) return;
+    if (text === sceneLabState.savedCode) delete sceneLabState.drafts[openId];
+    else sceneLabState.drafts[openId] = text;
+    const unsaved = sceneLabState.drafts[openId] !== undefined;
+    document.querySelector("#code-unsaved")?.toggleAttribute("hidden", !unsaved);
+    document.querySelector("#code-revert-button")?.toggleAttribute("hidden", !unsaved);
+    run.disabled = !text.trim();
+  };
+  const save = () => {
+    if (run.disabled) return;
+    fullScreen(false);
+    busy(run, "Saving and running the scene's script", async () => {
+      const scene = await post(`/scenes/${encodeURIComponent(openId)}/run`, { code: codeNow() });
+      delete sceneLabState.drafts[openId];        // saved: the file is the code now
+      return scene;
+    });
+  };
+  const wrap = document.querySelector("#scene-code-wrap");
+  const full = document.querySelector("#code-full-button");
+  const fullScreen = on => {
+    wrap?.classList.toggle("full", on);
+    if (full) full.textContent = on ? "Exit full screen" : "Full screen";
+    sceneLabState.editor?.refresh();
+    if (on) sceneLabState.editor?.focus();
+  };
+  sceneLabState.fullScreen = fullScreen;
+  if (full) full.onclick = () => fullScreen(!wrap.classList.contains("full"));
+  run.onclick = save;
+  area.addEventListener("input", () => changed(area.value));   // until the editor loads
+  document.querySelector("#code-revert-button").onclick = () => {
+    delete sceneLabState.drafts[openId];
+    if (sceneLabState.editor) sceneLabState.editor.setValue(sceneLabState.savedCode ?? "");
+    else area.value = sceneLabState.savedCode ?? "";
+    changed(codeNow());
+  };
+  mountCodeEditor(area, { onChange: changed, onSave: save })
+    .then(editor => { if (editor) sceneLabState.editor = editor; })
+    .catch(failure => console.error(failure));      // the plain box still works
 }
 
 /* ---- the resource library ------------------------------------------------------- */
@@ -463,7 +540,15 @@ export function wireSceneLab(rerender, visuals) {
   const chat = document.getElementById("scene-chat");
   if (chat) chat.scrollTop = chat.scrollHeight;          // the latest turn, as a chat opens
   const details = document.querySelector(".scene-details");
-  if (details) details.addEventListener("toggle", () => { sceneLabState.detailsOpen = details.open; });
+  if (details) details.addEventListener("toggle", () => {
+    sceneLabState.detailsOpen = details.open;
+    sceneLabState.editor?.refresh();           // drawn while folded, it has no size yet
+  });
+  const codeRow = document.querySelector(".scene-code-row");
+  if (codeRow) codeRow.addEventListener("toggle", () => {
+    sceneLabState.codeOpen = codeRow.open;
+    sceneLabState.editor?.refresh();
+  });
   const close = document.querySelector("#close-scene-button");
   if (close) close.onclick = closeScene;
   const backdrop = document.querySelector("#scene-drawer-backdrop");
@@ -473,6 +558,12 @@ export function wireSceneLab(rerender, visuals) {
     sceneLabState.escapes = true;
     document.addEventListener("keydown", event => {
       if (!sceneLabState.openId) return;
+      const wrap = document.querySelector("#scene-code-wrap");
+      if (event.key === "Escape" && wrap?.classList.contains("full")) {
+        sceneLabState.fullScreen?.(false);        // out of full screen, not out of the scene
+        return;
+      }
+      if (event.key === "Escape" && event.target.closest?.(".CodeMirror, .CodeMirror-dialog")) return;
       if (event.key === "Escape") sceneLabState.close?.();
       // The arrows step through the scenes, but never while typing.
       const typing = ["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName);
@@ -522,13 +613,7 @@ export function wireSceneLab(rerender, visuals) {
     () => post(`/scenes/${encodeURIComponent(openId)}/background`,
       { on: !background.dataset.on }));
 
-  const run = document.querySelector("#run-scene-button");
-  if (run) run.onclick = () => busy(run, "Running the scene's script",
-    () => post(`/scenes/${encodeURIComponent(openId)}/run`,
-      { code: document.querySelector("#scene-code").value }));
-  document.querySelector("#scene-code")?.addEventListener("input", event => {
-    if (run) run.disabled = !event.target.value.trim();
-  });
+  wireCodeEditor(openId, busy);
 
   const startAgents = async (button, body, notice) => {
     button.disabled = true;

@@ -22,6 +22,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from pipeline.picture_parts import anchor, region
+from pipeline.program_layout import _laid_out, _one_line
 
 TEMPLATES = ("hero", "steps", "compare", "person", "key_idea", "opener", "flow", "hub",
              "timeline")
@@ -380,20 +381,24 @@ def program_for(spec: dict, pictures: int | Pictures) -> str:
     shots = spec["shots"]
     if len(shots) > MOST_SHOTS:
         raise ValueError(f"a scene has at most {MOST_SHOTS} shots")
-    body: list[str] = ["P = self.brief.assets.pictures"]
+    body: list[str] = ["P = self.brief.assets.pictures  # the pictures the brief offers"]
     for at, shot in enumerate(shots):
         if not isinstance(shot, dict):
             raise ValueError(f"shot {at + 1} must be an object")
+        begins = _begins(shot)
+        body += ["", f"# Shot {at + 1}: {shot.get('template') or 'shot'}"
+                 + (f', from "{_one_line(begins)}"' if at and begins else ", at once")]
         if at:
-            body += [f"self._at_cue({_when(_begins(shot))})",
+            body += [f"self._at_cue({_when(begins)})",
                      "self.play(*[FadeOut(m) for m in self.shown], run_time=0.4)",
                      "self.clear()"]
         body += _shot_code(shot, pictures, at)
-    body.append("self.finish()")
-    indented = "\n".join("        " + line for line in body)
+    body += ["", "self.finish()"]
+    indented = "\n".join(_laid_out(line, 8) if line else "" for line in body)
     return ("# /// script\n# requires-python = \">=3.11\"\n"
             "# dependencies = [\"manim>=0.19\", \"pillow\"]\n# ///\n"
-            "# Written from the scene's shots (scene_shots.py): edit the shots, not this.\n"
+            "# Written from the scene's shots by scene_shots.py. Edited and saved by hand,\n"
+            "# it is the scene's program until the scene is made again.\n"
             "from manimkit import *\n\n\n"
             "class TheScene(ExplainerScene):\n    def construct(self):\n"
             f"{indented}\n\n\nrun(TheScene)\n")
