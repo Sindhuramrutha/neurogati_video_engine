@@ -79,7 +79,9 @@ def test_a_chosen_picture_is_planned_once_in_the_whole_video(project_root,  # no
 
     def plan(section_visuals, number, narrations, picks, so_far):
         offered.append(list(picks))
-        return [look(number[v.id]).model_copy(update={"picture": "chosen: Cover"})
+        # As the director writes it: the name, then how it stands.
+        return [look(number[v.id]).model_copy(
+                    update={"picture": f"chosen: Cover, upright at a slight angle {v.id}"})
                 for v in section_visuals]
 
     monkeypatch.setattr("pipeline.chosen_pictures.chosen", lambda project: {"c.png": "Cover"})
@@ -88,5 +90,6 @@ def test_a_chosen_picture_is_planned_once_in_the_whole_video(project_root,  # no
     art_direction.direct(slug)
 
     kept = [art_direction.for_scene(project, v.id)["picture"] for v in visuals]
-    assert len(kept) > 1 and kept.count("chosen: Cover") == 1 and kept[0] == "chosen: Cover"
+    assert len(kept) > 1 and kept[0].startswith("chosen: Cover")
+    assert sum(p.startswith("chosen") for p in kept) == 1 and kept[1:] == [""] * (len(kept) - 1)
     assert offered[0] == ["Cover"] and all(o == [] for o in offered[1:])
