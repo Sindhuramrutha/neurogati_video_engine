@@ -222,6 +222,41 @@ def _drawn_share(source: str, image):
     return share
 
 
+def _softened(path: str, made_from: str = "") -> str:
+    """A painting made for the scene that kept its own ground (its subject could not
+    be cut out), with edges feathered into whatever lies behind it: v9 showed such
+    paintings as rectangles on the backdrop, a picture inside the picture. A deck
+    picture -- a book's cover -- keeps its edges: it is an object with a shape."""
+    import hashlib
+    import tempfile
+
+    from PIL import Image, ImageDraw, ImageFilter
+    if not Path(made_from or path).name.startswith("illustration-"):
+        return path
+    try:
+        with Image.open(path) as opened:
+            opened.load()
+            alpha = opened.getchannel(opened.mode[-1]) if opened.mode in ("RGBA", "LA") else None
+            if alpha is not None and alpha.getextrema()[0] < 250:
+                return path                       # cut out already: nothing to soften
+            image = opened.convert("RGBA")
+        key = hashlib.sha1(f"{Path(path).resolve()}:{Path(path).stat().st_mtime_ns}".encode())
+        out = Path(tempfile.gettempdir()) / "manimkit-softened" / f"{key.hexdigest()[:16]}.png"
+        if out.exists():
+            return str(out)
+        width, height = image.size
+        soft = round(0.06 * min(width, height))
+        mask = Image.new("L", image.size, 0)
+        ImageDraw.Draw(mask).rounded_rectangle(
+            (soft, soft, width - soft, height - soft), radius=soft * 2, fill=255)
+        image.putalpha(mask.filter(ImageFilter.GaussianBlur(soft * 0.8)))
+        out.parent.mkdir(parents=True, exist_ok=True)
+        image.save(out)
+        return str(out)
+    except OSError:
+        return path
+
+
 def _box_of(m) -> tuple[float, float, float, float]:
     """(left, bottom, right, top) in scene units."""
     return (m.get_left()[0], m.get_bottom()[1], m.get_right()[0], m.get_top()[1])
@@ -739,8 +774,11 @@ class ExplainerScene(Scene):
     TITLE_SIZE, HEADING_SIZE, LABEL_SIZE = 44, 36, 30
     _composing = False
 
-    def title(self, text: str) -> Text:
-        """The scene's title, always the same size, weight and place (top centre)."""
+    def title(self, text: str):
+        """The scene's title, always the same size, weight and place (top centre) --
+        on a soft band over painted art, as every other title is."""
+        if (BRIEF.__dict__.get("background") or {}).get("kind") == "image":
+            return self._panel_title(text)
         return self.safe(self.label(text, size=self.TITLE_SIZE, bold=True, at=(0, 3.25)))
 
     def heading(self, text: str, at: tuple[float, float] = (0, 2.2)) -> Text:
@@ -878,7 +916,7 @@ class ExplainerScene(Scene):
         """A picture from the slides (a path from brief.assets.pictures), its empty
         margin trimmed so the size given is the size of what it shows."""
         from manim import ImageMobject
-        image = ImageMobject(_trimmed(path)).set(height=height)
+        image = ImageMobject(_softened(_trimmed(path), path)).set(height=height)
         if at is not None:
             image.move_to([at[0], at[1], 0])
         return image
@@ -1205,7 +1243,7 @@ class ExplainerScene(Scene):
                 caption, passing = self._caption(what["text"], colour, caption), False
         if light is not None:
             # The whole picture back, every part named, once the last has been seen.
-            self.until(max(self.now, last + 3.0))
+            self.until(max(self.now, last + 2.0))
             leaving = list(light.values()) + ([caption] if passing else [])
             self.play(*[manim.FadeOut(m) for m in leaving], run_time=0.6)
 
@@ -1220,6 +1258,10 @@ class ExplainerScene(Scene):
         veil = Rectangle(width=FRAME_WIDTH_UNITS + 0.1, height=FRAME_HEIGHT_UNITS + 0.1)
         veil.set_fill(self.look["background"], opacity=WORDS_WASH).set_stroke(width=0)
         veil.calm = veil.attention = True
+        # Under what is already on screen: laid over it, it greyed v9's diagram titles.
+        above = list(self.shown)
+        self.add(veil)
+        self.bring_to_front(*above)
         self.play(manim.FadeIn(veil, run_time=0.4))
 
     def _panel_fill(self) -> str:
@@ -1409,7 +1451,9 @@ class ExplainerScene(Scene):
         above = [m for m in self.shown if m is not image]
         if light is None:
             veil = Rectangle(width=FRAME_WIDTH_UNITS + 0.1, height=FRAME_HEIGHT_UNITS + 0.1)
-            veil.set_fill(self.look["background"], opacity=0.55).set_stroke(width=0)
+            # Light enough to keep the painting's colour: at 0.55 whole stretches
+            # of v9 sat pale behind it.
+            veil.set_fill(self.look["background"], opacity=0.4).set_stroke(width=0)
             veil.attention = True
             self.add(veil, part, glow, ring)
             self.bring_to_front(*above)
@@ -1532,10 +1576,12 @@ class ExplainerScene(Scene):
             card = RoundedRectangle(corner_radius=0.3, width=6.2, height=tallest + 0.8)
             card.set_fill(fill, opacity=0.9).set_stroke(width=0).move_to([x, middle, 0])
             cards.append(card)
-        self.play(*[manim.FadeIn(card, scale=0.97) for card in cards], run_time=0.5)
-        for _, group, cue in sides:
+        # Each card with its own side, on its words: v9's second card stood empty
+        # until they came.
+        for card, (_, group, cue) in zip(cards, sides, strict=True):
             self._at_cue(cue)
-            self.play(*[self.reveal(part) for part in group])
+            self.play(manim.FadeIn(card, scale=0.97, run_time=0.4),
+                      *[self.reveal(part) for part in group])
 
     @_composed
     def person(self, picture: str, name: str, line: str, cue: str | None = None,

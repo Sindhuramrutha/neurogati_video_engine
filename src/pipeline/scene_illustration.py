@@ -74,8 +74,9 @@ def prompt(asked: str, look: dict[str, Any]) -> str:
         f"{look.get('background', '#ffffff')} background, nothing else behind the "
         f"subject -- it is cut out and laid on the scene's own background. Accent colours "
         f"{accents}. Absolutely no text, letters, numbers, labels or captions anywhere in "
-        "the picture. Paint the subject as still, without the glows or changes the scene "
-        "animates on top of it.")
+        "the picture -- and no empty label boxes, callout bubbles, tags or pointer lines "
+        "waiting for words: the scene adds its own. Paint the subject as still, without "
+        "the glows or changes the scene animates on top of it.")
 
 
 class Checked(BaseModel):
@@ -86,7 +87,8 @@ class Checked(BaseModel):
     framed: bool = Field(description="Is the subject whole, centred and large -- not cut off "
                                      "at an edge, not small in an empty picture?")
     clean: bool = Field(description="Is it well drawn -- no deformed anatomy or hands, no "
-                                    "garbled parts, no artefacts, not photorealistic?")
+                                    "garbled parts, no artefacts, not photorealistic, and no "
+                                    "empty label box or callout bubble waiting for words?")
     wrong: str = Field("", description="If any is no: what is wrong, and what it should be, "
                                        "in one sentence (\"human hearts; they must be small "
                                        "frog hearts\").")
