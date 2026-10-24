@@ -32,6 +32,7 @@ logger = logging.getLogger(__name__)
 
 MAXIMUM_SECTION_TITLE_LENGTH = 120
 MAXIMUM_SECTION_SUMMARY_LENGTH = 400
+LONGEST_TEACHES = 800             # what the whole video teaches: a sentence or two
 MAXIMUM_SECTIONS_PER_PLAN = 60
 MAXIMUM_SCENES_PER_SECTION = 60
 MAXIMUM_SOURCES_PER_SECTION = 40
@@ -201,7 +202,14 @@ class Plan(BaseModel):
     @field_validator("teaches")
     @classmethod
     def _cap_teaches(cls, value: str) -> str:
-        return value.strip()[:MAXIMUM_SECTION_SUMMARY_LENGTH]
+        # Cut at a sentence's end, never inside a word: v8's was cut at 400 characters
+        # to "...localization, con", and every agent read it so.
+        value = value.strip()
+        if len(value) <= LONGEST_TEACHES:
+            return value
+        cut = value[:LONGEST_TEACHES]
+        end = max(cut.rfind(". "), cut.rfind("! "), cut.rfind("? "))
+        return cut[:end + 1] if end > 0 else cut[:cut.rfind(" ")].rstrip(",;:") + "…"
 
     @field_validator("sections")
     @classmethod

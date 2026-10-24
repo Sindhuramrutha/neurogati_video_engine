@@ -41,3 +41,13 @@ def test_a_chosen_picture_off_every_taught_slide_must_be_placed_by_name():
     assert not _unshown_chosen(shape(("Opening", [], ["book cover"]), ("Body", [2, 3], [])),
                                cover), "placed by name in the opening"
     assert not _unshown_chosen(shape(("Opening", [1, 2], [])), cover), "its slide is taught"
+
+
+def test_what_the_video_teaches_is_never_cut_inside_a_word():
+    """v8's was cut at 400 characters to '...localization, con'."""
+    from pipeline.planning import LONGEST_TEACHES, Plan
+
+    long = "You will trace the brain's story. " * 40
+    kept = Plan(teaches=long).teaches
+    assert len(kept) <= LONGEST_TEACHES and kept.endswith("story.")
+    assert Plan(teaches="Short and whole.").teaches == "Short and whole."
