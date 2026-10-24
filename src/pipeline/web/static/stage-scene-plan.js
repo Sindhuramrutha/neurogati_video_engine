@@ -218,6 +218,8 @@ function renderProposal(planning, word) {
         <b>Proposed shape</b>
         <span>${Math.round(minutes * 10) / 10} min · ${sections.length} sections · ${scenes} scenes</span>
       </div>
+      ${proposal.teaches ? `<p class="plan-understood"><b>What the viewer will come away with:</b>
+        ${escapeHtml(proposal.teaches)}</p>` : ""}
       <p class="plan-understood"><b>Length, as understood:</b>
         ${escapeHtml(proposal.length.understood)}</p>
       <table class="plan-shape">
@@ -228,7 +230,10 @@ function renderProposal(planning, word) {
             <td>${index + 1}</td>
             <td><b>${escapeHtml(section.title)}</b>
               <span class="plan-shape-summary">${escapeHtml(section.summary)}</span>
-              ${section.how ? `<span class="plan-shape-how">${escapeHtml(section.how)}</span>` : ""}</td>
+              ${section.how ? `<span class="plan-shape-how">${escapeHtml(section.how)}</span>` : ""}
+              ${(section.shows_chosen ?? []).length ? `<span class="plan-shape-how">Also shows your
+                chosen picture${section.shows_chosen.length === 1 ? "" : "s"}: ${
+                section.shows_chosen.map(name => `“${escapeHtml(name)}”`).join(", ")}</span>` : ""}</td>
             <td>${unitsLabel(section.units)}</td>
             <td>${Math.round(section.minutes * 10) / 10}</td>
             <td>${Math.max(1, section.scenes)}</td>
@@ -259,6 +264,8 @@ const SETUP_ICONS = {
   order: `<path d="M4 6h10M4 12h10M4 18h10M18 4v16M15 17l3 3 3-3"/>`,
   audience: `<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/>
              <path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/>`,
+  course: `<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M8 7h7"/>`,
+  video: `<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/>`,
   language: `<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>`,
 };
 
@@ -284,6 +291,16 @@ function renderSetup(plan, planning, settings) {
         </div>
         <p class="muted setup-hint">Sent with every message. Saved as you change it.</p>
       </section>
+
+      ${setupBox("course", "Course", `
+        <input id="setup-course" maxlength="300" value="${escapeHtml(plan.course ?? "")}"
+               placeholder="e.g. Demystifying the Brain">`,
+        { forId: "setup-course", note: "from the deck's title slide until you change it" })}
+
+      ${setupBox("video", "This video", `
+        <input id="setup-video" maxlength="300" value="${escapeHtml(plan.this_video ?? "")}"
+               placeholder="e.g. Chapter 1">`,
+        { forId: "setup-video", note: "which part of the course it is" })}
 
       ${setupBox("length", "Length, in your words", `
         <input id="setup-length" maxlength="300" value="${escapeHtml(plan.length_text)}"
@@ -344,6 +361,8 @@ function renderPlanTab(plan, planning) {
       ${plan.length?.understood ? `<span class="muted">— agreed: ${
         escapeHtml(plan.length.understood)}</span>` : ""}
     </div>
+    ${plan.teaches ? `<p class="plan-understood"><b>${escapeHtml(plan.course || "This video")}${
+      plan.this_video ? ` · ${escapeHtml(plan.this_video)}` : ""}:</b> ${escapeHtml(plan.teaches)}</p>` : ""}
     <div class="plan-sections">
       ${plan.sections.map((section, index) =>
         renderSection(section, index, plan, planning, word)).join("")}
@@ -704,6 +723,10 @@ function wireDirection(rerender, planning) {
   const saveSetup = changes => runPlanAction({ path: "/plan/setup", body: changes, rerender });
   const length = select("#setup-length");
   if (length) length.onchange = () => saveSetup({ length_text: length.value });
+  const course = select("#setup-course");
+  if (course) course.onchange = () => saveSetup({ course: course.value });
+  const thisVideo = select("#setup-video");
+  if (thisVideo) thisVideo.onchange = () => saveSetup({ this_video: thisVideo.value });
   const audience = select("#setup-audience");
   if (audience) audience.onchange = () => saveSetup({ audience: audience.value });
   document.querySelectorAll("[name=slide-order]").forEach(radio => {

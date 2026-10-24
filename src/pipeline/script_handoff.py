@@ -170,8 +170,8 @@ def script_checks(project, script: Script) -> list[dict[str, str]]:
                  for found in [reporting_phrases(w.body)] if found]
     checks.append(_check(
         "voice", "Teacher's voice",
-        "The narrator teaches the viewer; it never talks about \"the chapter\", "
-        "\"the book\", \"the author\" or \"the slide\"",
+        "The narrator teaches the viewer; it never talks about the material as a "
+        "document (\"the chapter explores\", \"the book\", \"the author\", \"the slide\")",
         WARN if reporting else PASS if sections else NOT_APPLICABLE,
         "; ".join(f"{title}: \u201c{found[0]}\u201d"
                   + (f" (+{len(found) - 1} more)" if len(found) > 1 else "")

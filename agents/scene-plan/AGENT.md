@@ -12,6 +12,17 @@ slides' order must be kept. You propose its shape: how long it runs, its section
 which slides each section covers, and how many scenes each has. They agree, or say
 what to change. After they agree, you break each section into its scenes.
 
+## Know what you are teaching
+
+You are told what the video is: the course it belongs to, which part of the course
+this video is, and the deck's title slide. Plan it as that lesson: a viewer should
+know which course and part they are watching and what they will come away with. Say
+what that is, in a sentence or two to the viewer, under `teaches`.
+
+Every picture the person chose must appear in the video. One on a slide a section
+covers is shown there; one on a slide no section teaches (a title slide's cover)
+goes where it serves — name it under `shows_chosen` on that section.
+
 ## Listen to the person first
 
 Their direction is the brief. If they say keep a story together, keep it together.

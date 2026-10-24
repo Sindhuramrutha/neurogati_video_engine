@@ -24,13 +24,16 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from typing import Any
 
-from pydantic import BaseModel, Field
-
 from pipeline.agent_runtime import build_system_prompt, resolve_agent
 from pipeline.core import OperationFailed, require_project
 from pipeline.extraction import ExtractionStore
 from pipeline.lesson_plan import plan_source, save_plan
 from pipeline.llm import ModelCallFailed, ModelNotConfigured, complete_structured
+from pipeline.plan_answers import (
+    SceneAnswer,
+    ShapeAnswer,
+    ShapeSection,
+)
 from pipeline.plan_order import coverage_problems, order_problems
 from pipeline.plan_units import (
     references_for,
@@ -52,60 +55,13 @@ from pipeline.stage_options import video_preferences
 from pipeline.stages import Stage
 from pipeline.storage.documents import read_json_object, write_text_atomically
 from pipeline.storage.layout import artifact_path
+from pipeline.video_identity import chosen_pictures, fill_defaults, identity_text
 
 logger = logging.getLogger(__name__)
 
 MOST_MESSAGES_SHOWN_TO_THE_AGENT = 30
 MOST_PARALLEL_SCENE_CALLS = 6
 LONGEST_MESSAGE = 4000
-
-
-# --- what the model answers ----------------------------------------------------------
-
-
-class ShapeSection(BaseModel):
-    title: str = Field(description="What this section is about, as a short title.")
-    units: list[int] = Field(
-        default_factory=list,
-        description="The numbers of the slides (or parts) it covers, in the order taught. "
-                    "Empty for a section that is about no slide (an opening, a recap, or "
-                    "anything else the video needs).")
-    how: str = Field(description="In your own words, how this section should be told from "
-                                 "its slides: its approach, voice and purpose in this video. "
-                                 "Built on what the slides say -- no story, person or fact "
-                                 "they do not point toward.")
-    minutes: float = Field(description="How long the section runs.")
-    scenes: int = Field(description="How many scenes it is made of.")
-    summary: str = Field(description="One sentence: what the viewer gets from it.")
-
-
-class LeftOut(BaseModel):
-    unit: int
-    why: str
-
-
-class ShapeAnswer(BaseModel):
-    reply: str = Field(description="To the person, in a few plain sentences: what you "
-                                   "planned and why, and anything you need from them.")
-    shortest_minutes: float = Field(description="The shortest length they would accept.")
-    longest_minutes: float = Field(description="The longest length they would accept.")
-    length_understood: str = Field(
-        description="Their length request in one short sentence, as you understood it, "
-                    "e.g. 'About 60 min. May run longer, not shorter.'")
-    sections: list[ShapeSection]
-    left_out: list[LeftOut] = Field(
-        default_factory=list, description="Slides (or parts) deliberately not covered.")
-
-
-class DetailedScene(BaseModel):
-    does: str = Field(description="In one sentence: what this scene says and shows.")
-    units: list[int] = Field(default_factory=list,
-                             description="The slide numbers (or parts) it is about.")
-    seconds: int
-
-
-class SceneAnswer(BaseModel):
-    scenes: list[DetailedScene]
 
 
 # --- the thread --------------------------------------------------------------------------
@@ -136,6 +92,8 @@ def _add(project, messages: list[dict[str, Any]], role: str, text: str, **extra)
 
 def _setup_text(plan: Plan, preferences) -> str:
     return "\n".join([
+        f"Course: {plan.course or '(not given)'}",
+        f"This video: {plan.this_video or '(not given)'}",
         f"Length asked for: {plan.length_text or '(not given -- choose from the material)'}",
         f"Slide order: {SLIDE_ORDERS[plan.slide_order]}",
         f"Audience: {preferences.audience(plan.audience)}",
@@ -181,7 +139,9 @@ def _shape_prompts(project, plan: Plan, units, thread: list[dict[str, Any]],
     )
     conversation = "\n".join(f"{m['role'].upper()}: {m['text']}"
                              for m in thread[-MOST_MESSAGES_SHOWN_TO_THE_AGENT:])
+    extraction = ExtractionStore(project.root).load()
     user_prompt = "\n\n".join(part for part in [
+        f"--- what this video is ---\n{identity_text(project, plan, extraction)}",
         f"--- setup ---\n{_setup_text(plan, video_preferences(project.root))}",
         f"--- the source, in order ---\n{_units_text(units)}",
         f"--- the plan as it stands ---\n{_current_shape_text(plan, units)}",
@@ -192,11 +152,24 @@ def _shape_prompts(project, plan: Plan, units, thread: list[dict[str, Any]],
     return system_prompt, user_prompt
 
 
-def _shape_problems(answer: ShapeAnswer, plan: Plan, all_units: list[int]) -> list[str]:
+def _shape_problems(answer: ShapeAnswer, plan: Plan, all_units: list[int],
+                    chosen: list[dict[str, Any]] | None = None) -> list[str]:
     body = [(s.title, s.units) for s in answer.sections if s.units]
     left_out = {item.unit: item.why for item in answer.left_out}
     return (order_problems(body, plan.slide_order)
-            + coverage_problems(body, all_units, left_out))
+            + coverage_problems(body, all_units, left_out)
+            + _unshown_chosen(answer, chosen or []))
+
+
+def _unshown_chosen(answer: ShapeAnswer, chosen: list[dict[str, Any]]) -> list[str]:
+    """Every picture the person chose appears: on a section that covers its slide,
+    or placed by name in another."""
+    covered = {unit for s in answer.sections for unit in s.units}
+    named = {name.strip().lower() for s in answer.sections for name in s.shows_chosen}
+    return [f"The person chose \u201c{p['name']}\u201d (slide {p['slide'] or '?'}) and no "
+            f"section shows it. Name it under shows_chosen on the section that should."
+            for p in chosen
+            if p["slide"] not in covered and str(p["name"]).strip().lower() not in named]
 
 
 # --- the person's actions ----------------------------------------------------------------
@@ -206,7 +179,7 @@ def set_setup(slug: str, changes: dict[str, Any]) -> Plan:
     """The length in their words, the slide order and the audience."""
     project = require_project(slug)
     plan = PlanStore(project.root).load()
-    for key in ("length_text", "slide_order", "audience"):
+    for key in ("length_text", "slide_order", "audience", "course", "this_video"):
         if key in changes:
             setattr(plan, key, str(changes[key] or ""))
     return PlanStore(project.root).save(Plan.model_validate(plan.model_dump()))
@@ -228,6 +201,9 @@ def send_message(slug: str, text: str) -> dict[str, Any]:
     _add(project, thread, "you", text)
 
     all_units = [u.number for u in units]
+    if fill_defaults(plan, extraction):
+        plan = PlanStore(project.root).save(plan)
+    chosen = chosen_pictures(project, extraction)
     problems: list[str] = []
     calls = 0
     for _attempt in range(2):
@@ -238,12 +214,12 @@ def send_message(slug: str, text: str) -> dict[str, Any]:
             _add(project, thread, "agent", f"I could not answer: {failure}", failed=True)
             raise OperationFailed(f"The planning agent could not answer. {failure}") from failure
         calls += 1
-        problems = _shape_problems(answer, plan, all_units)
+        problems = _shape_problems(answer, plan, all_units, chosen)
         if not problems:
             break
 
     proposal = {
-        "made_at": _now(), "calls": calls, "reply": answer.reply,
+        "made_at": _now(), "calls": calls, "reply": answer.reply, "teaches": answer.teaches,
         "length": PlanLength(shortest_seconds=round(answer.shortest_minutes * 60),
                              longest_seconds=round(answer.longest_minutes * 60),
                              understood=answer.length_understood).model_dump(),
@@ -300,6 +276,7 @@ def agree(slug: str) -> dict[str, Any]:
                               "slides. Ask the planning agent again.")
     units = units_of(extraction)
     plan = PlanStore(project.root).load()
+    chosen = chosen_pictures(project, extraction)
     sections, needs_scenes = [], {}
     for proposed in (ShapeSection.model_validate(s) for s in proposal["sections"]):
         numbers = proposed.units
@@ -310,13 +287,17 @@ def agree(slug: str) -> dict[str, Any]:
             sources=references_for(numbers, units),
             estimated_seconds=round(proposed.minutes * 60),
             picture_paths=kept.picture_paths if kept else [],
-            pictures_chosen=kept.pictures_chosen if kept else False)
+            pictures_chosen=kept.pictures_chosen if kept else False,
+            placed_pictures=[p["path"] for p in chosen
+                             if str(p["name"]).strip().lower()
+                             in {n.strip().lower() for n in proposed.shows_chosen}])
         if keeps_scenes:
             section.scenes = kept.scenes
         else:
             needs_scenes[section.id] = max(1, proposed.scenes)
         sections.append(section)
     plan.sections = sections
+    plan.teaches = proposal.get("teaches", "")
     plan.length = PlanLength.model_validate(proposal["length"])
     plan.slides_left_out = {int(k): v for k, v in proposal.get("left_out", {}).items()}
     plan.shape_agreed_at = _now()
@@ -365,6 +346,9 @@ def write_scenes(project, plan: Plan, wanted: dict[str, int], extraction, units,
         "slides do not point toward."
     )
 
+    identity = identity_text(project, plan, extraction)
+    outline = "\n".join(f"- {s.title}: {s.summary}" for s in plan.sections)
+
     def detail(section: PlanSection) -> str | None:
         count = wanted[section.id]
         own = unit_numbers(section, units)
@@ -373,6 +357,8 @@ def write_scenes(project, plan: Plan, wanted: dict[str, int], extraction, units,
         else:
             material, cut = section_source_text(extraction, section.sources)
         user_prompt = "\n\n".join([
+            f"--- what this video is ---\n{identity}",
+            f"--- the whole plan ---\n{outline}",
             f"The person's direction:\n{direction or '(none)'}",
             f"Audience: {video_preferences(project.root).audience(plan.audience)}\n"
             f"Language: {language}",
@@ -435,4 +421,8 @@ def planning_view(project, *, units=None, plan: Plan | None = None,
 
 
 def read_planning(slug: str) -> dict[str, Any]:
-    return planning_view(require_project(slug))
+    project = require_project(slug)
+    plan = PlanStore(project.root).load()
+    if fill_defaults(plan, ExtractionStore(project.root).load()):
+        PlanStore(project.root).save(plan)
+    return planning_view(project)

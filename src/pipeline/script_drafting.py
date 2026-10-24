@@ -55,6 +55,7 @@ from pipeline.scripting import (
 )
 from pipeline.stage_options import video_preferences
 from pipeline.stages import Stage
+from pipeline.video_identity import identity_text
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +110,7 @@ def draft_section(slug: str, section_id: str, instruction: str = "") -> dict[str
         written, notes = _write_section(
             agent, plan, script, extraction, section, instruction,
             video_preferences(project.root), section_pictures(project, plan),
-            _facts(project, section))
+            _facts(project, section), identity_text(project, plan, extraction))
     except ModelNotConfigured as not_configured:
         raise OperationFailed(str(not_configured)) from not_configured
     except ModelCallFailed as call_failure:
@@ -156,6 +157,7 @@ def draft_unwritten_sections(slug: str, instruction: str = "") -> dict[str, Any]
     agent = resolve_agent(project, Stage.SCRIPT_STAGING)
     preferences = video_preferences(project.root)
     pictures = section_pictures(project, plan)
+    identity = identity_text(project, plan, extraction)
     _ensure_facts(slug)
 
     store = ScriptStore(project.root)
@@ -168,7 +170,7 @@ def draft_unwritten_sections(slug: str, instruction: str = "") -> dict[str, Any]
         try:
             written, section_notes = _write_section(
                 agent, plan, script, extraction, section, instruction, preferences, pictures,
-                _facts(project, section))
+                _facts(project, section), identity)
         except Exception as failure:          # one section's error, never the run's
             logger.warning("drafting %s failed: %s", section.title, failure, exc_info=True)
             return [f'"{section.title}" could not be drafted: {failure}']
@@ -214,9 +216,12 @@ def _write_section(
     preferences,
     pictures: dict[str, list[str]] | None = None,
     facts: tuple[list[str], list] = ([], []),
+    identity: str = "",
 ) -> tuple[SectionScript, list[str]]:
     """Ask for this section's scenes. Returns the section, unsaved, and any notes.
-    `facts` are the section's rules from the fact ledger and what they forbid."""
+    `facts` are the section's rules from the fact ledger and what they forbid;
+    `identity` is what the video is -- its course, which part, what it teaches
+    (`video_identity.py`)."""
     notes: list[str] = []
     target_words = _target_words(section)
 
@@ -260,6 +265,7 @@ def _write_section(
         notes.append(f'"{section.title}": {source_note}')
 
     user_prompt = "\n\n".join(part for part in (
+        f"--- what this video is ---\n{identity}" if identity else "",
         f"Audience: {preferences.audience(plan.audience)}"
         + (f"\nInstruction: {instruction.strip()}" if instruction.strip() else ""),
         f"--- the whole plan ---\n{compact_plan_text(plan, marked_section_id=section.id)}",

@@ -8,16 +8,18 @@ import pytest
 from pipeline import operations, plan_agent
 from pipeline.operations import OperationFailed
 from pipeline.plan_agent import (
-    DetailedScene,
-    LeftOut,
-    SceneAnswer,
-    ShapeAnswer,
-    ShapeSection,
     agree,
     discard_proposal,
     read_planning,
     send_message,
     set_setup,
+)
+from pipeline.plan_answers import (
+    DetailedScene,
+    LeftOut,
+    SceneAnswer,
+    ShapeAnswer,
+    ShapeSection,
 )
 from pipeline.plan_handoff import FAIL, plan_checks
 from pipeline.plan_order import coverage_problems, order_problems
@@ -55,7 +57,7 @@ def test_a_slide_left_out_must_be_said():
 def shape(*sections, left_out=(), reply="Here is a shape."):
     return ShapeAnswer(
         reply=reply, shortest_minutes=4, longest_minutes=6,
-        length_understood="About 5 min.",
+        length_understood="About 5 min.", teaches="How the brain came to be known.",
         sections=[ShapeSection(title=t, how=h, units=u, minutes=m, scenes=n, summary=f"{t}.")
                   for t, h, u, m, n in sections],
         left_out=[LeftOut(unit=u, why=w) for u, w in left_out])

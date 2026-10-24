@@ -11,7 +11,10 @@ def test_crediting_a_named_writer_is_the_teacher_s_voice():
     to do. Speaking of the source is still caught."""
     assert reporting_phrases("The writer Lewis Carroll asked a question.") == []
     assert reporting_phrases("As the writer says, the brain is complex.")
-    assert reporting_phrases("In this chapter we look at the brain.")
+    # Naming the part of the course tells the viewer where they are; describing the
+    # chapter as a document does not teach.
+    assert reporting_phrases("In this chapter we look at the brain.") == []
+    assert reporting_phrases("This chapter explores the brain.")
 
 
 def test_a_claim_lapses_once_its_sentence_is_rewritten():

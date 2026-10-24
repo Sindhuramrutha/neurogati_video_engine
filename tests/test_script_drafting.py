@@ -583,7 +583,8 @@ def test_every_draft_is_told_to_speak_as_the_teacher(project_root, monkeypatch):
     script_drafting.draft_section(slug, "s1")
 
     assert VOICE_RULE in systems[0]
-    assert "you are the teacher" in systems[0] and '"the chapter"' in systems[0]
+    assert "you are the teacher of this course" in systems[0].lower()
+    assert '"the chapter explores"' in systems[0], "the material is never a document"
 
 
 def test_narration_that_talks_about_the_source_is_found():

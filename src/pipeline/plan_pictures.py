@@ -73,9 +73,12 @@ def _belongs(figure: LibraryFigure, reference: SourceReference) -> bool:
 
 
 def by_rule(section: PlanSection, library: AssetLibrary) -> list[str]:
-    """The pictures the rule gives a section, in the source's order."""
+    """The pictures the rule gives a section, in the source's order -- and any chosen
+    picture the planner placed in it from a slide it does not teach."""
+    placed = set(section.placed_pictures)
     return [figure.asset_path for figure in library.handed_on()
-            if any(_belongs(figure, reference) for reference in section.sources)]
+            if figure.asset_path in placed
+            or any(_belongs(figure, reference) for reference in section.sources)]
 
 
 def pictures_of(section: PlanSection, plan: Plan, library: AssetLibrary) -> list[LibraryFigure]:

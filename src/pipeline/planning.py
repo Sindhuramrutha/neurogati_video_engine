@@ -106,6 +106,10 @@ class PlanSection(BaseModel):
     # person chose them rather than the rule (`plan_pictures.py`).
     picture_paths: list[str] = Field(default_factory=list)
     pictures_chosen: bool = False
+    # Pictures the person chose on Extraction that the planner placed here although
+    # they are not on this section's slides (a title slide's cover, shown in the
+    # opening). Added to the rule's pictures (`plan_pictures.py`).
+    placed_pictures: list[str] = Field(default_factory=list)
 
     @field_validator("sources")
     @classmethod
@@ -166,6 +170,11 @@ class Plan(BaseModel):
     length: PlanLength = Field(default_factory=PlanLength)
     slide_order: str = "strict"
     audience: str = ""
+    # What this video is (`video_identity.py`): the course, which part of it, and --
+    # written by the planner with the shape -- what the viewer will come away with.
+    course: str = ""
+    this_video: str = ""
+    teaches: str = ""
 
     # Slides the agreed shape leaves out on purpose, with why.
     slides_left_out: dict[int, str] = Field(default_factory=dict)
@@ -184,10 +193,15 @@ class Plan(BaseModel):
     def _known_order(cls, value: str) -> str:
         return value if value in SLIDE_ORDERS else "strict"
 
-    @field_validator("length_text", "audience")
+    @field_validator("length_text", "audience", "course", "this_video")
     @classmethod
     def _cap_setup(cls, value: str) -> str:
         return value.strip()[:LONGEST_SETUP_TEXT]
+
+    @field_validator("teaches")
+    @classmethod
+    def _cap_teaches(cls, value: str) -> str:
+        return value.strip()[:MAXIMUM_SECTION_SUMMARY_LENGTH]
 
     @field_validator("sections")
     @classmethod
