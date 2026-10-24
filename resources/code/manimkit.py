@@ -539,6 +539,11 @@ class ExplainerScene(Scene):
         size = max(size, self.smallest_size())
         mobject = Text(text, font_size=size, color=fill,
                        weight="BOLD" if bold else "NORMAL", **kwargs)
+        # Over painted art, a soft halo of the light ground under the letters: the
+        # words stay readable over whatever part of the painting they cross.
+        background = BRIEF.__dict__.get("background") or {}
+        if background.get("kind") == "image" and on is None:
+            mobject.set_stroke(self.look["background"], width=7, opacity=0.85, background=True)
         if at is not None:
             mobject.move_to([at[0], at[1], 0])
         # The colour asked for: Manim's get_color() reports the outline, not the fill.
