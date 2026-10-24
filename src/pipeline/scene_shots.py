@@ -27,6 +27,9 @@ TEMPLATES = ("hero", "steps", "compare", "person", "key_idea", "opener", "flow",
              "timeline")
 MOST_SHOTS = 3
 MOST_CALLOUT_WORDS = 4
+MOST_CALLOUTS = 3              # more on one picture is clutter, however each is drawn
+# The ways a callout points at its part (manimkit.hero): one chosen for each.
+POINTING = ("tag", "glow", "zoom", "lens", "sketch", "caption")
 MOST_IDEA_WORDS = 18            # more read as a paragraph on screen (the check allows 18)
 # A label with one of these says something ("thought is segmented"); it names nothing.
 STATING = {"is", "are", "was", "were", "be", "been", "has", "have", "had", "does", "did"}
@@ -34,13 +37,26 @@ STATING = {"is", "are", "was", "were", "be", "been", "has", "have", "had", "does
 GUIDE = """Shots (the preferred answer -- no code): a ```json block with "shots", a list of
 one to three of these, each {"template": ..., then its slots}; "picture" is an index into
 the brief's assets.pictures, "when" the exact narration words a part arrives on:
-- hero: "title", "picture", "when", "callouts": [{"label", "part", "when"}] (0 to 5) --
-  one picture large and its parts named (a label is a part's name, 1-4 words, never a
-  statement). "part" is one of the picture's parts exactly as its description lists them:
-  the pointer is drawn to where that part really is, and a callout naming no listed part
-  is left out. On each callout's words the rest of the picture dims and an outline draws
-  round that part: the viewer's eye is led part to part as the narration names them, so
-  give each part the words that speak of it. Optional "moves": [{"through": [2 to 6
+- hero: "title", "picture", "when", "callouts": [{"label", "part", "when", "style"}] (0 to
+  3) -- one picture large and the parts the narration TEACHES pointed out on their words
+  (a label is a part's name, 1-4 words, never a statement). "part" is one of the
+  picture's parts exactly as its description lists them: the pointer goes to where that
+  part really is, and a callout naming no listed part is left out. "style" is how it is
+  pointed out -- vary them through the video, choosing for the moment:
+    "tag" -- a small tag beside the part, a short tick to it: naming one small thing.
+    "glow" -- the rest of the frame softens and a glow rings the part, its name in a
+      caption: "look here" while it is spoken.
+    "zoom" -- the view eases in on the part and back out: a detail too small to see.
+    "lens" -- a round magnifier beside the part shows it enlarged: a tiny structure
+      (a synapse, a cell) kept in its place.
+    "sketch" -- a hand-drawn loop round the part, its name beside: an informal "this one".
+    "caption" -- its name on a card at the foot of the frame, nothing on the picture: a
+      person, a whole scene, an era.
+  What deserves pointing out: only what the narration explains at that moment -- never a
+  book's publisher, author line or logo, never furniture or a background object, never a
+  person's body unless the body is the lesson. A person is named with "caption", never
+  pinned (the kit enforces it for any large figure). None at all is often best: a
+  picture that already shows what is said needs no pointer. Optional "moves": [{"through": [2 to 6
   part names, in order], "when"}] -- a glowing pulse runs through those parts on the
   words: a signal down a nerve, current through a wire. Use it wherever the narration
   says something travels.
@@ -163,7 +179,7 @@ def _shot_code(shot: dict, pictures: Pictures, at: int) -> list[str]:
         index = _index(shot.get("picture"), pictures, where, main=True)
         found = pictures.parts.get(index, [])
         callouts = []
-        for c in _items(shot.get("callouts", []), f"{where} callouts", 0, 5):
+        for c in _items(shot.get("callouts", []), f"{where} callouts", 0, MOST_CALLOUTS):
             label = _text(c.get("label"), f"{where} callout label")
             if (len(label.split()) > MOST_CALLOUT_WORDS or label.rstrip().endswith((".", "!"))
                     or STATING.intersection(label.lower().split())):
@@ -171,12 +187,17 @@ def _shot_code(shot: dict, pictures: Pictures, at: int) -> list[str]:
                 raise ValueError(f"{where} callout {label!r} is a statement: a callout names "
                                  f"a part of the picture in 1 to {MOST_CALLOUT_WORDS} words "
                                  "('Frog's leg'); put a statement in a key_idea shot")
+            style = str(c.get("style") or "tag").strip().lower()
+            if style not in POINTING:
+                raise ValueError(f"{where} callout {label!r}: style is one of "
+                                 f"{', '.join(POINTING)}")
             box = region(found, str(c.get("part") or label))
             if box is not None:       # no part surely there: no pointer at all
                 left, top, right, bottom = box
                 middle = f"({(left + right) / 2:.2f}, {(top + bottom) / 2:.2f})"
                 callouts.append(f"({label!r}, {middle}, {_when(c.get('when'))}, "
-                                f"({left:.2f}, {top:.2f}, {right:.2f}, {bottom:.2f}))")
+                                f"({left:.2f}, {top:.2f}, {right:.2f}, {bottom:.2f}), "
+                                f"{style!r})")
         moves = []
         for move in _items(shot.get("moves", []), f"{where} moves", 0, 3):
             through = [anchor(found, str(name)) for name in move.get("through") or []]

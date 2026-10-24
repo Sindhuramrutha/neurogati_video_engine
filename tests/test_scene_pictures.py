@@ -344,10 +344,29 @@ def test_a_hero_s_callouts_are_drawn_to_located_parts_and_unknown_ones_left_out(
         "moves": [{"through": ["cerebellum", "spinal cord"], "when": "down"}]}]},
         Pictures(1, {0: PARTS}))
 
-    assert "('Cerebellum', (0.60, 0.70), 'balance', (0.50, 0.60, 0.70, 0.80))" \
-        in program, "the part's box goes with it, for the spotlight"
+    assert "('Cerebellum', (0.60, 0.70), 'balance', (0.50, 0.60, 0.70, 0.80), 'tag')" \
+        in program, "the part's box goes with it, for the spotlight; a tag unless told"
     assert "Brain'" not in program, "a pointer at the statue's clothing is not drawn"
     assert "moves=[([(0.60, 0.70), (0.57, 0.90)], 'down')]" in program
+
+
+def test_each_callout_is_pointed_out_in_the_style_chosen_for_it():
+    """v6 and v7 pointed at every part alike -- a dot, a long line, a word. The writer
+    chooses one of six ways for each, and no more than three callouts crowd a picture."""
+    import pytest
+
+    from pipeline.scene_shots import Pictures
+
+    def hero(*callouts):
+        return program_for({"shots": [{"template": "hero", "picture": 0, "title": "The brain",
+                                       "callouts": list(callouts)}]}, Pictures(1, {0: PARTS}))
+
+    assert "'balance', (0.50, 0.60, 0.70, 0.80), 'lens')" in hero(
+        {"label": "Cerebellum", "part": "cerebellum", "when": "balance", "style": "lens"})
+    with pytest.raises(ValueError, match="style is one of"):
+        hero({"label": "Cerebellum", "part": "cerebellum", "when": "balance", "style": "arrow"})
+    with pytest.raises(ValueError, match="0 to 3"):
+        hero(*[{"label": "Cerebellum", "part": "cerebellum", "when": "balance"}] * 4)
 
 
 def test_a_shot_is_held_until_the_words_the_next_one_begins_on():

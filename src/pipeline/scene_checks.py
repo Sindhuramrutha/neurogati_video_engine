@@ -303,6 +303,13 @@ def _pictures_check(snapshots: list[dict], brief: dict[str, Any]) -> dict[str, s
 # --- the frames ---------------------------------------------------------------------------
 
 
+def _on_art(grounds: list, at: float) -> bool:
+    """Whether the frame's ground at `at` seconds is painted art, from the layout's
+    last snapshot before it."""
+    earlier = [art for when, art in grounds if when <= at + 0.05]
+    return bool(earlier and earlier[-1])
+
+
 def _frame(video: Path, at: float, target: Path):
     from PIL import Image
 
@@ -317,7 +324,13 @@ def _frame(video: Path, at: float, target: Path):
         return image.convert("RGB").copy()
 
 
-def frame_checks(video: Path, seconds: float, background: str, folder: Path) -> list[dict]:
+def frame_checks(video: Path, seconds: float, background: str, folder: Path,
+                 grounds: list | None = None) -> list[dict]:
+    """`grounds` are (second, on its own ground) from the layout: while the frame
+    stands on the scene's backdrop -- painted, or a gradient, which the plain
+    background colour never matched -- or a painting shown edge to edge, what
+    reaches the edge is meant to, and is not taken for something cut off. Words
+    are kept inside by the bounds check, every other picture by the kit."""
     from PIL import ImageChops, ImageStat
 
     kept = folder / "frames"
@@ -329,6 +342,8 @@ def frame_checks(video: Path, seconds: float, background: str, folder: Path) -> 
         frames.append(_frame(video, seconds * share, target))
         if index == POSTER_SAMPLE and target.exists():
             shutil.copy(target, folder / "poster.png")
+    on_art = [_on_art(grounds or [], seconds * share)
+              for share, f in zip(FRAME_SHARES, frames, strict=True) if f is not None]
     frames = [f for f in frames if f is not None]
     if not frames:
         return [_check("frames", "Frames can be read", "Sampled frames open", FAIL,
@@ -356,7 +371,9 @@ def frame_checks(video: Path, seconds: float, background: str, folder: Path) -> 
 
     back = _hex(background)
     edge_ink = 0.0
-    for frame in frames:
+    for frame, art in zip(frames, on_art, strict=True):
+        if art:
+            continue
         width, height = frame.size
         border = [frame.getpixel((x, y)) for x in range(0, width, 8) for y in (1, height - 2)]
         border += [frame.getpixel((x, y)) for y in range(0, height, 8) for x in (1, width - 2)]
@@ -421,6 +438,7 @@ def program_checks(folder: Path, brief: dict[str, Any], clip_seconds: float) -> 
     layout = read_json_object(folder / "layout.json", "scene layout")
     checks += text_checks(layout, brief | {"renderer": renderer})
     checks.append(motion_check(layout))
+    grounds = [(s["at"], bool(s.get("art"))) for s in (layout or {}).get("snapshots", [])]
     checks += frame_checks(folder / "render.mp4", clip_seconds,
-                           brief["look"]["background"], folder)
+                           brief["look"]["background"], folder, grounds)
     return checks

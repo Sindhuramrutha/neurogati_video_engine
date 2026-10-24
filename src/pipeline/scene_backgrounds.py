@@ -163,7 +163,8 @@ def prompt(describe: str) -> str:
             f"{describe}. Full-bleed: the art runs to all four edges of the image -- never "
             "a frame, border, mat, margin or vignette round it, never a picture inside a "
             "picture. Light, airy and pleasant -- never dark or gloomy; soft, "
-            "complementary colours; artistic and interesting to look at, but calm, never "
+            "complementary colours; artistic and interesting to look at, but subtle: muted, "
+            "low in contrast, a quiet ground that words and pictures read on -- never "
             "busy or overdone. Keep the centre open and uncluttered: the scene's own "
             "pictures and words go there. Absolutely no text, letters or numbers.")
 

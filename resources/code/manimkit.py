@@ -34,9 +34,10 @@ arrow edge to edge, never through words; `self.picture(path)` shows a slide pict
 
 Shot templates -- start here: each builds a whole scene from a few slots and the
 words each part arrives on, laid out, timed and moved so it passes every check:
-`self.hero(picture, [(label, (x, y), cue)], title)` -- a picture and its parts
-named ((x, y) are the part's place as fractions of the picture, from its
-description); `self.steps([(label, picture, cue)], title)` -- an experiment or
+`self.hero(picture, [(label, (x, y), cue, box, style)], title)` -- a picture and the
+parts the narration teaches pointed out ((x, y) and box are the part's place as
+fractions of the picture, from its description; style is tag, glow, zoom, lens,
+sketch or caption -- a person is always named by a caption); `self.steps([(label, picture, cue)], title)` -- an experiment or
 process; `self.compare((heading, picture, [points], cue), (...), title)`;
 `self.person(picture, name, line, cue)`; `self.key_idea(statement, picture, cue)`;
 `self.opener(picture, title, [(line, cue)], cue)` -- a topic opened on a picture that
@@ -55,7 +56,8 @@ draw with `self.draw(x)`, connect with `self.grow(arrow)`, point attention with
 `self.swap(a, b)`.
 A label on a picture is `self.callout(text, (x, y), side)`: beside the point it
 names, joined to it by a short line from its edge -- never an arrow drawn from
-the middle of a label, never a label far from its thing.
+the middle of a label, never a label far from its thing. Point out only what is
+being taught, at most three things on a picture: a frame never crowded.
 
 It does four things the checks rely on:
 
@@ -164,6 +166,134 @@ def _trimmed(path: str) -> str:
         return path
 
 
+def _scenic(path: str) -> bool:
+    """A painting with its own setting -- opaque, landscape, no empty margin round
+    its subject -- is a scene, shown edge to edge; anything else stands on the
+    scene's background. v7 boxed every such painting inside the frame."""
+    from PIL import Image
+    try:
+        with Image.open(path) as image:
+            image.load()
+            alpha = image.getchannel(image.mode[-1]) if image.mode in ("RGBA", "LA") else None
+            if alpha is not None and alpha.getextrema()[0] < 250:
+                return False
+            landscape = image.width / max(1, image.height) >= 1.4
+    except OSError:
+        return False
+    return landscape and _trim_box(path) is None
+
+
+def _drawn_share(source: str, image):
+    """For a cut-out picture shown as `image`: a function giving how much of a box
+    (scene units) lies over what is drawn, 0 to 1 -- its own transparency says where
+    it is empty. None when the picture has no transparency."""
+    from PIL import Image
+    try:
+        with Image.open(source) as opened:
+            if opened.mode not in ("RGBA", "LA"):
+                return None
+            mask = np.asarray(opened.getchannel(opened.mode[-1]).reduce(4)) > 40
+    except OSError:
+        return None
+    rows, cols = mask.shape
+    left, top = image.get_left()[0], image.get_top()[1]
+    width, height = image.width, image.height
+
+    def share(box, own=None) -> float:
+        x0 = int(np.clip((box[0] - left) / width * cols, 0, cols))
+        x1 = int(np.clip((box[2] - left) / width * cols, 0, cols))
+        y0 = int(np.clip((top - box[3]) / height * rows, 0, rows))
+        y1 = int(np.clip((top - box[1]) / height * rows, 0, rows))
+        area = max(1, (x1 - x0) * (y1 - y0))
+        drawn = mask[y0:y1, x0:x1].copy()
+        if own is not None:            # the tag's own part is not in its way
+            ox0 = int(np.clip((own[0] - left) / width * cols, 0, cols)) - x0
+            ox1 = int(np.clip((own[2] - left) / width * cols, 0, cols)) - x0
+            oy0 = int(np.clip((top - own[3]) / height * rows, 0, rows)) - y0
+            oy1 = int(np.clip((top - own[1]) / height * rows, 0, rows)) - y0
+            drawn[max(0, oy0):max(0, oy1), max(0, ox0):max(0, ox1)] = False
+        whole = (box[2] - box[0]) * (box[3] - box[1])
+        inside = max(0.0, min(box[2], left + width) - max(box[0], left)) * max(
+            0.0, min(box[3], top) - max(box[1], top - height))
+        return float(drawn.sum()) / area * (inside / max(whole, 1e-6))
+    return share
+
+
+def _box_of(m) -> tuple[float, float, float, float]:
+    """(left, bottom, right, top) in scene units."""
+    return (m.get_left()[0], m.get_bottom()[1], m.get_right()[0], m.get_top()[1])
+
+
+def _overlap_area(a, b, gap: float = 0.0) -> float:
+    """How much of box `a`, grown by `gap` all round, lies on box `b`."""
+    wide = min(a[2] + gap, b[2]) - max(a[0] - gap, b[0])
+    high = min(a[3] + gap, b[3]) - max(a[1] - gap, b[1])
+    return max(0.0, wide) * max(0.0, high)
+
+
+def _round_crop(source: str, box, ground: str) -> str:
+    """The part of a picture inside `box` (fractions), squared round its middle and
+    cut to a disc with a soft edge, on `ground` where the picture is empty -- the
+    glass of a lens. Kept beside the picture."""
+    from PIL import Image, ImageDraw, ImageFilter
+    left, top, right, bottom = box
+    out = Path(source).with_name(f"{Path(source).stem}-lens-{left:.3f}-{top:.3f}-"
+                                 f"{right:.3f}-{bottom:.3f}.png")
+    if out.exists():
+        return str(out)
+    with Image.open(source) as opened:
+        image = opened.convert("RGBA")
+    width, height = image.size
+    x, y = (left + right) / 2 * width, (top + bottom) / 2 * height
+    side = max((right - left) * width, (bottom - top) * height) * 1.25
+    part = image.crop((round(x - side / 2), round(y - side / 2),
+                       round(x + side / 2), round(y + side / 2))).resize((600, 600))
+    glass = Image.new("RGBA", (600, 600), (*_rgb(ground), 255))
+    glass.alpha_composite(part)
+    mask = Image.new("L", (600, 600), 0)
+    ImageDraw.Draw(mask).ellipse((6, 6, 594, 594), fill=255)
+    glass.putalpha(mask.filter(ImageFilter.GaussianBlur(2)))
+    glass.save(out)
+    return str(out)
+
+
+def _loop(own, colour: str, seed: int):
+    """A loop drawn round a part as a hand draws one: a little uneven, its end running
+    on past its start. A mark of attention, not a shape of the layout."""
+    from manim import VMobject
+    rng = np.random.default_rng(seed + 7)
+    x, y = (own[0] + own[2]) / 2, (own[1] + own[3]) / 2
+    across, up = (own[2] - own[0]) / 2 * 1.15 + 0.25, (own[3] - own[1]) / 2 * 1.15 + 0.2
+    start = rng.uniform(0, 2 * np.pi)
+    phase = rng.uniform(0, 2 * np.pi, 2)
+    angles = np.linspace(start, start + 2 * np.pi * 1.12, 64)
+    wobble = 1 + 0.04 * np.sin(2 * angles + phase[0]) + 0.025 * np.sin(3 * angles + phase[1])
+    wobble += np.linspace(0, 0.06, len(angles))          # the second pass a little wider
+    loop = VMobject(stroke_color=colour, stroke_width=6).set_points_smoothly(
+        [[x + across * w * np.cos(a), y + up * w * np.sin(a), 0]
+         for a, w in zip(angles, wobble, strict=True)])
+    loop.attention = True
+    return loop
+
+
+def _cone(own, rim, colour: str):
+    """A small ring on the part and two faint lines from it to the lens's rim: where
+    the enlarged view comes from."""
+    from manim import Circle, Line, VGroup
+    centre = np.array([(own[0] + own[2]) / 2, (own[1] + own[3]) / 2, 0.0])
+    radius = max(own[2] - own[0], own[3] - own[1]) / 2 + 0.12
+    ring = Circle(radius=radius, color=colour, stroke_width=3).move_to(centre)
+    far = rim.get_center()
+    across = far - centre
+    across = np.array([-across[1], across[0], 0.0]) / (np.linalg.norm(across) or 1.0)
+    sides = [Line(centre + sign * across * radius, far + sign * across * rim.width / 2,
+                  color=colour, stroke_width=2, stroke_opacity=0.6) for sign in (1, -1)]
+    cone = VGroup(ring, *sides)
+    for mark in cone.get_family():
+        mark.attention = True
+    return cone
+
+
 BRIEF = load_brief()
 FRAME_WIDTH_UNITS = 14.222
 FRAME_HEIGHT_UNITS = 8.0
@@ -173,6 +303,8 @@ SAMPLE_PX = 6.0
 SMALLEST_SHAPE_PX = 40          # a dot or a marker is not a shape that collides
 BACKGROUND_SHARE = 0.9          # a shape this much of the frame is a background
 MOTION_SNAPSHOT_GAP = 0.25      # seconds: what each animation leaves, at most this often
+BACKDROP_WASH = 0.28            # the page's colour over every painted backdrop
+WORDS_WASH = 0.45               # and over that, under a shot carried by words
 
 
 def _px(point) -> tuple[float, float]:
@@ -322,6 +454,7 @@ class ExplainerScene(Scene):
         self._plays: list[list[str]] = []
         self._leaving: set[int] = set()
         self._labels: list[tuple[Text, str, str, str]] = []
+        self._panels: set[int] = set()        # words on their own tag or band
         self._snapshots: list[dict] = []
         self._spoken = BRIEF.__dict__.get("words") or []
         self._flat = [(i, w) for i, timed in enumerate(self._spoken)
@@ -348,7 +481,7 @@ class ExplainerScene(Scene):
         """The scene's background (`brief.background`): painted art, stretched to the
         frame, or a gradient -- split into coloured sections when asked. None when the
         scene has none or a person switched it off."""
-        from manim import DOWN, RIGHT, ImageMobject, Polygon, Rectangle, VGroup
+        from manim import DOWN, RIGHT, Group, ImageMobject, Polygon, Rectangle, VGroup
         found = BRIEF.__dict__.get("background")
         if not found:
             return None
@@ -356,7 +489,16 @@ class ExplainerScene(Scene):
         if found.get("kind") == "image":
             layer = ImageMobject(found["path"])
             layer.stretch_to_fit_width(width).stretch_to_fit_height(height)
-            return layer.set_z_index(-100)
+            # The ground, edge to edge: never shrunk into the margin like a picture
+            # laid on it -- every painted backdrop of v7 sat inside a white border.
+            layer.scenic = True
+            # Under a soft wash of the page's own colour: a ground recedes behind the
+            # words and pictures on it -- v7's busy rooms fought the text.
+            wash = Rectangle(width=width, height=height, stroke_width=0)
+            wash.set_fill(self.look["background"], opacity=BACKDROP_WASH)
+            ground = Group(layer, wash).set_z_index(-100)
+            ground.scenic = True
+            return ground
         colours = list(found.get("colours") or []) or [self.look["background"]]
         base = Rectangle(width=width, height=height, stroke_width=0)
         base.set_fill(colours if len(colours) > 1 else colours[0], opacity=1)
@@ -425,6 +567,10 @@ class ExplainerScene(Scene):
                 continue
             self._placed.add(id(mobject))
             family = mobject.get_family()
+            # A painting shown edge to edge is the scene's ground: never shrunk into
+            # the margin, never moved out of the way of words.
+            if getattr(mobject, "scenic", False):
+                continue
             if any(isinstance(m, TEXT_KINDS + (manim.ImageMobject,)) for m in family):
                 self.safe(mobject)
                 if not self._composing:
@@ -552,7 +698,8 @@ class ExplainerScene(Scene):
 
     # --- one type scale, one set of moves: every scene of a video alike ------------------
 
-    TITLE_SIZE, HEADING_SIZE, LABEL_SIZE = 60, 46, 38
+    # A title names the scene, it is not the scene: v7's 60 pt titles crowded the frame.
+    TITLE_SIZE, HEADING_SIZE, LABEL_SIZE = 52, 44, 38
     _composing = False
 
     def title(self, text: str) -> Text:
@@ -650,11 +797,13 @@ class ExplainerScene(Scene):
         behind it is covered instead of running through."""
         from manim import RoundedRectangle, VGroup
         stroke = stroke or self.colour(0)
-        fill = fill or self.tint(stroke)
+        # Light and soft-cornered, edged thinly in its colour: v7's heavy outlines on
+        # tinted fills read as a slide's boxes.
+        fill = fill or _mix(self._panel_fill(), stroke, 0.08)
         label = self.label(text, size=size, color=color, on=fill)
-        box = RoundedRectangle(corner_radius=0.12, width=label.width + 2 * pad,
+        box = RoundedRectangle(corner_radius=0.22, width=label.width + 2 * pad,
                                height=label.height + 2 * pad, stroke_color=stroke,
-                               stroke_width=5, fill_color=fill, fill_opacity=1).move_to(label)
+                               stroke_width=3, fill_color=fill, fill_opacity=1).move_to(label)
         group = VGroup(box, label)
         if at is not None:
             group.move_to([at[0], at[1], 0])
@@ -708,6 +857,7 @@ class ExplainerScene(Scene):
     def flow(self, steps: list[str], y: float = -0.3, size: int = 38, gap: float = 0.9):
         """Steps in boxes joined by arrows, left to right -- top to bottom when they
         do not fit across. Has .boxes and .arrows (arrows[i] joins boxes[i] to [i+1])."""
+        self._calm()
         from manim import DOWN, RIGHT, VGroup
         boxes = [self.boxed(text, size=size, stroke=self.colour(i))
                  for i, text in enumerate(steps)]
@@ -726,6 +876,7 @@ class ExplainerScene(Scene):
         """One idea in the middle and what hangs off it, in a column either side, each
         joined to the middle by a line from edge to edge. Has .centre, .items, .lines
         (lines[i] joins the centre to items[i])."""
+        self._calm()
         from manim import DOWN, LEFT, RIGHT, Line, VGroup
         middle = self.boxed(self._broken(centre, 4.2, size + 4), size=size + 4,
                             stroke=self.colour(0), fill=self.tint(self.colour(0), 0.3))
@@ -758,6 +909,7 @@ class ExplainerScene(Scene):
         """Things in order on a line, a dot and a label each. Across the frame with
         labels above and below in turn; down its left side when they do not fit across.
         Has .spine, .dots, .labels."""
+        self._calm()
         from manim import DOWN, RIGHT, UP, Dot, Line, VGroup
         labels = [self.label(text, size=size) for text in events]
         span = 2 * self.SAFE_X - 0.6
@@ -836,135 +988,351 @@ class ExplainerScene(Scene):
         image.move_to([at[0], at[1], 0])
         return image
 
+    # Six ways to point at a part, one chosen for each: v6 and v7 drew a dot, a long
+    # line and a word to every part alike -- a cover's publisher included.
+    POINTING = ("tag", "glow", "zoom", "lens", "sketch", "caption")
+    LARGEST_PINNED = 0.15     # of the picture: a part larger -- a person -- is named, not pinned
+
+    def _style_of(self, style, box) -> str:
+        """The style a callout is drawn in. A part that is most of a figure -- a
+        person, a whole animal -- is named by a caption, never pinned with a dot or
+        circled: a dot on a person's chest reads as a specimen pin."""
+        style = style if style in self.POINTING else "tag"
+        if box is None:
+            return "caption" if style == "caption" else "tag"
+        if (box[2] - box[0]) * (box[3] - box[1]) > self.LARGEST_PINNED and style != "glow":
+            return "caption"
+        return style
+
     @_composed
     def hero(self, picture: str, callouts: list, title: str = "", cue: str | None = None,
              moves: list | None = None):
-        """One picture, large, and its parts named on it: `callouts` are
-        (label, (x, y), cue) with (x, y) the part's place as fractions of the
-        picture from its top left -- the picture's description gives them -- or
-        (label, (x, y), cue, (left, top, right, bottom)) with the part's box: then,
-        on its words, the rest of the picture dims and an outline draws round the
-        part, and the light moves from part to part as each is named. The
-        labels stand in a column beside the picture -- both sides, picture centred,
-        when the parts are spread across it -- each joined to its part by a line
-        that crosses the picture level and bends only in the gutter, so no two
-        lines cross. `moves` are ([(x, y), ...], cue): a pulse runs along those
-        points of the picture on the cue -- a signal travelling, liquid carried."""
-        from manim import Dot, VMobject
-        callouts = [tuple(c) + (None,) * (4 - len(c)) for c in callouts]
-        # Parts are located on the whole picture; the trimmed one is shown.
-        callouts = [(text, _in_trimmed(picture, *xy), cue,
-                     None if box is None else (*_in_trimmed(picture, *box[:2]),
-                                               *_in_trimmed(picture, *box[2:])))
-                    for text, xy, cue, box in callouts]
-        moves = [([_in_trimmed(picture, *xy) for xy in path], cue)
-                 for path, cue in (moves or [])]
-        top = 2.55 if title else 3.3
-        if title:
-            self.play(self.reveal(self.title(title)))
-        xs = [fx for _, (fx, _), _, _ in callouts]
-        both = len(callouts) > 1 and min(xs) < 0.4 and max(xs) > 0.6
-        middle = (top - 3.3) / 2
-        # Each label column as wide as its longest word. Labels both sides only
-        # when that still leaves the picture nearly as large as one column would:
-        # the picture is the scene, the labels serve it.
-        longest = max((Text(word, font_size=max(self.LABEL_SIZE, self.smallest_size())).width
-                       for text, _, _, _ in callouts for word in text.split()), default=2.0)
-        room = max(2.4, longest + 0.15)
-        from PIL import Image as _Image
-        with _Image.open(_trimmed(picture)) as opened:
-            aspect = opened.width / max(1, opened.height)
-        tall = top + 3.3
-        centred = min(6.8, 2 * (self.SAFE_X - 0.85 - room))
-        beside = 2 * self.SAFE_X - 0.85 - room
-        both = both and min(centred, tall * aspect) >= 0.8 * min(beside, tall * aspect)
-        if both:
-            image = self._fit(picture, centred, tall, (0.0, middle))
+        """One picture, large, and the parts the narration teaches pointed out on
+        their words. `callouts` are (label, (x, y), cue, (left, top, right, bottom),
+        style) -- place and box as fractions of the picture from its top left; box
+        and style may be left off. A style is one of:
+        tag -- a small tag beside the part, a short tick to it (naming a small part);
+        glow -- the rest of the frame softens, a glow rings the part, its name in the
+        caption ("look here" while it is spoken); zoom -- the view eases in on the
+        part and back out (a detail too small to see whole); lens -- a round
+        magnifier beside the part shows it enlarged (a tiny structure kept in its
+        place); sketch -- a hand-drawn loop is drawn round it, its name beside (an
+        informal "this one"); caption -- its name on a card at the foot of the frame,
+        nothing laid on the picture (a person, a whole scene or era).
+        A painting with its own setting fills the whole frame; a cut-out subject
+        stands large on the scene's background. `moves` are ([(x, y), ...], cue): a
+        pulse runs along those points of the picture on the cue -- a signal
+        travelling, liquid carried."""
+        from manim import Dot, Line
+        callouts = [tuple(c) + (None,) * (5 - len(c)) for c in callouts]
+        scenic = _scenic(picture)
+        source = picture if scenic else _trimmed(picture)
+        if not scenic:
+            # Parts are located on the whole picture; the trimmed one is shown.
+            callouts = [(text, _in_trimmed(picture, *xy), cue,
+                         None if box is None else (*_in_trimmed(picture, *box[:2]),
+                                                   *_in_trimmed(picture, *box[2:])), style)
+                        for text, xy, cue, box, style in callouts]
+            moves = [([_in_trimmed(picture, *xy) for xy in path], cue)
+                     for path, cue in (moves or [])]
+        callouts = [(text, xy, cue, box, self._style_of(style, box))
+                    for text, xy, cue, box, style in callouts]
+        captioned = any(style in ("glow", "zoom", "caption") for *_, style in callouts)
+        heading = self._panel_title(title) if title else None
+        top = (heading.get_bottom()[1] - 0.2) if heading is not None else self.SAFE_Y
+        foot = -self.SAFE_Y + (1.05 if captioned else 0.0)
+        if scenic:
+            # The scene itself: edge to edge, as the painting was made -- never a
+            # picture boxed inside the frame.
+            image = manim.ImageMobject(source)
+            image.scale(max(FRAME_WIDTH_UNITS / image.width, FRAME_HEIGHT_UNITS / image.height))
+            image.move_to([0, 0, 0])
+            image.scenic = True
         else:
-            image = self._fit(picture, beside, tall, (0.0, middle))
-            # The picture and its label column centred together: a tall picture
-            # held to the left edge left most of the frame empty beside it.
-            widest = max((Text(text, font_size=max(self.LABEL_SIZE, self.smallest_size())).width
-                          for text, _, _, _ in callouts), default=0.0)
-            column = min(widest, 2 * self.SAFE_X - image.width - 0.85) + 0.85 if callouts else 0
-            image.align_to([max(-self.SAFE_X, -(image.width + column) / 2), 0, 0], manim.LEFT)
-        self._at_cue(cue)
-        self.play(manim.FadeIn(image, scale=0.96, run_time=0.7))
-        sides = {1: [], -1: []}
-        for text, (fx, fy), part_cue, box in callouts:
-            sides[-1 if both and fx < 0.5 else 1].append((text, fx, fy, part_cue, box))
-        placed = []
-        for side, items in sides.items():
-            edge = (image.get_right() if side > 0 else image.get_left())[0]
-            gutter, column = edge + side * 0.15, edge + side * 0.85
-            room = self.SAFE_X - abs(column)
-            items = sorted(items, key=lambda c: c[2])
-            points = [np.array([image.get_left()[0] + fx * image.width,
-                                image.get_top()[1] - fy * image.height, 0.0])
-                      for _, fx, fy, _, _ in items]
-            labels = [self._wrapped(text, room, self.LABEL_SIZE) for text, *_ in items]
-            for label, y in zip(labels, self._stacked(labels, [p[1] for p in points], top),
-                                strict=True):
-                label.move_to([column + side * label.width / 2, y, 0])
-            for (_, _, _, part_cue, box), point, label in zip(items, points, labels,
-                                                              strict=True):
-                y = label.get_center()[1]
-                start = np.array([column - side * 0.08, y, 0.0])
-                # Level across the picture at the part's height, bent only in the
-                # gutter: labels keep the parts' order, so no two lines cross.
-                line = VMobject(stroke_width=4).set_points_as_corners(
-                    [start, [gutter, point[1], 0.0], point])
-                placed.append((label, point, line, part_cue, box))
+            # Room at both sides for the tags: the picture is the scene, they serve it.
+            image = self._fit(picture, 2 * self.SAFE_X - 2.4, top - foot,
+                              (0.0, (top + foot) / 2))
 
         def at(fx: float, fy: float):
             return np.array([image.get_left()[0] + fx * image.width,
                              image.get_top()[1] - fy * image.height, 0.0])
 
-        events = [(self.when(c or ""), "callout", (label, point, line, box))
-                  for label, point, line, c, box in placed]
+        def frame_box(box):
+            (x0, y1), (x1, y0) = at(box[0], box[1])[:2], at(box[2], box[3])[:2]
+            return (x0, y0, x1, y1)
+
+        if heading is not None and not scenic:
+            self.play(self.reveal(heading))
+        self._at_cue(cue)
+        self.play(manim.FadeIn(image, scale=1.0 if scenic else 0.96, run_time=0.7))
+        if heading is not None and scenic:
+            self.play(self.reveal(heading))
+        # A part the frame has cropped away is not pointed at: it would point at nothing.
+        inside = [c for c in callouts if abs(at(*c[1])[0]) < self.SAFE_X - 0.2
+                  and abs(at(*c[1])[1]) < self.SAFE_Y - 0.2]
+        crowding = None if scenic else _drawn_share(source, image)
+        points = [at(*c[1]) for c in inside]
+        taken = [_box_of(heading)] if heading is not None else []
+        if captioned:
+            taken.append((-self.SAFE_X, -self.SAFE_Y, self.SAFE_X, -self.SAFE_Y + 1.05))
+        marks = []
+        for index, (text, _, part_cue, box, style) in enumerate(inside):
+            colour = self.colour(index)
+            point = points[index]
+            own = frame_box(box) if box is not None else None
+            others = [p for j, p in enumerate(points) if j != index]
+            near = None if crowding is None else (lambda mine, own=own: crowding(mine, own))
+            mark = {"style": style, "text": text, "colour": colour, "box": box, "own": own,
+                    "cue": part_cue, "point": point}
+            if style in ("tag", "sketch", "lens"):
+                if style == "lens":
+                    tag = self._lens(source, box, colour, text)
+                else:
+                    tag = self._pill(text, colour)
+                # A small part keeps its tag off it; a loop or a lens is drawn round
+                # the part, so the tag stands clear of the whole of it.
+                small = own is not None and (box[2] - box[0]) * (box[3] - box[1]) < 0.1
+                avoid = [own] if own is not None and (small or style != "tag") else []
+                self._place_near(tag, point, image.get_center(), taken + avoid, others, near)
+                taken.append(_box_of(tag))
+                mark["tag"] = tag
+                if style == "tag":
+                    mark["tick"] = Line(_edge(tag.box, point), point, buff=0.04,
+                                        color=colour, stroke_width=3)
+                    dot = Dot(point, radius=0.085, color=colour)
+                    mark["dot"] = dot.set_stroke(self.look["background"], width=3,
+                                                 background=True)
+                elif style == "sketch":
+                    mark["loop"] = _loop(own, colour, index)
+                else:
+                    mark["cone"] = _cone(own, tag.lens, colour)
+            marks.append(mark)
+
+        events = [(self.when(m["cue"] or ""), "mark", m) for m in marks]
         events += [(self.when(c or ""), "move", [at(*xy) for xy in path])
                    for path, c in (moves or []) if len(path) > 1]
-        named, light, last = 0, None, None
-        for moment, kind, what in sorted(events, key=lambda e: e[0]):
+        events.sort(key=lambda e: e[0])
+        light, last, caption, passing = None, None, None, False
+        for number, (moment, kind, what) in enumerate(events):
             self.until(moment)
             if kind == "move":
                 self._travel(what)
                 continue
-            label, point, line, box = what
-            colour = self.colour(named)
-            named += 1
-            # A part that is most of the picture is not singled out: a ring round
-            # the whole of it says nothing.
-            if box is not None and (box[2] - box[0]) * (box[3] - box[1]) < 0.45:
-                light = self._spotlight(image, picture, box, at, colour, light)
+            style, colour = what["style"], what["colour"]
+            following = events[number + 1][0] if number + 1 < len(events) else BRIEF.seconds
+            # A caption naming a lit or near part leaves with it: v7's "heart" stayed
+            # on while the light had moved on to the brain. One naming a person or a
+            # scene stays until another takes its place.
+            if passing and style in ("tag", "lens", "sketch"):
+                self.play(manim.FadeOut(caption, run_time=0.3))
+                caption, passing = None, False
+            if style == "tag":
+                # A small part is lit as it is named; a large one is only tagged.
+                box = what["box"]
+                if box is not None and (box[2] - box[0]) * (box[3] - box[1]) < 0.45:
+                    light = self._spotlight(image, source, what["box"], at, colour, light)
+                    last = moment
+                self.play(manim.FadeIn(what["dot"], scale=2.2, run_time=0.35),
+                          self.draw(what["tick"], run_time=0.35),
+                          self.reveal(what["tag"], run_time=0.45))
+            elif style == "glow":
+                light = self._spotlight(image, source, what["box"], at, colour, light)
                 last = moment
-            # A halo of the background under the line, as a textbook plate
-            # draws it: a leader crossing the drawing stays readable.
-            line.set_stroke(colour, width=4).set_stroke(self.look["background"], width=11,
-                                                       background=True)
-            dot = Dot(point, radius=0.09, color=colour)
-            self.play(self.draw(line, run_time=0.45), manim.FadeIn(dot, scale=2.2),
-                      self.reveal(label, run_time=0.45))
-            self.play(manim.Flash(point, color=colour, line_length=0.22, num_lines=10,
-                                  flash_radius=0.3, run_time=0.5))
+                caption, passing = self._caption(what["text"], colour, caption), True
+            elif style == "zoom":
+                if light is not None:
+                    self.play(*[manim.FadeOut(m) for m in light.values()], run_time=0.4)
+                    light = None
+                caption = self._caption(what["text"], colour, caption)
+                self._zoom(image, what["own"], scenic, min(following, self.now + 4.5))
+                self.play(manim.FadeOut(caption, run_time=0.3))
+                caption, passing = None, False
+            elif style == "lens":
+                self.play(self.draw(what["cone"], run_time=0.5))
+                self.play(manim.FadeIn(what["tag"], scale=0.6, run_time=0.6))
+            elif style == "sketch":
+                self.play(self.draw(what["loop"], run_time=0.7))
+                self.play(self.reveal(what["tag"], run_time=0.4))
+            else:
+                caption, passing = self._caption(what["text"], colour, caption), False
         if light is not None:
             # The whole picture back, every part named, once the last has been seen.
             self.until(max(self.now, last + 3.0))
-            self.play(manim.FadeOut(light["part"]), manim.FadeOut(light["ring"]),
-                      image.animate.set_opacity(1), run_time=0.6)
+            leaving = list(light.values()) + ([caption] if passing else [])
+            self.play(*[manim.FadeOut(m) for m in leaving], run_time=0.6)
 
-    def _spotlight(self, image, picture: str, box, at, colour, light=None):
-        """Attention moved to what is being said: the picture fades back and the part
-        named is shown at full strength over it, cut from the same picture, with an
-        outline round it; from an earlier part, the light moves across. Within the
-        picture's own shape: a dimming box the size of the picture showed as a pale
-        panel over a painted background."""
-        from manim import ImageMobject, RoundedRectangle
+    def _calm(self) -> None:
+        """Before a shot carried by words -- steps, a comparison, a flow, a hub, a
+        timeline -- a painted backdrop fades further back, so every word reads on a
+        quiet ground. Once a shot: it goes with the shot when the frame is cleared."""
+        from manim import Rectangle
+        found = BRIEF.__dict__.get("background") or {}
+        if found.get("kind") != "image" or any(getattr(m, "calm", False) for m in self.shown):
+            return
+        veil = Rectangle(width=FRAME_WIDTH_UNITS + 0.1, height=FRAME_HEIGHT_UNITS + 0.1)
+        veil.set_fill(self.look["background"], opacity=WORDS_WASH).set_stroke(width=0)
+        veil.calm = veil.attention = True
+        self.play(manim.FadeIn(veil, run_time=0.4))
+
+    def _panel_fill(self) -> str:
+        """The ground of a tag, a band or a card: light, with the theme's words dark
+        on it -- or deep, where the theme's words are light."""
+        light = _mix("#ffffff", self.look["background"], 0.25)
+        if _contrast(self.look["text"], light) >= 4.5:
+            return light
+        return _mix("#1f2430", self.look["background"], 0.25)
+
+    def _caption(self, text: str, colour: str, before=None):
+        """A name on a card at the foot of the frame, an accent bar at its side --
+        nothing laid on the picture. One at a time: a new one takes the place of the
+        last."""
+        from manim import RoundedRectangle, VGroup
+        fill = self._panel_fill()
+        words = self._wrapped(text, 2 * self.SAFE_X - 2.0, self.LABEL_SIZE + 4, bold=True,
+                              on=fill)
+        self._panels.add(id(words))
+        card = RoundedRectangle(corner_radius=0.22, width=words.width + 0.95,
+                                height=words.height + 0.4)
+        card.set_fill(fill, opacity=0.93).set_stroke(width=0)
+        bar = RoundedRectangle(corner_radius=0.05, width=0.1, height=card.height - 0.24)
+        bar.set_fill(colour, opacity=1).set_stroke(width=0)
+        words.move_to(card).shift([0.18, 0, 0])
+        bar.move_to([card.get_left()[0] + 0.24, card.get_center()[1], 0])
+        made = VGroup(card, bar, words)
+        made.move_to([-self.SAFE_X + made.width / 2, -self.SAFE_Y + made.height / 2, 0])
+        if before is None:
+            self.play(manim.FadeIn(made, shift=manim.RIGHT * 0.3, run_time=0.45))
+        else:
+            self.play(manim.FadeOut(before, run_time=0.25),
+                      manim.FadeIn(made, shift=manim.RIGHT * 0.3, run_time=0.45))
+        return made
+
+    def _zoom(self, image, own, scenic: bool, until: float) -> None:
+        """The view eases in on a part until `until`, then back out: what was laid
+        on the picture steps aside while it is near, and returns with it."""
+        if own is None:
+            return
+        centre = np.array([(own[0] + own[2]) / 2, (own[1] + own[3]) / 2, 0.0])
+        wide, high = max(0.2, own[2] - own[0]), max(0.2, own[3] - own[1])
+        grown = min(2.6, FRAME_WIDTH_UNITS * 0.5 / wide, FRAME_HEIGHT_UNITS * 0.5 / high)
+        if grown < 1.25:
+            self.until(until)
+            return
+        # Scaled about the part, which stays put; then the part brought to the middle.
+        target = -centre
+        if scenic:
+            # A painting edge to edge stays edge to edge: never pulled past its border.
+            middle = centre * (1 - grown)
+            half = np.array([image.width * grown / 2, image.height * grown / 2, 0.0])
+            frame = np.array([FRAME_WIDTH_UNITS / 2, FRAME_HEIGHT_UNITS / 2, 0.0])
+            target = np.clip(target, frame - half - middle, half - frame - middle)
+        laid = [m for m in self.shown if m is not image
+                and m not in self._panel_groups()]
+        image.save_state()
+        if laid:
+            self.play(*[manim.FadeOut(m, run_time=0.3) for m in laid])
+        self.play(image.animate.scale(grown, about_point=centre).shift(target),
+                  run_time=1.2, rate_func=manim.smooth)
+        self.until(max(self.now + 1.0, until - 1.2))
+        self.play(manim.Restore(image), run_time=1.0, rate_func=manim.smooth)
+        if laid:
+            self.play(*[manim.FadeIn(m, run_time=0.3) for m in laid])
+
+    def _panel_groups(self) -> list:
+        """The title band and caption card on screen: they stay when the view moves."""
+        return [m for m in self.shown
+                if any(id(part) in self._panels for part in m.get_family())]
+
+    def _lens(self, source: str, box, colour: str, text: str):
+        """A round magnifier showing the part enlarged, its name under it. Has .box
+        (for its pointer), .lens and .label."""
+        from manim import Circle, Group, ImageMobject
+        disc = ImageMobject(_round_crop(source, box, self._panel_fill())).set(height=2.3)
+        rim = Circle(radius=1.15, color=colour, stroke_width=5).move_to(disc)
+        rim.attention = True
+        name = self._pill(text, colour)
+        name.next_to(disc, manim.DOWN, buff=0.18)
+        lens = Group(disc, rim, name)
+        lens.box, lens.lens, lens.label = name.box, rim, name.label
+        return lens
+
+    def _pill(self, text: str, colour: str):
+        """A name on a small rounded tag: light, edged in its part's colour, readable
+        on any painting because it carries its own ground. Has .box and .label."""
+        from manim import RoundedRectangle, VGroup
+        fill = self._panel_fill()
+        label = self._wrapped(text, 3.4, self.LABEL_SIZE, color=self.look["text"], on=fill)
+        self._panels.add(id(label))
+        width, height = label.width + 0.44, label.height + 0.26
+        box = RoundedRectangle(corner_radius=min(0.3, height / 2), width=width, height=height)
+        box.set_fill(fill, opacity=0.95).set_stroke(colour, width=3).move_to(label)
+        tag = VGroup(box, label)
+        tag.box, tag.label = box, label
+        return tag
+
+    def _panel_title(self, text: str):
+        """The scene's title on a soft light band at the top: over painted art the
+        words carry their own ground, and never sit half on the picture."""
+        from manim import RoundedRectangle, VGroup
+        fill = self._panel_fill()
+        # Smaller than a title on a plain ground: on a painting it names the scene,
+        # it is not the scene -- v7's ran to two lines over a third of the frame.
+        room = 2 * self.SAFE_X - 1.0
+        size = next((s for s in range(self.HEADING_SIZE, 39, -2)
+                     if Text(text, font_size=s, weight="BOLD").width <= room), self.HEADING_SIZE)
+        words = self._wrapped(text, room, size, bold=True, on=fill)
+        self._panels.add(id(words))
+        band = RoundedRectangle(corner_radius=0.3, width=words.width + 0.8,
+                                height=words.height + 0.36)
+        band.set_fill(fill, opacity=0.9).set_stroke(width=0)
+        heading = VGroup(band, words.move_to(band))
+        heading.move_to([0, self.SAFE_Y - heading.height / 2, 0])
+        return heading
+
+    def _place_near(self, tag, point, centre, taken: list, others: list,
+                    crowding=None) -> None:
+        """Put `tag` close beside `point`, on the side away from the picture's middle
+        first: inside the safe area, clear of every tag and title already placed, and
+        off the other parts' points -- and, on a cut-out picture, on its empty ground
+        rather than over what is drawn (`crowding(box)`, 0 to 1): v7's "Described by
+        Broca" lay across his patient. The nearest free place wins; with none free,
+        the one that overlaps least."""
+        away = point - centre
+        directions = sorted(
+            [np.array(d, dtype=float) / np.linalg.norm(d) for d in
+             ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (-1, 1), (1, -1), (-1, -1))],
+            key=lambda d: -float(np.dot(d[:2], away[:2])))
+        best, least = None, None
+        for distance in (0.55, 0.9, 1.3, 1.8, 2.4):
+            for d in directions:
+                reach = np.array([d[0] * (distance + tag.width / 2),
+                                  d[1] * (distance * 0.75 + tag.height / 2), 0.0])
+                tag.move_to(point + reach)
+                mine = _box_of(tag)
+                if (mine[0] < -self.SAFE_X or mine[2] > self.SAFE_X
+                        or mine[1] < -self.SAFE_Y or mine[3] > self.SAFE_Y):
+                    continue
+                clash = sum(_overlap_area(mine, other, 0.15) for other in taken) + sum(
+                    1.0 for p in others if mine[0] < p[0] < mine[2] and mine[1] < p[1] < mine[3])
+                if crowding is not None:
+                    clash += max(0.0, crowding(mine) - 0.15)
+                if clash == 0:
+                    return
+                if least is None or clash < least:
+                    best, least = point + reach, clash
+        tag.move_to(best if best is not None else point)
+        self.safe(tag)
+
+    def _spotlight(self, image, source: str, box, at, colour, light=None):
+        """Attention moved to what is being said: a light veil softens the rest of
+        the frame -- never darkens it -- the part named shows at full strength over
+        it, cut from the same picture, and a soft glow rings it; from an earlier
+        part, the light moves across."""
+        from manim import Ellipse, ImageMobject, Rectangle
         from PIL import Image as _Image
         pad = 0.03
         left, top = max(0.0, box[0] - pad), max(0.0, box[1] - pad)
         right, bottom = min(1.0, box[2] + pad), min(1.0, box[3] + pad)
-        source = _trimmed(picture)
         out = Path(source).with_name(f"{Path(source).stem}-part-{left:.3f}-{top:.3f}-"
                                      f"{right:.3f}-{bottom:.3f}.png")
         if not out.exists():
@@ -978,23 +1346,37 @@ class ExplainerScene(Scene):
         part.stretch_to_fit_width(max(0.05, corner_b[0] - corner_a[0]))
         part.stretch_to_fit_height(max(0.05, corner_a[1] - corner_b[1]))
         part.move_to([(corner_a[0] + corner_b[0]) / 2, (corner_a[1] + corner_b[1]) / 2, 0])
-        ring = RoundedRectangle(corner_radius=0.12, width=part.width + 0.1,
-                                height=part.height + 0.1).move_to(part)
-        ring.set_fill(opacity=0).set_stroke(colour, width=5)
-        # Marks of attention laid on the picture, not shapes of the layout: the
-        # leader to the part is meant to run into its ring.
-        part.attention = ring.attention = True
+        part.scenic = True
+        # Close round the part: a ring 1.2 times a tall part's size swallowed half
+        # the table and ran through its own tag.
+        ring = Ellipse(width=part.width * 1.06 + 0.3, height=part.height * 1.06 + 0.3)
+        ring.move_to(part).set_fill(opacity=0).set_stroke(colour, width=4)
+        glow = ring.copy().set_stroke(colour, width=18, opacity=0.22)
+        # Marks of attention laid on the picture, not shapes of the layout.
+        ring.attention = glow.attention = True
+        # Laid in under everything already on the picture before it fades in: lifted
+        # over them afterwards, the veil dimmed the title and caption as it came.
+        above = [m for m in self.shown if m is not image]
         if light is None:
-            self.play(image.animate.set_opacity(0.35), manim.FadeIn(part),
+            veil = Rectangle(width=FRAME_WIDTH_UNITS + 0.1, height=FRAME_HEIGHT_UNITS + 0.1)
+            veil.set_fill(self.look["background"], opacity=0.55).set_stroke(width=0)
+            veil.attention = True
+            self.add(veil, part, glow, ring)
+            self.bring_to_front(*above)
+            self.play(manim.FadeIn(veil), manim.FadeIn(part), manim.FadeIn(glow),
                       self.draw(ring), run_time=0.6)
         else:
+            veil = light["veil"]
+            self.add(part)
+            self.bring_to_front(*[m for m in above if m not in (light["part"], veil)])
             self.play(manim.FadeOut(light["part"]), manim.FadeIn(part),
-                      manim.Transform(light["ring"], ring), run_time=0.7)
-            ring = light["ring"]
-        # Over the picture, under every line, dot and label already on it.
+                      manim.Transform(light["ring"], ring), manim.Transform(light["glow"], glow),
+                      run_time=0.7)
+            ring, glow = light["ring"], light["glow"]
+        # Over the picture, under every tag, tick and dot already on it.
         self.bring_to_front(*[m for m in self.shown
-                              if m is not image and m is not part and m is not ring])
-        return {"part": part, "ring": ring}
+                              if m not in (image, part, ring, glow, veil)])
+        return {"veil": veil, "part": part, "ring": ring, "glow": glow}
 
     def _travel(self, points: list) -> None:
         """A glowing pulse runs along `points` over the picture -- a signal down a
@@ -1014,29 +1396,12 @@ class ExplainerScene(Scene):
                   run_time=seconds, rate_func=manim.linear)
         self.play(manim.FadeOut(pulse, scale=1.8, run_time=0.3))
 
-    def _stacked(self, labels: list, wanted: list[float], top: float) -> list[float]:
-        """Heights for a column of labels, in order, each as near the part it
-        names as the others allow: spread evenly around the parts, not pushed
-        only downward -- a pile-up below the picture made long bent lines."""
-        gap = 0.25
-        ys: list[float] = []
-        for label, want in zip(labels, wanted, strict=True):
-            limit = (ys[-1] - labels[len(ys) - 1].height / 2 - gap - label.height / 2
-                     if ys else want)
-            ys.append(min(want, limit))
-        if ys:
-            ys = [y + sum(w - y for w, y in zip(wanted, ys, strict=True)) / len(ys)
-                  for y in ys]
-            high = ys[0] + labels[0].height / 2 - top
-            low = -self.SAFE_Y - (ys[-1] - labels[-1].height / 2)
-            ys = [y - max(0.0, high) + max(0.0, low) for y in ys]
-        return ys
-
     @_composed
     def steps(self, steps: list, title: str = ""):
         """Two to four steps in order -- an experiment, a process: `steps` are
         (label, picture or None, cue). Each arrives numbered, in its own panel,
         joined to the one before by an arrow."""
+        self._calm()
         from manim import Circle, Group
         if title:
             self.play(self.reveal(self.title(title)))
@@ -1078,35 +1443,49 @@ class ExplainerScene(Scene):
     @_composed
     def compare(self, left: tuple, right: tuple, title: str = ""):
         """Two sides set against each other: each (heading, picture or None,
-        [up to three short points], cue)."""
-        from manim import Line
-        if title:
-            self.play(self.reveal(self.title(title)))
-        top = 2.3 if title else 3.0
-        self.play(self.draw(Line([0, top + 0.2, 0], [0, -3.2, 0], color=self.look["dim"],
-                                 stroke_width=3), run_time=0.4))
+        [up to three short points], cue) on its own soft card, the two cards side by
+        side and centred in the room under the title -- v7's hung from the top over
+        a busy room, half the frame empty below them."""
+        self._calm()
+        from manim import Group, RoundedRectangle
+        fill = self._panel_fill()
+        heading_band = self._panel_title(title) if title else None
+        if heading_band is not None:
+            self.play(self.reveal(heading_band))
+        top = heading_band.get_bottom()[1] - 0.3 if heading_band is not None else self.SAFE_Y
+        sides = []
         for side, (heading, picture, points, cue) in ((-1, left), (1, right)):
-            x = side * 3.25
             colour = self.colour(0 if side < 0 else 1)
             # Words in an accent only where the accent reads; else in the ink.
-            readable = _contrast(colour, self.look["background"]) >= 4.5
-            ink = colour if readable else self.look["text"]
-            # Wrapped to its own column: a long heading ran across the dividing line.
-            head = self._wrapped(heading, 5.8, self.HEADING_SIZE, bold=True, color=ink)
-            head.move_to([x, top + 0.25 - head.height / 2, 0])
-            parts = [head]
-            y = head.get_bottom()[1] - 0.35
+            ink = colour if _contrast(colour, fill) >= 4.5 else self.look["text"]
+            # Wrapped to its own card: a long heading ran across the dividing line.
+            head = self._wrapped(heading, 5.4, self.HEADING_SIZE, bold=True, color=ink, on=fill)
+            parts, y = [head], -head.height - 0.3
+            head.move_to([0, -head.height / 2, 0])
             if picture:
-                image = self._fit(picture, 5.6, 2.6, (x, y - 1.3))
+                image = self._fit(picture, 5.2, 2.4, (0, y - 1.2))
                 parts.append(image)
-                y = image.get_bottom()[1] - 0.2
+                y = image.get_bottom()[1] - 0.25
             for point in points[:3]:
-                words = self._wrapped(point, 5.8, 36)
-                words.move_to([x, y - words.height / 2, 0])
+                words = self._wrapped(point, 5.4, self.LABEL_SIZE, on=fill)
+                words.move_to([0, y - words.height / 2, 0])
                 y = words.get_bottom()[1] - 0.25
                 parts.append(words)
+            self._panels.update(id(m) for m in parts)
+            sides.append((side, Group(*parts), cue))
+        tallest = max(group.height for _, group, _ in sides)
+        middle = (top - self.SAFE_Y) / 2
+        cards = []
+        for side, group, _ in sides:
+            x = side * 3.3
+            group.move_to([x, middle + tallest / 2 - group.height / 2, 0])
+            card = RoundedRectangle(corner_radius=0.3, width=6.2, height=tallest + 0.8)
+            card.set_fill(fill, opacity=0.9).set_stroke(width=0).move_to([x, middle, 0])
+            cards.append(card)
+        self.play(*[manim.FadeIn(card, scale=0.97) for card in cards], run_time=0.5)
+        for _, group, cue in sides:
             self._at_cue(cue)
-            self.play(*[self.reveal(part) for part in parts])
+            self.play(*[self.reveal(part) for part in group])
 
     @_composed
     def person(self, picture: str, name: str, line: str, cue: str | None = None,
@@ -1125,23 +1504,29 @@ class ExplainerScene(Scene):
 
     @_composed
     def key_idea(self, statement: str, picture: str | None = None, cue: str | None = None):
-        """One idea to remember, large, with a line drawn under it -- and a picture
-        beside it when there is one."""
-        from manim import Line
+        """One idea to remember, large, on a soft light card with an accent bar down
+        its side -- readable on any background, where v7's words floated over the
+        painting -- and a picture beside it when there is one."""
+        from manim import RoundedRectangle, VGroup
+        fill = self._panel_fill()
         if picture:
             image = self._fit(picture, 5.6, 5.8, (3.4, -0.1))
-            words = self._wrapped(statement, 6.4, 50)
-            words.move_to([-3.2, 0.2, 0])
+            words, centre = self._wrapped(statement, 5.6, 50, on=fill), (-3.2, 0.2)
         else:
-            image, words = None, self._wrapped(statement, 11.5, 56)
-            words.move_to([0, 0.3, 0])
-        self.safe(words)
-        rule = Line(words.get_corner(manim.DL) + np.array([0, -0.35, 0]),
-                    words.get_corner(manim.DR) + np.array([0, -0.35, 0]),
-                    color=self.colour(0), stroke_width=6)
+            image, words, centre = None, self._wrapped(statement, 10.4, 56, on=fill), (0, 0.3)
+        self._panels.add(id(words))
+        card = RoundedRectangle(corner_radius=0.3, width=words.width + 1.2,
+                                height=words.height + 0.8)
+        card.set_fill(fill, opacity=0.92).set_stroke(width=0)
+        bar = RoundedRectangle(corner_radius=0.06, width=0.12, height=card.height - 0.4)
+        bar.set_fill(self.colour(0), opacity=1).set_stroke(width=0)
+        words.move_to(card).shift([0.15, 0, 0])
+        bar.move_to([card.get_left()[0] + 0.35, card.get_center()[1], 0])
+        self.safe(VGroup(card, bar, words).move_to([centre[0], centre[1], 0]))
         self._at_cue(cue)
-        self.play(self.reveal(words), *([manim.FadeIn(image, run_time=0.6)] if image else []))
-        self.play(self.draw(rule, run_time=0.6))
+        self.play(manim.FadeIn(card, scale=0.97, run_time=0.5),
+                  *([manim.FadeIn(image, run_time=0.6)] if image else []))
+        self.play(manim.GrowFromEdge(bar, manim.DOWN, run_time=0.4), self.reveal(words))
 
     @_composed
     def opener(self, picture: str, title: str, lines: list | None = None,
@@ -1225,14 +1610,19 @@ class ExplainerScene(Scene):
                                                          round(right), round(bottom)],
                               "line_height": round((bottom - top_px) / lines),
                               "color": fill, "behind": behind,
-                              "recorded": id(m) in recorded})
-        shapes, pictures = [], []
+                              "recorded": id(m) in recorded,
+                              "panel": id(m) in self._panels})
+        shapes, pictures, laid_on = [], [], []
         for top in self.shown:
             for m in top.get_family():
                 if isinstance(m, ImageMobject):
                     left, top_px = _px(m.get_corner([-1, 1, 0]))
                     right, bottom = _px(m.get_corner([1, -1, 0]))
-                    pictures.append([round(left), round(top_px), round(right), round(bottom)])
+                    box = [round(left), round(top_px), round(right), round(bottom)]
+                    pictures.append(box)
+                    # A painting edge to edge is the ground the words stand on.
+                    if not getattr(m, "scenic", False):
+                        laid_on.append(box)
                 # Its own outline: an arrow's shaft counts even though its tip is
                 # a part of it.
                 elif (isinstance(m, VMobject) and id(m) not in word_ids and len(m.points)
@@ -1257,8 +1647,10 @@ class ExplainerScene(Scene):
                 if ((x0 < x) & (x < x1) & (y0 < y) & (y < y1)).any():
                     crossings.append({"text": piece["text"][:40], "shape": name})
             # Words laid on a picture cover what is drawn there -- often the
-            # picture's own labels, which nothing here can see.
-            if any(x0 < p[2] and p[0] < x1 and y0 < p[3] and p[1] < y1 for p in pictures):
+            # picture's own labels, which nothing here can see. Words on their own
+            # tag or band carry their ground with them.
+            if not piece["panel"] and any(x0 < p[2] and p[0] < x1 and y0 < p[3] and p[1] < y1
+                                          for p in laid_on):
                 on_pictures.append(piece["text"][:40])
         collisions = self._collisions(drawn, texts)
         boxes = ([t["box"] for t in texts] + pictures
@@ -1273,7 +1665,12 @@ class ExplainerScene(Scene):
                         isinstance(m, VMobject) and len(m.points)
                         and (m.get_stroke_opacity() > 0.3 or m.get_fill_opacity() > 0.3)))
                             for m in top.get_family())]
+        # The scene's own ground -- its backdrop, painted or a gradient, or a painting
+        # edge to edge -- runs to the frame's edges by design.
+        art = self._backdrop is not None or any(
+            getattr(m, "scenic", False) for top in self.shown for m in top.get_family())
         self._snapshots.append({"at": round(self.now, 2), "beat": beat, "texts": texts,
+                                "art": art,
                                 "graphics": len(graphics), "pictures": pictures,
                                 "crossings": crossings, "on_pictures": on_pictures,
                                 "collisions": collisions, "extent": extent})

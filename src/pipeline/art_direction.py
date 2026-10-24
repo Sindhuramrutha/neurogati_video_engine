@@ -36,7 +36,9 @@ BAR = (
     "clean cream screen with one bold word. Every background fills the whole screen, edge "
     "to edge -- never a picture framed inside it, never a border, mat or margin. Every "
     "frame light and pleasant, colours that suit each other, artistic and "
-    "interesting to look at -- never dark or gloomy, never busy, garish or overdone.")
+    "interesting to look at -- never dark or gloomy, never busy, garish or overdone. A "
+    "background is subtle -- muted and low in contrast, a quiet ground the words read on "
+    "-- and a frame is never crowded: one subject, a few words, room to breathe.")
 
 
 class SceneLook(BaseModel):
