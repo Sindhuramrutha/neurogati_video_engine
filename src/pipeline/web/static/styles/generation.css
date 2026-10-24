@@ -258,3 +258,14 @@
   border-bottom-left-radius: 4px; }
 .chat-turn.answer.failed, .chat-turn.answer.stopped { background: var(--c-orange-soft, #FFE8DE); }
 .chat-turn .chat-when { display: block; font-size: 11px; color: var(--text-faint); margin-top: 4px; }
+
+/* The panel's colours: a cream chat box, both sides of the chat yellow, a blue
+   background switch, and the folded details on orange. */
+.scene-panel .scene-agent { background: #FFF1CF; }
+.chat-turn.answer { background: var(--c-yellow, #FFD93D); }
+.chat-turn.answer.failed, .chat-turn.answer.stopped { background: var(--c-orange-soft, #FFE8DE); }
+#background-scene-button { background: var(--c-blue, #4D96FF); color: #FFF; }
+.scene-panel .scene-details > summary { background: var(--c-orange, #FF8A5B);
+  margin: -8px -12px 0; padding: 10px 12px; border-radius: 7px; }
+.scene-panel .scene-details[open] > summary { border-radius: 7px 7px 0 0; margin-bottom: 10px;
+  border-bottom: 2.5px solid var(--x-ink); }
