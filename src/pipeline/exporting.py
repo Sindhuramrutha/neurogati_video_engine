@@ -155,7 +155,7 @@ def credits_markdown(project_name: str, credits: list[dict[str, Any]]) -> str:
 
 def write_export_files(
     project_root: Path, project_name: str, plan: dict[str, Any], sections: list[dict[str, Any]],
-    credits: list[dict[str, Any]] | None = None,
+    credits: list[dict[str, Any]] | None = None, corrections: str = "",
 ) -> list[ExportedFile]:
     """Write the derived files and describe them. Returns what was written."""
     folder = project_root / "export"
@@ -174,6 +174,10 @@ def write_export_files(
         documents.append(("credits.md", "credits", credits_markdown(project_name, credits),
                           "The pictures from outside the deck, with the credit each "
                           "licence asks for: put it in the video's description."))
+    if corrections:
+        documents.append(("corrections.md", "corrections", corrections,
+                          "What the slides may have wrong, and what the video says: for "
+                          "the course team, to put the deck right."))
     for name, kind, content, note in documents:
         path = folder / name
         write_text_atomically(path, content)
@@ -281,6 +285,12 @@ def export_readiness(project: Project, usage: dict[str, Any] | None = None,
             warnings.append(f"Accepted as a draft: {said}.")
         else:
             blockers.append(f"{said}, or build the export as a draft.")
+    from pipeline.fact_ledger import open_count
+
+    if open_count(project):
+        warnings.append(f"{open_count(project)} fact(s) the slides may have wrong are not "
+                        "decided: the video keeps them general. Decide them on Script & "
+                        "Staging, under Facts.")
     if problems["below_bar"]:
         warnings.append(f"{len(problems['below_bar'])} scene(s) pass their checks but are "
                         f"below the reviewer's bar: {_scene_list(problems['below_bar'], False)}.")
@@ -323,7 +333,10 @@ def build_export(slug: str, draft: bool = False) -> dict[str, Any]:
     blockers, warnings = export_readiness(project, usage, draft, problems)
     sections = _export_sections(project, plan, script)
     credits = outside_credits(project)
-    files = write_export_files(project.root, project.name, plan.to_dict(), sections, credits)
+    from pipeline.fact_ledger import corrections_markdown
+
+    files = write_export_files(project.root, project.name, plan.to_dict(), sections, credits,
+                               corrections_markdown(project))
 
     version = next(
         (v for v in review.versions if v.id == review.active_version_id),

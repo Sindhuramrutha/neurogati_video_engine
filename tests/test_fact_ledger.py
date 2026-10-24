@@ -1,0 +1,36 @@
+"""The deck's facts: checked once by two models, decided by a person where a slide is
+wrong, and held to by code."""
+
+from pipeline.fact_ledger import Claim, broken
+from pipeline.scripting import ScriptScene
+
+
+def claim(status, says, correct="", decision=""):
+    return Claim(id="x", slide=3, says=says, status=status, correct=correct,
+                 decision=decision)
+
+
+def test_a_disputed_figure_may_not_be_said_until_it_is_decided_for_the_slide():
+    """v5's script said 'Hippocrates, who lived from 460 to 379 B.C.': the slide's
+    dates, flagged, repeated in the narration and on screen."""
+    hippocrates = claim("disputed", "Hippocrates is dated 460-379 B.C.",
+                        "Hippocrates is dated c. 460-c. 370 B.C.")
+    assert hippocrates.forbidden() == ["379"]
+    scene = ScriptScene(narration="He lived from 460 to 379 B.C.", brief="LABELS: 460-379 BC")
+    assert broken([scene], [(t, hippocrates.rule()) for t in hippocrates.forbidden()])
+    assert "not decided yet" in hippocrates.rule()
+
+    hippocrates.decision = "slide"
+    assert hippocrates.rule() == "" and hippocrates.forbidden() == [], \
+        "a person chose the slide: it may be said"
+    hippocrates.decision = "fact"
+    assert "say: Hippocrates is dated c. 460" in hippocrates.rule()
+
+
+def test_a_misspelt_term_is_found_and_a_verified_claim_asks_nothing():
+    term = claim("disputed", "This is the Syncitium theory of the nervous system.",
+                 "The term is syncytium theory.")
+    assert term.forbidden() == ["Syncitium"]
+    assert claim("verified", "Golgi and Cajal shared the Nobel Prize in 1906.").rule() == ""
+    assert not claim("verified", "Golgi won in 1906.").open
+    assert claim("uncertain", "Pavlov rang a bell.").open

@@ -24,6 +24,7 @@
  * plan section or source that has since changed is flagged there.
  */
 
+import { loadFacts, renderFactsPanel, wireFactsPanel } from "/static/facts-panel.js";
 import { editStageDocument, loadStageDocument, newItemIdentifier }
   from "/static/document-editing.js";
 import { requestJsonFromApi } from "/static/shared-client.js";
@@ -117,6 +118,7 @@ export async function renderScriptStagingStage(stage, navigateToStage, renderAge
   } catch (handoffFailure) {
     console.error("script hand-off load failed", handoffFailure);
   }
+  const facts = await loadFacts();
   const tab = currentScriptTab();
   const pane = (key, content) =>
     `<section class="plan-pane" data-script-pane="${key}" ${key === tab ? "" : "hidden"}>${content}</section>`;
@@ -124,6 +126,7 @@ export async function renderScriptStagingStage(stage, navigateToStage, renderAge
   body.innerHTML = `
     ${scriptingHeader()}
     <div class="stage-content stage-content-bare">
+      ${renderFactsPanel(facts)}
       <div class="extraction-tabs plan-tabs script-tabs">
         <nav class="x-tabs" role="tablist" aria-label="Script & Staging steps">
           ${SCRIPT_TABS.map(([key, label], index) => `
@@ -689,6 +692,7 @@ const scriptPayload = script => ({
 /* ---- wiring ------------------------------------------------------------- */
 
 function wireScriptingStage(stage, navigateToStage, renderAgentStage) {
+  wireFactsPanel(() => renderScriptStagingStage(stage, navigateToStage, renderAgentStage));
   const rerender = () => renderScriptStagingStage(stage, navigateToStage, renderAgentStage);
   redrawScript = rerender;
   const change = async applyEdit => {

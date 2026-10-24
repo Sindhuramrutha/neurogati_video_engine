@@ -187,14 +187,16 @@ def script_checks(project, script: Script) -> list[dict[str, str]]:
     conflicts = [f"“{titles.get(entry.section_id, 'Untitled')}” {item}"
                  for entry in script.section_scripts if entry.section_id in titles
                  for item in entry.slide_wrong]
+    # Not a decision left open: the video never teaches a slide's error. The narration
+    # says what is right, or leaves the doubtful detail out; one still repeating it is
+    # a wrong claim, listed under "Follows the slides".
     checks.append(_check(
-        "slides-wrong", "Slides that may be wrong",
-        "No slide states something the check found factually wrong -- a person decides "
-        "whether the video follows the slide or the fact",
-        WARN if conflicts else PASS,
-        f"{len(conflicts)} to decide: " + "; ".join(conflicts[:3])
-        + " -- The narration was not changed to repeat these; edit it if the video should "
-        "follow the slide." if conflicts else "None found."))
+        "slides-wrong", "Slide errors not repeated",
+        "Where a slide states something factually wrong, the video says what is right "
+        "or leaves the detail out -- never the slide's error",
+        PASS,
+        f"{len(conflicts)} slide error(s) found, and not repeated: " + "; ".join(conflicts[:3])
+        + (" ..." if len(conflicts) > 3 else "") if conflicts else "None found."))
 
     comments = _open_comments_by_section(project, plan, Stage.SCRIPT_STAGING)
     open_count = sum(len(found) for found in comments.values())

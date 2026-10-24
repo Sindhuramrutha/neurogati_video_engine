@@ -107,7 +107,8 @@ def draft_section(slug: str, section_id: str, instruction: str = "") -> dict[str
     try:
         written, notes = _write_section(
             agent, plan, script, extraction, section, instruction,
-            video_preferences(project.root), section_pictures(project, plan))
+            video_preferences(project.root), section_pictures(project, plan),
+            _facts(project, section))
     except ModelNotConfigured as not_configured:
         raise OperationFailed(str(not_configured)) from not_configured
     except ModelCallFailed as call_failure:
@@ -164,7 +165,8 @@ def draft_unwritten_sections(slug: str, instruction: str = "") -> dict[str, Any]
         Any error stays with its section; the others go on."""
         try:
             written, section_notes = _write_section(
-                agent, plan, script, extraction, section, instruction, preferences, pictures)
+                agent, plan, script, extraction, section, instruction, preferences, pictures,
+                _facts(project, section))
         except Exception as failure:          # one section's error, never the run's
             logger.warning("drafting %s failed: %s", section.title, failure, exc_info=True)
             return [f'"{section.title}" could not be drafted: {failure}']
@@ -209,8 +211,10 @@ def _write_section(
     instruction: str,
     preferences,
     pictures: dict[str, list[str]] | None = None,
+    facts: tuple[list[str], list] = ([], []),
 ) -> tuple[SectionScript, list[str]]:
-    """Ask for this section's scenes. Returns the section, unsaved, and any notes."""
+    """Ask for this section's scenes. Returns the section, unsaved, and any notes.
+    `facts` are the section's rules from the fact ledger and what they forbid."""
     notes: list[str] = []
     target_words = _target_words(section)
 
@@ -261,6 +265,9 @@ def _write_section(
             plan, section, target_words, (pictures or {}).get(section.id, [])),
         _neighbours(plan, script, section),
         f"--- source material for this section ---\n{source}",
+        "--- facts the video is held to (checked by two models; a person decides where "
+        "a slide is wrong) ---\n" + "\n".join(f"- {rule}" for rule in facts[0])
+        if facts[0] else "",
     ) if part)
 
     drafted = complete_structured(DraftedSection, system_prompt, user_prompt,
@@ -282,12 +289,18 @@ def _write_section(
                   for scene in written_scenes]
 
     result = _keep_to_slides(system_prompt, source, scenes, notes, section.title,
-                             own_slides=bool(section.sources))
+                             own_slides=bool(section.sources), forbidden=facts[1])
     written = SectionScript(section_id=section.id, scenes=result.scenes)
     written.written_from = narration_fingerprints(section, extraction)
     written.unsupported, written.uncovered = result.claims, result.missing
     written.slide_wrong, written.kept = result.slide_wrong, result.kept
     return written, notes
+
+
+def _facts(project, section) -> tuple[list[str], list]:
+    from pipeline import fact_ledger
+
+    return fact_ledger.rules_for(project, section), fact_ledger.forbidden_for(project, section)
 
 
 def section_pictures(project, plan: Plan) -> dict[str, list[str]]:

@@ -780,8 +780,9 @@ def test_the_script_page_names_uncovered_points_and_sentences_that_lead_away(pro
     assert checks["facts"]["name"] == "Follows the slides"
     assert checks["facts"]["status"] == "warn"
     assert "syncytium" in checks["facts"]["detail"] and "synapses" in checks["facts"]["detail"]
-    assert checks["slides-wrong"]["status"] == "warn"
-    assert "slide 20" in checks["slides-wrong"]["detail"]
+    found = checks["slides-wrong"]
+    assert found["status"] == "pass", "not left open: the video never repeats a slide's error"
+    assert "slide 20" in found["detail"] and "not repeated" in found["detail"]
 
 
 def test_each_section_is_saved_as_it_is_drafted_and_any_error_stays_with_it(

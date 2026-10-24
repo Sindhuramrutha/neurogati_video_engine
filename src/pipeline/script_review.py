@@ -41,15 +41,16 @@ class SlideReview(BaseModel):
                     "comparisons that serve a slide's point are NOT this.")
     wrong: list[str] = Field(
         default_factory=list,
-        description="Each claim in the narration that is factually wrong, or that "
+        description="Each claim in the narration or on screen that is factually wrong "
+                    "-- including one that repeats a slide's own error -- or that "
                     "contradicts a slide that is itself right, as 'scene N: the claim -- "
                     "what is right'.")
     slide_wrong: list[str] = Field(
         default_factory=list,
-        description="Where a SLIDE itself states something factually wrong (not the "
-                    "narration), as 'slide N: what it says -- what is right'. Not a fault "
-                    "of the narration: a person decides whether the video follows the "
-                    "slide or the fact.")
+        description="Where a SLIDE itself states something factually wrong, as 'slide "
+                    "N: what it says -- what is right'. The video never repeats it: the "
+                    "narration says what is right, or leaves the doubtful detail out; if "
+                    "it repeats it, list that under `wrong` too.")
 
 
 class RevisedScene(BaseModel):
@@ -85,7 +86,8 @@ def _review(source: str, scenes: list[ScriptScene], kept: list[str] | None = Non
         "explain, define, give context and examples. Judge like a teacher who knows the "
         "subject: list each slide's points and whether they are taught; flag only what "
         "leads away from the slides, and what is wrong. Where a slide itself is wrong, say "
-        "so apart (slide_wrong): correct narration is not a fault.",
+        "so apart (slide_wrong), and if the narration or the screen repeats the slide's "
+        "error, that is wrong too: a course never teaches an error because a slide made it.",
         f"--- the slides ---\n{source}\n\n--- the narration ---\n{_numbered(scenes)}{reasons}",
         max_tokens=REVIEW_TOKENS)
 
@@ -111,7 +113,8 @@ class Kept(BaseModel):
 
 
 def keep_to_slides(system_prompt: str, source: str, scenes: list[ScriptScene],
-                    notes: list[str], title: str, own_slides: bool = True) -> Kept:
+                    notes: list[str], title: str, own_slides: bool = True,
+                    forbidden: list | tuple = ()) -> Kept:
     """The drafted scenes, checked against the slides and revised by the agent until
     nothing is left -- every point covered, nothing leading away or wrong -- for up
     to three rounds. Each round the agent decides what to change and what is right
@@ -137,6 +140,9 @@ def keep_to_slides(system_prompt: str, source: str, scenes: list[ScriptScene],
             break
         slide_wrong = _merged(slide_wrong, review.slide_wrong)
         claims, missing = _findings(review, own_slides)
+        # Found by code, not judged: what the fact ledger forbids, said or shown.
+        from pipeline.fact_ledger import broken
+        claims = list(dict.fromkeys([*broken(scenes, forbidden), *claims]))
         if not claims and not missing:
             if revisions:
                 notes.append(f'"{title}": checked against its slides and revised in '
@@ -153,7 +159,10 @@ def keep_to_slides(system_prompt: str, source: str, scenes: list[ScriptScene],
                 f"{system_prompt}\n\n---\nYou are revising a section you drafted, after a "
                 "check against its slides. Cover every point it names in the scene where it "
                 "belongs; bring each sentence that leads away back to what the slides are "
-                "about, or cut it; correct what is wrong. If, on reflection, a flagged item "
+                "about, or cut it; correct what is wrong -- where a slide itself is wrong, "
+                "say what is right, or leave the doubtful detail out ('around 460 BC'), "
+                "never the slide's error, in the narration or on screen. If, on reflection, "
+                "a flagged item "
                 "is right as it is, keep it -- and say why under `kept`. Keep the same number "
                 "of scenes in the same order, change only what needs changing, and keep each "
                 "brief in step with its narration (its BEATS quote the narration's words).",

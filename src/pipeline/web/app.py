@@ -31,6 +31,7 @@ from pipeline.web.routes_assets_handoff import ASSETS_HANDOFF_ROUTES
 from pipeline.web.routes_chosen import CHOSEN_ROUTES
 from pipeline.web.routes_doctor import DOCTOR_ROUTES
 from pipeline.web.routes_extraction_agent import EXTRACTION_AGENT_ROUTES
+from pipeline.web.routes_facts import FACT_ROUTES
 from pipeline.web.routes_generation_handoff import GENERATION_HANDOFF_ROUTES
 from pipeline.web.routes_lesson_plan import LESSON_PLAN_ROUTES
 from pipeline.web.routes_plan_handoff import PLAN_HANDOFF_ROUTES
@@ -153,6 +154,7 @@ def create_app() -> Litestar:
             *EXTRACTION_AGENT_ROUTES,
             *RENDER_JOB_ROUTES,
             *CHOSEN_ROUTES,
+            *FACT_ROUTES,
             *PROJECT_ADMIN_ROUTES,
             *DOCTOR_ROUTES,
             *ASSETS_HANDOFF_ROUTES,
