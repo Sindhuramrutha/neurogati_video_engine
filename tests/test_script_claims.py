@@ -11,6 +11,7 @@ def test_crediting_a_named_writer_is_the_teacher_s_voice():
     to do. Speaking of the source is still caught."""
     assert reporting_phrases("The writer Lewis Carroll asked a question.") == []
     assert reporting_phrases("Carroll, the author of Alice in Wonderland, wrote it.") == []
+    assert reporting_phrases("That writer was Lewis Carroll.") == []
     assert reporting_phrases("As the author of the passage says, it is so.")
     assert reporting_phrases("As the writer says, the brain is complex.")
     # Naming the part of the course tells the viewer where they are; describing the

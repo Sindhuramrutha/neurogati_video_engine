@@ -196,8 +196,10 @@ def draft_unwritten_sections(slug: str, instruction: str = "") -> dict[str, Any]
     # Sections were written side by side; once every one is, read where they meet.
     written = store.load()
     if all(written.body_for(section.id).strip() for section in plan.sections):
+        from pipeline.claim_fixes import fix_claims
         from pipeline.scene_joins import smooth_joins
 
+        notes += fix_claims(slug)      # what the fact check found still wrong, corrected
         notes += smooth_joins(slug, identity)
 
     saved = store.load()

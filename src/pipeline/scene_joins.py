@@ -163,7 +163,7 @@ class JoinFix(BaseModel):
                                    "changed only if the join needs it.")
 
 
-def _close_enough(old: str, new: str) -> bool:
+def close_enough(old: str, new: str) -> bool:
     return (bool(new.strip())
             and difflib.SequenceMatcher(None, old, new).ratio() >= SMALLEST_KEPT_LIKENESS
             and 0.75 <= len(new) / max(1, len(old)) <= 1.25)
@@ -230,7 +230,7 @@ def smooth_joins(slug: str, identity: str = "") -> list[str]:
         kept = []
         for scene, new in ((before, answer.before.strip()), (after, answer.after.strip())):
             if scene.id not in changed and new != scene.narration.strip() \
-                    and _close_enough(scene.narration, new) \
+                    and close_enough(scene.narration, new) \
                     and not broken([type(scene)(narration=new, brief="")], forbidden):
                 scene.narration = new
                 changed.add(scene.id)

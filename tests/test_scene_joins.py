@@ -96,3 +96,40 @@ def test_a_join_is_smoothed_by_a_small_edit_and_never_rewritten(project_root,  #
     assert scenes["2-0"] == "So the brain is a network.", "a rewrite is not kept"
     assert scenes["0-0"].startswith("Galen mapped"), "only what changed at the join"
     assert len(notes) == 1
+
+
+@pytest.mark.real_joins
+def test_a_sentence_the_fact_check_found_wrong_is_corrected(project_root,  # noqa: F811
+                                                            monkeypatch):
+    """v8 and v9 reached the video saying Helmholtz 'used electromagnetic wave theory':
+    caught, warned, and left in the script. It is corrected, and the claim cleared."""
+    from pipeline import claim_fixes, operations
+    from pipeline.planning import PlanStore
+    from pipeline.scripting import ScriptStore
+
+    slug = operations.create_project("Claims")["slug"]
+    folder = project_root / slug
+    plan = three()
+    PlanStore(folder).save(plan)
+    wrong = "He used electromagnetic wave theory to understand how a signal travels."
+    rest = ("Du Bois-Reymond found that a nerve fires with a brief wave of voltage that runs "
+            "along the fibre. Today we call that wave the action potential, and its shape is "
+            "the same wherever it goes.")
+    script = written(plan, ["Welcome."], ["Helmholtz brought physics to biology. " + rest
+                                          + " " + wrong + " He showed the signal has a speed."],
+                     ["Done."])
+    script.section_scripts[1].unsupported = [
+        f"scene 1: '{wrong[:-1]}' -- nerve signals are not electromagnetic waves",
+        "a claim quoting nothing stays"]
+    ScriptStore(folder).save(script)
+    monkeypatch.setattr("pipeline.fact_ledger.forbidden_for", lambda project, section: [])
+    monkeypatch.setattr("pipeline.llm.complete_structured", lambda model, system, user, **k:
+                        claim_fixes.Corrected(narration=user.split("---\n")[1].split(
+                            "\n\n")[0].replace(wrong, "He timed the signal with physics.")))
+
+    notes = claim_fixes.fix_claims(slug)
+
+    middle = ScriptStore(folder).load().section_scripts[1]
+    assert "electromagnetic" not in middle.scenes[0].narration
+    assert middle.scenes[0].narration.startswith("Helmholtz brought physics")
+    assert middle.unsupported == ["a claim quoting nothing stays"] and len(notes) == 1

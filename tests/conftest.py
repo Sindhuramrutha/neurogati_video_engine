@@ -226,6 +226,7 @@ def joins_left_as_written(request, monkeypatch):
     if request.node.get_closest_marker("real_joins") is None:
         monkeypatch.setattr("pipeline.scene_joins.smooth_joins",
                             lambda slug, identity="": [])
+        monkeypatch.setattr("pipeline.claim_fixes.fix_claims", lambda slug: [])
 
 
 @pytest.fixture(autouse=True)

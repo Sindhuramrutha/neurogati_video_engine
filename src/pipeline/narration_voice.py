@@ -50,7 +50,8 @@ _SOURCE_NOUNS = (
 # Wonderland" credit a person, as the narrator is told to; "the writer says" speaks
 # about the source.
 REPORTING = re.compile(
-    rf"\b(?:the|this|that|our)\s+(?:{_SOURCE_NOUNS})\b(?!\s+(?:of\s+)?(?-i:[A-Z]))"
+    rf"\b(?:the|this|that|our)\s+(?:{_SOURCE_NOUNS})\b"
+    rf"(?!\s+(?:of\s+|was\s+|is\s+)?(?-i:[A-Z]))"
     rf"|\b(?:the|this)\s+chapters?\s+(?:explores?|opens?|asks?|says?|tells?|describes?|"
     rf"discuss(?:es)?|shows?|covers?|begins?|looks at)\b"
     rf"|\baccording to (?:the|this)\b",
