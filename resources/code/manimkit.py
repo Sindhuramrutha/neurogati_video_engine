@@ -1598,21 +1598,32 @@ class ExplainerScene(Scene):
         else:
             image = self._fit(picture, 5.4, 6.2, (3.25, -0.05))
             left, width, top = -self.SAFE_X + 0.1, 5.9, 2.3
-        heading = self._wrapped(title, width, self.TITLE_SIZE - 8)
+        # On a soft card, as every title is: v8's opening title sat over the painted
+        # lamp behind it.
+        fill = self._panel_fill()
+        left, width, top = left + 0.35, width - 0.7, top - 0.3
+        heading = self._wrapped(title, width, self.TITLE_SIZE - 8, on=fill)
         heading.move_to([left + heading.width / 2, top - heading.height / 2, 0])
         rule = Line([left, heading.get_bottom()[1] - 0.25, 0],
                     [left + min(width, max(2.5, heading.width)), heading.get_bottom()[1] - 0.25, 0],
                     color=self.colour(0), stroke_width=6)
-        placed, y = [], rule.get_center()[1] - 0.45
+        placed, y, words_on_card = [], rule.get_center()[1] - 0.45, [heading]
         for index, (text, line_cue) in enumerate((lines or [])[:3]):
-            words = self._wrapped(text, width - 0.6, self.LABEL_SIZE)
+            words = self._wrapped(text, width - 0.6, self.LABEL_SIZE, on=fill)
             words.move_to([left + 0.55 + words.width / 2, y - words.height / 2, 0])
             dot = Dot([left + 0.2, words.get_top()[1] - 0.22, 0], radius=0.09,
                       color=self.colour(index + 1))
             placed.append((manim.VGroup(dot, words), line_cue))
+            words_on_card.append(words)
             y = words.get_bottom()[1] - 0.35
+        self._panels.update(id(words) for words in words_on_card)
+        content = manim.VGroup(heading, rule, *[group for group, _ in placed])
+        card = manim.RoundedRectangle(corner_radius=0.3, width=content.width + 0.7,
+                                      height=content.height + 0.6)
+        card.set_fill(fill, opacity=0.9).set_stroke(width=0).move_to(content)
         self._at_cue(cue)
-        self.play(manim.FadeIn(image, scale=0.94, run_time=0.8), self.reveal(heading))
+        self.play(manim.FadeIn(image, scale=0.94, run_time=0.8), manim.FadeIn(card),
+                  self.reveal(heading))
         self.play(self.draw(rule, run_time=0.5))
         grown = 1.0
         for group, line_cue in placed:

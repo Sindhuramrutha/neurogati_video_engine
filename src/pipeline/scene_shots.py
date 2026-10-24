@@ -275,10 +275,15 @@ def _diagram_code(template: str, shot: dict, where: str, title: str) -> list[str
             lines += [f"self._at_cue({when})",
                       f"self.play(self.grow(d.lines[{number}]), self.reveal(d.items[{number}]))"]
     else:
-        lines += [f"d = self.timeline([{', '.join(labels)}])", "self.play(self.draw(d.spine))"]
+        # The whole line, every stop faint, from the start: v8's showed one dot on an
+        # empty line for most of its scene. Each stop lights on its words.
+        lines += [f"d = self.timeline([{', '.join(labels)}])",
+                  "[dot.set_opacity(0.3) for dot in d.dots]",
+                  "self.play(self.draw(d.spine), *[FadeIn(dot) for dot in d.dots])"]
         for number, when in enumerate(whens):
             lines += [f"self._at_cue({when})",
-                      f"self.play(self.reveal(d.dots[{number}]), self.reveal(d.labels[{number}]))"]
+                      f"self.play(d.dots[{number}].animate.set_opacity(1).scale(1.3), "
+                      f"self.reveal(d.labels[{number}]))"]
     return lines
 
 
