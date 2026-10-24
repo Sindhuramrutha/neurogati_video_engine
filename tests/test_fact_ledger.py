@@ -51,3 +51,12 @@ def test_a_decks_decisions_reach_every_version_made_of_it(tmp_path, monkeypatch)
     decided.decision = ""                                   # taken back, in any version
     fact_ledger._remember(Ledger(source="deck", claims=[decided]))
     assert fact_ledger._remembered("deck") == {}
+
+
+def test_a_misspelt_name_is_found_however_short():
+    """v6 and v7 said 'Anton van Leeuwenhoek': five letters slipped under the check."""
+    name = claim("uncertain", "Anton van Leeuwenhoek observed animalcules in 1683.",
+                 "The correct name is Antonie van Leeuwenhoek.", decision="fact")
+    assert name.forbidden() == ["1683", "Anton"], "the uncertain year, and the name"
+    assert broken([ScriptScene(narration="Anton van Leeuwenhoek ground lenses.", brief="")],
+                  [(t, name.rule()) for t in name.forbidden()])

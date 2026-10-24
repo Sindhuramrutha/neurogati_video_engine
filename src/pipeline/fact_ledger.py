@@ -95,8 +95,10 @@ class Claim(BaseModel):
             return []
         said = set(re.findall(r"\d{2,}", self.says))
         right = set(re.findall(r"\d{2,}", self.correct))
-        words = [w for w in re.findall(r"[A-Za-z]{6,}", self.says)]
-        known = {w.lower() for w in re.findall(r"[A-Za-z]{6,}", self.correct)}
+        # Long words, and names: v6 and v7 said "Anton van Leeuwenhoek" for "Antonie".
+        term = r"\b(?:[A-Za-z]{6,}|[A-Z][a-z]{3,})\b"
+        words = re.findall(term, self.says)
+        known = {w.lower() for w in re.findall(term, self.correct)}
         misspelt = [w for w in words if w.lower() not in known
                     and any(_close(w.lower(), k) for k in known)]
         return sorted(said - right) + misspelt
