@@ -41,6 +41,7 @@ const planViewState = {
   editingSectionId: null,
   editingPictures: [],
   editingPicturesChosen: false,
+  sectionOpen: {},        // section rows opened or closed by hand, kept through redraws
 };
 
 /** A section about no slide -- an opening, a recap, whatever the agent decided --
@@ -373,9 +374,12 @@ function renderPlanTab(plan, planning) {
 function renderSection(section, index, plan, planning, word) {
   const editing = planViewState.editingSectionId === section.id;
   const units = sectionUnits(section, planning);
+  // A row: its number, title, slides and length; opened, everything in it. One
+  // being edited is open; others as they were left.
+  const open = editing || planViewState.sectionOpen?.[section.id];
   return `
-    <section class="panel plan-section" data-section="${section.id}">
-      <div class="plan-section-head">
+    <details class="panel plan-section" data-section="${section.id}" ${open ? "open" : ""}>
+      <summary class="plan-section-head">
         <span class="outline-num">${index + 1}</span>
         <b class="plan-section-title">${escapeHtml(section.title || "Untitled section")}</b>
         <span class="fact">${aboutNoSlide(section) ? "about no slide · written from the rest of the plan"
@@ -383,7 +387,7 @@ function renderSection(section, index, plan, planning, word) {
         <span class="fact">${clock(section.estimated_seconds)} · ${section.scenes.length} scene${
           section.scenes.length === 1 ? "" : "s"}</span>
         <button class="btn" data-edit-section="${section.id}">${editing ? "Close" : "Edit"}</button>
-      </div>
+      </summary>
       ${section.summary ? `<p class="plan-section-summary">${escapeHtml(section.summary)}</p>` : ""}
       ${section.how ? `<p class="plan-section-how"><b>How it is told:</b> ${escapeHtml(section.how)}</p>` : ""}
       ${section.opens_on || section.ends_on ? `<p class="plan-section-how">
@@ -418,7 +422,7 @@ function renderSection(section, index, plan, planning, word) {
         </tbody>
       </table>
       <button class="btn plan-add-scene" data-add-scene="${section.id}">${icon(ICON.plus)} Add a scene</button>
-    </section>`;
+    </details>`;
 }
 
 function renderSectionEditor(section, units, word) {
@@ -781,7 +785,12 @@ function wirePlan(change, rerender, planning) {
   const sectionOf = (plan, element) =>
     plan.sections.find(s => s.id === element.closest("[data-section]").dataset.section);
 
+  document.querySelectorAll("details.plan-section").forEach(row => {
+    row.addEventListener("toggle", () => { planViewState.sectionOpen[row.dataset.section] = row.open; });
+  });
   document.querySelectorAll("[data-edit-section]").forEach(button => {
+    // In the row's header: a click edits, it does not also open or close the row.
+    button.addEventListener("click", event => event.preventDefault());
     button.onclick = () => {
       const id = button.dataset.editSection;
       const section = applicationState.plan.sections.find(s => s.id === id);

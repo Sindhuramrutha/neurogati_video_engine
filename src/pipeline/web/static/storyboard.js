@@ -33,13 +33,23 @@ function renderCard(card) {
     </article>`;
 }
 
+// Sections opened or closed by hand stay so through the page's own redraws.
+const sectionOpen = {};
+
+/** A section is a row: its title, scenes and approval; opened, its cards. One that
+ *  still needs approving opens by default, so what is asked is never hidden. */
 function renderSection(section) {
   const status = section.approved ? `<span class="plan-check pass">Approved</span>`
     : section.required ? `<span class="plan-check warn">Required before making scenes</span>`
       : `<span class="plan-check n/a">Optional</span>`;
+  const open = sectionOpen[section.id] ?? (section.required && !section.approved);
   return `
-    <section class="panel sb-section" data-sb-section="${escapeHtml(section.id)}">
-      <div class="panel-head"><h3>${escapeHtml(section.title)}</h3>${status}</div>
+    <details class="panel sb-section" data-sb-section="${escapeHtml(section.id)}" ${open ? "open" : ""}>
+      <summary class="sb-row">
+        <h3>${escapeHtml(section.title)}</h3>
+        <span class="muted">${section.cards.length} scene(s)${section.prepared ? "" : " · not prepared"}</span>
+        <span class="spacer"></span>${status}
+      </summary>
       ${section.prepared ? `<div class="sb-grid">${section.cards.map(renderCard).join("")}</div>`
         : `<p class="panel-sub">${section.cards.length} scene(s). Preparing paints each scene's
             picture in the project's style and lays out what it will show.</p>`}
@@ -51,7 +61,7 @@ function renderSection(section) {
             data-sb-approve="${section.approved ? "0" : "1"}">
             ${section.approved ? "Withdraw approval" : "Approve this storyboard"}</button>` : ""}
       </div>
-    </section>`;
+    </details>`;
 }
 
 /** The Storyboard tab, drawn into `container` and redrawn after every action. */
@@ -83,6 +93,7 @@ export async function mountStoryboard(container) {
       ${board.sections.map(renderSection).join("")}`;
     container.querySelectorAll("[data-sb-section]").forEach(element => {
       const sectionId = element.dataset.sbSection;
+      element.addEventListener("toggle", () => { sectionOpen[sectionId] = element.open; });
       const prepare = element.querySelector("[data-sb-prepare]");
       prepare.onclick = () => call("/prepare", { section_id: sectionId }, prepare,
         "Storyboard prepared. Look at every card, leave notes, then approve.");

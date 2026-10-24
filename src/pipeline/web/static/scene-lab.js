@@ -264,6 +264,18 @@ export function renderScenePanel(scene) {
         <button class="btn" id="close-scene-button">Close</button>
       </div>
       <p class="panel-sub mono">${escapeHtml(scene.folder || "No folder yet: it is made with the first script.")}</p>
+      <div class="scene-player">
+          ${scene.has_preview
+            ? `<video class="scene-clip" controls preload="metadata"
+                 src="${sceneFileUrl(visual.id, "preview.mp4", scene.checked_at)}"></video>
+               <p class="panel-sub">The preview: the program's clip with this scene's own
+                 narration.</p>`
+            : scene.has_clip
+              ? `<video class="scene-clip" controls muted preload="metadata"
+                   src="${sceneFileUrl(visual.id, "render.mp4", scene.checked_at)}"></video>
+                 <p class="panel-sub">Its clip, silent: it did not pass, so it has no preview.</p>`
+              : `<div class="scene-clip scene-clip-empty">No clip yet</div>`}
+      </div>
       <div class="final-head ${state[0]} scene-state"><span class="run-text"><b>${state[1]}</b>
         <span>${escapeHtml(visual.note || "")}</span></span>
         ${!failing && checks.length && scene.has_clip ? `
@@ -295,16 +307,6 @@ export function renderScenePanel(scene) {
 
       <div class="scene-grid">
         <div>
-          ${scene.has_preview
-            ? `<video class="scene-clip" controls preload="metadata"
-                 src="${sceneFileUrl(visual.id, "preview.mp4", scene.checked_at)}"></video>
-               <p class="panel-sub">The preview: the program's clip with this scene's own
-                 narration.</p>`
-            : scene.has_clip
-              ? `<video class="scene-clip" controls muted preload="metadata"
-                   src="${sceneFileUrl(visual.id, "render.mp4", scene.checked_at)}"></video>
-                 <p class="panel-sub">Its clip, silent: it did not pass, so it has no preview.</p>`
-              : `<div class="scene-clip scene-clip-empty">No clip yet</div>`}
           ${scene.background?.kind ? `
             <div class="scene-actions" style="margin:8px 0">
               <button class="btn" id="background-scene-button"
@@ -321,12 +323,6 @@ export function renderScenePanel(scene) {
                   <td><b>${escapeHtml(check.name)}</b><br><span class="muted">${escapeHtml(check.detail)}</span></td>
                 </tr>`).join("")}</tbody>
             </table>` : ""}
-          ${scene.sources.length ? `
-            <div class="scene-sources"><b>Outside resources it used</b>
-              ${scene.sources.map(source => `
-                <div><a href="${escapeHtml(source.url)}" target="_blank" rel="noopener">${
-                  escapeHtml(source.file)}</a> · ${escapeHtml(source.licence)} · ${escapeHtml(source.credit)}</div>`).join("")}
-            </div>` : ""}
         </div>
 
         <div>
@@ -408,12 +404,21 @@ export function wireSceneLab(rerender, visuals) {
   document.querySelectorAll("[data-open-scene]").forEach(button => {
     button.onclick = async () => {
       sceneLabState.openId = button.dataset.openScene;
-      await rerender();
-      document.querySelector(".scene-panel")?.scrollIntoView({ block: "start", behavior: "smooth" });
+      await rerender();      // it opens in the side panel, the list staying where it was
     };
   });
+  const closeScene = () => { sceneLabState.openId = null; rerender(); };
   const close = document.querySelector("#close-scene-button");
-  if (close) close.onclick = () => { sceneLabState.openId = null; rerender(); };
+  if (close) close.onclick = closeScene;
+  const backdrop = document.querySelector("#scene-drawer-backdrop");
+  if (backdrop) backdrop.onclick = closeScene;
+  sceneLabState.close = closeScene;
+  if (!sceneLabState.escapes) {           // one listener for the page's life
+    sceneLabState.escapes = true;
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && sceneLabState.openId) sceneLabState.close?.();
+    });
+  }
 
   const openId = sceneLabState.openId;
   const busy = async (button, label, work) => {

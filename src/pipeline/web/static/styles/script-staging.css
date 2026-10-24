@@ -171,3 +171,11 @@
   background: var(--c-red-soft); color: var(--x-ink);
   border: 2.5px solid var(--x-ink); box-shadow: 2px 2px 0 var(--x-ink);
 }
+
+/* The sections list: one box colour for every section and one highlight for the open
+   one, neither white -- a different colour per row read as noise. */
+.section-row,
+.section-row:nth-child(n) { --row: #BCD6FF; --row-soft: var(--c-blue-soft); }
+.section-row:hover { background: #CFE1FF; }
+.section-row.active,
+.section-row.active:hover { background: var(--c-yellow); --row: var(--c-yellow); }

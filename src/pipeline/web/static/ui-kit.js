@@ -339,7 +339,7 @@ document.addEventListener("click", event => {
 const REMEMBERED_TABS = {
   assetsTab: "extracted",      // extracted | brand | look | final
   planTab: "direction",        // direction | plan | final
-  scriptTab: "setup",          // setup | write | check | final
+  scriptTab: "setup",          // setup | write | final (check & transfer)
   generationTab: "setup",      // setup | make | final
   extractionTab: "extract",
   reviewTab: "transcript",     // Reviewing: transcript | comments
@@ -473,8 +473,8 @@ const STAGE_INFO = {
     points: [
       "Setup: the sections the Scene Plan handed on, variables, and leftover narration.",
       "Write: each section as scenes — what is said and what is shown. The agent (AI) only drafts what you ask.",
-      "Check: fixed rules; an unwritten section or an undefined {{VARIABLE}} blocks the transfer.",
-      "Final & transfer: once transferred, later stages read only the transferred script.",
+      "Check & transfer: fixed rules -- an unwritten section or an undefined {{VARIABLE}} "
+        + "blocks the transfer; once transferred, later stages read only the transferred script.",
     ],
   },
   generation: {

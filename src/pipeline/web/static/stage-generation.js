@@ -173,7 +173,8 @@ function renderMake(visuals, handoff, openScene) {
   return `
     ${renderScriptedBar(preview)}
     ${renderSceneStatus(visuals.visuals)}
-    ${renderScenePanel(openScene)}
+    ${openScene ? `<div class="scene-drawer-backdrop" id="scene-drawer-backdrop"></div>
+      <aside class="scene-drawer" aria-label="The open scene">${renderScenePanel(openScene)}</aside>` : ""}
     ${visuals.notes.length ? `<p class="muted edit-hint">${visuals.notes.map(escapeHtml).join(" · ")}</p>` : ""}
     ${renderSceneSections(visuals.visuals, renderShot)}`;
 }

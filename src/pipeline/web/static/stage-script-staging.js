@@ -1,14 +1,14 @@
 /**
- * Script & Staging — four tabs, in the order the work happens.
+ * Script & Staging — three tabs, in the order the work happens.
  *
  * 1. Setup: what the Scene Plan handed on, the variables used
  *    across the script, and narration left over from sections the plan dropped.
  * 2. Write: each section's narration as scenes, beside what it was planned
  *    with. The Scripting agent (AI) only writes empty sections, or one you ask
  *    it to redraft.
- * 3. Check: fixed rules over the script, each pass / warn / fail with why.
- * 4. Final & transfer: later stages read the transferred script
- *    (`script_handoff.py`); a failing check blocks the transfer.
+ * 3. Check & transfer: the fixed rules over the script, each pass / warn / fail with
+ *    why, and the transfer they guard -- later stages read the transferred script
+ *    (`script_handoff.py`); a failing check blocks it. One tab: two read as one step.
  *
  * Every pane is drawn and only the chosen one shown, so a tab change never
  * redraws the page or loses typing.
@@ -35,12 +35,13 @@ import {
 } from "/static/ui-kit.js";
 
 const SCRIPT_TABS = [
-  ["setup", "Setup"], ["write", "Write"], ["check", "Check"], ["final", "Final & transfer"],
+  ["setup", "Setup"], ["write", "Write"], ["final", "Check & transfer"],
 ];
 
 const currentScriptTab = () =>
+  // The Check tab became part of Check & transfer.
   SCRIPT_TABS.some(([key]) => key === applicationState.scriptTab)
-    ? applicationState.scriptTab : "setup";
+    ? applicationState.scriptTab : applicationState.scriptTab === "check" ? "final" : "setup";
 
 const CHECK_LABELS = { pass: "Pass", warn: "Warning", fail: "Fails", "n/a": "Not applicable" };
 
@@ -134,8 +135,8 @@ export async function renderScriptStagingStage(stage, navigateToStage, renderAge
                     aria-selected="${key === tab}">
               <span class="x-tab-number">${index + 1}</span>
               <b class="x-tab-label">${label}</b>
-              ${key === "check" && handoff.failing ? `<span class="plan-tab-count fail">${handoff.failing}</span>`
-                : key === "check" && handoff.warning ? `<span class="plan-tab-count warn">${handoff.warning}</span>` : ""}
+              ${key === "final" && handoff.failing ? `<span class="plan-tab-count fail">${handoff.failing}</span>`
+                : key === "final" && handoff.warning ? `<span class="plan-tab-count warn">${handoff.warning}</span>` : ""}
               ${key === "setup" && script.orphaned?.length ? `<span class="plan-tab-count warn"
                   title="Narration left over from earlier plans">${script.orphaned.length}</span>` : ""}
             </button>`).join("")}
@@ -148,8 +149,8 @@ export async function renderScriptStagingStage(stage, navigateToStage, renderAge
               ${renderSectionList(script, sections)}
               ${renderEditor(script, sections)}
             </div>`)}
-          ${pane("check", renderScriptChecks(handoff))}
-          ${pane("final", renderScriptFinal(script, sections, handoff, stage))}
+          ${pane("final", renderScriptFinal(script, sections, handoff, stage)
+            + renderScriptChecks(handoff))}
         </div>
       </div>
       ${renderFooterNav(stage, script, handoff, tab)}
@@ -215,7 +216,7 @@ function renderScriptFinal(script, sections, handoff, stage) {
   const [tone, title, detail] = !written.length
     ? ["blocked", "Nothing to transfer yet", "Write the narration on the Write tab."]
     : handoff.failing
-      ? ["stale", `${handoff.failing} check(s) fail`, "Fix them (see the Check tab), then transfer."]
+      ? ["stale", `${handoff.failing} check(s) fail`, "Fix them (see the checks below), then transfer."]
       : !handoff.has_transferred
         ? ["pending", "Ready to transfer",
            "Nothing has been transferred yet, so later stages read your working script."]
@@ -630,7 +631,7 @@ function showScriptTab(tab, stage, navigateToStage) {
   applicationState.scriptTab = tab;
   // Typing saves quietly, without a redraw; the checks and the summary are
   // drawn fresh, so they never describe the script as it was before it.
-  if (tab === "check" || tab === "final") {
+  if (tab === "final") {
     flushPendingSave().then(() => redrawScript());
     return;
   }
