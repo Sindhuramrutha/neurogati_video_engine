@@ -49,6 +49,9 @@ class SceneLook(BaseModel):
                                      "hearts in beakers'); a character or a visual metaphor "
                                      "where it teaches best -- or 'chosen: <name>' for a "
                                      "deck picture a person chose. True to the science. "
+                                     "A real person by name, with their known likeness "
+                                     "('Lewis Carroll, clean-shaven, dark wavy hair, in "
+                                     "his forties'), never an invented one. "
                                      "Only the subject: it is cut out and stood on the "
                                      "background, so its setting -- a room, a landscape, a "
                                      "sky -- belongs to the background, never here.")

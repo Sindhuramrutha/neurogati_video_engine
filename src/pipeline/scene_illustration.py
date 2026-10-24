@@ -69,7 +69,8 @@ def prompt(asked: str, look: dict[str, Any]) -> str:
         "science; one clear subject, whole and centred, filling most of the picture. "
         "Light, pleasant colours that suit each other; never dark or gloomy; appealing, "
         "but never overdone. Never photorealistic: a real person is drawn as a clearly "
-        f"illustrated portrait, not a photograph. Plain solid "
+        "illustrated portrait, not a photograph, with their own known likeness -- the "
+        "age, hair, beard and dress of their best-known portraits. Plain solid "
         f"{look.get('background', '#ffffff')} background, nothing else behind the "
         f"subject -- it is cut out and laid on the scene's own background. Accent colours "
         f"{accents}. Absolutely no text, letters, numbers, labels or captions anywhere in "
@@ -105,7 +106,10 @@ def check(path: Path, asked: str, narration: str) -> Checked:
         Checked,
         "You check an illustration painted for a science lesson before it is used. Be "
         "strict about the science: the wrong animal, organ, instrument or setup, extra "
-        "or missing parts that matter, or any text in the picture, is a no. Do not judge "
+        "or missing parts that matter, or any text in the picture, is a no. A real person "
+        "the narration names must look as they truly did: v7 drew Lewis Carroll as a "
+        "white-bearded old man, and he was clean-shaven with dark wavy hair -- the wrong "
+        "age, hair or beard for the person is a no, whatever was asked. Do not judge "
         "its background colour or drawing style, which the video sets, nor motion, glows "
         "or changes the description mentions: the scene animates those on top.",
         f"It was asked to show: {asked}\n\nWhat is said while it is on screen:\n"
