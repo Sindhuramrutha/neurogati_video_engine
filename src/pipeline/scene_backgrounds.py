@@ -3,7 +3,8 @@
 A scene used to sit on one flat white frame, scene after scene. Now the scene's maker
 chooses its background in its answer ("background"): about seven scenes in ten get
 art painted for them -- from a simple wash to a rich scene like a pastel botanical
-border -- and the rest a gradient, which may be split into coloured sections. A
+scene, always filling the screen edge to edge -- and the rest a gradient, which may be
+split into coloured sections. A
 background is light and pleasant, its colours complementary, its centre calm for
 what the scene shows; never a dark or gloomy frame, and never busy or overdone.
 Darkness is measured, not trusted: a dark painting is painted again, lighter, or
@@ -28,6 +29,7 @@ LIGHTEST_DARK = 150               # mean grey level a background may not fall un
 LIGHTEST_CENTRE = 165             # the middle, where words and pictures go
 LEAST_GRADIENT_LIGHTNESS = 0.72   # each gradient colour at least this light (0-1)
 SPLITS = ("none", "left", "right", "top", "bottom", "diagonal")
+FLATTEST_EDGE = 15                # grey levels: an outer edge flatter than this is a frame
 
 
 def read(folder: Path) -> dict[str, Any]:
@@ -126,13 +128,16 @@ def _painted(folder: Path, describe: str, before: dict[str, Any],
             add_event(state, "note", f"The background could not be painted ({failure}); "
                       "a gradient instead.")
             return _gradient({})
-        if light_enough(folder / name):
+        if light_enough(folder / name) and not framed(folder / name):
             return {"kind": "image", "file": name, "describe": describe}
-        request = prompt(describe) + (" The last one was too dark: make it much lighter "
-                                      "and brighter, in soft pale colours.")
+        request = prompt(describe) + (
+            " The last one was framed: paint it edge to edge, with no border or margin."
+            if framed(folder / name) else
+            " The last one was too dark: make it much lighter and brighter, in soft pale "
+            "colours.")
     (folder / name).unlink(missing_ok=True)
-    add_event(state, "note", "The painted background came out too dark twice; a light "
-              "gradient instead.")
+    add_event(state, "note", "The painted background came out too dark or framed twice; "
+              "a light gradient instead.")
     return _gradient({})
 
 
@@ -155,7 +160,9 @@ def draw_background(request: str) -> bytes:
 
 def prompt(describe: str) -> str:
     return (f"Wide 16:9 background art for a scene of an educational explainer video: "
-            f"{describe}. Light, airy and pleasant -- never dark or gloomy; soft, "
+            f"{describe}. Full-bleed: the art runs to all four edges of the image -- never "
+            "a frame, border, mat, margin or vignette round it, never a picture inside a "
+            "picture. Light, airy and pleasant -- never dark or gloomy; soft, "
             "complementary colours; artistic and interesting to look at, but calm, never "
             "busy or overdone. Keep the centre open and uncluttered: the scene's own "
             "pictures and words go there. Absolutely no text, letters or numbers.")
@@ -170,6 +177,21 @@ def light_enough(path: Path) -> bool:
     centre = grey.crop((width // 4, height // 4, 3 * width // 4, 3 * height // 4))
     return (ImageStat.Stat(grey).mean[0] >= LIGHTEST_DARK
             and ImageStat.Stat(centre).mean[0] >= LIGHTEST_CENTRE)
+
+
+def framed(path: Path) -> bool:
+    """A picture painted inside a margin: its outermost edge nearly one flat colour all
+    round. Measured on Chapter 1's backgrounds: the framed ones varied by 1 to 11 grey
+    levels along their outer three pixels, every full-bleed one by 24 or more."""
+    from PIL import Image, ImageStat
+
+    with Image.open(path) as opened:
+        grey = opened.convert("L")
+    width, height = grey.size
+    edge = max(2, round(0.004 * min(width, height)))
+    strips = [grey.crop((0, 0, width, edge)), grey.crop((0, height - edge, width, height)),
+              grey.crop((0, 0, edge, height)), grey.crop((width - edge, 0, width, height))]
+    return max(ImageStat.Stat(strip).stddev[0] for strip in strips) < FLATTEST_EDGE
 
 
 def lightened(colour: str) -> str:

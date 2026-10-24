@@ -13,9 +13,26 @@ def state():
 
 
 def png(grey: int) -> bytes:
+    """Art to its edges: a painted scene varies along every edge (a framed one does not)."""
+    import random
+
+    image = Image.new("L", (1376, 768), grey)
+    pixels = image.load()
+    for x in range(1376):
+        for y in range(768):
+            pixels[x, y] = max(0, min(255, grey + random.randint(-40, 40)))
     buffer = io.BytesIO()
-    Image.new("RGB", (1376, 768), (grey, grey, grey)).save(buffer, format="PNG")
+    image.convert("RGB").save(buffer, format="PNG")
     return buffer.getvalue()
+
+
+def test_a_painting_inside_a_margin_is_seen_as_framed(tmp_path):
+    framed_one = Image.new("RGB", (1376, 768), (250, 246, 238))
+    framed_one.paste((120, 160, 120), (60, 60, 1316, 708))
+    framed_one.save(tmp_path / "framed.png")
+    (tmp_path / "bleed.png").write_bytes(png(220))
+    assert scene_backgrounds.framed(tmp_path / "framed.png")
+    assert not scene_backgrounds.framed(tmp_path / "bleed.png")
 
 
 def test_a_gradient_is_never_dark():

@@ -931,8 +931,7 @@ class ExplainerScene(Scene):
             # A part that is most of the picture is not singled out: a ring round
             # the whole of it says nothing.
             if box is not None and (box[2] - box[0]) * (box[3] - box[1]) < 0.45:
-                light = self._spotlight(image, [at(box[0], box[1]), at(box[2], box[3])],
-                                        colour, light)
+                light = self._spotlight(image, picture, box, at, colour, light)
                 last = moment
             # A halo of the background under the line, as a textbook plate
             # draws it: a leader crossing the drawing stays readable.
@@ -946,33 +945,51 @@ class ExplainerScene(Scene):
         if light is not None:
             # The whole picture back, every part named, once the last has been seen.
             self.until(max(self.now, last + 3.0))
-            self.play(manim.FadeOut(light, run_time=0.6))
+            self.play(manim.FadeOut(light["part"]), manim.FadeOut(light["ring"]),
+                      image.animate.set_opacity(1), run_time=0.6)
 
-    def _spotlight(self, image, corners: list, colour, light=None):
-        """The picture dimmed but for one part, outlined: attention moved to what
-        is being said. From an earlier spotlight, the light moves across."""
-        from manim import Cutout, Rectangle, RoundedRectangle, VGroup
-        (left, top), (right, bottom) = corners[0][:2], corners[1][:2]
-        pad = 0.12
-        width, height = max(0.4, right - left + 2 * pad), max(0.4, top - bottom + 2 * pad)
-        centre = [(left + right) / 2, (top + bottom) / 2, 0]
-        hole = RoundedRectangle(corner_radius=0.15, width=width, height=height).move_to(centre)
-        cover = Rectangle(width=image.width, height=image.height).move_to(image)
-        shade = Cutout(cover, hole, fill_color=self.look["background"], fill_opacity=0.42,
-                       stroke_width=0)
-        ring = hole.copy().set_fill(opacity=0).set_stroke(colour, width=5)
+    def _spotlight(self, image, picture: str, box, at, colour, light=None):
+        """Attention moved to what is being said: the picture fades back and the part
+        named is shown at full strength over it, cut from the same picture, with an
+        outline round it; from an earlier part, the light moves across. Within the
+        picture's own shape: a dimming box the size of the picture showed as a pale
+        panel over a painted background."""
+        from manim import ImageMobject, RoundedRectangle
+        from PIL import Image as _Image
+        pad = 0.03
+        left, top = max(0.0, box[0] - pad), max(0.0, box[1] - pad)
+        right, bottom = min(1.0, box[2] + pad), min(1.0, box[3] + pad)
+        source = _trimmed(picture)
+        out = Path(source).with_name(f"{Path(source).stem}-part-{left:.3f}-{top:.3f}-"
+                                     f"{right:.3f}-{bottom:.3f}.png")
+        if not out.exists():
+            with _Image.open(source) as opened:
+                width, height = opened.size
+                opened.convert("RGBA").crop((round(left * width), round(top * height),
+                                             round(right * width), round(bottom * height))
+                                            ).save(out)
+        corner_a, corner_b = at(left, top), at(right, bottom)
+        part = ImageMobject(str(out))
+        part.stretch_to_fit_width(max(0.05, corner_b[0] - corner_a[0]))
+        part.stretch_to_fit_height(max(0.05, corner_a[1] - corner_b[1]))
+        part.move_to([(corner_a[0] + corner_b[0]) / 2, (corner_a[1] + corner_b[1]) / 2, 0])
+        ring = RoundedRectangle(corner_radius=0.12, width=part.width + 0.1,
+                                height=part.height + 0.1).move_to(part)
+        ring.set_fill(opacity=0).set_stroke(colour, width=5)
         # Marks of attention laid on the picture, not shapes of the layout: the
         # leader to the part is meant to run into its ring.
-        shade.attention = ring.attention = True
-        made = VGroup(shade, ring)
+        part.attention = ring.attention = True
         if light is None:
-            self.play(manim.FadeIn(shade, run_time=0.5), self.draw(ring, run_time=0.6))
+            self.play(image.animate.set_opacity(0.35), manim.FadeIn(part),
+                      self.draw(ring), run_time=0.6)
         else:
-            self.play(manim.Transform(light, made, run_time=0.7))
-            made = light
+            self.play(manim.FadeOut(light["part"]), manim.FadeIn(part),
+                      manim.Transform(light["ring"], ring), run_time=0.7)
+            ring = light["ring"]
         # Over the picture, under every line, dot and label already on it.
-        self.bring_to_front(*[m for m in self.shown if m is not image and m is not made])
-        return made
+        self.bring_to_front(*[m for m in self.shown
+                              if m is not image and m is not part and m is not ring])
+        return {"part": part, "ring": ring}
 
     def _travel(self, points: list) -> None:
         """A glowing pulse runs along `points` over the picture -- a signal down a

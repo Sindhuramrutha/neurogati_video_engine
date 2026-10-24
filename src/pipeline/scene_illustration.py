@@ -112,6 +112,23 @@ def check(path: Path, asked: str, narration: str) -> Checked:
         f"{narration[:1200]}", [("The illustration", _jpeg(path))], max_tokens=VISION_TOKENS)
 
 
+ALONE = ("Paint the subject alone, on nothing but the plain flat background colour: no "
+         "room, landscape, sky or floor around it -- the scene has its own background.")
+LEAST_CUT_AWAY = 0.08     # of the picture: less than this came away, and it is a card
+
+
+def cut_out(path: Path) -> bool:
+    """Did the subject come away from its backdrop?"""
+    from PIL import Image
+
+    with Image.open(path) as opened:
+        if opened.mode != "RGBA":
+            return False
+        alpha = opened.getchannel("A")
+        clear = alpha.histogram()[0]
+        return clear >= LEAST_CUT_AWAY * alpha.width * alpha.height
+
+
 def blend(path: Path, background: str) -> None:
     """The painted background cut away, from each corner inward: the subject stands
     on whatever is behind it -- the frame's colour, a gradient, painted art -- with
@@ -191,7 +208,15 @@ def _paint_checked(path: Path, asked: str, look: dict[str, Any], narration: str,
             path.unlink(missing_ok=True)
             return None
         if verdict.good:
-            break
+            # Stood on the scene's own background, the subject must come away from
+            # its backdrop: painted inside a whole scene, it was a card laid on another.
+            blend(path, look.get("background", "#ffffff"))
+            if cut_out(path) or attempt == PAINTED_AT_MOST:
+                break
+            add_event(state, "note", "The illustration was painted inside a whole scene; "
+                      "painted again, the subject alone.")
+            request = prompt(asked, look) + " " + ALONE
+            continue
         if attempt < PAINTED_AT_MOST:
             add_event(state, "note", f"The illustration was not right ({verdict.wrong}); "
                       "painted again.")
@@ -201,7 +226,6 @@ def _paint_checked(path: Path, asked: str, look: dict[str, Any], narration: str,
                   f"{PAINTED_AT_MOST} tries ({verdict.wrong}); the scene is made without it.")
         path.unlink(missing_ok=True)
         return None
-    blend(path, look.get("background", "#ffffff"))
     path.with_suffix(".json").write_text(json.dumps({"asked": asked, "checked": True},
                                                     ensure_ascii=False), encoding="utf-8")
     add_event(state, "note", f"Painted an illustration: {asked}")

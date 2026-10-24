@@ -72,7 +72,8 @@ the json, for one no offered picture shows, or for a better version of one that 
 right, saying what to change (up to three a scene). It is painted, checked and offered to
 you as this scene's own picture -- far better than a scene of words alone.
 Background: add "background" to the json -- {"kind": "image", "describe": "the art behind
-the scene: a soft pastel botanical border, a cosy illustrated bookshelf, warm paper with
+the scene, filling the screen edge to edge: soft pastel botanical leaves at the edges, a
+cosy illustrated bookshelf, warm paper with
 a faint grid..."} or {"kind": "gradient", "colours": ["#hex", "#hex"], "split": "none" |
 "left" | "right" | "top" | "bottom" | "diagonal", "panel": "#hex"} (a gradient split
 into a coloured section). About seven scenes in ten get painted art and the rest a

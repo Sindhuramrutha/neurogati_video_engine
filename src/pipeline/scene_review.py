@@ -154,7 +154,7 @@ def review_frames(folder: Path, brief: dict[str, Any], question: str = "") -> Ve
         "impossible anatomy or apparatus), or that has text in it.\n\n"
         "The bar is a well-made explainer channel -- flat illustrated characters and "
         "objects, cute brain characters, visual metaphors (a seesaw for two forces), "
-        "collage, a cosy illustrated room, label pills, a pastel painted border round a "
+        "collage, a cosy illustrated room, label pills, a pastel painted scene round a "
         "calm centre: a frame people want to keep looking at. A dark or gloomy frame is a "
         "problem; so is one that is overdone, busy or garish. A frame need not have words "
         "on it: a picture or a diagram can carry the idea.\n\n"

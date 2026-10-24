@@ -251,6 +251,7 @@ def test_a_painting_is_used_only_once_it_is_right_and_well_framed(tmp_path, monk
     verdicts = [checked(framed=False, wrong="the heart is cut off at the top"), checked()]
     monkeypatch.setattr(scene_illustration, "check", lambda path, asked, said: verdicts.pop(0))
     monkeypatch.setattr(scene_illustration, "blend", lambda path, background: None)
+    monkeypatch.setattr(scene_illustration, "cut_out", lambda path: True)
     asked = []
 
     path = scene_illustration._paint_checked(

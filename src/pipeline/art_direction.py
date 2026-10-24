@@ -29,8 +29,10 @@ BAR = (
     "The bar is a well-made explainer channel: flat illustrated characters and objects, "
     "a cute character for the brain, a visual metaphor (a seesaw for two forces, a key in "
     "a lock), collage (a halftone brain cut out on paper), a cosy illustrated room, label "
-    "pills, a pastel painted border round a calm centre, a clean cream frame with one bold "
-    "word. Every frame light and pleasant, colours that suit each other, artistic and "
+    "pills, a pastel painted scene whose detail sits at its edges round a calm centre, a "
+    "clean cream screen with one bold word. Every background fills the whole screen, edge "
+    "to edge -- never a picture framed inside it, never a border, mat or margin. Every "
+    "frame light and pleasant, colours that suit each other, artistic and "
     "interesting to look at -- never dark or gloomy, never busy, garish or overdone.")
 
 
@@ -39,14 +41,19 @@ class SceneLook(BaseModel):
     style: str = Field(description="Its drawing style, in a phrase: 'flat cartoon, round "
                                    "shapes, warm palette', 'pastel watercolour', 'halftone "
                                    "collage on paper'.")
-    picture: str = Field(description="The picture to paint, exactly: its subject, what it "
-                                     "does, the angle, the kind ('two small frog hearts in "
-                                     "beakers'); a character or a visual metaphor where it "
-                                     "teaches best -- or 'chosen: <name>' for a deck picture "
-                                     "a person chose. True to the science.")
+    picture: str = Field(description="The picture to paint, exactly: its subject alone, "
+                                     "what it does, the angle, the kind ('two small frog "
+                                     "hearts in beakers'); a character or a visual metaphor "
+                                     "where it teaches best -- or 'chosen: <name>' for a "
+                                     "deck picture a person chose. True to the science. "
+                                     "Only the subject: it is cut out and stood on the "
+                                     "background, so its setting -- a room, a landscape, a "
+                                     "sky -- belongs to the background, never here.")
     background_kind: Literal["image", "gradient"]
-    background: str = Field(description="image: the art to paint behind the scene, light, "
-                                        "its centre calm. gradient: what it should feel like.")
+    background: str = Field(description="image: the art to paint behind the scene, filling "
+                                        "the whole screen edge to edge (never a frame, "
+                                        "border or margin), light, its centre calm. "
+                                        "gradient: what it should feel like.")
     colours: list[str] = Field(default_factory=list, description="gradient: 2 or 3 light "
                                                                  "hex colours that suit "
                                                                  "each other.")
@@ -137,7 +144,9 @@ def _plan_section(visuals: list, number: dict[str, int], narrations: dict[str, s
         "is said (a subject, a character, a visual metaphor -- concrete, exact and true to "
         "the science), its style (styles may differ from scene to scene, but neighbours "
         "should sit well together), its background -- about seven scenes in ten get painted "
-        "art (from a simple wash to a rich border round a calm centre), the rest a light "
+        "art filling the screen edge to edge (from a simple wash to a rich scene whose "
+        "detail sits at its edges round a calm centre -- never a frame or border), the "
+        "rest a light "
         "gradient, maybe split into a coloured section -- its layout and its motion on the "
         "words. Words on screen are optional. No two scenes look alike.")
     first = complete_structured(SectionLooks, system, f"{context}\n\n{scenes}",
