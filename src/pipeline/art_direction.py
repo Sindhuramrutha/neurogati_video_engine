@@ -25,6 +25,9 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field
 
 DIRECTION_FILE = "art-direction.json"
+# The text model thinks before it answers, and that counts: 12000 ran out on six
+# scenes. A section that still does not fit is planned in halves.
+DIRECTION_TOKENS = 32000
 BAR = (
     "The bar is a well-made explainer channel: flat illustrated characters and objects, "
     "a cute character for the brain, a visual metaphor (a seesaw for two forces, a key in "
@@ -126,7 +129,9 @@ def _narrations(project) -> dict[str, str]:
 
 def _plan_section(visuals: list, number: dict[str, int], narrations: dict[str, str],
                   picks: list[str], so_far: list[str]) -> list[SceneLook]:
-    from pipeline.llm import complete_structured
+    """The section's looks, planned then reviewed. An answer cut short is planned again
+    in halves; a review that fails keeps the first plan rather than none."""
+    from pipeline.llm import ModelCallFailed, complete_structured
 
     scenes = "\n\n".join(
         f"Scene {number[v.id]}\nSaid: {narrations.get(v.scene_id, v.narration_preview)}\n"
@@ -149,8 +154,15 @@ def _plan_section(visuals: list, number: dict[str, int], narrations: dict[str, s
         "rest a light "
         "gradient, maybe split into a coloured section -- its layout and its motion on the "
         "words. Words on screen are optional. No two scenes look alike.")
-    first = complete_structured(SectionLooks, system, f"{context}\n\n{scenes}",
-                                max_tokens=12000)
+    try:
+        first = complete_structured(SectionLooks, system, f"{context}\n\n{scenes}",
+                                    max_tokens=DIRECTION_TOKENS)
+    except ModelCallFailed:
+        if len(visuals) < 2:
+            raise
+        half = len(visuals) // 2
+        return [*_plan_section(visuals[:half], number, narrations, picks, so_far),
+                *_plan_section(visuals[half:], number, narrations, picks, so_far)]
     review = (
         f"{context}\n\n{scenes}\n\nYour plan for these scenes:\n"
         + json.dumps([look.model_dump() for look in first.scenes], ensure_ascii=False)
@@ -159,7 +171,11 @@ def _plan_section(visuals: list, number: dict[str, int], narrations: dict[str, s
           "any scene dark, dull, busy or overdone? Do neighbouring scenes vary? Are about "
           "seven in ten backgrounds painted? Is any chosen picture left out that belongs "
           "here? Say what you changed.")
-    reviewed = complete_structured(SectionLooks, system, review, max_tokens=12000)
+    try:
+        reviewed = complete_structured(SectionLooks, system, review,
+                                       max_tokens=DIRECTION_TOKENS)
+    except ModelCallFailed:
+        return first.scenes
     return reviewed.scenes or first.scenes
 
 

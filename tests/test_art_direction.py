@@ -42,3 +42,28 @@ def test_each_section_is_planned_then_reviewed_and_kept(project_root, monkeypatc
                       .read_text(encoding="utf-8"))["scenes"]
     art_direction.direct(slug)
     assert len(asked) == 2 * sections, "a planned section is not planned again"
+
+
+@pytest.mark.real_direction
+def test_a_section_too_long_for_one_answer_is_planned_in_halves(project_root,  # noqa: F811
+                                                                monkeypatch):
+    """v6's prepare stopped: six scenes' looks ran past the answer's length. A plan cut
+    short is asked again in halves, and a review that fails keeps the first plan."""
+    from pipeline.llm import ModelCallFailed
+
+    visuals = [type("V", (), {"id": f"v{n}", "scene_id": f"s{n}", "brief": "a heart",
+                              "narration_preview": "", "section_title": "One"})()
+               for n in range(1, 5)]
+    number = {v.id: n for n, v in enumerate(visuals, start=1)}
+
+    def model(response_model, system, user, max_tokens=0):
+        shown = [n for n in number.values() if f"Scene {n}\n" in user]
+        if "Review it" in user or len(shown) > 2:
+            raise ModelCallFailed("The output is incomplete due to a max_tokens length limit")
+        return SectionLooks(scenes=[look(n) for n in shown])
+
+    monkeypatch.setattr("pipeline.llm.complete_structured", model)
+
+    looks = art_direction._plan_section(visuals, number, {}, [], [])
+
+    assert [look.scene for look in looks] == [1, 2, 3, 4]
