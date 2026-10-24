@@ -107,12 +107,22 @@ def direct(slug: str, *, again: bool = False) -> dict[str, Any]:
         so_far = [f"scene {number[vid]}: {look['style']}; background {look['background_kind']}"
                   f" -- {look['background'][:60]}; picture {look['picture'][:60]}"
                   for vid, look in kept.items() if vid in number]
-        looks = _plan_section(section_visuals, number, narrations, picks, so_far)
+        shown = {look["picture"] for look in kept.values()
+                 if look["picture"].startswith("chosen:")}
+        looks = _plan_section(section_visuals, number, narrations,
+                              [pick for pick in picks if f"chosen: {pick}" not in shown], so_far)
         by_number = {look.scene: look for look in looks}
         for visual in section_visuals:
             look = by_number.get(number[visual.id])
-            if look is not None:
-                kept[visual.id] = look.model_dump()
+            if look is None:
+                continue
+            if look.picture.startswith("chosen:"):
+                # A chosen picture is shown once: v6 planned the cover twice. A repeat
+                # is dropped, and the scene's maker paints what its brief asks.
+                if look.picture in shown:
+                    look.picture = ""
+                shown.add(look.picture)
+            kept[visual.id] = look.model_dump()
         path = project.root / "generation" / DIRECTION_FILE
         path.parent.mkdir(parents=True, exist_ok=True)
         write_text_atomically(path, json.dumps({"scenes": kept}, ensure_ascii=False, indent=1))

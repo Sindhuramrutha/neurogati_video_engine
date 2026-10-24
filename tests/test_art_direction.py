@@ -67,3 +67,26 @@ def test_a_section_too_long_for_one_answer_is_planned_in_halves(project_root,  #
     looks = art_direction._plan_section(visuals, number, {}, [], [])
 
     assert [look.scene for look in looks] == [1, 2, 3, 4]
+
+
+@pytest.mark.real_direction
+def test_a_chosen_picture_is_planned_once_in_the_whole_video(project_root,  # noqa: F811
+                                                             monkeypatch):
+    """v6's director put the book cover in scene 1 and again in scene 30."""
+    slug, project, _ = scripted_project("Once")
+    visuals = VisualPlanStore(project.root).load().visuals
+    offered = []
+
+    def plan(section_visuals, number, narrations, picks, so_far):
+        offered.append(list(picks))
+        return [look(number[v.id]).model_copy(update={"picture": "chosen: Cover"})
+                for v in section_visuals]
+
+    monkeypatch.setattr("pipeline.chosen_pictures.chosen", lambda project: {"c.png": "Cover"})
+    monkeypatch.setattr(art_direction, "_plan_section", plan)
+
+    art_direction.direct(slug)
+
+    kept = [art_direction.for_scene(project, v.id)["picture"] for v in visuals]
+    assert len(kept) > 1 and kept.count("chosen: Cover") == 1 and kept[0] == "chosen: Cover"
+    assert offered[0] == ["Cover"] and all(o == [] for o in offered[1:])
