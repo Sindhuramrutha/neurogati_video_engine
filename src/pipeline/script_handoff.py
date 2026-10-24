@@ -75,6 +75,20 @@ def script_for_later_stages(project) -> Script:
     return ScriptStore(project.root).load()
 
 
+def _still_said(claim: str, entry) -> bool:
+    """Whether a claim found when the section was drafted still stands: the words it
+    quotes ("scene 5: 'He used the wave reasoning...' -- ...") are still in the
+    narration. v8's two corrected sentences were still listed after the fix. A claim
+    quoting nothing stands until the section is drafted again."""
+    import re
+
+    quoted = re.search(r"'(.+?)' --", claim)
+    if quoted is None:
+        return True
+    said = " ".join(scene.narration for scene in entry.scenes) or entry.body
+    return quoted.group(1).lower() in said.lower()
+
+
 def _check(key: str, name: str, rule: str, status: str, detail: str) -> dict[str, str]:
     return {"key": key, "name": name, "rule": rule, "status": status, "detail": detail}
 
@@ -167,7 +181,7 @@ def script_checks(project, script: Script) -> list[dict[str, str]]:
 
     claims = [f"“{titles.get(entry.section_id, 'Untitled')}” {claim}"
               for entry in script.section_scripts if entry.section_id in titles
-              for claim in entry.unsupported]
+              for claim in entry.unsupported if _still_said(claim, entry)]
     missing = [f"“{titles.get(entry.section_id, 'Untitled')}” {point}"
                for entry in script.section_scripts if entry.section_id in titles
                for point in entry.uncovered]

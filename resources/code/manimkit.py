@@ -37,8 +37,9 @@ words each part arrives on, laid out, timed and moved so it passes every check:
 `self.hero(picture, [(label, (x, y), cue, box, style)], title)` -- a picture and the
 parts the narration teaches pointed out ((x, y) and box are the part's place as
 fractions of the picture, from its description; style is tag, glow, zoom, lens,
-sketch or caption -- a person is always named by a caption); `self.steps([(label, picture, cue)], title)` -- an experiment or
-process; `self.compare((heading, picture, [points], cue), (...), title)`;
+sketch or caption -- a person is always named by a caption);
+`self.steps([(label, picture, cue)], title)` -- an experiment or process;
+`self.compare((heading, picture, [points], cue), (...), title)`;
 `self.person(picture, name, line, cue)`; `self.key_idea(statement, picture, cue)`;
 `self.opener(picture, title, [(line, cue)], cue)` -- a topic opened on a picture that
 sets the scene (the deck's own art), not one explained part by part.
@@ -205,13 +206,15 @@ def _drawn_share(source: str, image):
         y0 = int(np.clip((top - box[3]) / height * rows, 0, rows))
         y1 = int(np.clip((top - box[1]) / height * rows, 0, rows))
         area = max(1, (x1 - x0) * (y1 - y0))
-        drawn = mask[y0:y1, x0:x1].copy()
-        if own is not None:            # the tag's own part is not in its way
+        drawn = mask[y0:y1, x0:x1].astype(float)
+        if own is not None:
+            # Its own part costs less than another figure -- "Described by Broca" lay
+            # on his patient -- but still costs: on the brain it named, a tag hid it.
             ox0 = int(np.clip((own[0] - left) / width * cols, 0, cols)) - x0
             ox1 = int(np.clip((own[2] - left) / width * cols, 0, cols)) - x0
             oy0 = int(np.clip((top - own[3]) / height * rows, 0, rows)) - y0
             oy1 = int(np.clip((top - own[1]) / height * rows, 0, rows)) - y0
-            drawn[max(0, oy0):max(0, oy1), max(0, ox0):max(0, ox1)] = False
+            drawn[max(0, oy0):max(0, oy1), max(0, ox0):max(0, ox1)] *= 0.4
         whole = (box[2] - box[0]) * (box[3] - box[1])
         inside = max(0.0, min(box[2], left + width) - max(box[0], left)) * max(
             0.0, min(box[3], top) - max(box[1], top - height))
@@ -295,6 +298,24 @@ def _cone(own, rim, colour: str):
 
 
 BRIEF = load_brief()
+
+
+def _typeface(look) -> str | None:
+    """The deck's own body font when it is installed, else a clean sans: every word
+    of v7 was drawn in Manim's default serif, the look's font never passed on."""
+    try:
+        import manimpango
+        installed = set(manimpango.list_fonts())
+    except Exception:              # no font list: Manim's own default
+        return None
+    return next((name for name in (look.get("body_font"), "Segoe UI", "Calibri",
+                                   "Arial") if name and name in installed), None)
+
+
+FONT = _typeface(BRIEF.look)
+if FONT:
+    Text.set_default(font=FONT)
+    manim.MarkupText.set_default(font=FONT)
 FRAME_WIDTH_UNITS = 14.222
 FRAME_HEIGHT_UNITS = 8.0
 # An outline is followed at most this many pixels between samples, so a 36 px line of
@@ -303,6 +324,16 @@ SAMPLE_PX = 6.0
 SMALLEST_SHAPE_PX = 40          # a dot or a marker is not a shape that collides
 BACKGROUND_SHARE = 0.9          # a shape this much of the frame is a background
 MOTION_SNAPSHOT_GAP = 0.25      # seconds: what each animation leaves, at most this often
+_LINES: dict[tuple[int, bool], float] = {}
+
+
+def _line_px(size: int, bold: bool = False) -> float:
+    """How tall a line of type is at `size`, in pixels: measured on 'Hg' -- a word's own
+    letters ('ocean' has no ascender) say nothing of the size it is set in."""
+    if (size, bold) not in _LINES:
+        line = Text("Hg", font_size=size, weight="BOLD" if bold else "NORMAL").height
+        _LINES[(size, bold)] = line * BRIEF.height / FRAME_HEIGHT_UNITS
+    return _LINES[(size, bold)]
 BACKDROP_WASH = 0.28            # the page's colour over every painted backdrop
 WORDS_WASH = 0.45               # and over that, under a shot carried by words
 
@@ -673,7 +704,11 @@ class ExplainerScene(Scene):
     # --- text ---------------------------------------------------------------------------
 
     def smallest_size(self) -> int:
-        return int(BRIEF.__dict__.get("smallest_text_px") or 36)
+        """The smallest font size whose line is as tall as the platforms allow
+        (`smallest_text_px`, in pixels; larger for a classroom). It was taken as a
+        font size, which drew every word about 60% larger than legibility needs."""
+        floor = int(BRIEF.__dict__.get("smallest_text_px") or 36)
+        return next((size for size in range(12, 96) if _line_px(size) >= floor), floor)
 
     def label(self, text: str, size: int = 44, color: str | None = None,
               at: tuple[float, float] | None = None, on: str | None = None,
@@ -685,6 +720,8 @@ class ExplainerScene(Scene):
         size = max(size, self.smallest_size())
         mobject = Text(text, font_size=size, color=fill,
                        weight="BOLD" if bold else "NORMAL", **kwargs)
+        # What the check measures it by: its size, and its height as set.
+        mobject.kit_type = (size, bold, mobject.height)
         # Over painted art, a soft halo of the light ground under the letters: the
         # words stay readable over whatever part of the painting they cross.
         background = BRIEF.__dict__.get("background") or {}
@@ -699,7 +736,7 @@ class ExplainerScene(Scene):
     # --- one type scale, one set of moves: every scene of a video alike ------------------
 
     # A title names the scene, it is not the scene: v7's 60 pt titles crowded the frame.
-    TITLE_SIZE, HEADING_SIZE, LABEL_SIZE = 52, 44, 38
+    TITLE_SIZE, HEADING_SIZE, LABEL_SIZE = 44, 36, 30
     _composing = False
 
     def title(self, text: str) -> Text:
@@ -789,7 +826,7 @@ class ExplainerScene(Scene):
 
     # --- shapes that cannot get in the way of words ------------------------------------
 
-    def boxed(self, text: str, size: int = 40, color: str | None = None, pad: float = 0.25,
+    def boxed(self, text: str, size: int = 30, color: str | None = None, pad: float = 0.25,
               at: tuple[float, float] | None = None, stroke: str | None = None,
               fill: str | None = None):
         """Words in a box sized to them, so they can never spill out of it. Filled
@@ -854,7 +891,7 @@ class ExplainerScene(Scene):
     #         self.until(self.when(...)); self.play(FadeIn(box))
     #         if i: self.play(GrowArrow(f.arrows[i - 1]))
 
-    def flow(self, steps: list[str], y: float = -0.3, size: int = 38, gap: float = 0.9):
+    def flow(self, steps: list[str], y: float = -0.3, size: int = 30, gap: float = 0.9):
         """Steps in boxes joined by arrows, left to right -- top to bottom when they
         do not fit across. Has .boxes and .arrows (arrows[i] joins boxes[i] to [i+1])."""
         self._calm()
@@ -871,7 +908,7 @@ class ExplainerScene(Scene):
         whole.boxes, whole.arrows = boxes, arrows
         return whole
 
-    def hub(self, centre: str, around: list[str], y: float = -0.3, size: int = 38,
+    def hub(self, centre: str, around: list[str], y: float = -0.3, size: int = 30,
             gap: float = 1.2):
         """One idea in the middle and what hangs off it, in a column either side, each
         joined to the middle by a line from edge to edge. Has .centre, .items, .lines
@@ -905,7 +942,7 @@ class ExplainerScene(Scene):
         whole.centre, whole.items, whole.lines = middle, items, lines
         return whole
 
-    def timeline(self, events: list[str], y: float = -0.4, size: int = 36):
+    def timeline(self, events: list[str], y: float = -0.4, size: int = 30):
         """Things in order on a line, a dot and a label each. Across the frame with
         labels above and below in turn; down its left side when they do not fit across.
         Has .spine, .dots, .labels."""
@@ -992,6 +1029,8 @@ class ExplainerScene(Scene):
     # line and a word to every part alike -- a cover's publisher included.
     POINTING = ("tag", "glow", "zoom", "lens", "sketch", "caption")
     LARGEST_PINNED = 0.15     # of the picture: a part larger -- a person -- is named, not pinned
+    MOST_CALLOUTS = 3         # things named on one picture
+    MOST_MARKS_SHOWN = 2      # tags, loops and lenses on screen at once
 
     def _style_of(self, style, box) -> str:
         """The style a callout is drawn in. A part that is most of a figure -- a
@@ -1035,8 +1074,10 @@ class ExplainerScene(Scene):
                         for text, xy, cue, box, style in callouts]
             moves = [([_in_trimmed(picture, *xy) for xy in path], cue)
                      for path, cue in (moves or [])]
+        # A picture names at most three things, whatever a program asks: v7's scene 3
+        # asked for six, and the frame was a label sheet.
         callouts = [(text, xy, cue, box, self._style_of(style, box))
-                    for text, xy, cue, box, style in callouts]
+                    for text, xy, cue, box, style in callouts][:self.MOST_CALLOUTS]
         captioned = any(style in ("glow", "zoom", "caption") for *_, style in callouts)
         heading = self._panel_title(title) if title else None
         top = (heading.get_bottom()[1] - 0.2) if heading is not None else self.SAFE_Y
@@ -1112,7 +1153,7 @@ class ExplainerScene(Scene):
         events += [(self.when(c or ""), "move", [at(*xy) for xy in path])
                    for path, c in (moves or []) if len(path) > 1]
         events.sort(key=lambda e: e[0])
-        light, last, caption, passing = None, None, None, False
+        light, last, caption, passing, visible = None, None, None, False, []
         for number, (moment, kind, what) in enumerate(events):
             self.until(moment)
             if kind == "move":
@@ -1126,6 +1167,13 @@ class ExplainerScene(Scene):
             if passing and style in ("tag", "lens", "sketch"):
                 self.play(manim.FadeOut(caption, run_time=0.3))
                 caption, passing = None, False
+            # Never more than a couple of marks on the picture: the oldest goes as a
+            # new one comes -- v7 kept four tags and a caption on screen at once.
+            marks = [what[k] for k in ("dot", "tick", "cone", "loop", "tag") if k in what]
+            if marks and len(visible) >= self.MOST_MARKS_SHOWN:
+                self.play(*[manim.FadeOut(m) for m in visible.pop(0)], run_time=0.3)
+            if marks:
+                visible.append(marks)
             if style == "tag":
                 # A small part is lit as it is named; a large one is only tagged.
                 box = what["box"]
@@ -1188,7 +1236,7 @@ class ExplainerScene(Scene):
         last."""
         from manim import RoundedRectangle, VGroup
         fill = self._panel_fill()
-        words = self._wrapped(text, 2 * self.SAFE_X - 2.0, self.LABEL_SIZE + 4, bold=True,
+        words = self._wrapped(text, 2 * self.SAFE_X - 2.0, self.LABEL_SIZE, bold=True,
                               on=fill)
         self._panels.add(id(words))
         card = RoundedRectangle(corner_radius=0.22, width=words.width + 0.95,
@@ -1261,7 +1309,7 @@ class ExplainerScene(Scene):
         on any painting because it carries its own ground. Has .box and .label."""
         from manim import RoundedRectangle, VGroup
         fill = self._panel_fill()
-        label = self._wrapped(text, 3.4, self.LABEL_SIZE, color=self.look["text"], on=fill)
+        label = self._wrapped(text, 4.6, self.LABEL_SIZE - 2, color=self.look["text"], on=fill)
         self._panels.add(id(label))
         width, height = label.width + 0.44, label.height + 0.26
         box = RoundedRectangle(corner_radius=min(0.3, height / 2), width=width, height=height)
@@ -1303,7 +1351,7 @@ class ExplainerScene(Scene):
              ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (-1, 1), (1, -1), (-1, -1))],
             key=lambda d: -float(np.dot(d[:2], away[:2])))
         best, least = None, None
-        for distance in (0.55, 0.9, 1.3, 1.8, 2.4):
+        for distance in (0.55, 0.9, 1.3, 1.8, 2.4, 3.0):
             for d in directions:
                 reach = np.array([d[0] * (distance + tag.width / 2),
                                   d[1] * (distance * 0.75 + tag.height / 2), 0.0])
@@ -1315,7 +1363,9 @@ class ExplainerScene(Scene):
                 clash = sum(_overlap_area(mine, other, 0.15) for other in taken) + sum(
                     1.0 for p in others if mine[0] < p[0] < mine[2] and mine[1] < p[1] < mine[3])
                 if crowding is not None:
-                    clash += max(0.0, crowding(mine) - 0.15)
+                    # Over a drawn subject costs more than a longer tick: v7's tags
+                    # covered the robot's face and the brain they named.
+                    clash += 3 * max(0.0, crowding(mine) - 0.1)
                 if clash == 0:
                     return
                 if least is None or clash < least:
@@ -1511,9 +1561,9 @@ class ExplainerScene(Scene):
         fill = self._panel_fill()
         if picture:
             image = self._fit(picture, 5.6, 5.8, (3.4, -0.1))
-            words, centre = self._wrapped(statement, 5.6, 50, on=fill), (-3.2, 0.2)
+            words, centre = self._wrapped(statement, 5.6, 42, on=fill), (-3.2, 0.2)
         else:
-            image, words, centre = None, self._wrapped(statement, 10.4, 56, on=fill), (0, 0.3)
+            image, words, centre = None, self._wrapped(statement, 10.4, 46, on=fill), (0, 0.3)
         self._panels.add(id(words))
         card = RoundedRectangle(corner_radius=0.3, width=words.width + 1.2,
                                 height=words.height + 0.8)
@@ -1606,9 +1656,12 @@ class ExplainerScene(Scene):
                 left, top_px = _px(m.get_corner([-1, 1, 0]))
                 right, bottom = _px(m.get_corner([1, -1, 0]))
                 lines = max(1, str(text).count("\n") + 1)
+                size, bold, set_height = getattr(m, "kit_type", (0, False, 0.0))
+                line = (_line_px(size, bold) * m.height / set_height if size and set_height
+                        else (bottom - top_px) / lines)
                 texts.append({"text": str(text), "box": [round(left), round(top_px),
                                                          round(right), round(bottom)],
-                              "line_height": round((bottom - top_px) / lines),
+                              "line_height": round(line),
                               "color": fill, "behind": behind,
                               "recorded": id(m) in recorded,
                               "panel": id(m) in self._panels})

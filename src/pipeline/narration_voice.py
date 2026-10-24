@@ -41,8 +41,10 @@ _SOURCE_NOUNS = (
     "chapter|chapters|book|textbook|text|author|authors|writer|passage|reading|"
     "slide|slides|deck|presentation|document|lecture notes|article|paper"
 )
+# Not before a name: "the writer Lewis Carroll" credits a person, as the narrator is
+# told to; "the writer says" speaks about the source.
 REPORTING = re.compile(
-    rf"\b(?:the|this|that|our)\s+(?:{_SOURCE_NOUNS})\b"
+    rf"\b(?:the|this|that|our)\s+(?:{_SOURCE_NOUNS})\b(?!\s+(?-i:[A-Z]))"
     rf"|\baccording to (?:the|this)\b",
     re.IGNORECASE,
 )

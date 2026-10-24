@@ -100,7 +100,8 @@ class Claim(BaseModel):
         words = re.findall(term, self.says)
         known = {w.lower() for w in re.findall(term, self.correct)}
         misspelt = [w for w in words if w.lower() not in known
-                    and any(_close(w.lower(), k) for k in known)]
+                    and any(_close(w.lower(), k) and not _inflected(w.lower(), k)
+                            for k in known)]
         return sorted(said - right) + misspelt
 
 
@@ -108,6 +109,14 @@ class Ledger(BaseModel):
     source: str = ""
     built_at: str = ""
     claims: list[Claim] = Field(default_factory=list)
+
+
+def _inflected(a: str, b: str) -> bool:
+    """One word the other with an ending -- "muscles" and "muscle" -- not a misspelling:
+    v8's correct sentences about muscles were held to be misspelt. "Anton" for
+    "Antonie" still is."""
+    short, long = sorted((a, b), key=len)
+    return long.startswith(short) and long[len(short):] in ("s", "es", "d", "ed", "ing")
 
 
 def _close(a: str, b: str) -> bool:

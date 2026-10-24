@@ -60,3 +60,10 @@ def test_a_misspelt_name_is_found_however_short():
     assert name.forbidden() == ["1683", "Anton"], "the uncertain year, and the name"
     assert broken([ScriptScene(narration="Anton van Leeuwenhoek ground lenses.", brief="")],
                   [(t, name.rule()) for t in name.forbidden()])
+
+
+def test_a_plural_is_not_a_misspelling():
+    """v8 held 'muscles' to be a misspelling of the correction's 'muscle'."""
+    volta = claim("disputed", "Volta proved electricity in muscles is ordinary.",
+                  "He did not prove muscle electricity was identical.", decision="fact")
+    assert "muscles" not in volta.forbidden()
