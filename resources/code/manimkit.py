@@ -1029,7 +1029,6 @@ class ExplainerScene(Scene):
     # line and a word to every part alike -- a cover's publisher included.
     POINTING = ("tag", "glow", "zoom", "lens", "sketch", "caption")
     LARGEST_PINNED = 0.15     # of the picture: a part larger -- a person -- is named, not pinned
-    MOST_CALLOUTS = 3         # things named on one picture
     MOST_MARKS_SHOWN = 2      # tags, loops and lenses on screen at once
 
     def _style_of(self, style, box) -> str:
@@ -1074,10 +1073,11 @@ class ExplainerScene(Scene):
                         for text, xy, cue, box, style in callouts]
             moves = [([_in_trimmed(picture, *xy) for xy in path], cue)
                      for path, cue in (moves or [])]
-        # A picture names at most three things, whatever a program asks: v7's scene 3
-        # asked for six, and the frame was a label sheet.
+        # Every part the program names keeps its moment -- dropping some lost what the
+        # narration taught; the frame stays calm because only MOST_MARKS_SHOWN are on
+        # screen at once, the oldest going as the next comes.
         callouts = [(text, xy, cue, box, self._style_of(style, box))
-                    for text, xy, cue, box, style in callouts][:self.MOST_CALLOUTS]
+                    for text, xy, cue, box, style in callouts]
         captioned = any(style in ("glow", "zoom", "caption") for *_, style in callouts)
         heading = self._panel_title(title) if title else None
         top = (heading.get_bottom()[1] - 0.2) if heading is not None else self.SAFE_Y

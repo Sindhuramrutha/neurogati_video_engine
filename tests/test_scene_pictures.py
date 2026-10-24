@@ -352,7 +352,7 @@ def test_a_hero_s_callouts_are_drawn_to_located_parts_and_unknown_ones_left_out(
 
 def test_each_callout_is_pointed_out_in_the_style_chosen_for_it():
     """v6 and v7 pointed at every part alike -- a dot, a long line, a word. The writer
-    chooses one of six ways for each, and no more than three callouts crowd a picture."""
+    chooses one of six ways for each; each part keeps its moment."""
     import pytest
 
     from pipeline.scene_shots import Pictures
@@ -365,8 +365,8 @@ def test_each_callout_is_pointed_out_in_the_style_chosen_for_it():
         {"label": "Cerebellum", "part": "cerebellum", "when": "balance", "style": "lens"})
     with pytest.raises(ValueError, match="style is one of"):
         hero({"label": "Cerebellum", "part": "cerebellum", "when": "balance", "style": "arrow"})
-    with pytest.raises(ValueError, match="0 to 3"):
-        hero(*[{"label": "Cerebellum", "part": "cerebellum", "when": "balance"}] * 4)
+    with pytest.raises(ValueError, match="0 to 5"):
+        hero(*[{"label": "Cerebellum", "part": "cerebellum", "when": "balance"}] * 6)
 
 
 def test_a_shot_is_held_until_the_words_the_next_one_begins_on():

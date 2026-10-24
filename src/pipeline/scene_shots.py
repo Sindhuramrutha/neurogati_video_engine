@@ -27,7 +27,8 @@ TEMPLATES = ("hero", "steps", "compare", "person", "key_idea", "opener", "flow",
              "timeline")
 MOST_SHOTS = 3
 MOST_CALLOUT_WORDS = 4
-MOST_CALLOUTS = 3              # more on one picture is clutter, however each is drawn
+# Each part keeps its moment; the kit shows two marks at a time, so more is not clutter.
+MOST_CALLOUTS = 5
 # The ways a callout points at its part (manimkit.hero): one chosen for each.
 POINTING = ("tag", "glow", "zoom", "lens", "sketch", "caption")
 MOST_IDEA_WORDS = 18            # more read as a paragraph on screen (the check allows 18)
@@ -38,7 +39,9 @@ GUIDE = """Shots (the preferred answer -- no code): a ```json block with "shots"
 one to three of these, each {"template": ..., then its slots}; "picture" is an index into
 the brief's assets.pictures, "when" the exact narration words a part arrives on:
 - hero: "title", "picture", "when", "callouts": [{"label", "part", "when", "style"}] (0 to
-  3) -- one picture large and the parts the narration TEACHES pointed out on their words
+  5; as few as the teaching needs, every part the narration explains given its moment --
+  two at most are on screen at once, the oldest going as the next comes) -- one picture
+  large and the parts the narration TEACHES pointed out on their words
   (a label is a part's name, 1-4 words, never a statement). "part" is one of the
   picture's parts exactly as its description lists them: the pointer goes to where that
   part really is, and a callout naming no listed part is left out. "style" is how it is
