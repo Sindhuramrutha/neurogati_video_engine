@@ -103,6 +103,7 @@ def draft_section(slug: str, section_id: str, instruction: str = "") -> dict[str
     script = store.load()
     extraction = ExtractionStore(project.root).load()
     agent = resolve_agent(project, Stage.SCRIPT_STAGING)
+    _ensure_facts(slug)
 
     try:
         written, notes = _write_section(
@@ -155,6 +156,7 @@ def draft_unwritten_sections(slug: str, instruction: str = "") -> dict[str, Any]
     agent = resolve_agent(project, Stage.SCRIPT_STAGING)
     preferences = video_preferences(project.root)
     pictures = section_pictures(project, plan)
+    _ensure_facts(slug)
 
     store = ScriptStore(project.root)
     drafted_ids: list[str] = []
@@ -295,6 +297,12 @@ def _write_section(
     written.unsupported, written.uncovered = result.claims, result.missing
     written.slide_wrong, written.kept = result.slide_wrong, result.kept
     return written, notes
+
+
+def _ensure_facts(slug: str) -> None:
+    from pipeline import fact_ledger
+
+    fact_ledger.ensure(slug)
 
 
 def _facts(project, section) -> tuple[list[str], list]:

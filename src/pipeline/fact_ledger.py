@@ -379,3 +379,18 @@ def corrections_markdown(project) -> str:
                   *([f"- The checkers: {claim.correct}"] if claim.correct else []),
                   f"- The video says: {says}", ""]
     return "\n".join(lines)
+
+
+def ensure(slug: str) -> None:
+    """The ledger, built before a script is drafted when it is missing or was built
+    from another extraction: a section drafted without it is held to nothing."""
+    from pipeline.core import require_project
+    from pipeline.extraction import ExtractionStore
+
+    project = require_project(slug)
+    slides = _slides(ExtractionStore(project.root).load())
+    if not slides:
+        return
+    source = hashlib.sha256(json.dumps(slides, sort_keys=True).encode()).hexdigest()[:16]
+    if load(project).source != source:
+        build(slug)

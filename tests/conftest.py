@@ -187,3 +187,11 @@ def no_art_direction(request, monkeypatch):
     made; in tests a scene has no direction unless a test is marked `real_direction`."""
     if request.node.get_closest_marker("real_direction") is None:
         monkeypatch.setattr("pipeline.art_direction.ensure", lambda project, visual_id: None)
+
+
+@pytest.fixture(autouse=True)
+def facts_checked(request, monkeypatch):
+    """Drafting checks the deck's facts first (`fact_ledger.ensure`): model calls the
+    tests do not expect. In tests the ledger is as it is, unless marked `real_facts`."""
+    if request.node.get_closest_marker("real_facts") is None:
+        monkeypatch.setattr("pipeline.fact_ledger.ensure", lambda slug: None)
