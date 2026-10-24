@@ -189,9 +189,24 @@ def framed(path: Path) -> bool:
         grey = opened.convert("L")
     width, height = grey.size
     edge = max(2, round(0.004 * min(width, height)))
-    strips = [grey.crop((0, 0, width, edge)), grey.crop((0, height - edge, width, height)),
-              grey.crop((0, 0, edge, height)), grey.crop((width - edge, 0, width, height))]
-    return max(ImageStat.Stat(strip).stddev[0] for strip in strips) < FLATTEST_EDGE
+
+    def strips(at: int) -> list:
+        return [grey.crop((at, at, width - at, at + edge)),
+                grey.crop((at, height - at - edge, width - at, height - at)),
+                grey.crop((at, at, at + edge, height - at)),
+                grey.crop((width - at - edge, at, width - at, height - at))]
+
+    outer = [ImageStat.Stat(strip) for strip in strips(0)]
+    if max(stat.stddev[0] for stat in outer) >= FLATTEST_EDGE:
+        return False
+    # Flat all round. A soft wash is flat all round too, and stays so inward (v7's
+    # "soft dawn wash" was thrown away as framed); a mat ends where the picture starts.
+    for share in (0.05, 0.10, 0.15):                    # mats come in widths
+        inner = [ImageStat.Stat(strip) for strip in strips(round(share * min(width, height)))]
+        if sum(abs(o.mean[0] - i.mean[0]) > FLATTEST_EDGE or i.stddev[0] > 2 * FLATTEST_EDGE
+               for o, i in zip(outer, inner, strict=True)) >= 3:
+            return True
+    return False
 
 
 def lightened(colour: str) -> str:

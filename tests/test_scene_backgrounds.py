@@ -35,6 +35,19 @@ def test_a_painting_inside_a_margin_is_seen_as_framed(tmp_path):
     assert not scene_backgrounds.framed(tmp_path / "bleed.png")
 
 
+def test_a_wider_mat_is_framed_and_a_soft_wash_is_not(tmp_path):
+    """v7's "soft dawn wash" was thrown away as framed: flat all round, as a mat is,
+    but it stays smooth inward where a mat ends at the picture."""
+    wide_mat = Image.new("RGB", (1376, 768), (250, 246, 238))
+    wide_mat.paste((120, 160, 120), (110, 110, 1266, 658))
+    wide_mat.save(tmp_path / "wide.png")
+    wash = Image.linear_gradient("L").resize((1376, 768)).point(lambda v: 225 + v // 16)
+    Image.merge("RGB", (wash, wash.point(lambda v: v + 4), wash)).save(tmp_path / "wash.png")
+
+    assert scene_backgrounds.framed(tmp_path / "wide.png")
+    assert not scene_backgrounds.framed(tmp_path / "wash.png")
+
+
 def test_a_gradient_is_never_dark():
     made = scene_backgrounds._gradient({"colours": ["#1a1a40", "#fdf6ec"], "split": "right",
                                         "panel": "#222222"})
