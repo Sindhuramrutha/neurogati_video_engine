@@ -23,7 +23,7 @@ from contextlib import contextmanager
 _lock = threading.Lock()
 _epochs: dict[str, int] = {}
 _processes: dict[str, set[subprocess.Popen]] = {}
-_current: contextvars.ContextVar[tuple[str, int] | None] = contextvars.ContextVar(
+_current: contextvars.ContextVar[tuple[str, int, str] | None] = contextvars.ContextVar(
     "project_work", default=None)
 
 
@@ -32,10 +32,22 @@ def _epoch(slug: str) -> int:
         return _epochs.get(slug, 0)
 
 
+def _identity(slug: str) -> str:
+    """Which project lives under `slug` now: its project.json's creation time, or
+    empty when there is none. A stop in another process cannot bump this one's
+    epoch -- a project deleted on the page while a command-line run made its scenes
+    was written back into existence -- so work also asks the folder itself."""
+    from pipeline.core import projects_root
+    from pipeline.storage.documents import read_json_object
+
+    found = read_json_object(projects_root() / slug / "project.json", "project metadata")
+    return str((found or {}).get("created") or "")
+
+
 @contextmanager
 def working_on(slug: str) -> Iterator[None]:
     """This thread is working for `slug` until the block ends."""
-    token = _current.set((slug, _epoch(slug)))
+    token = _current.set((slug, _epoch(slug), _identity(slug)))
     try:
         yield
     finally:
@@ -43,9 +55,13 @@ def working_on(slug: str) -> Iterator[None]:
 
 
 def stopped() -> bool:
-    """Has the project this thread works for been told to stop everything?"""
+    """Has the project this thread works for been told to stop everything -- here,
+    or by its deletion anywhere: its folder gone, or now another project's?"""
     current = _current.get()
-    return current is not None and _epoch(current[0]) != current[1]
+    if current is None:
+        return False
+    slug, epoch, identity = current
+    return _epoch(slug) != epoch or (bool(identity) and _identity(slug) != identity)
 
 
 def kill_tree(pid: int) -> None:

@@ -109,6 +109,25 @@ def test_work_started_after_a_deletion_is_not_stopped_by_it(project_root):
         assert not project_work.stopped()
 
 
+def test_work_in_another_process_stops_when_its_project_is_deleted(project_root):
+    """v8 was deleted on the page while a command-line run made its scenes: that run's
+    process never heard the stop, and wrote the folder back. Work also asks the folder:
+    gone, or now another project of the same name, and it is stopped."""
+    import shutil
+    import time
+
+    from pipeline import project_work
+
+    slug = operations.create_project("Elsewhere")["slug"]
+    with project_work.working_on(slug):
+        assert not project_work.stopped()
+        shutil.rmtree(project_root / slug)            # deleted by another process
+        assert project_work.stopped()
+        time.sleep(1.1)                               # a later creation time
+        operations.create_project("Elsewhere")        # a new project, same name
+        assert project_work.stopped(), "the new project is not the old one's work"
+
+
 def test_deleting_a_project_that_does_not_exist_says_so(project_root):
     with TestClient(app=create_app()) as client:
         assert client.delete("/api/projects/nope").status_code == 404
