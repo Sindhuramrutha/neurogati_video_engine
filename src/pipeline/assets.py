@@ -174,6 +174,7 @@ class LibraryFigure(BaseModel):
         return self.model_dump() | {
             "where": self.where,
             "is_left_out": self.is_left_out,
+            "is_chosen": self.use == FigureUse.USE,     # chosen on Extraction: shown
             "shown_path": self.shown_path,
             "fills_a_frame": self.fills_a_frame,
             "why_not_a_frame": self.why_not_a_frame,

@@ -98,8 +98,8 @@ function renderGather(page) {
   const libraryState = page.is_empty ? ["blocked", "Not gathered yet",
     "Gather the pictures the last transfer contains."]
     : handoff.in_step ? ["ok", "In step with the last transfer",
-      `${audit.figure_count} picture(s): ${audit.handed_on_count} handed on`
-      + (audit.left_out_count ? `, ${audit.left_out_count} left out.` : ".")]
+      `${audit.handed_on_count} deck picture${audit.handed_on_count === 1 ? "" : "s"} you chose `
+      + `${audit.handed_on_count === 1 ? "is" : "are"} used; every other picture is made for the video.`]
       : ["warn", "Out of step", "Extraction was transferred again since this was gathered."];
 
   const transferred = source.files.length > 0;
@@ -144,24 +144,31 @@ const pictureOrigin = figure => figure.slide_number
   : (figure.heading_path.at(-1) ?? figure.file_name);
 
 /**
- * The source's pictures, in its own order: slide by slide for a deck. This tab
- * lists what exists and where it came from; it decides nothing. The one thing a
- * person can do to a picture here is leave it out.
+ * The deck pictures the video uses -- only the few a person chose on Extraction, in
+ * the deck's order. Every other picture in the deck stays there, unused: listing all
+ * of them (35, each asking for its crop to be checked) asked for work on pictures
+ * the video never shows. The rest are counted, and chosen on Extraction.
  */
 function renderPictures(page) {
   if (!page.figures.length) return "";
   const order = figure => [figure.slide_number || Infinity, page.figures.indexOf(figure)];
-  const pictures = [...page.figures].sort((a, b) => {
+  const pictures = page.figures.filter(figure => figure.is_chosen).sort((a, b) => {
     const [slideA, atA] = order(a);
     const [slideB, atB] = order(b);
     return slideA - slideB || atA - atB;
   });
-  const leftOut = pictures.filter(figure => figure.is_left_out).length;
+  const others = page.figures.filter(figure => figure.in_extraction && !figure.is_chosen).length;
   return `
     <section class="asset-pictures">
-      <h3 class="asset-pictures-head">${pictures.length} picture${pictures.length === 1 ? "" : "s"}${
-        leftOut ? ` <span class="file-status left-out">${leftOut} left out</span>` : ""}</h3>
-      <div class="figure-grid">${pictures.map(figure => renderFigure(figure, page)).join("")}</div>
+      <h3 class="asset-pictures-head">${pictures.length
+        ? `${pictures.length} deck picture${pictures.length === 1 ? "" : "s"} you chose`
+        : "No deck picture chosen"}</h3>
+      <p class="panel-sub">${pictures.length ? "" : "Every picture in the video is made for it. "}${
+        others ? `The deck's other ${others} picture${others === 1 ? "" : "s"} stay in it, unused.
+        ` : ""}Choose which the video shows, and name them, on Extraction.
+        <button class="btn" data-goto="extraction">Choose on Extraction</button></p>
+      ${pictures.length ? `<div class="figure-grid">${
+        pictures.map(figure => renderFigure(figure, page)).join("")}</div>` : ""}
     </section>`;
 }
 
@@ -173,8 +180,11 @@ function renderFigure(figure, page) {
     <div class="figure-card ${figure.is_left_out ? "left-out" : ""} ${open ? "open" : ""}" data-picture="${id}">
       <img class="figure-thumb" alt="" loading="lazy" src="${pictureUrl(figure)}">
       <div class="figure-body">
-        <b>${escapeHtml(pictureOrigin(figure))}</b>
-        ${figure.own_caption ? `<span class="figure-caption">${escapeHtml(figure.own_caption)}</span>` : ""}
+        ${figure.is_chosen && figure.note
+          ? `<b>${escapeHtml(figure.note)}</b>
+             <span class="figure-caption">${escapeHtml(pictureOrigin(figure))}</span>`
+          : `<b>${escapeHtml(pictureOrigin(figure))}</b>
+             ${figure.own_caption ? `<span class="figure-caption">${escapeHtml(figure.own_caption)}</span>` : ""}`}
         <span class="figure-size">${figure.width} × ${figure.height} px${
           figure.origin !== "source" ? ` · ${escapeHtml(figure.origin)}` : ""}</span>
         ${trimmed ? `
@@ -262,8 +272,9 @@ function renderPictureDetails(figure, page) {
 function renderFinal(page, stage) {
   const { handoff, look, look_preview: preview } = page;
   const { kit, timing } = page.brand;
-  const handedOn = page.figures.filter(figure => !figure.is_left_out);
-  const leftOut = page.figures.filter(figure => figure.is_left_out);
+  // What the backend hands on: the deck pictures a person chose, and no others --
+  // counting every picture not left out said 35 were handed on when 1 was.
+  const handedOn = page.figures.filter(figure => figure.is_chosen);
   const brandNames = page.brand.slots.filter(slot => kit[slot.key]).map(slot => slot.name);
   const [tone, title, detail] = !page.source.files.length && !brandNames.length
     ? ["blocked", "Nothing to transfer yet", "Transfer the extraction first."]
@@ -328,7 +339,7 @@ function renderFinal(page, stage) {
       <span class="run-text">
         <b>${escapeHtml(title)}</b>
         <span>${escapeHtml(detail)}</span>
-        <span class="final-totals">${handedOn.length} of ${page.figures.length} picture(s) handed on ·
+        <span class="final-totals">${handedOn.length} chosen deck picture(s) handed on ·
           ${look.use_source_styling ? "the source's styling" : "the renderer's default look"} ·
           ${brandNames.length ? escapeHtml(brandNames.join(", ")) : "no brand assets"}</span>
       </span>
@@ -361,9 +372,7 @@ function renderFinal(page, stage) {
               <figcaption>${escapeHtml(pictureOrigin(figure))}${
                 figure.use_original ? " · original" : figure.prepared_path ? " · trimmed" : ""}</figcaption>
             </figure>`).join("")}</div>`
-          : `<p class="muted">None: every picture is left out, or none was gathered.</p>`}
-        ${leftOut.length ? `<p class="final-left-out"><b>Left out (${leftOut.length}), not handed on:</b>
-          ${leftOut.map(figure => escapeHtml(pictureOrigin(figure))).join(" · ")}.</p>` : ""}
+          : `<p class="muted">None chosen: every picture in the video is made for it.</p>`}
       </section>
 
       <section class="panel">
