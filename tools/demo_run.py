@@ -46,7 +46,8 @@ def _checks(view: dict) -> list[dict]:
     return [c for c in view["checks"] if c["status"] == "fail"]
 
 
-def build(name: str, deck: Path, minutes: int, voice: str = "", length: str = "") -> str:
+def build(name: str, deck: Path, minutes: int, voice: str = "", length: str = "",
+          learners: list[str] | None = None, picks: list[str] | None = None) -> str:
     from pipeline import operations, plan_agent, video_setup
     from pipeline.assets_handoff import confirm_assets
     from pipeline.core import require_project
@@ -59,13 +60,24 @@ def build(name: str, deck: Path, minutes: int, voice: str = "", length: str = ""
     shutil.copy2(deck, project.sources_dir / sanitize_source_file_name(deck.name))
     operations.run_extraction(slug)
     operations.confirm_extraction(slug)
+    # The deck pictures the video must show, chosen by file name ("<file>=<name>"),
+    # as a person chooses them on the Extraction page; nothing else from the deck.
+    from pipeline import chosen_pictures
+    for pick in picks or []:
+        file_name, _, picture_name = pick.partition("=")
+        chosen_pictures.choose(slug, f"extraction/assets/{file_name.strip()}",
+                               picture_name.strip())
+        say("chose", file_name, "as", picture_name)
     library = operations.refresh_asset_library(slug)
     say("pictures:", library["audit"]["usable_count"], "usable of", len(library["figures"]))
     confirm_assets(slug)
-    video_setup.save(slug, SETUP | ({"voice": voice} if voice else {}))
+    video_setup.save(slug, SETUP | ({"voice": voice} if voice else {})
+                     | ({"learners": learners} if learners else {}))
 
+    audience = ("; ".join(g.label for g in video_setup.LEARNERS if g.key in learners)
+                if learners else "Curious learners new to neuroscience")
     plan_agent.set_setup(slug, {"length_text": length or f"About {minutes} minutes",
-                                "audience": "Curious learners new to neuroscience"})
+                                "audience": audience})
     view = plan_agent.send_message(slug, ASK.format(minutes=minutes))
     for _ in range(2):
         proposal = view.get("proposal") or {}
@@ -220,17 +232,29 @@ def main() -> None:
                         help='the length in words, e.g. "35 min or more, never shorter"')
     parser.add_argument("--voice", default="",
                         help="an Edge voice the app offers, e.g. en-IN-NeerjaNeural")
+    parser.add_argument("--learners", default="",
+                        help='learner keys, comma separated, or "all"')
+    parser.add_argument("--pick", action="append", default=[],
+                        help='a deck picture the video must show: "<file>=<name>"')
+    parser.add_argument("--until", default="export",
+                        choices=("script", "prepare", "generate", "render", "export"),
+                        help="stop after this step")
     parser.add_argument("--slug", default="", help="carry on this project")
     parser.add_argument("--from", dest="start", default="script",
                         choices=("script", "prepare", "generate", "render", "export"))
     chosen = parser.parse_args()
     steps = ("script", "prepare", "generate", "render", "export")
+    learners = ([key for key in ("school", "college", "advanced", "teachers", "health",
+                                 "engineering", "general")]
+                if chosen.learners == "all"
+                else [k.strip() for k in chosen.learners.split(",") if k.strip()])
     if chosen.slug:
         slug, todo = chosen.slug, steps[steps.index(chosen.start):]
     else:
         slug = build(chosen.name, Path(chosen.deck), chosen.minutes, chosen.voice,
-                     chosen.length)
+                     chosen.length, learners, chosen.pick)
         todo = steps
+    todo = todo[:todo.index(chosen.until) + 1] if chosen.until in todo else todo
     for step in todo:
         say("--", step)
         globals()[step](slug)
