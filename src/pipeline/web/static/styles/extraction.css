@@ -30,6 +30,12 @@
   align-items: start;
 }
 
+/* The source card, and under it -- once extracted -- the pictures to pick. */
+.x-extract-column { display: grid; gap: 16px; align-content: start; min-width: 0; }
+.x-extract-column #picks-card { margin-bottom: 0 !important; }
+/* The transfer bar heads the Review & transfer tab. */
+.x-tab-body > .final-head { margin-bottom: 16px; }
+
 .preview-head .seg { flex: none; }
 
 .preview-head .seg button { white-space: nowrap; }
@@ -40,7 +46,7 @@
   letter-spacing: .02em;
 }
 
-/* --- three tabs: Extract, Review, Final & transfer ------------------------ */
+/* --- two tabs: Extract, Review & transfer ---------------------------------- */
 /* Folder tabs, drawn brutalist: solid fills, a heavy black outline and a hard
    shadow, like the header above them. The active tab is the panel's own colour
    and sits over the panel's top edge, so the two read as one shape; inactive

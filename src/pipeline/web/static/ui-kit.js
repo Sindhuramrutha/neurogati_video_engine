@@ -35,7 +35,7 @@ export const applicationState = {
   previewFileName: null,
   extractingFileName: null,    // the one file being extracted, while it runs
   extractionSelection: [],     // the files ticked for the next extraction
-  extractionTab: "extract",    // extract | review | final
+  extractionTab: "extract",    // extract | review (and transfer)
   compareSplit: 32,            // % of the width the Preview column takes
   comparePaneHeight: null,     // px; null keeps the default height
   previewSlideIndex: null,     // the slide on screen in the Extraction preview

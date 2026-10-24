@@ -1,12 +1,12 @@
 /**
- * Extraction stage — three tabs, in the order the work happens.
+ * Extraction stage — two tabs, in the order the work happens.
  *
- * 1. Extract: the project's one source file, and the one button that reads it.
- * 2. Review: each slide beside what was extracted from it, with the agent to
- *    review it slide by slide and change it. Only what was extracted.
- * 3. Final & transfer: everything extracted, and the one button that hands it
- *    to the next layer. Nothing reaches the Scene Plan until then, so a
- *    half-assembled collection is never planned from.
+ * 1. Extract: the project's one source file, the one button that reads it, and
+ *    then the deck's pictures to pick for the video.
+ * 2. Review & transfer: each slide beside what was extracted from it, with the
+ *    agent to review it slide by slide and change it; above them, the one button
+ *    that hands it to the next layer. Nothing reaches the Scene Plan until then,
+ *    so a half-assembled collection is never planned from.
  *
  * Options are declared server-side and rendered generically here, so adding an
  * option is one entry in `stage_options.py` rather than a change in three places.
@@ -78,16 +78,14 @@ export async function renderExtractionStage(
 
     <div class="stage-content stage-content-bare">
 
-      ${renderPicksCard(extraction, picks)}
-
       <div class="extraction-tabs">
         ${renderStageTabs()}
 
         <div class="x-tab-body" role="tabpanel">
           ${{
-            extract: () => renderExtractTab(sources, extraction, settings),
-            review: () => renderReviewTab(sources, extraction, review),
-            final: () => renderFinalTab(stage, extraction),
+            extract: () => renderExtractTab(extraction, settings, picks),
+            review: () => renderTransferBar(stage, extraction)
+              + renderReviewTab(sources, extraction, review),
           }[currentExtractionTab()]()}
         </div>
       </div>
@@ -520,21 +518,22 @@ async function openPreviewedFile() {
   }
 }
 
-/* ---- the three tabs: Extract, Review, Final ---------------------------------
+/* ---- the two tabs: Extract, Review & transfer -------------------------------
  *
- * One job per tab, in the order they happen. Extract reads files one at a time;
- * Review checks only what was extracted; Final shows everything that will be
- * handed on, and is the only place that hands it on.
+ * One job per tab, in the order they happen. Extract reads the source and picks
+ * its pictures; Review & transfer checks only what was extracted, and is the
+ * only place that hands it on.
  */
 
-const EXTRACTION_TABS = ["extract", "review", "final"];
+const EXTRACTION_TABS = ["extract", "review"];
 
 function currentExtractionTab() {
+  if (applicationState.extractionTab === "final") applicationState.extractionTab = "review";
   return EXTRACTION_TABS.includes(applicationState.extractionTab)
     ? applicationState.extractionTab : "extract";
 }
 
-const TAB_LABELS = { extract: "Extract", review: "Review", final: "Final & transfer" };
+const TAB_LABELS = { extract: "Extract", review: "Review & transfer" };
 
 function renderStageTabs() {
   const tab = currentExtractionTab();
@@ -549,11 +548,15 @@ function renderStageTabs() {
     </nav>`;
 }
 
-function renderExtractTab(sources, extraction, settings) {
+/** The source and its options; once it is extracted, its pictures to pick under it. */
+function renderExtractTab(extraction, settings, picks) {
   return `
     <div class="workbench extraction-workbench">
       <div class="workbench-side">
-        ${renderSourcePanel(applicationState.selectedProject?.source, extraction)}
+        <div class="x-extract-column">
+          ${renderSourcePanel(applicationState.selectedProject?.source, extraction)}
+          ${renderPicksCard(extraction, picks)}
+        </div>
         ${renderOptionsPanel(settings)}
       </div>
     </div>`;
@@ -634,8 +637,8 @@ function renderReviewTab(sources, extraction, review) {
     </div>`;
 }
 
-/** Everything that will be handed on, and the one button that hands it on. */
-function renderFinalTab(stage, extraction) {
+/** Where the hand-on stands, and the one button that hands it on. */
+function renderTransferBar(stage, extraction) {
   const freshness = extraction.freshness ?? {};
   const documents = extraction.documents;
   const outOfDate = documents.map(d => d.file_name).filter(name => staleReason(freshness, name));
@@ -650,7 +653,7 @@ function renderFinalTab(stage, extraction) {
     ? ["blocked", "Nothing extracted yet",
        freshness.has_confirmed
          ? "Every file was removed. Transfer to clear what the next layer reads."
-         : "Extract files on the Extract tab; they collect here."]
+         : "Extract the source on the Extract tab first."]
     : replaced
       ? ["stale", "The source was replaced",
          "Extract the new file on the Extract tab, then transfer it."]
@@ -692,16 +695,7 @@ function renderFinalTab(stage, extraction) {
                                      : "Nothing new to transfer"}">
           Transfer to the next layer ${icon(ICON.arrowRight)}
         </button>`}
-    </div>
-
-    ${documents.length ? `
-      <div class="panel preview-panel x-final-text">
-        <div class="preview-head"><h3>What the next layer receives</h3></div>
-        <div class="preview-stage scrolls">
-          ${renderExtractedBlocks(extraction, documents[0].file_name)}
-        </div>
-      </div>`
-      : renderTabEmpty("Nothing is extracted yet.<br>Extract the source on the Extract tab.")}`;
+    </div>`;
 }
 
 function extractedNames(extraction) {
@@ -727,9 +721,9 @@ function wireViewChoices(page) {
   }
 }
 
-/** The step after this tab: Extract leads to Review, Review to Final. Only the
- *  Final tab moves on to the next layer. */
-const NEXT_TAB = { extract: ["review", "Review"], review: ["final", "Final & transfer"] };
+/** The step after this tab: Extract leads to Review & transfer, which alone moves
+ *  on to the next layer. */
+const NEXT_TAB = { extract: ["review", "Review & transfer"] };
 
 function renderFooterNav(stage, extraction) {
   const freshness = extraction.freshness ?? {};
@@ -745,10 +739,10 @@ function renderFooterNav(stage, extraction) {
         : "",
       warning: !freshness.has_confirmed
         ? "Nothing has been transferred yet, so the next layer has no extracted content "
-          + "to work from. Transfer it on the Final & transfer tab first."
+          + "to work from. Transfer it on the Review & transfer tab first."
         : freshness.pending_confirmation
           ? "Your latest changes are not transferred yet — the next layer still reads the "
-            + "last transferred version. Transfer on the Final & transfer tab to send them."
+            + "last transferred version. Transfer on the Review & transfer tab to send them."
           : "",
     },
   });
@@ -1027,7 +1021,7 @@ function wireReviewPanel(page) {
             encodeURIComponent(input.dataset.replaceFigure)}/picture`),
           { method: "POST", body });
         showStageNotice("ok",
-          "Picture replaced. Transfer again from the Final tab to hand it to the next layer.");
+          "Picture replaced. Transfer again on the Review & transfer tab to hand it to the next layer.");
         // The finding it fixes is only gone once the checks run again.
         await runExtractionReview(page);
       } catch (uploadFailure) {
@@ -1094,7 +1088,7 @@ async function extractSource(button, page) {
     applicationState.extractionTab = "review";
     showStageNotice(done.warnings.length ? "warn" : "ok",
       `Extracted ${done.word_count} words, ${done.block_count} blocks. Review it here, then `
-      + `transfer it from Final.${done.warnings.length ? ` ${done.warnings.join(" ")}` : ""}`);
+      + `transfer it on the Review & transfer tab.${done.warnings.length ? ` ${done.warnings.join(" ")}` : ""}`);
   } catch (runFailure) {
     console.error("extraction failed", runFailure);
     showStageNotice("bad", `Could not extract ${source.name} — ${runFailure.message}`);
