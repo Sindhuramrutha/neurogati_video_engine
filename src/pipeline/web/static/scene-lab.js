@@ -208,25 +208,18 @@ export function renderSceneStatus(visuals) {
 
 /* ---- the scene panel ------------------------------------------------------------ */
 
-function renderAgent(scene) {
+/** What the agent is doing now, and the box to ask it for a change: always in view. */
+function renderAgentControls(scene) {
   const agent = scene.agent ?? { status: "idle", events: [], remarks: [] };
   const busy = agent.running || ["queued", "working"].includes(agent.status);
-  const tokens = (agent.tokens?.prompt ?? 0) + (agent.tokens?.completion ?? 0);
   return `
     <div class="scene-agent ${escapeHtml(agent.status)}">
       <div class="scene-agent-head">
         <b>${escapeHtml(AGENT_LABELS[agent.status] ?? agent.status)}</b>
-        <span class="muted">${agent.renders} render(s) · ${agent.calls?.agent ?? 0} write and
-          ${agent.calls?.vision ?? 0} review call(s) · ${tokens.toLocaleString()} tokens this run</span>
+        ${busy && agent.doing ? `<span class="muted">${escapeHtml(agent.doing)}…</span>` : ""}
         <div class="spacer"></div>
         ${busy ? `<button class="btn" id="stop-agent-button">Stop</button>` : ""}
       </div>
-      ${busy && agent.doing ? `<p class="panel-sub"><b>${escapeHtml(agent.doing)}…</b></p>` : ""}
-      ${agent.status === "done" && agent.summary ? `
-        <p class="panel-sub"><b>It made:</b> ${escapeHtml(agent.summary)}</p>` : ""}
-      ${agent.remarks?.length ? `
-        <div class="agent-remarks"><b>The reviewer's remarks</b>
-          <ul>${agent.remarks.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>` : ""}
       ${agent.status === "failed" ? `<p class="panel-sub">${escapeHtml(agent.error)}</p>` : ""}
       ${!busy ? `
         <div class="scene-actions">
@@ -235,16 +228,36 @@ function renderAgent(scene) {
           <button class="btn ${scene.code ? "" : "btn-accent"}" id="agent-scene-button">
             ${scene.code ? "Change it" : "Make it"} <span class="fact warn">AI</span></button>
         </div>` : ""}
-      ${agent.events.length ? `
-        <details class="agent-steps" ${busy ? "open" : ""}>
-          <summary>What it did (${agent.events.length} step(s))</summary>
-          <ol>${agent.events.slice().reverse().map(event => `
-            <li><span class="agent-step-kind">${escapeHtml(event.kind.replaceAll("_", " "))}</span>
-              ${escapeHtml(event.text)}</li>`).join("")}</ol>
-        </details>` : ""}
     </div>`;
 }
 
+/** What the agent made and how: its record, read when wanted. */
+function renderAgentRecord(scene) {
+  const agent = scene.agent ?? { status: "idle", events: [], remarks: [] };
+  const busy = agent.running || ["queued", "working"].includes(agent.status);
+  const tokens = (agent.tokens?.prompt ?? 0) + (agent.tokens?.completion ?? 0);
+  return `
+    <p class="panel-sub">${agent.renders} render(s) · ${agent.calls?.agent ?? 0} write and
+      ${agent.calls?.vision ?? 0} review call(s) · ${tokens.toLocaleString()} tokens this run</p>
+    ${agent.status === "done" && agent.summary ? `
+      <p class="panel-sub"><b>It made:</b> ${escapeHtml(agent.summary)}</p>` : ""}
+    ${agent.remarks?.length ? `
+      <div class="agent-remarks"><b>The reviewer's remarks</b>
+        <ul>${agent.remarks.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>` : ""}
+    ${agent.events.length ? `
+      <details class="agent-steps" ${busy ? "open" : ""}>
+        <summary>What it did (${agent.events.length} step(s))</summary>
+        <ol>${agent.events.slice().reverse().map(event => `
+          <li><span class="agent-step-kind">${escapeHtml(event.kind.replaceAll("_", " "))}</span>
+            ${escapeHtml(event.text)}</li>`).join("")}</ol>
+      </details>` : ""}`;
+}
+
+/**
+ * The open scene, in the side panel: its video, whether it passed, the box to ask
+ * for a change and its background switch in view; everything else -- the reviewer's
+ * remarks, the agent's steps, its checks, its program -- folded under Details.
+ */
 export function renderScenePanel(scene) {
   if (!scene) return "";
   const { visual, checks } = scene;
@@ -258,18 +271,22 @@ export function renderScenePanel(scene) {
   const range = scene.brief.time_range;
   return `
     <section class="panel scene-panel" data-scene="${escapeHtml(visual.id)}">
-      <div class="panel-head">
-        <h3>${escapeHtml(visual.section_title)} · scene ${visual.scene_number}</h3>
+      <div class="scene-panel-head">
+        <button class="btn btn-icon-text" id="previous-scene-button" title="The scene before (←)"
+                aria-label="Previous scene">← Previous</button>
+        <div>
+          <h3>${escapeHtml(visual.section_title)} · scene ${visual.scene_number}</h3>
+          <p class="mono">${escapeHtml(scene.folder || "No folder yet: it is made with the first script.")}</p>
+        </div>
         <div class="spacer"></div>
+        <button class="btn btn-icon-text" id="next-scene-button" title="The scene after (→)"
+                aria-label="Next scene">Next →</button>
         <button class="btn" id="close-scene-button">Close</button>
       </div>
-      <p class="panel-sub mono">${escapeHtml(scene.folder || "No folder yet: it is made with the first script.")}</p>
       <div class="scene-player">
           ${scene.has_preview
             ? `<video class="scene-clip" controls preload="metadata"
-                 src="${sceneFileUrl(visual.id, "preview.mp4", scene.checked_at)}"></video>
-               <p class="panel-sub">The preview: the program's clip with this scene's own
-                 narration.</p>`
+                 src="${sceneFileUrl(visual.id, "preview.mp4", scene.checked_at)}"></video>`
             : scene.has_clip
               ? `<video class="scene-clip" controls muted preload="metadata"
                    src="${sceneFileUrl(visual.id, "render.mp4", scene.checked_at)}"></video>
@@ -285,63 +302,59 @@ export function renderScenePanel(scene) {
         ${scene.has_preview ? `<button class="btn" id="studio-scene-button">Play in Studio</button>` : ""}
       </div>
 
-      ${renderAgent(scene)}
+      ${renderAgentControls(scene)}
+      ${scene.background?.kind ? `
+        <div class="scene-actions" style="margin:8px 0">
+          <button class="btn" id="background-scene-button"
+                  data-on="${scene.background.on ? "1" : ""}">
+            Background: ${scene.background.on ? "on — switch off" : "off — switch on"}</button>
+        </div>` : ""}
 
-      <dl class="scene-spec">
-        <dt>Renderer</dt><dd>${escapeHtml(spec.renderer || "not chosen yet")}${
-          spec.approach ? ` — ${escapeHtml(spec.approach)}` : ""}</dd>
-        <dt>Narration</dt><dd>${scene.brief.narration_measured
-          ? `${scene.brief.seconds} s, measured from its voice` : "not measured yet"}${range
-          ? ` · ${range.start}–${range.end} s into its section${range.earlier_scenes_measured
-            ? "" : " (earlier scenes estimated)"}` : ""}</dd>
-        <dt>Source assets</dt><dd>${(spec.assets_used ?? []).length
-          ? spec.assets_used.map(a => escapeHtml(a.split(/[\\/]/).pop())).join(", ")
-          : "none used"}${scene.brief.assets?.pictures?.length
-          ? ` · ${scene.brief.assets.pictures.length} approved picture(s) offered` : ""}</dd>
-      </dl>
-      ${(spec.beats ?? []).length ? `
-        <details class="scene-beats" open><summary>Its ${spec.beats.length} visual beats</summary>
-          <ol>${spec.beats.map(beat => `<li><b>“${escapeHtml(beat.when_said)}”</b> — ${
-            escapeHtml(beat.shows)}</li>`).join("")}</ol>
-        </details>` : ""}
-
-      <div class="scene-grid">
-        <div>
-          ${scene.background?.kind ? `
-            <div class="scene-actions" style="margin:8px 0">
-              <button class="btn" id="background-scene-button"
-                      data-on="${scene.background.on ? "1" : ""}">
-                Background: ${scene.background.on ? "on — switch off" : "off — switch on"}</button>
-              <span class="muted">${scene.background.kind === "image"
-                ? `Painted: ${escapeHtml(scene.background.describe)}`
-                : `Gradient: ${escapeHtml((scene.background.colours ?? []).join(", "))}`}</span>
-            </div>` : ""}
-          ${checks.length ? `
-            <table class="assets-rule-table plan-checks scene-checks">
-              <tbody>${checks.map(check => `
-                <tr><td><span class="plan-check ${check.status}">${CHECK_LABELS[check.status]}</span></td>
-                  <td><b>${escapeHtml(check.name)}</b><br><span class="muted">${escapeHtml(check.detail)}</span></td>
-                </tr>`).join("")}</tbody>
-            </table>` : ""}
+      <details class="scene-details" ${sceneLabState.detailsOpen ? "open" : ""}>
+        <summary>Details — the reviewer's remarks, its steps, checks and program</summary>
+        ${renderAgentRecord(scene)}
+        <dl class="scene-spec">
+          <dt>Renderer</dt><dd>${escapeHtml(spec.renderer || "not chosen yet")}${
+            spec.approach ? ` — ${escapeHtml(spec.approach)}` : ""}</dd>
+          <dt>Narration</dt><dd>${scene.brief.narration_measured
+            ? `${scene.brief.seconds} s, measured from its voice` : "not measured yet"}${range
+            ? ` · ${range.start}–${range.end} s into its section${range.earlier_scenes_measured
+              ? "" : " (earlier scenes estimated)"}` : ""}</dd>
+          <dt>Source assets</dt><dd>${(spec.assets_used ?? []).length
+            ? spec.assets_used.map(a => escapeHtml(a.split(/[\\/]/).pop())).join(", ")
+            : "none used"}${scene.brief.assets?.pictures?.length
+            ? ` · ${scene.brief.assets.pictures.length} approved picture(s) offered` : ""}</dd>
+          ${scene.background?.kind ? `<dt>Background</dt><dd>${scene.background.kind === "image"
+            ? `Painted: ${escapeHtml(scene.background.describe)}`
+            : `Gradient: ${escapeHtml((scene.background.colours ?? []).join(", "))}`}</dd>` : ""}
+        </dl>
+        ${(spec.beats ?? []).length ? `
+          <details class="scene-beats"><summary>Its ${spec.beats.length} visual beats</summary>
+            <ol>${spec.beats.map(beat => `<li><b>“${escapeHtml(beat.when_said)}”</b> — ${
+              escapeHtml(beat.shows)}</li>`).join("")}</ol>
+          </details>` : ""}
+        ${checks.length ? `
+          <table class="assets-rule-table plan-checks scene-checks">
+            <tbody>${checks.map(check => `
+              <tr><td><span class="plan-check ${check.status}">${CHECK_LABELS[check.status]}</span></td>
+                <td><b>${escapeHtml(check.name)}</b><br><span class="muted">${escapeHtml(check.detail)}</span></td>
+              </tr>`).join("")}</tbody>
+          </table>` : ""}
+        <details class="scene-brief">
+          <summary>What the script is told (brief.json)</summary>
+          <p><b>Said:</b> ${escapeHtml(scene.brief.narration ?? visual.narration_preview)}</p>
+          <p><b>On screen:</b> ${escapeHtml(scene.brief.on_screen ?? visual.brief)}</p>
+        </details>
+        <label class="scene-label" for="scene-code">${escapeHtml(scene.entry)}</label>
+        <textarea id="scene-code" class="scene-code" spellcheck="false"
+          placeholder="No script yet. Have the agent write one, or write it here.">${escapeHtml(scene.code)}</textarea>
+        <div class="scene-actions">
+          <button class="btn" id="run-scene-button" ${scene.code ? "" : "disabled"}>
+            Save and run</button>
         </div>
-
-        <div>
-          <details class="scene-brief">
-            <summary>What the script is told (brief.json)</summary>
-            <p><b>Said:</b> ${escapeHtml(scene.brief.narration ?? visual.narration_preview)}</p>
-            <p><b>On screen:</b> ${escapeHtml(scene.brief.on_screen ?? visual.brief)}</p>
-          </details>
-          <label class="scene-label" for="scene-code">${escapeHtml(scene.entry)}</label>
-          <textarea id="scene-code" class="scene-code" spellcheck="false"
-            placeholder="No script yet. Have the agent write one, or write it here.">${escapeHtml(scene.code)}</textarea>
-          <div class="scene-actions">
-            <button class="btn" id="run-scene-button" ${scene.code ? "" : "disabled"}>
-              Save and run</button>
-          </div>
-          ${scene.log ? `<details class="scene-log"><summary>What it printed (log.txt)</summary>
-            <pre>${escapeHtml(scene.log)}</pre></details>` : ""}
-        </div>
-      </div>
+        ${scene.log ? `<details class="scene-log"><summary>What it printed (log.txt)</summary>
+          <pre>${escapeHtml(scene.log)}</pre></details>` : ""}
+      </details>
     </section>`;
 }
 
@@ -408,6 +421,22 @@ export function wireSceneLab(rerender, visuals) {
     };
   });
   const closeScene = () => { sceneLabState.openId = null; rerender(); };
+  // Previous and next: the scenes in the video's order, one step either way.
+  const order = (visuals?.visuals ?? []).map(visual => visual.id);
+  const at = order.indexOf(sceneLabState.openId);
+  const step = async by => {
+    const next = order[at + by];
+    if (!next) return;
+    sceneLabState.openId = next;
+    await rerender();
+  };
+  const previous = document.querySelector("#previous-scene-button");
+  const following = document.querySelector("#next-scene-button");
+  if (previous) { previous.disabled = at <= 0; previous.onclick = () => step(-1); }
+  if (following) { following.disabled = at < 0 || at >= order.length - 1; following.onclick = () => step(1); }
+  sceneLabState.step = step;
+  const details = document.querySelector(".scene-details");
+  if (details) details.addEventListener("toggle", () => { sceneLabState.detailsOpen = details.open; });
   const close = document.querySelector("#close-scene-button");
   if (close) close.onclick = closeScene;
   const backdrop = document.querySelector("#scene-drawer-backdrop");
@@ -416,7 +445,12 @@ export function wireSceneLab(rerender, visuals) {
   if (!sceneLabState.escapes) {           // one listener for the page's life
     sceneLabState.escapes = true;
     document.addEventListener("keydown", event => {
-      if (event.key === "Escape" && sceneLabState.openId) sceneLabState.close?.();
+      if (!sceneLabState.openId) return;
+      if (event.key === "Escape") sceneLabState.close?.();
+      // The arrows step through the scenes, but never while typing.
+      const typing = ["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName);
+      if (!typing && event.key === "ArrowLeft") sceneLabState.step?.(-1);
+      if (!typing && event.key === "ArrowRight") sceneLabState.step?.(1);
     });
   }
 
