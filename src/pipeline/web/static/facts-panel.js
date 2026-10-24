@@ -33,14 +33,17 @@ export function renderFactsPanel(facts) {
       ${facts.built_at ? "" : `<button class="btn btn-accent" id="build-facts-button">
         Check the slides' facts</button>`}
       ${needing.map(claim => `
-        <div class="fact" data-fact="${escapeHtml(claim.id)}" style="padding:8px 0;
-             border-top:1px dashed #ccc">
-          <div><span class="plan-check ${claim.status === "disputed" ? "fail" : "warn"}">
-            ${claim.status === "disputed" ? "Slide may be wrong" : "Uncertain"}</span>
-            <b>Slide ${claim.slide}:</b> ${escapeHtml(claim.says)}</div>
-          ${claim.correct ? `<div class="muted">The checkers: ${escapeHtml(claim.correct)}</div>`
-            : `<div class="muted">${escapeHtml(claim.why)}</div>`}
-          <div style="display:flex;gap:8px;margin-top:6px;align-items:center">
+        <div class="fact-row" data-fact="${escapeHtml(claim.id)}" style="display:grid;
+             grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:start;
+             padding:10px 0;border-top:1px dashed #ccc;white-space:normal">
+          <div style="overflow-wrap:anywhere">
+            <span class="plan-check ${claim.status === "disputed" ? "fail" : "warn"}">
+              ${claim.status === "disputed" ? "Slide may be wrong" : "Uncertain"}</span>
+            <b>Slide ${claim.slide}:</b> ${escapeHtml(claim.says)}
+            <div class="muted" style="margin-top:4px">${claim.correct
+              ? `The checkers: ${escapeHtml(claim.correct)}` : escapeHtml(claim.why)}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;min-width:170px">
             <button class="btn ${claim.decision === "slide" ? "btn-accent" : ""}"
                     data-decide="slide">Keep it as in the slide</button>
             <button class="btn ${claim.decision === "fact" ? "btn-accent" : ""}"
@@ -85,22 +88,37 @@ export function wireFactsPanel(refresh) {
   });
 }
 
-/** A red badge on every page while any fact waits for a decision. */
-export async function paintFactsBadge(tries = 0) {
+/** A red badge on every page while any fact waits for a decision. A page draws its
+ *  header when it likes and draws it again after an action, so the badge is put
+ *  back whenever a header appears without it, from the count last fetched. */
+let openFacts = 0;
+
+export async function paintFactsBadge() {
+  openFacts = (await loadFacts()).open ?? 0;
+  placeFactsBadge();
+}
+
+function placeFactsBadge() {
   const head = document.querySelector(".stage-head");
-  if (!head) {            // the page draws its header after the sidebar
-    if (tries < 5) setTimeout(() => paintFactsBadge(tries + 1), 600);
+  if (!head) return;
+  const badge = head.querySelector(".facts-badge");
+  if (!openFacts) {
+    badge?.remove();
     return;
   }
-  head.querySelector(".facts-badge")?.remove();
-  const facts = await loadFacts();
-  if (!facts.open) return;
-  const badge = document.createElement("span");
-  badge.className = "facts-badge";
-  badge.style.cssText = "background:#e8603c;color:#fff;border-radius:999px;padding:4px 12px;"
-    + "font-weight:700;margin-left:auto;cursor:pointer";
-  badge.textContent = `${facts.open} fact decision(s) open`;
-  badge.title = "Decide them on Script & Staging, under Facts";
-  badge.onclick = () => document.querySelector('.nav-item[data-stage="script-staging"]')?.click();
-  head.insertBefore(badge, head.querySelector(".card-corner"));
+  const text = `${openFacts} fact decision(s) open`;
+  if (badge) {
+    if (badge.textContent !== text) badge.textContent = text;
+    return;
+  }
+  const made = document.createElement("span");
+  made.className = "facts-badge";
+  made.style.cssText = "background:#e8603c;color:#fff;border-radius:999px;padding:4px 12px;"
+    + "font-weight:700;margin-left:auto;margin-right:10px;cursor:pointer;white-space:nowrap";
+  made.textContent = text;
+  made.title = "Decide them on Script & Staging, under Facts";
+  made.onclick = () => document.querySelector('.nav-item[data-stage="script-staging"]')?.click();
+  head.insertBefore(made, head.querySelector(".card-corner"));
 }
+
+new MutationObserver(placeFactsBadge).observe(document.body, { childList: true, subtree: true });

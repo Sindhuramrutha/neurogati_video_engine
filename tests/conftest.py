@@ -73,6 +73,35 @@ def pictures_located(request, monkeypatch):
             "parts": [{"name": "brain", "box": [0.2, 0.2, 0.6, 0.6], "sure": True}]})
 
 
+class RealProjectsInATest(AssertionError):
+    pass
+
+
+@pytest.fixture(autouse=True)
+def never_the_real_projects(tmp_path, monkeypatch):
+    """No test may reach the real projects folder. A test once erased every real
+    project through "Delete all": its own folder setting had not taken. Each test
+    now starts on a folder of its own, and a store opened on the real one fails."""
+    from pathlib import Path
+
+    from pipeline.config import REPO_ROOT, get_settings
+    from pipeline.projects import ProjectStore
+
+    monkeypatch.setenv("PROJECTS_DIR", str(tmp_path / "projects"))
+    get_settings.cache_clear()
+    real = (REPO_ROOT / "projects").resolve()
+    opened = ProjectStore.__init__
+
+    def guarded(self, projects_dir):
+        if Path(projects_dir).resolve() == real:
+            raise RealProjectsInATest(f"a test opened the real projects folder {real}")
+        opened(self, projects_dir)
+
+    monkeypatch.setattr(ProjectStore, "__init__", guarded)
+    yield
+    get_settings.cache_clear()
+
+
 @pytest.fixture(autouse=True)
 def shared_state_in_tmp(tmp_path, monkeypatch):
     """The request window and the circuit breakers are shared through files in

@@ -2,10 +2,11 @@
  * Explainer Pipeline — application shell.
  *
  * Owns the chrome (topbar, sidebar, breadcrumb) and routes to a stage
- * view. Stage views live in their own modules and import { paintFactsBadge } from "/static/facts-panel.js";
-import shared state from
+ * view. Stage views live in their own modules and import shared state from
  * ui-kit.js, so this file never grows when a stage gains features.
  */
+
+import { paintFactsBadge } from "/static/facts-panel.js";
 
 import {
   closeCredentialsPanel, isCredentialsPanelOpen, openCredentialsPanel,
