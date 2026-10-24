@@ -34,3 +34,20 @@ def test_a_misspelt_term_is_found_and_a_verified_claim_asks_nothing():
     assert claim("verified", "Golgi and Cajal shared the Nobel Prize in 1906.").rule() == ""
     assert not claim("verified", "Golgi won in 1906.").open
     assert claim("uncertain", "Pavlov rang a bell.").open
+
+
+def test_a_decks_decisions_reach_every_version_made_of_it(tmp_path, monkeypatch):
+    """v6 was erased and made again: the facts decided on it were decided again. A
+    deck's decisions are kept with the deck, and an undo is kept as well."""
+    from pipeline import fact_ledger
+    from pipeline.fact_ledger import Ledger
+
+    monkeypatch.setattr(fact_ledger, "_cache_path", lambda source: tmp_path / f"{source}.json")
+    decided = claim("disputed", "Pavlov was a psychologist.", "a physiologist", "fact")
+    decided.decided_at = "2026-10-24T09:00:00+00:00"
+    fact_ledger._remember(Ledger(source="deck", claims=[decided]))
+    assert fact_ledger._remembered("deck")["x"].decision == "fact"
+
+    decided.decision = ""                                   # taken back, in any version
+    fact_ledger._remember(Ledger(source="deck", claims=[decided]))
+    assert fact_ledger._remembered("deck") == {}

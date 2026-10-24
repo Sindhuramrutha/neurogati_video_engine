@@ -163,8 +163,9 @@ def decide(slug: str, claim_id: str, decision: str) -> dict[str, Any]:
     if claim is None:
         raise OperationFailed("This project has no such fact.")
     claim.decision = decision
-    claim.decided_at = datetime.now(UTC).isoformat(timespec="seconds") if decision else ""
+    claim.decided_at = datetime.now(UTC).isoformat(timespec="seconds")   # an undo too
     _save(project, ledger)
+    _remember(ledger)
     return view(slug)
 
 
@@ -217,7 +218,8 @@ def build(slug: str) -> dict[str, Any]:
     extraction = ExtractionStore(project.root).load()
     slides = _slides(extraction)
     source = hashlib.sha256(json.dumps(slides, sort_keys=True).encode()).hexdigest()[:16]
-    before = {c.id: c for c in load(project).claims}
+    # The deck's decisions first, from any version made of it; this project's own last.
+    before = _remembered(source) | {c.id: c for c in load(project).claims if c.decided_at}
     claims = _cached(source)
     if claims is None:
         claims = _verify(_extract(slides))
@@ -263,6 +265,33 @@ def _cache(source: str, claims: list[Claim]) -> None:
     write_text_atomically(path, json.dumps(
         [c.model_dump(exclude={"decision", "decided_at"}) for c in claims],
         ensure_ascii=False, indent=1))
+
+
+def _decisions_path(source: str):
+    return _cache_path(source).with_name(f"{source}-decisions.json")
+
+
+def _remembered(source: str) -> dict[str, Claim]:
+    """The decisions made on this deck in any project, by claim: a new version of the
+    same deck starts with them, so no fact is decided twice."""
+    try:
+        found = json.loads(_decisions_path(source).read_text(encoding="utf-8"))
+        return {c["id"]: Claim.model_validate(c) for c in found}
+    except (OSError, ValueError, KeyError):
+        return {}
+
+
+def _remember(ledger: Ledger) -> None:
+    from pipeline.storage.documents import write_text_atomically
+
+    if not ledger.source:
+        return
+    kept = _remembered(ledger.source) | {c.id: c for c in ledger.claims if c.decided_at}
+    kept = {key: claim for key, claim in kept.items() if claim.decision}
+    path = _decisions_path(ledger.source)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    write_text_atomically(path, json.dumps([c.model_dump() for c in kept.values()],
+                                           ensure_ascii=False, indent=1))
 
 
 def _extract(slides: dict[int, str]) -> list[Claim]:
