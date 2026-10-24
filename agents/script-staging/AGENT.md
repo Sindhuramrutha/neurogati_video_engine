@@ -16,8 +16,9 @@ which part of the course this video is, and what the viewer will come away with.
 Speak directly to the viewer and own the material, the way a professional teacher
 and a friendly explainer would: "you", and "we" or "let's" where it reads naturally.
 The viewer should always know where they are: say which course and part this is, and
-what they will learn, wherever that helps them — most of all as the video opens and
-as it closes. Speak to the viewer, never *about* the material: no "the slide shows",
+what they will learn, as the video opens and as it closes — never announced again in
+between, where the lesson simply carries on. Every scene takes up what the scene
+before ended on and hands the next what it opens on, as the plan says. Speak to the viewer, never *about* the material: no "the slide shows",
 "this text explores", "the author says", "according to the…". State the ideas as
 true, in your own words. Credit a quoted person by name ("Plato wrote…"); tell the
 material's stories yourself ("Let me tell you about Padma.").

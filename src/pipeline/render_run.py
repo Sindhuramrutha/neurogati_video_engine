@@ -287,6 +287,9 @@ def _render_video(slug: str, voice_provider: str, voice: str, resume: bool) -> d
                 start_ms=cursor_ms,
                 pictures=section_pictures.get(plan_section["id"], []),
                 shots=section_shots.get(plan_section["id"], []),
+                # The quiet the plan gave after each scene, as the moment needs.
+                pauses_ms=[round(float(scene.get("pause_after") or 0) * 1000)
+                           for scene in plan_section.get("scenes") or []],
                 # Only the video's opening holds a title card. Every other section
                 # starts speaking at once -- a card before each of them was 2.5
                 # seconds of silence a section, and nothing was said in any of it.
@@ -394,7 +397,7 @@ def _speak(section: RenderedSection, audio_path, *, reuse: bool, provider: str,
     try:
         # Scene by scene, a breath between them, names said as the list says.
         spoken = speak_scenes(section.narration.split(SCENE_SEPARATOR), audio_path,
-                              provider, voice, sounds)
+                              provider, voice, sounds, pauses_ms=section.pauses_ms)
     except SpeechFailed as speech_failure:
         raise OperationFailed(str(speech_failure)) from speech_failure
     section.audio_path = spoken.audio_path

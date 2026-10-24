@@ -386,6 +386,10 @@ function renderSection(section, index, plan, planning, word) {
       </div>
       ${section.summary ? `<p class="plan-section-summary">${escapeHtml(section.summary)}</p>` : ""}
       ${section.how ? `<p class="plan-section-how"><b>How it is told:</b> ${escapeHtml(section.how)}</p>` : ""}
+      ${section.opens_on || section.ends_on ? `<p class="plan-section-how">
+        ${section.opens_on ? `<b>Opens on:</b> ${escapeHtml(section.opens_on)}` : ""}
+        ${section.opens_on && section.ends_on ? " · " : ""}
+        ${section.ends_on ? `<b>Ends on:</b> ${escapeHtml(section.ends_on)}` : ""}</p>` : ""}
       ${editing ? renderSectionEditor(section, units, word) : ""}
       ${renderSectionPictures(section, plan)}
       <table class="plan-scenes">
@@ -396,7 +400,8 @@ function renderSection(section, index, plan, planning, word) {
             <tr data-scene="${scene.id}">
               <td>${n + 1}</td>
               <td><textarea class="scene-does" rows="2" maxlength="400"
-                    data-scene-field="does">${escapeHtml(scene.does)}</textarea></td>
+                    data-scene-field="does">${escapeHtml(scene.does)}</textarea>
+                ${renderSceneJoins(scene)}</td>
               <td><input class="scene-units" data-scene-field="slides"
                     value="${escapeHtml(unitsLabel(scene.slides ?? []).replace("—", ""))}"></td>
               <td><input class="scene-seconds" type="number" min="3" max="900"
@@ -438,6 +443,19 @@ function renderSectionEditor(section, units, word) {
         <button class="btn danger" id="delete-section-button">Delete section</button>
       </div>
     </div>`;
+}
+
+/** How a scene joins the next, and the quiet after it, as the planner decided. */
+function renderSceneJoins(scene) {
+  const parts = [
+    scene.opens_on ? `<span><b>Opens on</b> ${escapeHtml(scene.opens_on)}</span>` : "",
+    scene.ends_on ? `<span><b>Ends on</b> ${escapeHtml(scene.ends_on)}</span>` : "",
+    scene.pause_after ? `<span><b>Pause</b> ${scene.pause_after} s${
+      scene.pause_why ? ` · ${escapeHtml(scene.pause_why)}` : ""}</span>` : "",
+  ].filter(Boolean);
+  return parts.length
+    ? `<div class="muted" style="font-size:.85em;display:grid;gap:2px;margin-top:4px">${
+      parts.join("")}</div>` : "";
 }
 
 function renderSectionPictures(section, plan) {

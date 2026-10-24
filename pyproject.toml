@@ -75,4 +75,5 @@ markers = [
     "slow: over about five seconds; left out of the pre-commit hook's fast suite",
     "real_picks: only the deck pictures a person chose are handed on, as outside tests",
     "real_direction: a scene's look is planned by the art director, as outside tests",
+    "real_joins: where scenes meet is read and smoothed by the model, as outside tests",
 ]

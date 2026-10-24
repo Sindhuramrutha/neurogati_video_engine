@@ -234,6 +234,20 @@ def script_checks(project, script: Script) -> list[dict[str, str]]:
         "The Scene Plan has never been transferred." if not plan_state["has_transferred"]
         else "The Scene Plan has changes that are not transferred yet."
         if plan_state["pending"] else "Written against the transferred plan."))
+
+    from pipeline.scene_joins import join_problems
+
+    numbers = {scene.id: number for number, scene in enumerate(
+        (s for w in script.section_scripts for s in w.scenes), start=1)}
+    joins = join_problems(plan, script)
+    checks.append(_check(
+        "joins", "Scenes join up",
+        "Each scene takes up where the one before ended -- no question asked twice, no "
+        "story begun again, the course named only where the video opens and closes",
+        WARN if joins else PASS if sections else NOT_APPLICABLE,
+        "; ".join(f"scene {numbers.get(scene_id, '?')} {what}" for scene_id, what in joins[:6])
+        + (" -- redraft those sections, or edit where they meet." if joins else "")
+        if joins else "Every scene takes up where the one before ended."))
     return checks
 
 

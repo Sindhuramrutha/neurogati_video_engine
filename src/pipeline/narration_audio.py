@@ -106,11 +106,19 @@ def speak(text: str, path: Path, provider: str, voice: str,
 
 def speak_scenes(scenes: list[str], path: Path, provider: str, voice: str,
                  sounds: dict[str, str] | None = None,
-                 pause_ms: int = SCENE_PAUSE_MS) -> SpeechResult:
-    """A section, scene by scene, joined with a pause after every scene but the
-    last; the word timings moved to where each word lands in the joined file."""
-    scenes = [scene for scene in scenes if scene.strip()]
-    if len(scenes) <= 1:
+                 pause_ms: int = SCENE_PAUSE_MS,
+                 pauses_ms: list[int] | None = None) -> SpeechResult:
+    """A section, scene by scene, joined with a pause after each scene; the word
+    timings moved to where each word lands in the joined file. `pauses_ms`, one per
+    scene, are the plan's (`scene_joins`) -- the last is the quiet before the next
+    section; without them every scene but the last gets `pause_ms`."""
+    planned = list(pauses_ms or [])
+    kept = [(scene, planned[index] if index < len(planned) else None)
+            for index, scene in enumerate(scenes) if scene.strip()]
+    scenes = [scene for scene, _ in kept]
+    gaps = [pause if pause is not None else (pause_ms if index < len(kept) - 1 else 0)
+            for index, (_, pause) in enumerate(kept)]
+    if len(scenes) <= 1 and not any(gaps):
         return speak(" ".join(scenes), path, provider, voice, sounds)
     ffmpeg = shutil.which("ffmpeg")
     if not ffmpeg:
@@ -122,11 +130,11 @@ def speak_scenes(scenes: list[str], path: Path, provider: str, voice: str,
         words, offset = [], 0
         for index, piece in enumerate(pieces):
             words += [WordTiming(w.text, w.start_ms + offset, w.duration_ms) for w in piece.words]
-            offset += piece.duration_ms + (pause_ms if index < len(pieces) - 1 else 0)
+            offset += piece.duration_ms + gaps[index]
         inputs = [argument for piece in pieces for argument in ("-i", str(piece.audio_path))]
         padded = "".join(
             f"[{index}:a]aformat=sample_rates=24000:channel_layouts=mono"
-            + (f",apad=pad_dur={pause_ms / 1000:.3f}" if index < len(pieces) - 1 else "")
+            + (f",apad=pad_dur={gaps[index] / 1000:.3f}" if gaps[index] else "")
             + f"[p{index}];" for index in range(len(pieces)))
         joined = "".join(f"[p{index}]" for index in range(len(pieces)))
         graph = padded + f"{joined}concat=n={len(pieces)}:v=0:a=1[out]"

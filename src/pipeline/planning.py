@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 MAXIMUM_SECTION_TITLE_LENGTH = 120
 MAXIMUM_SECTION_SUMMARY_LENGTH = 400
 LONGEST_TEACHES = 800             # what the whole video teaches: a sentence or two
+LONGEST_PAUSE = 2.0               # seconds of quiet after a scene, at most
 MAXIMUM_SECTIONS_PER_PLAN = 60
 MAXIMUM_SCENES_PER_SECTION = 60
 MAXIMUM_SOURCES_PER_SECTION = 40
@@ -74,11 +75,23 @@ class PlanScene(BaseModel):
     does: str = ""
     slides: list[int] = Field(default_factory=list)
     seconds: int = 30
+    # Its joins (`scene_joins.py`): the thread it picks up from the scene before, and
+    # what it hands to the next -- v8's scenes asked one question twice across a join
+    # and broke the promise another made. And the pause after it, and why.
+    opens_on: str = ""
+    ends_on: str = ""
+    pause_after: float = 0.0
+    pause_why: str = ""
 
-    @field_validator("does")
+    @field_validator("does", "opens_on", "ends_on", "pause_why")
     @classmethod
     def _cap_does(cls, value: str) -> str:
         return value.strip()[:MAXIMUM_SCENE_TEXT_LENGTH]
+
+    @field_validator("pause_after")
+    @classmethod
+    def _clamp_pause(cls, value: float) -> float:
+        return round(max(0.0, min(float(value), LONGEST_PAUSE)), 1)
 
     @field_validator("seconds")
     @classmethod
@@ -111,6 +124,11 @@ class PlanSection(BaseModel):
     # they are not on this section's slides (a title slide's cover, shown in the
     # opening). Added to the rule's pictures (`plan_pictures.py`).
     placed_pictures: list[str] = Field(default_factory=list)
+    # Its joins, decided with the shape where the whole video is seen: what it picks
+    # up from the section before, and what it hands to the next. Its first and last
+    # scenes take them (`scene_joins.py`).
+    opens_on: str = ""
+    ends_on: str = ""
 
     @field_validator("sources")
     @classmethod
@@ -131,7 +149,7 @@ class PlanSection(BaseModel):
     def _cap_title(cls, value: str) -> str:
         return value.strip()[:MAXIMUM_SECTION_TITLE_LENGTH]
 
-    @field_validator("summary", "how")
+    @field_validator("summary", "how", "opens_on", "ends_on")
     @classmethod
     def _cap_summary(cls, value: str) -> str:
         return value.strip()[:MAXIMUM_SECTION_SUMMARY_LENGTH]

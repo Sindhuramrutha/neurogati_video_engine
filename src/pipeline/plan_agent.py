@@ -51,6 +51,7 @@ from pipeline.planning import (
     PlanSection,
     PlanStore,
 )
+from pipeline.scene_joins import JOINS_RULE, fit_joins, section_joins_text
 from pipeline.stage_options import video_preferences
 from pipeline.stages import Stage
 from pipeline.storage.documents import read_json_object, write_text_atomically
@@ -284,6 +285,7 @@ def agree(slug: str) -> dict[str, Any]:
         section = PlanSection(
             id=kept.id if kept else PlanSection().id,
             title=proposed.title, how=proposed.how, summary=proposed.summary,
+            opens_on=proposed.opens_on, ends_on=proposed.ends_on,
             sources=references_for(numbers, units),
             estimated_seconds=round(proposed.minutes * 60),
             picture_paths=kept.picture_paths if kept else [],
@@ -343,7 +345,7 @@ def write_scenes(project, plan: Plan, wanted: dict[str, int], extraction, units,
         "they fill the section's time. Keep the slides' order. Every point on the "
         "section's slides is taught in some scene; a scene may explain a point -- its "
         "terms, context, an example, a picture of it -- but never turns to material the "
-        "slides do not point toward."
+        "slides do not point toward. " + JOINS_RULE
     )
 
     identity = identity_text(project, plan, extraction)
@@ -364,6 +366,7 @@ def write_scenes(project, plan: Plan, wanted: dict[str, int], extraction, units,
             f"Language: {language}",
             f"Section: {section.title} -- {section.summary}\n"
             f"How it is told: {section.how or '(not said)'}",
+            section_joins_text(plan, section),
             f"It runs {section.estimated_seconds} seconds in exactly {count} scenes. "
             f"Its slides: {own or 'none'}.",
             f"--- its material ---\n{material}",
@@ -375,9 +378,11 @@ def write_scenes(project, plan: Plan, wanted: dict[str, int], extraction, units,
             return f"“{section.title}” could not be broken into scenes: {failure}."
         scenes = answer.scenes[:count]
         seconds = _even([s.seconds for s in scenes], section.estimated_seconds)
-        section.scenes = [PlanScene(does=s.does, seconds=t,
-                                    slides=[n for n in s.units if n in own])
-                          for s, t in zip(scenes, seconds, strict=True)]
+        section.scenes = fit_joins(section, [
+            PlanScene(does=s.does, seconds=t, slides=[n for n in s.units if n in own],
+                      opens_on=s.opens_on, ends_on=s.ends_on,
+                      pause_after=s.pause_after, pause_why=s.pause_why)
+            for s, t in zip(scenes, seconds, strict=True)])
         note = f"“{section.title}” got {len(scenes)} of {count} scenes." \
             if len(scenes) < count else None
         return note or (f"“{section.title}”: its material was cut to fit." if cut else None)

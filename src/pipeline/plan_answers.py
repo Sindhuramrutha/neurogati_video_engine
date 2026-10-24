@@ -23,6 +23,16 @@ class ShapeSection(BaseModel):
     minutes: float = Field(description="How long the section runs.")
     scenes: int = Field(description="How many scenes it is made of.")
     summary: str = Field(description="One sentence: what the viewer gets from it.")
+    opens_on: str = Field(
+        default="",
+        description="How it picks up from the section before -- the thread, question or "
+                    "term it takes on ('answers the question the opening posed: where does "
+                    "thought live?'). The first section: how the video opens.")
+    ends_on: str = Field(
+        default="",
+        description="What it hands to the next section -- the idea, question or term the "
+                    "next one opens on. Never a question the next section asks again; the "
+                    "next answers or builds on it. The last section: how the video closes.")
     shows_chosen: list[str] = Field(
         default_factory=list,
         description="Names of the person's chosen pictures this section shows that are NOT "
@@ -57,6 +67,17 @@ class DetailedScene(BaseModel):
     units: list[int] = Field(default_factory=list,
                              description="The slide numbers (or parts) it is about.")
     seconds: int
+    opens_on: str = Field(default="", description="The thread it picks up from the scene "
+                                                  "before -- what that scene ended on.")
+    ends_on: str = Field(default="", description="What it hands to the next scene: the "
+                                                 "idea, question or term that one opens on.")
+    pause_after: float = Field(
+        default=0.0,
+        description="Seconds of quiet after it, 0 to 2, as the moment needs: 0 when the "
+                    "thought runs straight on; about 1 at a turn to a new idea; up to 2 "
+                    "after a section's last scene, a question left to think about, or a "
+                    "reveal that should land.")
+    pause_why: str = Field(default="", description="Why that pause, in a few words.")
 
 
 class SceneAnswer(BaseModel):

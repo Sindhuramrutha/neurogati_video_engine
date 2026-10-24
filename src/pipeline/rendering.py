@@ -202,6 +202,10 @@ class RenderedSection:
     # so it wins over `pictures` whenever it exists.
     shots: list[Shot] = field(default_factory=list)
 
+    # Quiet after each scene, in milliseconds, as the plan decided (`scene_joins`):
+    # the narration pauses and the picture holds the finished scene through it.
+    pauses_ms: list[int] = field(default_factory=list)
+
     # Where every word of this section's narration falls, when the voice
     # reported it. The slides then break on a word rather than on a share of
     # the characters, and a label appears as it is said.

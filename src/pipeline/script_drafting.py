@@ -45,6 +45,7 @@ from pipeline.operations import (
 )
 from pipeline.plan_units import MAXIMUM_SECTION_SOURCE_CHARACTERS, section_source_text
 from pipeline.planning import Plan, PlanSection
+from pipeline.scene_joins import SCRIPT_JOINS_RULE, scene_contracts, where_it_sits
 from pipeline.script_review import keep_to_slides as _keep_to_slides
 from pipeline.scripting import (
     SCRIPT_WRITE,
@@ -192,6 +193,13 @@ def draft_unwritten_sections(slug: str, instruction: str = "") -> dict[str, Any]
     if not drafted_ids:
         raise OperationFailed("No section could be drafted. " + " ".join(notes))
 
+    # Sections were written side by side; once every one is, read where they meet.
+    written = store.load()
+    if all(written.body_for(section.id).strip() for section in plan.sections):
+        from pipeline.scene_joins import smooth_joins
+
+        notes += smooth_joins(slug, identity)
+
     saved = store.load()
     return present_artifact(project, "script", saved) | {
         "drafted_section_ids": drafted_ids,
@@ -246,6 +254,7 @@ def _write_section(
         f"{section.estimated_seconds} seconds. Keep to its slides and teach it to a "
         f"learner meeting it for the first time, following your instructions on "
         f"narration. Open where the previous section left off.\n\n"
+        f"{SCRIPT_JOINS_RULE}\n{where_it_sits(plan, section)}\n\n"
         f"{VOICE_RULE}\n"
         f"Tone: {preferences.tone_sentence}\n"
         f"Write the narration, and every brief, in {preferences.language_name}. "
@@ -358,6 +367,9 @@ def _section_brief(plan: Plan, section: PlanSection, target_words: int,
             f"{number}. (~{scene.seconds} s"
             + (f", slide {', '.join(map(str, scene.slides))}" if scene.slides else "")
             + f") {scene.does}" for number, scene in enumerate(section.scenes, start=1)))
+        joins = scene_contracts(section)
+        if joins:
+            lines.append("How its scenes join, as planned:\n" + joins)
     if section.how:
         lines.append(f"How it is told: {section.how}")
     if pictures:

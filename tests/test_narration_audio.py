@@ -41,3 +41,20 @@ def test_a_section_is_spoken_scene_by_scene_with_a_breath_between(tmp_path):
 
     expected = one.duration_ms + SCENE_PAUSE_MS + two.duration_ms
     assert abs(measure_audio_duration_ms(joined.audio_path) - expected) < 120
+
+
+@pytest.mark.skipif(not shutil.which("ffmpeg"), reason="needs ffmpeg")
+def test_each_scene_is_followed_by_the_pause_the_plan_gave_it(tmp_path):
+    """The planner decides the quiet after each scene: none where the thought runs on,
+    up to two seconds after a section's last scene -- the quiet before the next."""
+    from pipeline.speech import measure_audio_duration_ms, synthesise_narration
+
+    lines = ["First scene words here.", "Second scene.", "Third and last."]
+    alone = [synthesise_narration(line, tmp_path / f"{n}.mp3", "silent").duration_ms
+             for n, line in enumerate(lines)]
+
+    joined = speak_scenes(lines, tmp_path / "section.mp3", "silent", "",
+                          pauses_ms=[1500, 0, 2000])
+
+    assert abs(measure_audio_duration_ms(joined.audio_path)
+               - (sum(alone) + 1500 + 2000)) < 150

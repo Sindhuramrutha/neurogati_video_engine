@@ -40,7 +40,7 @@ def fakes(monkeypatch):
     """Counts what was actually made, and can halt after a given section clip."""
     made = {"spoken": [], "cut": [], "halt_after_cut": None, "slug": ""}
 
-    def speak(scenes, path, provider, voice, sounds=None, pause_ms=0):
+    def speak(scenes, path, provider, voice, sounds=None, pause_ms=0, pauses_ms=None):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(b"mp3")
         made["spoken"].append(path.name)

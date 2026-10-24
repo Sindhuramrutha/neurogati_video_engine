@@ -219,6 +219,16 @@ def no_art_direction(request, monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def joins_left_as_written(request, monkeypatch):
+    """Once a whole script is drafted its joins are read by the model
+    (`scene_joins.smooth_joins`); in tests they are left as written unless a test is
+    marked `real_joins`."""
+    if request.node.get_closest_marker("real_joins") is None:
+        monkeypatch.setattr("pipeline.scene_joins.smooth_joins",
+                            lambda slug, identity="": [])
+
+
+@pytest.fixture(autouse=True)
 def facts_checked(request, monkeypatch):
     """Drafting checks the deck's facts first (`fact_ledger.ensure`): model calls the
     tests do not expect. In tests the ledger is as it is, unless marked `real_facts`."""

@@ -19,6 +19,15 @@ this video is, and the deck's title slide. Plan it as that lesson: a viewer shou
 know which course and part they are watching and what they will come away with. Say
 what that is, in a sentence or two to the viewer, under `teaches`.
 
+## Plan how it flows
+
+The video is one continuous lesson, not a row of separate talks. For every section
+say what it opens on (the thread, question or term it picks up from the section
+before) and what it ends on (what it hands to the next). A section answers the
+question the one before left open; it never asks it again, never starts the story
+again, and never promises what the next does not deliver. The opening introduces the
+course, the part and what the viewer will learn; no section after it does that again.
+
 Every picture the person chose must appear in the video. One on a slide a section
 covers is shown there; one on a slide no section teaches (a title slide's cover)
 goes where it serves — name it under `shows_chosen` on that section.
