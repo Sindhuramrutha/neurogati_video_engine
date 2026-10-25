@@ -358,10 +358,16 @@ export function renderScenePanel(scene) {
 
       ${renderAgentControls(scene)}
       ${scene.background?.kind ? `
-        <div class="scene-actions" style="margin:8px 0">
-          <button class="btn" id="background-scene-button"
-                  data-on="${scene.background.on ? "1" : ""}">
-            Background: ${scene.background.on ? "on — switch off" : "off — switch on"}</button>
+        <div class="bg-toggle-row">
+          <span class="bg-toggle-label">Background</span>
+          <div class="pill-toggle" role="radiogroup" aria-label="The scene's background">
+            ${[[true, "With background"], [false, "Plain"]].map(([on, label]) =>
+              on === Boolean(scene.background.on)
+                ? `<button class="pill-option on" role="radio" aria-checked="true" disabled>${label}</button>`
+                : `<button class="pill-option" role="radio" aria-checked="false"
+                     id="background-scene-button" data-on="${scene.background.on ? "1" : ""}">${label}</button>`
+            ).join("")}
+          </div>
         </div>` : ""}
 
       <details class="scene-code-row" ${sceneLabState.codeOpen ? "open" : ""}>

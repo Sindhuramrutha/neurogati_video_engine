@@ -264,7 +264,6 @@
 .scene-panel .scene-agent { background: #FFF1CF; }
 .chat-turn.answer { background: var(--c-yellow, #FFD93D); }
 .chat-turn.answer.failed, .chat-turn.answer.stopped { background: var(--c-orange-soft, #FFE8DE); }
-#background-scene-button { background: var(--c-blue, #4D96FF); color: #FFF; }
 .scene-panel .scene-details > summary { background: var(--c-orange, #FF8A5B);
   margin: -8px -12px 0; padding: 10px 12px; border-radius: 7px; }
 .scene-panel .scene-details[open] > summary { border-radius: 7px 7px 0 0; margin-bottom: 10px;
@@ -295,3 +294,16 @@
   padding: 10px 12px; border-radius: 7px; background: #2A2F3A; color: #F3F4F8; }
 .scene-code-row[open] > summary { border-radius: 7px 7px 0 0; margin-bottom: 10px; }
 .scene-code-row .scene-code-wrap { margin-top: 0; }
+
+/* The background switch: a pill with two sides, the chosen one raised in white. */
+.bg-toggle-row { display: flex; align-items: center; gap: 12px; margin: 10px 0; }
+.bg-toggle-label { font-weight: 800; }
+.pill-toggle { display: inline-flex; padding: 4px; gap: 2px; border-radius: 999px;
+  background: #9B3DF5; border: 2.5px solid var(--x-ink); }
+.pill-option { border: 0; border-radius: 999px; padding: 8px 20px; font: inherit;
+  font-weight: 700; color: #FFF; background: transparent; cursor: pointer;
+  transition: background .15s, color .15s; }
+.pill-option:hover:not(.on):not(:disabled) { background: rgba(255, 255, 255, .18); }
+.pill-option.on { background: #FFF; color: #7A2BD0; cursor: default; opacity: 1;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .18); }
+.pill-option:disabled:not(.on) { opacity: .6; cursor: wait; }
