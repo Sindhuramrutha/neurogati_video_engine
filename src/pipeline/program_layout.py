@@ -59,6 +59,12 @@ def _layout(source: str, node: Any, indent: int, used: int = 0) -> str:
     elif isinstance(node, (ast.List, ast.Tuple)):
         parts = [_layout(source, item, indent + 4) for item in node.elts]
         opening, closing = ("[", "]") if isinstance(node, ast.List) else ("(", ")")
+    elif isinstance(node, ast.Dict) and None not in node.keys:
+        parts = [ast.get_source_segment(source, key) + ": "
+                 + _layout(source, value, indent + 4,
+                           len(ast.get_source_segment(source, key)) + 2)
+                 for key, value in zip(node.keys, node.values, strict=True)]
+        opening, closing = "{", "}"
     elif isinstance(node, ast.Starred):
         return "*" + _layout(source, node.value, indent, used + 1)
     else:

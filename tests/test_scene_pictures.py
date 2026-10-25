@@ -15,7 +15,7 @@ import pytest
 from pipeline import scene_pictures, scene_vetting
 from pipeline.assets import AssetLibrary, LibraryFigure
 from pipeline.planning import Plan, PlanScene, PlanSection, SourceReference
-from pipeline.scene_shots import program_for as written_program
+from pipeline.shot_program import program_for as written_program
 
 
 def program_for(spec, pictures):
@@ -215,7 +215,7 @@ def test_an_opener_shot_is_written_as_the_kit_s_template():
          "when": "for most of history",
          "lines": [{"text": "Heart or brain?", "when": "the heart"}]}]}, pictures=2)
     assert ("self.opener(P[1], 'Brain ideas through the centuries', "
-            "[('Heart or brain?', 'the heart')], cue=None)") in program
+            "[dict(text='Heart or brain?', at='the heart')], cue=None)") in program
 
 
 def test_an_opener_needs_a_picture():
@@ -355,10 +355,11 @@ def test_a_hero_s_callouts_are_drawn_to_located_parts_and_unknown_ones_left_out(
         "moves": [{"through": ["cerebellum", "spinal cord"], "when": "down"}]}]},
         Pictures(1, {0: PARTS}))
 
-    assert "('Cerebellum', (0.60, 0.70), 'balance', (0.50, 0.60, 0.70, 0.80), 'tag')" \
-        in program, "the part's box goes with it, for the spotlight; a tag unless told"
+    assert ("dict(label='Cerebellum', point=(0.60, 0.70), at='balance', "
+            "part=(0.50, 0.60, 0.70, 0.80), style='tag')") in program, \
+        "the part's box goes with it, for the spotlight; a tag unless told"
     assert "Brain'" not in program, "a pointer at the statue's clothing is not drawn"
-    assert "moves=[([(0.60, 0.70), (0.57, 0.90)], 'down')]" in program
+    assert "moves=[dict(through=[(0.60, 0.70), (0.57, 0.90)], at='down')]" in program
 
 
 def test_each_callout_is_pointed_out_in_the_style_chosen_for_it():
@@ -372,7 +373,7 @@ def test_each_callout_is_pointed_out_in_the_style_chosen_for_it():
         return program_for({"shots": [{"template": "hero", "picture": 0, "title": "The brain",
                                        "callouts": list(callouts)}]}, Pictures(1, {0: PARTS}))
 
-    assert "'balance', (0.50, 0.60, 0.70, 0.80), 'lens')" in hero(
+    assert "at='balance', part=(0.50, 0.60, 0.70, 0.80), style='lens')" in hero(
         {"label": "Cerebellum", "part": "cerebellum", "when": "balance", "style": "lens"})
     with pytest.raises(ValueError, match="style is one of"):
         hero({"label": "Cerebellum", "part": "cerebellum", "when": "balance", "style": "arrow"})

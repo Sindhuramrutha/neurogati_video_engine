@@ -39,6 +39,7 @@ from pipeline.core import require_project
 from pipeline.generation import VisualPlanStore
 from pipeline.llm import ModelCallFailed, ModelNotConfigured, ModelOutputTruncated
 from pipeline.scene_backgrounds import choose as choose_background
+from pipeline.scene_bake import bake, written_program
 from pipeline.scene_edit import apply_edits, parse_answer
 from pipeline.scene_kept import (
     adopt,
@@ -65,7 +66,7 @@ from pipeline.scene_prompt import (  # noqa: F401 -- kit_api, compact: read thro
     system_prompt,
 )
 from pipeline.scene_round import render_round
-from pipeline.scene_shots import Pictures, is_shots, program_for, uncovered, unheard
+from pipeline.scene_shots import is_shots, uncovered, unheard
 from pipeline.scene_state import STOP, add_event, doing, load_state, save_state
 
 logger = logging.getLogger(__name__)
@@ -228,6 +229,7 @@ def _make_scene(slug: str, visual_id: str, instruction: str, fresh: bool) -> Non
             result = render_round(slug, visual_id, folder, renderer, spec, state, brief)
             if project_work.stopped():
                 return
+            bake(folder, spec, brief, parts)      # the places the kit chose, into the program
             state["last_render"] = {k: result[k] for k in
                                     ("passed", "good", "reviewed", "failing", "problems",
                                      "polish", "scores", "score")}
@@ -354,11 +356,7 @@ def _written(system, brief, notes, earlier, entry, code, feedback, instruction, 
                 # The shots, as data: the program is written from them (scene_shots).
                 renderer = "manim"
                 merged = {**merged, "renderer": renderer}
-                pictures = Pictures(
-                    len((brief.get("assets") or {}).get("pictures") or []), parts or {},
-                    frozenset(e["index"] for e in brief.get("picture_catalogue") or []
-                              if e.get("main_of")))
-                return (program_for(answer.spec, pictures), merged, renderer,
+                return (written_program(answer.spec, brief, parts, folder), merged, renderer,
                         ENTRY_FILES[renderer], True)
             if shots_only:
                 raise ValueError(SHOTS_ONLY)

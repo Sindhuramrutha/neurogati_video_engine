@@ -21,9 +21,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from pipeline.picture_parts import anchor, region
-from pipeline.program_layout import _laid_out, _one_line
-
 TEMPLATES = ("hero", "steps", "compare", "person", "key_idea", "opener", "flow", "hub",
              "timeline")
 MOST_SHOTS = 3
@@ -127,19 +124,13 @@ def _text(value: Any, where: str, required: bool = True) -> str:
 @dataclass(frozen=True)
 class Pictures:
     """What the shots may use: how many pictures the brief offers, where each one's
-    parts are (picture_parts), and which are another scene's subject."""
+    parts are (picture_parts), which are another scene's subject, and -- for the
+    program to name them -- each one's file and what it shows (shot_values)."""
     count: int
     parts: dict[int, list] = field(default_factory=dict)
     taken: frozenset[int] = frozenset()
-
-
-def _picture(value: Any, pictures: Pictures, where: str, required: bool = False,
-             main: bool = False) -> str:
-    if value is None or value == "":
-        if required:
-            raise ValueError(f"{where} needs a picture, and none is given")
-        return "None"
-    return f"P[{_index(value, pictures, where, main)}]"
+    files: tuple[str, ...] = ()
+    about: tuple[str, ...] = ()
 
 
 def _index(value: Any, pictures: Pictures, where: str, main: bool = False) -> int:
@@ -162,130 +153,12 @@ def _index(value: Any, pictures: Pictures, where: str, main: bool = False) -> in
     return index
 
 
-def _when(value: Any) -> str:
-    return repr(str(value).strip()) if value else "None"
-
-
 def _items(value: Any, where: str, least: int, most: int) -> list[dict]:
     if not isinstance(value, list) or not least <= len(value) <= most:
         raise ValueError(f"{where} must be a list of {least} to {most}")
     return [item if isinstance(item, dict) else {"label": item} for item in value]
 
 
-def _shot_code(shot: dict, pictures: Pictures, at: int) -> list[str]:
-    template = shot.get("template")
-    # A scene opens on its picture at once: a first shot waiting for its words
-    # left the screen blank until the narration reached "Galen".
-    opening = "None" if at == 0 else _when(shot.get("when"))
-    where = f"shot {at + 1} ({template})"
-    title = repr(_text(shot.get("title"), f"{where} title", required=False))
-    if template == "hero":
-        index = _index(shot.get("picture"), pictures, where, main=True)
-        found = pictures.parts.get(index, [])
-        callouts = []
-        for c in _items(shot.get("callouts", []), f"{where} callouts", 0, MOST_CALLOUTS):
-            label = _text(c.get("label"), f"{where} callout label")
-            if (len(label.split()) > MOST_CALLOUT_WORDS or label.rstrip().endswith((".", "!"))
-                    or STATING.intersection(label.lower().split())):
-                # "It was electrical" pointed at an engraving names nothing in it.
-                raise ValueError(f"{where} callout {label!r} is a statement: a callout names "
-                                 f"a part of the picture in 1 to {MOST_CALLOUT_WORDS} words "
-                                 "('Frog's leg'); put a statement in a key_idea shot")
-            style = str(c.get("style") or "tag").strip().lower()
-            if style not in POINTING:
-                raise ValueError(f"{where} callout {label!r}: style is one of "
-                                 f"{', '.join(POINTING)}")
-            box = region(found, str(c.get("part") or label))
-            if box is not None:       # no part surely there: no pointer at all
-                left, top, right, bottom = box
-                middle = f"({(left + right) / 2:.2f}, {(top + bottom) / 2:.2f})"
-                callouts.append(f"({label!r}, {middle}, {_when(c.get('when'))}, "
-                                f"({left:.2f}, {top:.2f}, {right:.2f}, {bottom:.2f}), "
-                                f"{style!r})")
-        moves = []
-        for move in _items(shot.get("moves", []), f"{where} moves", 0, 3):
-            through = [anchor(found, str(name)) for name in move.get("through") or []]
-            if 2 <= len(through) <= 6 and all(through):
-                moves.append("[" + ", ".join(f"({x:.2f}, {y:.2f})" for x, y in through)
-                             + f"], {_when(move.get('when'))}")
-        return [f"self.hero(P[{index}], [{', '.join(callouts)}], title={title}, cue={opening}"
-                + (f", moves=[{', '.join('(' + m + ')' for m in moves)}]" if moves else "")
-                + ")"]
-    if template == "steps":
-        steps = [f"({_text(s.get('label'), f'{where} step label')!r}, "
-                 f"{_picture(s.get('picture'), pictures, where)}, {_when(s.get('when'))})"
-                 for s in _items(shot.get("steps"), f"{where} steps", 2, 4)]
-        return [f"self.steps([{', '.join(steps)}], title={title})"]
-    if template == "compare":
-        sides = []
-        for name in ("left", "right"):
-            side = shot.get(name)
-            if not isinstance(side, dict):
-                raise ValueError(f"{where} needs '{name}'")
-            points = [repr(_text(p, f"{where} {name} point"))
-                      for p in (side.get("points") or [])[:3]]
-            sides.append(f"({_text(side.get('heading'), f'{where} {name} heading')!r}, "
-                         f"{_picture(side.get('picture'), pictures, where)}, "
-                         f"[{', '.join(points)}], {_when(side.get('when'))})")
-        return [f"self.compare({sides[0]}, {sides[1]}, title={title})"]
-    if template == "person":
-        return [f"self.person({_picture(shot.get('picture'), pictures, where, True, main=True)}, "
-                f"{_text(shot.get('name'), f'{where} name')!r}, "
-                f"{_text(shot.get('line'), f'{where} line')!r}, cue={opening}, "
-                f"line_cue={_when(shot.get('line_when'))})"]
-    if template == "key_idea":
-        statement = _text(shot.get("statement"), f"{where} statement")
-        if len(statement.split()) > MOST_IDEA_WORDS:
-            raise ValueError(f"{where} statement has {len(statement.split())} words: one "
-                             f"point to remember is at most {MOST_IDEA_WORDS} -- the narration "
-                             "says the rest")
-        return [f"self.key_idea({statement!r}, "
-                f"{_picture(shot.get('picture'), pictures, where, main=True)}, "
-                f"cue={opening})"]
-    if template == "opener":
-        lines = [f"({_text(item.get('text') or item.get('label'), f'{where} line')!r}, "
-                 f"{_when(item.get('when'))})"
-                 for item in _items(shot.get("lines", []), f"{where} lines", 0, 3)]
-        return [f"self.opener({_picture(shot.get('picture'), pictures, where, True, main=True)}, "
-                f"{_text(shot.get('title'), f'{where} title')!r}, [{', '.join(lines)}], "
-                f"cue={opening})"]
-    if template in ("flow", "hub", "timeline"):
-        return _diagram_code(template, shot, where, title)
-    raise ValueError(f"{where}: template must be one of {', '.join(TEMPLATES)}")
-
-
-def _diagram_code(template: str, shot: dict, where: str, title: str) -> list[str]:
-    key = {"flow": "steps", "hub": "items", "timeline": "events"}[template]
-    items = _items(shot.get(key), f"{where} {key}", 2, 6)
-    labels = [repr(_text(i.get("label"), f"{where} label")) for i in items]
-    whens = [_when(i.get("when")) for i in items]
-    lines = []
-    if title != repr(""):
-        lines.append(f"self.play(self.reveal(self.title({title})))")
-    if template == "flow":
-        lines += [f"d = self.flow([{', '.join(labels)}])"]
-        for number, when in enumerate(whens):
-            lines.append(f"self._at_cue({when})")
-            grow = f", self.grow(d.arrows[{number - 1}])" if number else ""
-            lines.append(f"self.play(self.reveal(d.boxes[{number}]){grow})")
-    elif template == "hub":
-        centre = _text(shot.get("centre"), f"{where} centre")
-        lines += [f"d = self.hub({centre!r}, [{', '.join(labels)}])",
-                  "self.play(self.reveal(d.centre))"]
-        for number, when in enumerate(whens):
-            lines += [f"self._at_cue({when})",
-                      f"self.play(self.grow(d.lines[{number}]), self.reveal(d.items[{number}]))"]
-    else:
-        # The whole line, every stop faint, from the start: v8's showed one dot on an
-        # empty line for most of its scene. Each stop lights on its words.
-        lines += [f"d = self.timeline([{', '.join(labels)}])",
-                  "[dot.set_opacity(0.3) for dot in d.dots]",
-                  "self.play(self.draw(d.spine), *[FadeIn(dot) for dot in d.dots])"]
-        for number, when in enumerate(whens):
-            lines += [f"self._at_cue({when})",
-                      f"self.play(d.dots[{number}].animate.set_opacity(1).scale(1.3), "
-                      f"self.reveal(d.labels[{number}]))"]
-    return lines
 
 
 LONGEST_STILL_SECONDS = 8.0     # of narration with nothing new arriving
@@ -370,35 +243,3 @@ def _begins(shot: dict) -> str | None:
 
 def is_shots(spec: dict) -> bool:
     return isinstance(spec.get("shots"), list) and bool(spec["shots"])
-
-
-def program_for(spec: dict, pictures: int | Pictures) -> str:
-    """The scene program for these shots, or a ValueError saying what is wrong
-    with them, for the model to correct. `pictures` is how many the brief offers, or
-    -- with where their parts are and which are taken -- a `Pictures`."""
-    if isinstance(pictures, int):
-        pictures = Pictures(pictures)
-    shots = spec["shots"]
-    if len(shots) > MOST_SHOTS:
-        raise ValueError(f"a scene has at most {MOST_SHOTS} shots")
-    body: list[str] = ["P = self.brief.assets.pictures  # the pictures the brief offers"]
-    for at, shot in enumerate(shots):
-        if not isinstance(shot, dict):
-            raise ValueError(f"shot {at + 1} must be an object")
-        begins = _begins(shot)
-        body += ["", f"# Shot {at + 1}: {shot.get('template') or 'shot'}"
-                 + (f', from "{_one_line(begins)}"' if at and begins else ", at once")]
-        if at:
-            body += [f"self._at_cue({_when(begins)})",
-                     "self.play(*[FadeOut(m) for m in self.shown], run_time=0.4)",
-                     "self.clear()"]
-        body += _shot_code(shot, pictures, at)
-    body += ["", "self.finish()"]
-    indented = "\n".join(_laid_out(line, 8) if line else "" for line in body)
-    return ("# /// script\n# requires-python = \">=3.11\"\n"
-            "# dependencies = [\"manim>=0.19\", \"pillow\"]\n# ///\n"
-            "# Written from the scene's shots by scene_shots.py. Edited and saved by hand,\n"
-            "# it is the scene's program until the scene is made again.\n"
-            "from manimkit import *\n\n\n"
-            "class TheScene(ExplainerScene):\n    def construct(self):\n"
-            f"{indented}\n\n\nrun(TheScene)\n")

@@ -338,9 +338,9 @@ def run_scene(slug: str, visual_id: str, brief: dict[str, Any] | None = None
     renderer, entry = entry_of(folder)
     if not (folder / entry).exists():
         raise OperationFailed(f"This scene has no {entry} yet. Write one first.")
-
     brief = brief or write_brief(project, visual)
-    (folder / "layout.json").unlink(missing_ok=True)     # never the last renderer's record
+    for record in ("layout.json", "decisions.json"):  # never the last run's record
+        (folder / record).unlink(missing_ok=True)
     if renderer in ("web", "revideo"):
         from pipeline.scene_revideo import render_revideo
         from pipeline.scene_web import render_web

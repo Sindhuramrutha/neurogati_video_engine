@@ -44,6 +44,14 @@ sketch or caption -- a person is always named by a caption);
 `self.opener(picture, title, [(line, cue)], cue)` -- a topic opened on a picture that
 sets the scene (the deck's own art), not one explained part by part.
 
+Every template and diagram takes `layout={name: (x, y) or (x, y, width)}`: the
+centre of each of its parts (a picture's width too), in scene units with (0, 0) the
+frame's middle. A part named there is put there; one left out is worked out, and
+where every part went is written to `decisions.json`, so a program written from
+shots can carry each place as a number (scene_bake). A cue is the narration's words
+or the second itself (`at=12.4`, `cue=12.4`); entries may be written as dicts
+(`dict(label=..., point=..., at=..., part=..., style=...)`) or as tuples.
+
 Diagrams laid out for you -- prefer them to placing boxes by hand, which is what
 fails most (boxes over boxes, circles through their own labels, a diagram in one
 strip of the frame): `self.flow(steps)` (boxes joined by arrows),
@@ -87,20 +95,40 @@ from manim import Scene, Text, VMobject, tempconfig
 from scenekit import load_brief
 
 
+def _recorded(template, composing: bool = False):
+    """A template or diagram that takes `layout={name: (x, y) or (x, y, width)}` --
+    where each of its pictures, titles, tags and cards goes -- and records where it
+    put every one (`decisions.json`), so the program can carry them as numbers: a
+    place the program gives is used as given, one it leaves out is worked out."""
+    import functools
+
+    @functools.wraps(template)
+    def record(self, *args, layout: dict | None = None, **kwargs):
+        before = (self._composing, self._fixed, self._made)
+        self._fixed, self._made = dict(layout or {}), {}
+        if composing:
+            self._composing = True
+        try:
+            return template(self, *args, **kwargs)
+        finally:
+            self._decisions.append({"call": template.__name__, "layout": self._made})
+            self._composing, self._fixed, self._made = before
+    return record
+
+
 def _composed(template):
     """A shot template lays its scene out by construction: what it adds is not
     moved out of the way afterwards. Nudged clear of the arrow arriving with it,
     a step's panel dropped below the badge the arrow had been drawn to."""
-    import functools
+    return _recorded(template, composing=True)
 
-    @functools.wraps(template)
-    def compose(self, *args, **kwargs):
-        self._composing = True
-        try:
-            return template(self, *args, **kwargs)
-        finally:
-            self._composing = False
-    return compose
+
+def _entry(item, keys: tuple[str, ...]) -> tuple:
+    """An entry written as a dict (`dict(label=..., at=...)`), as the program does,
+    or as a tuple in the same order."""
+    if isinstance(item, dict):
+        return tuple(item.get(key) for key in keys)
+    return tuple(item) + (None,) * (len(keys) - len(item))
 
 
 def _trim_box(path: str) -> tuple[int, int, int, int, int, int] | None:
@@ -522,6 +550,7 @@ class ExplainerScene(Scene):
         self._labels: list[tuple[Text, str, str, str]] = []
         self._panels: set[int] = set()        # words on their own tag or band
         self._snapshots: list[dict] = []
+        self._decisions: list[dict] = []      # where each template put what it placed
         self._spoken = BRIEF.__dict__.get("words") or []
         self._flat = [(i, w) for i, timed in enumerate(self._spoken)
                       for w in _words(timed.get("text", ""))]
@@ -709,6 +738,8 @@ class ExplainerScene(Scene):
     def when(self, phrase: str, default: float | None = None) -> float:
         """The second these words start being spoken. Falls back to `default`, or
         to a proportional guess, when the narration has no word timings."""
+        if isinstance(phrase, (int, float)):
+            return float(phrase)              # the second itself, as the program writes it
         wanted = _words(phrase)
         if not wanted:
             return self.now if default is None else default
@@ -773,6 +804,26 @@ class ExplainerScene(Scene):
     # A title names the scene, it is not the scene: v7's 60 pt titles crowded the frame.
     TITLE_SIZE, HEADING_SIZE, LABEL_SIZE = 44, 36, 30
     _composing = False
+    _fixed: dict | None = None       # the places the program gave this template
+    _made: dict | None = None        # the places it used, recorded
+
+    def _place(self, name: str, mobject, sized: bool = False):
+        """Put `mobject` where the program says (`layout[name]`: its centre, and
+        for a picture its width), or leave it where it was worked out -- and record
+        where it is, so the program can say so."""
+        if self._made is None:
+            return mobject
+        while name in self._made:
+            name += "+"
+        given = (self._fixed or {}).get(name)
+        if given is not None:
+            if sized and len(given) > 2 and mobject.width > 0:
+                mobject.scale(float(given[2]) / mobject.width)
+            mobject.move_to([float(given[0]), float(given[1]), 0])
+        centre = mobject.get_center()
+        self._made[name] = [round(float(centre[0]), 2), round(float(centre[1]), 2)] + (
+            [round(float(mobject.width), 2)] if sized else [])
+        return mobject
 
     def title(self, text: str):
         """The scene's title, always the same size, weight and place (top centre) --
@@ -929,6 +980,7 @@ class ExplainerScene(Scene):
     #         self.until(self.when(...)); self.play(FadeIn(box))
     #         if i: self.play(GrowArrow(f.arrows[i - 1]))
 
+    @_recorded
     def flow(self, steps: list[str], y: float = -0.3, size: int = 30, gap: float = 0.9):
         """Steps in boxes joined by arrows, left to right -- top to bottom when they
         do not fit across. Has .boxes and .arrows (arrows[i] joins boxes[i] to [i+1])."""
@@ -940,12 +992,14 @@ class ExplainerScene(Scene):
         if group.width > 2 * self.SAFE_X:
             group.arrange(DOWN, buff=gap * 0.6).move_to([0, y, 0])
         self.safe(group)
+        self._place("diagram", group)
         arrows = [self.connect(a, b, color=self.look["text"])
                   for a, b in zip(boxes, boxes[1:], strict=False)]
         whole = VGroup(*boxes, *arrows)
         whole.boxes, whole.arrows = boxes, arrows
         return whole
 
+    @_recorded
     def hub(self, centre: str, around: list[str], y: float = -0.3, size: int = 30,
             gap: float = 1.2):
         """One idea in the middle and what hangs off it, in a column either side, each
@@ -969,7 +1023,7 @@ class ExplainerScene(Scene):
         if len(right):
             right.next_to(middle, RIGHT, buff=gap)
             sides.append(right)
-        self.safe(VGroup(middle, *sides).move_to([0, y, 0]))
+        self._place("diagram", self.safe(VGroup(middle, *sides).move_to([0, y, 0])))
         lines = []
         for index, item in enumerate(items):
             start, end = ((middle.get_left(), item.get_right()) if index % 2 == 0
@@ -980,6 +1034,7 @@ class ExplainerScene(Scene):
         whole.centre, whole.items, whole.lines = middle, items, lines
         return whole
 
+    @_recorded
     def timeline(self, events: list[str], y: float = -0.4, size: int = 30):
         """Things in order on a line, a dot and a label each. Across the frame with
         labels above and below in turn; down its left side when they do not fit across.
@@ -1015,7 +1070,7 @@ class ExplainerScene(Scene):
             column = VGroup(spine, *dots, *labels)
             column.shift(RIGHT * -column.get_center()[0])
         whole = VGroup(spine, *dots, *labels)
-        self.safe(whole)
+        self._place("diagram", self.safe(whole))
         whole.spine, whole.dots, whole.labels = spine, dots, labels
         return whole
 
@@ -1024,7 +1079,7 @@ class ExplainerScene(Scene):
     # construction; the program only fills the slots and names the words each part
     # arrives on (`cue`: words from the narration). End the scene with self.finish().
 
-    def _at_cue(self, cue: str | None) -> None:
+    def _at_cue(self, cue: str | float | None) -> None:
         # Never later than a few seconds before the end: a closing point cued on the
         # narration's last words was still fading in as the scene ended.
         if cue:
@@ -1100,7 +1155,8 @@ class ExplainerScene(Scene):
         pulse runs along those points of the picture on the cue -- a signal
         travelling, liquid carried."""
         from manim import Dot, Line
-        callouts = [tuple(c) + (None,) * (5 - len(c)) for c in callouts]
+        callouts = [_entry(c, ("label", "point", "at", "part", "style")) for c in callouts]
+        moves = [_entry(m, ("through", "at")) for m in (moves or [])]
         scenic = _scenic(picture)
         source = picture if scenic else _trimmed(picture)
         if not scenic:
@@ -1117,7 +1173,7 @@ class ExplainerScene(Scene):
         callouts = [(text, xy, cue, box, self._style_of(style, box))
                     for text, xy, cue, box, style in callouts]
         captioned = any(style in ("glow", "zoom", "caption") for *_, style in callouts)
-        heading = self._panel_title(title) if title else None
+        heading = self._place("title", self._panel_title(title)) if title else None
         top = (heading.get_bottom()[1] - 0.2) if heading is not None else self.SAFE_Y
         foot = -self.SAFE_Y + (1.05 if captioned else 0.0)
         if scenic:
@@ -1131,6 +1187,7 @@ class ExplainerScene(Scene):
             # Room at both sides for the tags: the picture is the scene, they serve it.
             image = self._fit(picture, 2 * self.SAFE_X - 2.4, top - foot,
                               (0.0, (top + foot) / 2))
+        self._place("picture", image, sized=True)
 
         def at(fx: float, fy: float):
             return np.array([image.get_left()[0] + fx * image.width,
@@ -1173,6 +1230,7 @@ class ExplainerScene(Scene):
                 small = own is not None and (box[2] - box[0]) * (box[3] - box[1]) < 0.1
                 avoid = [own] if own is not None and (small or style != "tag") else []
                 self._place_near(tag, point, image.get_center(), taken + avoid, others, near)
+                self._place(f"{style}: {text}", tag)
                 taken.append(_box_of(tag))
                 mark["tag"] = tag
                 if style == "tag":
@@ -1497,8 +1555,9 @@ class ExplainerScene(Scene):
         joined to the one before by an arrow."""
         self._calm()
         from manim import Circle, Group
+        steps = [_entry(step, ("label", "picture", "at")) for step in steps]
         if title:
-            self.play(self.reveal(self.title(title)))
+            self.play(self.reveal(self._place("title", self.title(title))))
         count = max(1, len(steps))
         width = (2 * self.SAFE_X - (count - 1) * 0.5) / count
         top = 2.45 if title else 3.2
@@ -1508,8 +1567,9 @@ class ExplainerScene(Scene):
         each = all(picture for _, picture, _ in steps)
         shared = next((picture for _, picture, _ in steps if picture), None)
         if shared and not each:
-            self.play(manim.FadeIn(self._fit(shared, 7.0, top + 0.6, (0, (top - 1.2) / 2 + 0.3)),
-                                   run_time=0.6))
+            self.play(manim.FadeIn(self._place(
+                "picture", self._fit(shared, 7.0, top + 0.6, (0, (top - 1.2) / 2 + 0.3)),
+                sized=True), run_time=0.6))
         # With no picture the row stands mid-frame, not under an empty top half.
         badge_y = -1.55 if shared else 0.6
         panels = []
@@ -1517,7 +1577,8 @@ class ExplainerScene(Scene):
             x = -self.SAFE_X + width / 2 + index * (width + 0.5)
             parts = []
             if picture and each:
-                parts.append(self._fit(picture, width - 0.2, top + 0.6, (x, (top - 1.2) / 2 + 0.3)))
+                parts.append(self._place(f"step {index + 1} picture", self._fit(
+                    picture, width - 0.2, top + 0.6, (x, (top - 1.2) / 2 + 0.3)), sized=True))
             colour = self.colour(index)
             badge = Circle(radius=0.34, color=colour, fill_color=self.tint(colour, 0.25),
                            fill_opacity=1, stroke_width=4).move_to([x, badge_y, 0])
@@ -1525,6 +1586,7 @@ class ExplainerScene(Scene):
                                 bold=True).move_to(badge)
             words = self._wrapped(text, width - 0.1, self.LABEL_SIZE)
             words.next_to(badge, manim.DOWN, buff=0.3)
+            self._place(f"step {index + 1}", Group(badge, number, words))
             panels.append((Group(*parts, badge, number, words), badge, cue))
         for index, (panel, badge, cue) in enumerate(panels):
             self._at_cue(cue)
@@ -1543,7 +1605,9 @@ class ExplainerScene(Scene):
         self._calm()
         from manim import Group, RoundedRectangle
         fill = self._panel_fill()
-        heading_band = self._panel_title(title) if title else None
+        left, right = (_entry(side, ("heading", "picture", "points", "at"))
+                       for side in (left, right))
+        heading_band = self._place("title", self._panel_title(title)) if title else None
         if heading_band is not None:
             self.play(self.reveal(heading_band))
         top = heading_band.get_bottom()[1] - 0.3 if heading_band is not None else self.SAFE_Y
@@ -1560,7 +1624,7 @@ class ExplainerScene(Scene):
                 image = self._fit(picture, 5.2, 2.4, (0, y - 1.2))
                 parts.append(image)
                 y = image.get_bottom()[1] - 0.25
-            for point in points[:3]:
+            for point in (points or [])[:3]:
                 words = self._wrapped(point, 5.4, self.LABEL_SIZE, on=fill)
                 words.move_to([0, y - words.height / 2, 0])
                 y = words.get_bottom()[1] - 0.25
@@ -1575,6 +1639,7 @@ class ExplainerScene(Scene):
             group.move_to([x, middle + tallest / 2 - group.height / 2, 0])
             card = RoundedRectangle(corner_radius=0.3, width=6.2, height=tallest + 0.8)
             card.set_fill(fill, opacity=0.9).set_stroke(width=0).move_to([x, middle, 0])
+            self._place("left card" if side < 0 else "right card", Group(card, group))
             cards.append(card)
         # Each card with its own side, on its words: v9's second card stood empty
         # until they came.
@@ -1587,12 +1652,13 @@ class ExplainerScene(Scene):
     def person(self, picture: str, name: str, line: str, cue: str | None = None,
                line_cue: str | None = None):
         """A person: their portrait, their name, and one line on what they did."""
-        portrait = self._fit(picture, 5.2, 5.8, (-3.4, -0.2))
+        portrait = self._place("picture", self._fit(picture, 5.2, 5.8, (-3.4, -0.2)), sized=True)
         named = self.label(name, size=self.TITLE_SIZE - 6, bold=True)
         named.move_to([0.3 + named.width / 2, 1.3, 0])
-        self.safe(named)
+        self._place("name", self.safe(named))
         said = self._wrapped(line, 5.6, self.LABEL_SIZE)
         said.move_to([0.3 + said.width / 2, named.get_bottom()[1] - 0.45 - said.height / 2, 0])
+        self._place("line", said)
         self._at_cue(cue)
         self.play(manim.FadeIn(portrait, run_time=0.6), self.reveal(named))
         self._at_cue(line_cue)
@@ -1606,7 +1672,7 @@ class ExplainerScene(Scene):
         from manim import RoundedRectangle, VGroup
         fill = self._panel_fill()
         if picture:
-            image = self._fit(picture, 5.6, 5.8, (3.4, -0.1))
+            image = self._place("picture", self._fit(picture, 5.6, 5.8, (3.4, -0.1)), sized=True)
             words, centre = self._wrapped(statement, 5.6, 42, on=fill), (-3.2, 0.2)
         else:
             image, words, centre = None, self._wrapped(statement, 10.4, 46, on=fill), (0, 0.3)
@@ -1618,7 +1684,7 @@ class ExplainerScene(Scene):
         bar.set_fill(self.colour(0), opacity=1).set_stroke(width=0)
         words.move_to(card).shift([0.15, 0, 0])
         bar.move_to([card.get_left()[0] + 0.35, card.get_center()[1], 0])
-        self.safe(VGroup(card, bar, words).move_to([centre[0], centre[1], 0]))
+        self._place("card", self.safe(VGroup(card, bar, words).move_to([centre[0], centre[1], 0])))
         self._at_cue(cue)
         self.play(manim.FadeIn(card, scale=0.97, run_time=0.5),
                   *([manim.FadeIn(image, run_time=0.6)] if image else []))
@@ -1637,6 +1703,7 @@ class ExplainerScene(Scene):
         with _Image.open(_trimmed(picture)) as opened:
             aspect = opened.width / max(1, opened.height)
         banner = aspect >= 1.9
+        lines = [_entry(line, ("text", "at")) for line in (lines or [])]
         if banner:
             image = self._fit(picture, 2 * self.SAFE_X - 0.6, 2.9, (0.0, 1.75))
             left, width, top = -self.SAFE_X + 0.2, 2 * self.SAFE_X - 0.4, \
@@ -1644,6 +1711,7 @@ class ExplainerScene(Scene):
         else:
             image = self._fit(picture, 5.4, 6.2, (3.25, -0.05))
             left, width, top = -self.SAFE_X + 0.1, 5.9, 2.3
+        self._place("picture", image, sized=True)
         # On a soft card, as every title is: v8's opening title sat over the painted
         # lamp behind it.
         fill = self._panel_fill()
@@ -1667,6 +1735,7 @@ class ExplainerScene(Scene):
         card = manim.RoundedRectangle(corner_radius=0.3, width=content.width + 0.7,
                                       height=content.height + 0.6)
         card.set_fill(fill, opacity=0.9).set_stroke(width=0).move_to(content)
+        self._place("card", manim.VGroup(card, content))
         self._at_cue(cue)
         self.play(manim.FadeIn(image, scale=0.94, run_time=0.8), manim.FadeIn(card),
                   self.reveal(heading))
@@ -1827,6 +1896,7 @@ def run(scene_class) -> None:
         scene = scene_class()
         scene.render()
         shutil.copy(scene.renderer.file_writer.movie_file_path, BRIEF.out)
+    Path("decisions.json").write_text(json.dumps(scene._decisions, indent=1), encoding="utf-8")
     Path("layout.json").write_text(json.dumps({
         "renderer": "manim", "width": BRIEF.width, "height": BRIEF.height,
         "snapshots": scene._snapshots, "plays": scene._plays}, indent=1, ensure_ascii=False),
